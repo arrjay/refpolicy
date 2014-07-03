@@ -1,3 +1,34 @@
+refpolicy (2:2.20140421-5) unstable; urgency=medium
+
+  * Allow system_cronjob_t to read apt_var_lib_t and ntp_conf_t.
+  * Allow init_t to create /dev/log and netlink_audit_socket accesss
+  * Allow init_t to manage systemd_passwd_var_run_t links
+  * Allow freshclam_t to talk to http_cache_port_t
+  * Allow system_cronjob_t to talk to init socket for restarting daemons under
+    systemd
+  * allow init_t setsched access for (tmpfiles) from systemd
+  * Allow dpkg_t to transition to dpkg_script_t when running dpkg_var_lib_t
+    (postinst etc scripts)
+  * Allow init_t netlink_selinux_socket access for commands like "halt" in
+    strict mode
+  * Allow initrc_t to perform service operations on init_script_file_type
+  * Label /opt/google/chrome/cron/google-chrome bin_t
+  * Make Chrome/Chromium run in the correct domain
+  * Add domain systemd_cgroups_t for kernel executing
+    /lib/systemd/systemd-cgroups-agent
+  * Allow dpkg_script_t to read the policy
+  * Allow systemd_passwd_agent_t to write to /dev/kmsg and log to syslogd
+  * Allow init_t to write to watchdog_device_t for systemd shutdown
+  * Allow initrc_t to write net_conf_t for network boot scripts
+  * Allow init_t to create var_auth_t directories for systemd
+  * Allow initrc_t to read postfix config on Debian
+  * Allow initrc_t to talk to init_t via unix sockets
+  * Allow init_t to read udev_var_run_t files for systemd to read udev output
+  * Allow init_t to read all pidfiles, for systemd
+  * Allow postfix_postqueue_t to send sigchld to all userdomains
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 03 Jul 2014 20:45:34 +1000
+
 refpolicy (2:2.20140421-4) unstable; urgency=medium
 
   * Team upload.

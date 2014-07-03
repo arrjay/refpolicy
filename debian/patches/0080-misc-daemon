@@ -1,6 +1,6 @@
 Description: misc patches for daemon policy
 Author: Russell Coker <russell@coker.com.au>
-Last-Update: 2014-06-29
+Last-Update: 2014-07-03
 
 Index: refpolicy-2.20140421/policy/modules/contrib/fetchmail.te
 ===================================================================
@@ -133,7 +133,19 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.te
 ===================================================================
 --- refpolicy-2.20140421.orig/policy/modules/system/udev.te
 +++ refpolicy-2.20140421/policy/modules/system/udev.te
-@@ -329,6 +329,7 @@ optional_policy(`
+@@ -202,6 +202,11 @@ ifdef(`distro_debian',`
+ 	')
+ ')
+ 
++optional_policy(`
++	# for systemd-udevd when starting xen domu
++	virt_read_config(udev_t)
++')
++
+ ifdef(`distro_gentoo',`
+ 	# during boot, init scripts use /dev/.rcsysinit
+ 	# existance to determine if we are in early booting
+@@ -329,6 +334,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
@@ -220,13 +232,188 @@ Index: refpolicy-2.20140421/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy-2.20140421.orig/policy/modules/contrib/cron.te
 +++ refpolicy-2.20140421/policy/modules/contrib/cron.te
-@@ -336,6 +336,9 @@ ifdef(`distro_debian',`
+@@ -336,6 +336,14 @@ ifdef(`distro_debian',`
  	optional_policy(`
  		logwatch_search_cache_dir(crond_t)
  	')
 +	optional_policy(`
 +		apt_manage_cache(system_cronjob_t)
++		apt_read_db(system_cronjob_t)
 +	')
++')
++
++optional_policy(`
++	ntp_read_conf(system_cronjob_t)
  ')
  
  ifdef(`distro_redhat',`
+Index: refpolicy-2.20140421/policy/modules/contrib/ntp.if
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/ntp.if
++++ refpolicy-2.20140421/policy/modules/contrib/ntp.if
+@@ -18,6 +18,23 @@ interface(`ntp_stub',`
+ 
+ ########################################
+ ## <summary>
++##	Read ntp.conf
++## </summary>
++## <param name="domain" unused="true">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ntp_read_conf',`
++	gen_require(`
++		type ntp_conf_t;
++	')
++	allow $1 ntp_conf_t:file read_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Execute ntp server in the ntpd domain.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20140421/policy/modules/system/init.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/system/init.te
++++ refpolicy-2.20140421/policy/modules/system/init.te
+@@ -151,6 +151,7 @@ corecmd_exec_chroot(init_t)
+ corecmd_exec_bin(init_t)
+ 
+ dev_read_sysfs(init_t)
++logging_create_devlog_dev(init_t)
+ # Early devtmpfs
+ dev_rw_generic_chr_files(init_t)
+ 
+@@ -1141,6 +1142,7 @@ tunable_policy(`init_systemd',`
+ 	allow init_t self:process { getcap setcap };
+ 	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
+ 	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
++	allow init_t self:netlink_audit_socket { nlmsg_relay create_socket_perms };
+ 	# Until systemd is fixed
+ 	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
+ 	allow init_t self:udp_socket create_socket_perms;
+@@ -1225,6 +1227,7 @@ tunable_policy(`init_systemd',`
+ 	systemd_manage_unit_dirs(init_t)
+ 	systemd_manage_all_unit_files(init_t)
+ 	systemd_logger_stream_connect(init_t)
++	systemd_manage_lnk_file_passwd_run(init_t)
+ 
+ 	create_sock_files_pattern(init_t, init_sock_file_type, init_sock_file_type)
+ 
+Index: refpolicy-2.20140421/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20140421/policy/modules/system/systemd.if
+@@ -477,6 +477,24 @@ interface(`systemd_read_fifo_file_passwd
+     read_sock_files_pattern($1, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
+ ')
+ 
++######################################
++## <summary>
++##  Allow to domain to create systemd-passwd symlink
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`systemd_manage_lnk_file_passwd_run',`
++	gen_require(`
++		type systemd_passwd_var_run_t;
++	')
++
++	allow $1 systemd_passwd_var_run_t:lnk_file manage_lnk_file_perms;
++')
++
+ #######################################
+ ## <summary>
+ ##  Send generic signals to systemd_passwd_agent processes.
+Index: refpolicy-2.20140421/policy/modules/contrib/clamav.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/clamav.te
++++ refpolicy-2.20140421/policy/modules/contrib/clamav.te
+@@ -215,6 +215,10 @@ corenet_sendrecv_http_client_packets(fre
+ corenet_tcp_connect_http_port(freshclam_t)
+ corenet_tcp_sendrecv_http_port(freshclam_t)
+ 
++corenet_sendrecv_http_cache_client_packets(freshclam_t)
++corenet_tcp_connect_http_cache_port(freshclam_t)
++corenet_tcp_sendrecv_http_cache_port(freshclam_t)
++
+ corenet_sendrecv_squid_client_packets(freshclam_t)
+ corenet_tcp_connect_squid_port(freshclam_t)
+ corenet_tcp_sendrecv_squid_port(freshclam_t)
+Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/dpkg.te
++++ refpolicy-2.20140421/policy/modules/contrib/dpkg.te
+@@ -38,6 +38,9 @@ domain_system_change_exemption(dpkg_scri
+ domain_interactive_fd(dpkg_script_t)
+ role dpkg_roles types dpkg_script_t;
+ 
++spec_domtrans_pattern(dpkg_t, dpkg_var_lib_t, dpkg_script_t)
++domain_entry_file(dpkg_script_t, dpkg_var_lib_t)
++
+ type dpkg_script_tmp_t;
+ files_tmp_file(dpkg_script_tmp_t)
+ 
+Index: refpolicy-2.20140421/policy/modules/kernel/devices.if
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/kernel/devices.if
++++ refpolicy-2.20140421/policy/modules/kernel/devices.if
+@@ -589,6 +589,24 @@ interface(`dev_getattr_generic_chr_files
+ 
+ ########################################
+ ## <summary>
++##	Allow setattr for generic character device files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_setattr_generic_chr_files',`
++	gen_require(`
++		type device_t;
++	')
++
++	setattr_chr_files_pattern($1, device_t, device_t)
++')
++
++########################################
++## <summary>
+ ##	Dontaudit getattr for generic character device files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20140421/policy/modules/kernel/kernel.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20140421/policy/modules/kernel/kernel.te
+@@ -263,6 +263,7 @@ dev_create_generic_blk_files(kernel_t)
+ dev_delete_generic_blk_files(kernel_t)
+ dev_create_generic_chr_files(kernel_t)
+ dev_delete_generic_chr_files(kernel_t)
++dev_setattr_generic_chr_files(kernel_t)
+ dev_mounton(kernel_t)
+ 
+ # Mount root file system. Used when loading a policy
+Index: refpolicy-2.20140421/policy/modules/contrib/postfix.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/postfix.te
++++ refpolicy-2.20140421/policy/modules/contrib/postfix.te
+@@ -654,6 +654,10 @@ optional_policy(`
+ 	ppp_sigchld(postfix_postqueue_t)
+ ')
+ 
++optional_policy(`
++	userdom_sigchld_all_users(postfix_postqueue_t)
++')
++
+ ########################################
+ #
+ # Qmgr local policy

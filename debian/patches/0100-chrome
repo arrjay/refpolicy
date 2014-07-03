@@ -1,6 +1,6 @@
 Description: Policy for Chromium/Chrome
 Author: Russell Coker <russell@coker.com.au>
-Last-Update: 2014-06-25
+Last-Update: 2014-07-03
 
 Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.fc
 ===================================================================
@@ -35,7 +35,15 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.if
  		attribute_role mozilla_roles;
  	')
  
-@@ -301,10 +302,12 @@ interface(`mozilla_execmod_user_plugin_h
+@@ -36,6 +37,7 @@ interface(`mozilla_role',`
+ 	#
+ 
+ 	domtrans_pattern($2, mozilla_exec_t, mozilla_t)
++	domtrans_pattern($2, chrome_browser_exec_t, mozilla_t)
+ 
+ 	allow $2 mozilla_t:process { noatsecure siginh rlimitinh ptrace signal_perms };
+ 	ps_process_pattern($2, mozilla_t)
+@@ -301,10 +303,12 @@ interface(`mozilla_execmod_user_plugin_h
  interface(`mozilla_domtrans',`
  	gen_require(`
  		type mozilla_t, mozilla_exec_t;
@@ -131,4 +139,16 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
 +corenet_tcp_connect_xserver_port(mozilla_t)
  xserver_dontaudit_read_xdm_tmp_files(mozilla_t)
  xserver_dontaudit_getattr_xdm_tmp_sockets(mozilla_t)
+ 
+Index: refpolicy-2.20140421/policy/modules/kernel/corecommands.fc
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20140421/policy/modules/kernel/corecommands.fc
+@@ -168,6 +168,7 @@ ifdef(`distro_gentoo',`
+ /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ 
+ /opt/google/talkplugin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
++/opt/google/chrome/cron/google-chrome -- gen_context(system_u:object_r:bin_t,s0)
+ 
+ /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
