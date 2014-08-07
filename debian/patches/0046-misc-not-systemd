@@ -32,19 +32,6 @@ Index: refpolicy-2.20140421/policy/modules/contrib/portslave.te
  init_daemon_domain(portslave_t, portslave_exec_t)
  
  type portslave_etc_t;
-Index: refpolicy-2.20140421/policy/modules/kernel/filesystem.te
-===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/filesystem.te
-+++ refpolicy-2.20140421/policy/modules/kernel/filesystem.te
-@@ -99,6 +99,8 @@ fs_xattr_type(hugetlbfs_t)
- files_mountpoint(hugetlbfs_t)
- dev_associate(hugetlbfs_t)
- fs_use_trans hugetlbfs gen_context(system_u:object_r:hugetlbfs_t,s0);
-+# for systemd
-+dev_associate(hugetlbfs_t)
- 
- type ibmasmfs_t;
- fs_type(ibmasmfs_t)
 Index: refpolicy-2.20140421/policy/modules/system/init.fc
 ===================================================================
 --- refpolicy-2.20140421.orig/policy/modules/system/init.fc

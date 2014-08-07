@@ -1,3 +1,10 @@
+refpolicy (2:2.20140421-6) UNRELEASED; urgency=medium
+
+  * debian/patches/0046-misc-not-systemd: Remove duplicate
+    dev_associate(hugetlbfs_t) rule
+
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 07 Aug 2014 13:54:28 +0200
+
 refpolicy (2:2.20140421-5) unstable; urgency=medium
 
   * Allow system_cronjob_t to read apt_var_lib_t and ntp_conf_t.
