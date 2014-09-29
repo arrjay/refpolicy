@@ -1,9 +1,32 @@
-refpolicy (2:2.20140421-6) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-6) unstable; urgency=medium
 
+  [ Laurent Bigonville ]
   * debian/patches/0046-misc-not-systemd: Remove duplicate
     dev_associate(hugetlbfs_t) rule
 
- -- Laurent Bigonville <bigon@debian.org>  Thu, 07 Aug 2014 13:54:28 +0200
+  [ Russell Coker ]
+  * Allow dpkg_script_t to restart all daemons under systemd
+  * Allow ndc_t the block_suspend capability
+  * Allow systemd_logind_t self:process signal access
+  * allow systemd_logind_t systemd_unit_file_t:service start;
+  * allow systemd_tmpfiles_t and systemd_cgroups_t capability net_admin
+  * allow systemd_tmpfiles_t process getcap
+  * storage_getattr_fixed_disk_dev(xend_t) for running lsscsi
+  * Allow xenstored_t to search bin_t
+  * New type systemd_journal_log_t for /var/log/journal and
+    /var/run/log/journal
+  * Added audit_read to capability2 class
+  * Allow kerneloops_t, systemd_tmpfiles_t, and systemd_logind_t to read
+    /dev/urandom
+  * Allow all user domains to read /var/lib/dpkg
+  * Allow udev_t to read kernel module files for systemd-udevd
+  * Allow alsa_t to search locks
+  * Allow systemd-tmpfilesd to setattr many device types and create
+    /dev/xconsole
+  * Allow unconfined_t to get statyus of systemd jobs
+  * Add FC entry for /var/run/wd_keepalive.pid and /var/run/sm-notify.pid
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 13 Sep 2014 16:15:12 +1000
 
 refpolicy (2:2.20140421-5) unstable; urgency=medium
 

@@ -1,6 +1,6 @@
 Description: Add systemd unit types
 Author: Russell Coker <russell@coker.com.au>
-Last-Update: 2014-01-12
+Last-Update: 2014-09-13
 
 Index: refpolicy-2.20140421/policy/modules/contrib/alsa.fc
 ===================================================================
@@ -770,7 +770,15 @@ Index: refpolicy-2.20140421/policy/flask/access_vectors
  }
  
  #
-@@ -865,3 +869,20 @@ inherits database
+@@ -447,6 +451,7 @@ class capability2
+ 	syslog
+ 	wake_alarm
+ 	block_suspend
++	audit_read
+ }
+ 
+ #
+@@ -865,3 +870,20 @@ inherits database
  	implement
  	execute
  }

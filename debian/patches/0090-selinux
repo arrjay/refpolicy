@@ -1,6 +1,6 @@
 Description: Make strict configuration work
 Author: Russell Coker <russell@coker.com.au>
-Last-Update: 2014-07-03
+Last-Update: 2014-09-13
 
 Index: refpolicy-2.20140421/policy/modules/roles/sysadm.te
 ===================================================================
@@ -341,7 +341,7 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
 ===================================================================
 --- refpolicy-2.20140421.orig/policy/modules/contrib/dpkg.te
 +++ refpolicy-2.20140421/policy/modules/contrib/dpkg.te
-@@ -273,6 +273,7 @@ selinux_compute_access_vector(dpkg_scrip
+@@ -274,6 +274,7 @@ selinux_compute_access_vector(dpkg_scrip
  selinux_compute_create_context(dpkg_script_t)
  selinux_compute_relabel_context(dpkg_script_t)
  selinux_compute_user_contexts(dpkg_script_t)
@@ -349,3 +349,18 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
  
  storage_raw_read_fixed_disk(dpkg_script_t)
  storage_raw_write_fixed_disk(dpkg_script_t)
+Index: refpolicy-2.20140421/policy/modules/system/userdomain.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/system/userdomain.te
++++ refpolicy-2.20140421/policy/modules/system/userdomain.te
+@@ -53,6 +53,10 @@ attribute admindomain;
+ # all user domains
+ attribute userdomain;
+ 
++ifdef(`distro_debian', `
++        dpkg_read_db(userdomain)
++')
++
+ # unprivileged user domains
+ attribute unpriv_userdomain;
+ 

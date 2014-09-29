@@ -1,6 +1,6 @@
 Description: misc patches for daemon policy
 Author: Russell Coker <russell@coker.com.au>
-Last-Update: 2014-07-03
+Last-Update: 2014-09-13
 
 Index: refpolicy-2.20140421/policy/modules/contrib/fetchmail.te
 ===================================================================
@@ -121,7 +121,17 @@ Index: refpolicy-2.20140421/policy/modules/contrib/xen.te
 ===================================================================
 --- refpolicy-2.20140421.orig/policy/modules/contrib/xen.te
 +++ refpolicy-2.20140421/policy/modules/contrib/xen.te
-@@ -219,6 +219,7 @@ domtrans_pattern(xend_t, xenstored_exec_
+@@ -173,6 +173,9 @@ allow xend_t self:tcp_socket { accept li
+ allow xend_t self:packet_socket create_socket_perms;
+ allow xend_t self:tun_socket create_socket_perms;
+ 
++# for lsscsi
++storage_getattr_fixed_disk_dev(xend_t)
++
+ allow xend_t xen_image_t:dir list_dir_perms;
+ manage_dirs_pattern(xend_t, xen_image_t, xen_image_t)
+ manage_fifo_files_pattern(xend_t, xen_image_t, xen_image_t)
+@@ -219,6 +222,7 @@ domtrans_pattern(xend_t, xenstored_exec_
  xen_stream_connect_xenstore(xend_t)
  
  kernel_read_kernel_sysctls(xend_t)
@@ -129,11 +139,19 @@ Index: refpolicy-2.20140421/policy/modules/contrib/xen.te
  kernel_read_system_state(xend_t)
  kernel_write_xen_state(xend_t)
  kernel_read_xen_state(xend_t)
+@@ -450,6 +454,7 @@ dev_read_sysfs(xenstored_t)
+ 
+ files_read_etc_files(xenstored_t)
+ files_read_usr_files(xenstored_t)
++corecmd_search_bin(xenstored_t)
+ 
+ fs_search_xenfs(xenstored_t)
+ fs_manage_xenfs_files(xenstored_t)
 Index: refpolicy-2.20140421/policy/modules/system/udev.te
 ===================================================================
 --- refpolicy-2.20140421.orig/policy/modules/system/udev.te
 +++ refpolicy-2.20140421/policy/modules/system/udev.te
-@@ -202,6 +202,11 @@ ifdef(`distro_debian',`
+@@ -204,6 +204,11 @@ ifdef(`distro_debian',`
  	')
  ')
  
@@ -145,7 +163,7 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.te
  ifdef(`distro_gentoo',`
  	# during boot, init scripts use /dev/.rcsysinit
  	# existance to determine if we are in early booting
-@@ -329,6 +334,7 @@ optional_policy(`
+@@ -331,6 +336,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
@@ -417,3 +435,40 @@ Index: refpolicy-2.20140421/policy/modules/contrib/postfix.te
  ########################################
  #
  # Qmgr local policy
+Index: refpolicy-2.20140421/policy/modules/contrib/bind.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/bind.te
++++ refpolicy-2.20140421/policy/modules/contrib/bind.te
+@@ -219,6 +219,7 @@ optional_policy(`
+ #
+ 
+ allow ndc_t self:capability { dac_override net_admin };
++allow ndc_t self:capability2 block_suspend;
+ allow ndc_t self:process signal_perms;
+ allow ndc_t self:fifo_file rw_fifo_file_perms;
+ allow ndc_t self:unix_stream_socket { accept listen };
+Index: refpolicy-2.20140421/policy/modules/contrib/alsa.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/alsa.te
++++ refpolicy-2.20140421/policy/modules/contrib/alsa.te
+@@ -43,6 +43,8 @@ allow alsa_t self:unix_stream_socket { a
+ 
+ allow alsa_t alsa_home_t:file read_file_perms;
+ 
++files_search_locks(alsa_t)
++
+ manage_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
+ manage_lnk_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
+ files_etc_filetrans(alsa_t, alsa_etc_rw_t, file)
+Index: refpolicy-2.20140421/policy/modules/contrib/kerneloops.te
+===================================================================
+--- refpolicy-2.20140421.orig/policy/modules/contrib/kerneloops.te
++++ refpolicy-2.20140421/policy/modules/contrib/kerneloops.te
+@@ -29,6 +29,7 @@ files_tmp_filetrans(kerneloops_t, kernel
+ 
+ kernel_read_ring_buffer(kerneloops_t)
+ kernel_read_system_state(kerneloops_t)
++dev_read_urand(kerneloops_t)
+ 
+ domain_use_interactive_fds(kerneloops_t)
+ 

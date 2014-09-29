@@ -1,6 +1,6 @@
 Description: Misc stuff from the systemd patch that isn't all systemd specific
 Author: Russell Coker <russell@coker.com.au>
-Last-Update: 2014-06-25
+Last-Update: 2014-09-13
 
 Index: refpolicy-2.20140421/policy/global_tunables
 ===================================================================
@@ -1378,16 +1378,7 @@ Index: refpolicy-2.20140421/policy/flask/access_vectors
  	mknod
  	lease
  	audit_write
-@@ -444,7 +444,7 @@ class capability
- 	setfcap
- }
- 
--class capability2 
-+class capability2
- {
- 	mac_override	# unused by SELinux
- 	mac_admin	# unused by SELinux
-@@ -826,7 +826,7 @@ class x_application_data
+@@ -827,7 +827,7 @@ class x_application_data
  class kernel_service
  {
  	use_as_override
