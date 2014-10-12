@@ -1,3 +1,33 @@
+refpolicy (2:2.20140421-7) unstable; urgency=medium
+
+  * Label /run/systemd/journal/dev-log and /run/systemd/journal/stdout as
+    devlog_t
+  * Allow bootloadter_t to load kernel modules and run apt-cache
+  * Allow systemd_cgroups_t to read /proc/cmdline
+  * Allow sshd net_admin capability
+  * Allow systemd_logind_t to read kernel sysctls, list tmpfs, and mount on
+    /var/auth, and systemd_unit_file_t:service stop.
+  * Allow dpkg_script_t to restart systemd unit files of type init_var_run_t
+  * Allow local_login_t and user_t to talk to systemd_logind via dbus
+  * Allow user_ssh_agent_t to read/write it's own fifo files
+  * Allow user_t to talk to gconfd_t via dbus
+  * Allow gpg_agent_t to send sigchld to xdm_t, to be a system dbus client,
+    to use nsswitch, and to read user xauth file
+  * Allow $1_dbusd_t domains systemd_login_read_pid_files access
+  * Remove gpg_helper_t, merge gpg_pinentry_t with the main gpg domain, and
+    create user_gpg_t, staff_gpg_t, etc.
+  * Allow userdomains to talk to kerneloops via dbus
+  * Allow sysstat_t to search all mountpoints
+  * Allow udev_t self:netlink_route_socket nlmsg_write for interface rename
+  * Allow systemd_tmpfiles_t to read kernel sysctls for boot_id
+  * Allow setfiles_t to read /dev/urandom
+  * Label /var/run/blkid as etc_runtime_t
+
+  * TLDR: Make everything work with latest systemd and allow KDE login with
+    latest X11 configuration.
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 13 Oct 2014 09:41:44 +1100
+
 refpolicy (2:2.20140421-6) unstable; urgency=medium
 
   [ Laurent Bigonville ]

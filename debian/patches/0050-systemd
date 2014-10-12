@@ -2,11 +2,11 @@ Description: Make systemd work
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-09-13
 
-Index: refpolicy-2.20140421/policy/modules/contrib/apache.te
+Index: refpolicy/policy/modules/contrib/apache.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/apache.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/apache.te	2014-09-13 16:02:56.728771920 +1000
-@@ -291,6 +291,7 @@
+--- refpolicy.orig/policy/modules/contrib/apache.te
++++ refpolicy/policy/modules/contrib/apache.te
+@@ -291,6 +291,7 @@ files_type(httpd_keytab_t)
  
  type httpd_unit_file_t;
  systemd_unit_file(httpd_unit_file_t)
@@ -14,11 +14,11 @@ Index: refpolicy-2.20140421/policy/modules/contrib/apache.te
  type httpd_lock_t;
  files_lock_file(httpd_lock_t)
  
-Index: refpolicy-2.20140421/policy/modules/contrib/cron.te
+Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/cron.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/cron.te	2014-09-13 16:02:56.728771920 +1000
-@@ -415,6 +415,17 @@
+--- refpolicy.orig/policy/modules/contrib/cron.te
++++ refpolicy/policy/modules/contrib/cron.te
+@@ -415,6 +415,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -36,11 +36,11 @@ Index: refpolicy-2.20140421/policy/modules/contrib/cron.te
  	udev_read_db(crond_t)
  ')
  
-Index: refpolicy-2.20140421/policy/modules/contrib/networkmanager.te
+Index: refpolicy/policy/modules/contrib/networkmanager.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/networkmanager.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/networkmanager.te	2014-09-13 16:02:56.728771920 +1000
-@@ -323,6 +323,10 @@
+--- refpolicy.orig/policy/modules/contrib/networkmanager.te
++++ refpolicy/policy/modules/contrib/networkmanager.te
+@@ -323,6 +323,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -51,11 +51,11 @@ Index: refpolicy-2.20140421/policy/modules/contrib/networkmanager.te
  	udev_exec(NetworkManager_t)
  	udev_read_db(NetworkManager_t)
  	udev_read_pid_files(NetworkManager_t)
-Index: refpolicy-2.20140421/policy/modules/kernel/devices.te
+Index: refpolicy/policy/modules/kernel/devices.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/devices.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/kernel/devices.te	2014-09-13 16:02:56.728771920 +1000
-@@ -20,6 +20,9 @@
+--- refpolicy.orig/policy/modules/kernel/devices.te
++++ refpolicy/policy/modules/kernel/devices.te
+@@ -20,6 +20,9 @@ files_mountpoint(device_t)
  files_associate_tmp(device_t)
  fs_xattr_type(device_t)
  fs_use_trans devtmpfs gen_context(system_u:object_r:device_t,s0);
@@ -65,11 +65,11 @@ Index: refpolicy-2.20140421/policy/modules/kernel/devices.te
  
  #
  # Type for /dev/agpgart
-Index: refpolicy-2.20140421/policy/modules/kernel/files.te
+Index: refpolicy/policy/modules/kernel/files.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/files.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/kernel/files.te	2014-09-13 16:02:56.732772092 +1000
-@@ -10,6 +10,7 @@
+--- refpolicy.orig/policy/modules/kernel/files.te
++++ refpolicy/policy/modules/kernel/files.te
+@@ -10,6 +10,7 @@ attribute files_unconfined_type;
  attribute lockfile;
  attribute mountpoint;
  attribute pidfile;
@@ -77,7 +77,7 @@ Index: refpolicy-2.20140421/policy/modules/kernel/files.te
  attribute configfile;
  
  # For labeling types that are to be polyinstantiated
-@@ -173,6 +174,10 @@
+@@ -173,6 +174,10 @@ type var_run_t;
  files_pid_file(var_run_t)
  files_mountpoint(var_run_t)
  
@@ -88,11 +88,11 @@ Index: refpolicy-2.20140421/policy/modules/kernel/files.te
  #
  # var_spool_t is the type of /var/spool
  #
-Index: refpolicy-2.20140421/policy/modules/kernel/kernel.te
+Index: refpolicy/policy/modules/kernel/kernel.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/kernel.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/kernel/kernel.te	2014-09-13 16:02:56.732772092 +1000
-@@ -305,6 +305,8 @@
+--- refpolicy.orig/policy/modules/kernel/kernel.te
++++ refpolicy/policy/modules/kernel/kernel.te
+@@ -305,6 +305,8 @@ optional_policy(`
  
  optional_policy(`
  	init_sigchld(kernel_t)
@@ -101,11 +101,11 @@ Index: refpolicy-2.20140421/policy/modules/kernel/kernel.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20140421/policy/modules/services/ssh.te
+Index: refpolicy/policy/modules/services/ssh.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/services/ssh.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/services/ssh.te	2014-09-13 16:02:56.732772092 +1000
-@@ -279,6 +279,11 @@
+--- refpolicy.orig/policy/modules/services/ssh.te
++++ refpolicy/policy/modules/services/ssh.te
+@@ -279,6 +279,11 @@ tunable_policy(`ssh_sysadm_login',`
  ')
  
  optional_policy(`
@@ -117,11 +117,11 @@ Index: refpolicy-2.20140421/policy/modules/services/ssh.te
  	daemontools_service_domain(sshd_t, sshd_exec_t)
  ')
  
-Index: refpolicy-2.20140421/policy/modules/system/authlogin.te
+Index: refpolicy/policy/modules/system/authlogin.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/authlogin.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/authlogin.te	2014-09-13 16:02:56.732772092 +1000
-@@ -30,6 +30,9 @@
+--- refpolicy.orig/policy/modules/system/authlogin.te
++++ refpolicy/policy/modules/system/authlogin.te
+@@ -30,6 +30,9 @@ role system_r types chkpwd_t;
  
  type faillog_t;
  logging_log_file(faillog_t)
@@ -131,7 +131,7 @@ Index: refpolicy-2.20140421/policy/modules/system/authlogin.te
  
  type lastlog_t;
  logging_log_file(lastlog_t)
-@@ -82,6 +85,9 @@
+@@ -82,6 +85,9 @@ application_domain(utempter_t, utempter_
  type var_auth_t;
  files_type(var_auth_t)
  files_mountpoint(var_auth_t)
@@ -141,11 +141,11 @@ Index: refpolicy-2.20140421/policy/modules/system/authlogin.te
  
  type wtmp_t;
  logging_log_file(wtmp_t)
-Index: refpolicy-2.20140421/policy/modules/system/init.fc
+Index: refpolicy/policy/modules/system/init.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/init.fc	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/init.fc	2014-09-13 16:03:31.126257933 +1000
-@@ -29,6 +29,18 @@
+--- refpolicy.orig/policy/modules/system/init.fc
++++ refpolicy/policy/modules/system/init.fc
+@@ -29,6 +29,18 @@ ifdef(`distro_gentoo', `
  #
  # /sbin
  #
@@ -164,7 +164,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.fc
  /sbin/init(ng)?		--	gen_context(system_u:object_r:init_exec_t,s0)
  # because nowadays, /sbin/init is often a symlink to /sbin/upstart
  /sbin/upstart		--	gen_context(system_u:object_r:init_exec_t,s0)
-@@ -69,6 +81,8 @@
+@@ -69,6 +81,8 @@ ifdef(`distro_gentoo', `
  /var/run/runlevel\.dir		gen_context(system_u:object_r:initrc_var_run_t,s0)
  /var/run/random-seed	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
  /var/run/setmixer_flag	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
@@ -173,16 +173,16 @@ Index: refpolicy-2.20140421/policy/modules/system/init.fc
  
  ifdef(`distro_debian',`
  /var/run/hotkey-setup	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-@@ -87,3 +101,4 @@
+@@ -87,3 +101,4 @@ ifdef(`distro_suse', `
  /var/run/setleds-on	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
  /var/run/sysconfig(/.*)?	gen_context(system_u:object_r:initrc_var_run_t,s0)
  ')
 +/var/run/systemd(/.*)?		gen_context(system_u:object_r:init_var_run_t,s0)
-Index: refpolicy-2.20140421/policy/modules/system/init.if
+Index: refpolicy/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/init.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/init.if	2014-09-13 16:02:56.732772092 +1000
-@@ -40,6 +40,8 @@
+--- refpolicy.orig/policy/modules/system/init.if
++++ refpolicy/policy/modules/system/init.if
+@@ -40,6 +40,8 @@ interface(`init_script_file',`
  	domain_entry_file(initrc_t, $1)
  
  	domtrans_pattern(init_run_all_scripts_domain, $1, initrc_t)
@@ -191,7 +191,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -81,6 +83,44 @@
+@@ -81,6 +83,44 @@ interface(`init_script_domain',`
  	domtrans_pattern(init_run_all_scripts_domain, $2, $1)
  ')
  
@@ -236,7 +236,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##	Create a domain which can be started by init.
-@@ -107,7 +147,11 @@
+@@ -107,7 +147,11 @@ interface(`init_domain',`
  
  	role system_r types $1;
  
@@ -249,7 +249,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  
  	ifdef(`hide_broken_symptoms',`
  		# RHEL4 systems seem to have a stray
-@@ -194,8 +238,10 @@
+@@ -194,8 +238,10 @@ interface(`init_ranged_domain',`
  interface(`init_daemon_domain',`
  	gen_require(`
  		type initrc_t;
@@ -260,7 +260,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	')
  
  	typeattribute $1 daemon;
-@@ -207,6 +253,12 @@
+@@ -207,6 +253,12 @@ interface(`init_daemon_domain',`
  
  	domtrans_pattern(initrc_t, $2, $1)
  
@@ -273,7 +273,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	# daemons started from init will
  	# inherit fds from init for the console
  	init_dontaudit_use_fds($1)
-@@ -278,17 +330,20 @@
+@@ -278,17 +330,20 @@ interface(`init_daemon_domain',`
  interface(`init_ranged_daemon_domain',`
  	gen_require(`
  		type initrc_t;
@@ -295,7 +295,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	')
  ')
  
-@@ -331,22 +386,23 @@
+@@ -331,22 +386,23 @@ interface(`init_ranged_daemon_domain',`
  #
  interface(`init_system_domain',`
  	gen_require(`
@@ -325,7 +325,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	')
  ')
  
-@@ -396,20 +452,58 @@
+@@ -396,20 +452,59 @@ interface(`init_system_domain',`
  interface(`init_ranged_system_domain',`
  	gen_require(`
  		type initrc_t;
@@ -378,13 +378,14 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +	gen_require(`
 +		attribute init_script_file_type;
 +	')
-+	allow $1 init_script_file_type:service { stop start status reload };
++	# might want to remove init_var_run_t from this in future
++	allow $1 { init_script_file_type init_var_run_t }:service all_service_perms;
 +')
 +
  ########################################
  ## <summary>
  ##	Mark the file type as a daemon run dir, allowing initrc_t
-@@ -464,7 +558,6 @@
+@@ -464,7 +559,6 @@ interface(`init_domtrans',`
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -392,7 +393,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  #
  interface(`init_exec',`
  	gen_require(`
-@@ -473,6 +566,29 @@
+@@ -473,6 +567,29 @@ interface(`init_exec',`
  
  	corecmd_search_bin($1)
  	can_exec($1, init_exec_t)
@@ -422,7 +423,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -561,6 +677,24 @@
+@@ -561,6 +678,24 @@ interface(`init_sigchld',`
  
  ########################################
  ## <summary>
@@ -447,7 +448,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	Connect to init with a unix socket.
  ## </summary>
  ## <param name="domain">
-@@ -571,10 +705,66 @@
+@@ -571,10 +706,66 @@ interface(`init_sigchld',`
  #
  interface(`init_stream_connect',`
  	gen_require(`
@@ -516,7 +517,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -740,19 +930,25 @@
+@@ -740,19 +931,25 @@ interface(`init_telinit',`
  		type initctl_t;
  	')
  
@@ -543,7 +544,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	')
  ')
  
-@@ -782,7 +978,7 @@
+@@ -782,7 +979,7 @@ interface(`init_rw_initctl',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -552,7 +553,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	</summary>
  ## </param>
  #
-@@ -860,19 +1056,41 @@
+@@ -860,23 +1057,45 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -575,11 +576,11 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	ifdef(`enable_mls',`
 -		range_transition $1 initrc_exec_t:process s0 - mls_systemhigh;
 +		range_transition $1 init_script_file_type:process s0 - mls_systemhigh;
-+	')
-+')
-+
-+########################################
-+## <summary>
+ 	')
+ ')
+ 
+ ########################################
+ ## <summary>
 +##	Execute a file in a bin directory
 +##	in the initrc_t domain
 +## </summary>
@@ -592,13 +593,17 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +interface(`init_bin_domtrans_spec',`
 +	gen_require(`
 +		type initrc_t;
- 	')
++	')
 +
 +	corecmd_bin_domtrans($1, initrc_t)
- ')
- 
- ########################################
-@@ -928,9 +1146,14 @@
++')
++
++########################################
++## <summary>
+ ##	Execute a init script in a specified domain.
+ ## </summary>
+ ## <desc>
+@@ -928,9 +1147,14 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
  		type initrc_t;
@@ -613,7 +618,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  	files_search_etc($1)
  ')
  
-@@ -1023,7 +1246,9 @@
+@@ -1023,7 +1247,9 @@ interface(`init_ptrace',`
  		type init_t;
  	')
  
@@ -624,7 +629,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1141,6 +1366,24 @@
+@@ -1141,6 +1367,24 @@ interface(`init_read_all_script_files',`
  
  #######################################
  ## <summary>
@@ -649,7 +654,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	Dontaudit read all init script files.
  ## </summary>
  ## <param name="domain">
-@@ -1192,12 +1435,7 @@
+@@ -1192,12 +1436,7 @@ interface(`init_read_script_state',`
  	')
  
  	kernel_search_proc($1)
@@ -663,7 +668,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1437,6 +1675,27 @@
+@@ -1437,6 +1676,27 @@ interface(`init_dbus_send_script',`
  ########################################
  ## <summary>
  ##	Send and receive messages from
@@ -691,7 +696,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	init scripts over dbus.
  ## </summary>
  ## <param name="domain">
-@@ -1544,6 +1803,25 @@
+@@ -1544,6 +1804,25 @@ interface(`init_getattr_script_status_fi
  
  ########################################
  ## <summary>
@@ -717,7 +722,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	Do not audit attempts to read init script
  ##	status files.
  ## </summary>
-@@ -1602,6 +1880,24 @@
+@@ -1602,6 +1881,24 @@ interface(`init_rw_script_tmp_files',`
  
  ########################################
  ## <summary>
@@ -742,7 +747,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	Create files in a init script
  ##	temporary data directory.
  ## </summary>
-@@ -1674,6 +1970,24 @@
+@@ -1674,6 +1971,24 @@ interface(`init_read_utmp',`
  
  ########################################
  ## <summary>
@@ -767,7 +772,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ##	Do not audit attempts to write utmp.
  ## </summary>
  ## <param name="domain">
-@@ -1762,7 +2076,7 @@
+@@ -1762,7 +2077,7 @@ interface(`init_dontaudit_rw_utmp',`
  		type initrc_var_run_t;
  	')
  
@@ -776,7 +781,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1803,6 +2117,147 @@
+@@ -1803,6 +2118,152 @@ interface(`init_pid_filetrans_utmp',`
  	files_pid_filetrans($1, initrc_var_run_t, file, "utmp")
  ')
  
@@ -875,6 +880,11 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +##  The class of the object to be created.
 +##  </summary>
 +## </param>
++## <param name="filename">
++##  <summary>
++##  The name of the file to transition
++##  </summary>
++## </param>
 +#
 +interface(`init_pid_filetrans',`
 +    gen_require(`
@@ -924,7 +934,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##	Allow the specified domain to connect to daemon with a tcp socket
-@@ -1838,18 +2293,267 @@
+@@ -1838,18 +2299,267 @@ interface(`init_udp_recvfrom_all_daemons
  	corenet_udp_recvfrom_labeled($1, daemon)
  ')
  
@@ -1004,7 +1014,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +## <summary>
 +##	Allow the specified domain to read/write to
 +##	init with a unix domain stream sockets.
- ## </summary>
++## </summary>
 +## <param name="domain">
 +##	<summary>
 +##	Domain allowed access.
@@ -1079,7 +1089,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +########################################
 +## <summary>
 +##	Create a file type used for init socket files.
-+## </summary>
+ ## </summary>
 +## <desc>
 +##	<p>
 +##	This defines a type that init can create sock_file within for
@@ -1093,11 +1103,9 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +##	<summary>
 +##	Type to be used for a sock file.
 +##	</summary>
- ## </param>
++## </param>
 +## <infoflow type="none"/>
- #
--interface(`systemd_unit_file',`
--	files_type($1)
++#
 +interface(`init_sock_file',`
 +	gen_require(`
 +		attribute init_sock_file_type;
@@ -1169,8 +1177,10 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +##	<summary>
 +##	Domain allowed access.
 +##	</summary>
-+## </param>
-+#
+ ## </param>
+ #
+-interface(`systemd_unit_file',`
+-	files_type($1)
 +interface(`init_halt',`
 +	gen_require(`
 +		type init_t;
@@ -1198,7 +1208,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1872,3 +2576,21 @@
+@@ -1872,3 +2582,21 @@ interface(`init_shell_domtrans',`
  	allow $1 init_t:fifo_file rw_file_perms;
  	allow $1 init_t:process sigchld;
  ')
@@ -1220,11 +1230,11 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +
 +	allow $1 initrc_exec_t:service status;
 +')
-Index: refpolicy-2.20140421/policy/modules/system/init.te
+Index: refpolicy/policy/modules/system/init.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/init.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/init.te	2014-09-13 16:02:56.732772092 +1000
-@@ -16,12 +16,37 @@
+--- refpolicy.orig/policy/modules/system/init.te
++++ refpolicy/policy/modules/system/init.te
+@@ -16,12 +16,37 @@ gen_require(`
  ## </desc>
  gen_tunable(init_upstart, false)
  
@@ -1262,7 +1272,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  # Mark file type as a daemon run directory
  attribute daemonrundir;
-@@ -29,7 +54,7 @@
+@@ -29,7 +54,7 @@ attribute daemonrundir;
  #
  # init_t is the domain of the init process.
  #
@@ -1271,7 +1281,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  type init_exec_t;
  domain_type(init_t)
  domain_entry_file(init_t, init_exec_t)
-@@ -93,6 +118,7 @@
+@@ -93,6 +118,7 @@ ifdef(`enable_mls',`
  
  # Use capabilities. old rule:
  allow init_t self:capability ~sys_module;
@@ -1279,7 +1289,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  # is ~sys_module really needed? observed:
  # sys_boot
  # sys_tty_config
-@@ -154,7 +180,7 @@
+@@ -154,7 +180,7 @@ mcs_killall(init_t)
  
  mls_file_read_all_levels(init_t)
  mls_file_write_all_levels(init_t)
@@ -1288,7 +1298,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  mls_fd_use_all_levels(init_t)
  
  selinux_set_all_booleans(init_t)
-@@ -192,7 +218,7 @@
+@@ -192,7 +218,7 @@ ifdef(`distro_redhat',`
  	fs_tmpfs_filetrans(init_t, initctl_t, fifo_file)
  ')
  
@@ -1297,7 +1307,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	corecmd_shell_domtrans(init_t, initrc_t)
  ')
  
-@@ -213,6 +239,17 @@
+@@ -213,6 +239,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1315,7 +1325,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	unconfined_domain(init_t)
  ')
  
-@@ -261,6 +298,7 @@
+@@ -261,6 +298,7 @@ manage_files_pattern(initrc_t, initrc_tm
  manage_dirs_pattern(initrc_t, initrc_tmp_t, initrc_tmp_t)
  manage_lnk_files_pattern(initrc_t, initrc_tmp_t, initrc_tmp_t)
  files_tmp_filetrans(initrc_t, initrc_tmp_t, { file dir })
@@ -1323,7 +1333,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  manage_dirs_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
  manage_files_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
-@@ -303,6 +341,7 @@
+@@ -303,6 +341,7 @@ corenet_sendrecv_all_client_packets(init
  
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
@@ -1331,7 +1341,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  dev_write_kmsg(initrc_t)
  dev_write_rand(initrc_t)
  dev_write_urand(initrc_t)
-@@ -313,8 +352,10 @@
+@@ -313,8 +352,10 @@ dev_write_framebuffer(initrc_t)
  dev_read_realtime_clock(initrc_t)
  dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
@@ -1342,7 +1352,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -322,17 +363,16 @@
+@@ -322,17 +363,16 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -1362,7 +1372,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  domain_getsession_all_domains(initrc_t)
  domain_use_interactive_fds(initrc_t)
  # for lsof which is used by alsa shutdown:
-@@ -340,6 +380,7 @@
+@@ -340,6 +380,7 @@ domain_dontaudit_getattr_all_udp_sockets
  domain_dontaudit_getattr_all_tcp_sockets(initrc_t)
  domain_dontaudit_getattr_all_dgram_sockets(initrc_t)
  domain_dontaudit_getattr_all_pipes(initrc_t)
@@ -1370,7 +1380,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  files_getattr_all_dirs(initrc_t)
  files_getattr_all_files(initrc_t)
-@@ -347,8 +388,10 @@
+@@ -347,8 +388,10 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -1382,7 +1392,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  files_delete_all_pids(initrc_t)
  files_delete_all_pid_dirs(initrc_t)
  files_read_etc_files(initrc_t)
-@@ -362,8 +405,12 @@
+@@ -362,8 +405,12 @@ files_manage_generic_spool(initrc_t)
  # cjp: not sure why these are here; should use mount policy
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -1396,7 +1406,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -373,18 +420,22 @@
+@@ -373,18 +420,22 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -1422,7 +1432,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  selinux_get_enforce_mode(initrc_t)
  
-@@ -416,7 +467,12 @@
+@@ -416,7 +467,12 @@ logging_read_audit_config(initrc_t)
  
  miscfiles_read_localization(initrc_t)
  # slapd needs to read cert files from its initscript
@@ -1436,7 +1446,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  optional_policy(`
  	modutils_read_module_config(initrc_t)
-@@ -429,7 +485,7 @@
+@@ -429,7 +485,7 @@ userdom_read_user_home_content_files(ini
  # Allow access to the sysadm TTYs. Note that this will give access to the
  # TTYs to any process in the initrc_t domain. Therefore, daemons and such
  # started from init should be placed in their own domain.
@@ -1445,7 +1455,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  ifdef(`distro_debian',`
  	kernel_getattr_core_if(initrc_t)
-@@ -487,7 +543,9 @@
+@@ -487,7 +543,9 @@ ifdef(`distro_gentoo',`
  	files_mountpoint(initrc_state_t)
  
  	# init scripts touch this
@@ -1456,7 +1466,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  	logging_send_audit_msgs(initrc_t)
  
-@@ -501,6 +559,10 @@
+@@ -501,6 +559,10 @@ ifdef(`distro_gentoo',`
  	sysnet_setattr_config(initrc_t)
  
  	optional_policy(`
@@ -1467,7 +1477,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  		alsa_read_lib(initrc_t)
  	')
  
-@@ -521,7 +583,7 @@
+@@ -521,7 +583,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -1476,7 +1486,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -556,6 +618,7 @@
+@@ -556,6 +618,7 @@ ifdef(`distro_redhat',`
  	miscfiles_rw_localization(initrc_t)
  	miscfiles_setattr_localization(initrc_t)
  	miscfiles_relabel_localization(initrc_t)
@@ -1484,7 +1494,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  	miscfiles_read_fonts(initrc_t)
  	miscfiles_read_hwdata(initrc_t)
-@@ -565,8 +628,35 @@
+@@ -565,8 +628,35 @@ ifdef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -1520,7 +1530,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	')
  
  	optional_policy(`
-@@ -574,14 +664,27 @@
+@@ -574,14 +664,27 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -1548,7 +1558,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	')
  ')
  
-@@ -592,6 +695,32 @@
+@@ -592,6 +695,32 @@ ifdef(`distro_suse',`
  	')
  ')
  
@@ -1581,7 +1591,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -604,6 +733,8 @@
+@@ -604,6 +733,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -1590,7 +1600,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -625,6 +756,7 @@
+@@ -625,6 +756,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -1598,7 +1608,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -641,6 +773,12 @@
+@@ -641,6 +773,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1611,7 +1621,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -657,9 +795,13 @@
+@@ -657,9 +795,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -1625,7 +1635,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	')
  
  	optional_policy(`
-@@ -701,6 +843,11 @@
+@@ -701,6 +843,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1637,7 +1647,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	inn_exec_config(initrc_t)
  ')
  
-@@ -741,6 +888,7 @@
+@@ -741,6 +888,7 @@ optional_policy(`
  	lpd_list_spool(initrc_t)
  
  	lpd_read_config(initrc_t)
@@ -1645,7 +1655,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -759,6 +907,7 @@
+@@ -759,6 +907,7 @@ optional_policy(`
  
  optional_policy(`
  	mta_read_config(initrc_t)
@@ -1653,7 +1663,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -781,6 +930,10 @@
+@@ -781,6 +930,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1664,7 +1674,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -793,6 +946,7 @@
+@@ -793,6 +946,7 @@ optional_policy(`
  	puppet_rw_tmp(initrc_t)
  ')
  
@@ -1672,7 +1682,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  optional_policy(`
  	quota_manage_flags(initrc_t)
  ')
-@@ -823,8 +977,6 @@
+@@ -823,8 +977,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -1681,7 +1691,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -842,10 +994,12 @@
+@@ -842,10 +994,12 @@ optional_policy(`
  	squid_manage_logs(initrc_t)
  ')
  
@@ -1694,7 +1704,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -861,7 +1015,6 @@
+@@ -861,7 +1015,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1702,7 +1712,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  	udev_manage_pid_files(initrc_t)
  	udev_manage_pid_dirs(initrc_t)
  	udev_manage_rules_files(initrc_t)
-@@ -878,6 +1031,10 @@
+@@ -878,6 +1031,10 @@ optional_policy(`
  
  optional_policy(`
  	unconfined_domain(initrc_t)
@@ -1713,7 +1723,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  	ifdef(`distro_redhat',`
  		# system-config-services causes avc messages that should be dontaudited
-@@ -887,6 +1044,15 @@
+@@ -887,6 +1044,15 @@ optional_policy(`
  	optional_policy(`
  		mono_domtrans(initrc_t)
  	')
@@ -1729,7 +1739,7 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -912,3 +1078,273 @@
+@@ -912,3 +1078,273 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -2003,11 +2013,18 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
 +#	mls_rangetrans_target(systemprocess)
 +#')
 +
-Index: refpolicy-2.20140421/policy/modules/system/logging.fc
+Index: refpolicy/policy/modules/system/logging.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/logging.fc	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/logging.fc	2014-09-13 16:02:56.736772265 +1000
-@@ -70,6 +70,7 @@
+--- refpolicy.orig/policy/modules/system/logging.fc
++++ refpolicy/policy/modules/system/logging.fc
+@@ -1,4 +1,6 @@
+ /dev/log		-s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
++/var/run/systemd/journal/dev-log -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
++/var/run/systemd/journal/stdout -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
+ 
+ /etc/rsyslog.conf		gen_context(system_u:object_r:syslog_conf_t,s0)
+ /etc/syslog.conf		gen_context(system_u:object_r:syslog_conf_t,s0)
+@@ -70,6 +72,7 @@ ifdef(`distro_redhat',`
  /var/run/syslog-ng.ctl	--	gen_context(system_u:object_r:syslogd_var_run_t,s0)
  /var/run/syslog-ng\.pid	--	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
  /var/run/syslog-ng(/.*)?	gen_context(system_u:object_r:syslogd_var_run_t,s0)
@@ -2015,7 +2032,7 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.fc
  
  /var/spool/audit(/.*)?		gen_context(system_u:object_r:audit_spool_t,mls_systemhigh)
  /var/spool/bacula/log(/.*)? 	gen_context(system_u:object_r:var_log_t,s0)
-@@ -78,3 +79,20 @@
+@@ -78,3 +81,20 @@ ifdef(`distro_redhat',`
  /var/spool/rsyslog(/.*)? 	gen_context(system_u:object_r:var_log_t,s0)
  
  /var/tinydns/log/main(/.*)?	gen_context(system_u:object_r:var_log_t,s0)
@@ -2036,11 +2053,11 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.fc
 +/usr/sbin/auditctl	--	gen_context(system_u:object_r:auditctl_exec_t,s0)
 +/usr/sbin/auditd	--	gen_context(system_u:object_r:auditd_exec_t,s0)
 +/usr/sbin/minilogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
-Index: refpolicy-2.20140421/policy/modules/system/miscfiles.te
+Index: refpolicy/policy/modules/system/miscfiles.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/miscfiles.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/miscfiles.te	2014-09-13 16:02:56.736772265 +1000
-@@ -40,6 +40,9 @@
+--- refpolicy.orig/policy/modules/system/miscfiles.te
++++ refpolicy/policy/modules/system/miscfiles.te
+@@ -40,6 +40,9 @@ files_type(locale_t)
  #
  type man_t alias catman_t;
  files_type(man_t)
@@ -2050,10 +2067,10 @@ Index: refpolicy-2.20140421/policy/modules/system/miscfiles.te
  
  type man_cache_t;
  files_type(man_cache_t)
-Index: refpolicy-2.20140421/policy/modules/system/systemd.if
+Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ refpolicy-2.20140421/policy/modules/system/systemd.if	2014-09-13 16:02:56.736772265 +1000
+--- /dev/null
++++ refpolicy/policy/modules/system/systemd.if
 @@ -0,0 +1,739 @@
 +## <summary>SELinux policy for systemd components</summary>
 +
@@ -2794,10 +2811,10 @@ Index: refpolicy-2.20140421/policy/modules/system/systemd.if
 +	manage_files_pattern($1, systemd_journal_log_t, systemd_journal_log_t)
 +')
 +
-Index: refpolicy-2.20140421/policy/modules/system/systemd.fc
+Index: refpolicy/policy/modules/system/systemd.fc
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ refpolicy-2.20140421/policy/modules/system/systemd.fc	2014-09-13 16:02:56.736772265 +1000
+--- /dev/null
++++ refpolicy/policy/modules/system/systemd.fc
 @@ -0,0 +1,32 @@
 +/bin/systemd-notify				--		gen_context(system_u:object_r:systemd_notify_exec_t,s0)
 +/bin/systemctl					--	gen_context(system_u:object_r:systemd_systemctl_exec_t,s0)
@@ -2831,11 +2848,11 @@ Index: refpolicy-2.20140421/policy/modules/system/systemd.fc
 +/var/run/initramfs(/.*)?	<<none>>
 +/var/log/journal(/.*)?			gen_context(system_u:object_r:systemd_journal_log_t,s0)
 +/var/run/log/journal(/.*)?			gen_context(system_u:object_r:systemd_journal_log_t,s0)
-Index: refpolicy-2.20140421/policy/modules/system/systemd.te
+Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ refpolicy-2.20140421/policy/modules/system/systemd.te	2014-09-13 16:07:23.868310333 +1000
-@@ -0,0 +1,472 @@
+--- /dev/null
++++ refpolicy/policy/modules/system/systemd.te
+@@ -0,0 +1,478 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -2919,7 +2936,10 @@ Index: refpolicy-2.20140421/policy/modules/system/systemd.te
 +allow systemd_logind_t self:process { getcap signal };
 +allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
 +allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
-+allow systemd_logind_t systemd_unit_file_t:service start;
++allow systemd_logind_t systemd_unit_file_t:service { start stop };
++
++fs_list_tmpfs(systemd_logind_t)
++auth_mounton_var_auth(systemd_logind_t)
 +
 +manage_dirs_pattern(systemd_logind_t, { systemd_logind_sessions_t systemd_logind_var_run_t }, { systemd_logind_sessions_t systemd_logind_var_run_t })
 +manage_files_pattern(systemd_logind_t, { systemd_logind_sessions_t systemd_logind_var_run_t }, { systemd_logind_var_run_t systemd_logind_sessions_t })
@@ -2934,6 +2954,7 @@ Index: refpolicy-2.20140421/policy/modules/system/systemd.te
 +allow systemd_logind_t init_t:service { start status };
 +
 +kernel_read_system_state(systemd_logind_t)
++kernel_read_kernel_sysctls(systemd_logind_t)
 +selinux_search_fs(systemd_logind_t)
 +selinux_getattr_fs(systemd_logind_t)
 +dev_read_urand(systemd_logind_t)
@@ -3102,6 +3123,7 @@ Index: refpolicy-2.20140421/policy/modules/system/systemd.te
 +
 +kernel_read_network_state(systemd_tmpfiles_t)
 +kernel_read_system_state(systemd_tmpfiles_t)
++kernel_read_kernel_sysctls(systemd_tmpfiles_t)
 +
 +allow systemd_tmpfiles_t systemd_journal_log_t:dir setattr;
 +
@@ -3308,11 +3330,12 @@ Index: refpolicy-2.20140421/policy/modules/system/systemd.te
 +# for systemd/private socket
 +logging_send_syslog_msg(systemd_cgroups_t)
 +init_stream_connect(systemd_cgroups_t)
-Index: refpolicy-2.20140421/policy/modules/system/udev.te
++kernel_read_system_state(systemd_cgroups_t)
+Index: refpolicy/policy/modules/system/udev.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/udev.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/udev.te	2014-09-13 16:02:56.736772265 +1000
-@@ -80,8 +80,16 @@
+--- refpolicy.orig/policy/modules/system/udev.te
++++ refpolicy/policy/modules/system/udev.te
+@@ -80,8 +80,16 @@ files_pid_filetrans(udev_t, udev_var_run
  
  kernel_read_system_state(udev_t)
  kernel_request_load_module(udev_t)
@@ -3330,7 +3353,7 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.te
  kernel_getattr_core_if(udev_t)
  kernel_use_fds(udev_t)
  kernel_read_device_sysctls(udev_t)
-@@ -176,6 +184,8 @@
+@@ -176,6 +184,8 @@ sysnet_signal_dhcpc(udev_t)
  sysnet_manage_config(udev_t)
  sysnet_etc_filetrans_config(udev_t)
  
@@ -3339,11 +3362,11 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.te
  userdom_dontaudit_search_user_home_content(udev_t)
  
  ifdef(`distro_debian',`
-Index: refpolicy-2.20140421/policy/modules/system/logging.te
+Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/logging.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/logging.te	2014-09-13 16:02:56.736772265 +1000
-@@ -92,6 +92,21 @@
+--- refpolicy.orig/policy/modules/system/logging.te
++++ refpolicy/policy/modules/system/logging.te
+@@ -92,6 +92,21 @@ ifdef(`enable_mls',`
  	init_ranged_daemon_domain(syslogd_t, syslogd_exec_t, mls_systemhigh)
  ')
  
@@ -3365,7 +3388,7 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.te
  ########################################
  #
  # Auditctl local policy
-@@ -222,6 +237,9 @@
+@@ -222,6 +237,9 @@ optional_policy(`
  	udev_read_db(auditd_t)
  ')
  
@@ -3375,11 +3398,19 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.te
  ########################################
  #
  # audit dispatcher local policy
-Index: refpolicy-2.20140421/policy/modules/services/xserver.if
+@@ -384,6 +402,7 @@ allow syslogd_t syslog_conf_t:file read_
+ # Create and bind to /dev/log or /var/run/log.
+ allow syslogd_t devlog_t:sock_file manage_sock_file_perms;
+ files_pid_filetrans(syslogd_t, devlog_t, sock_file)
++init_pid_filetrans(syslogd_t, devlog_t, sock_file, "dev-log")
+ 
+ # create/append log files.
+ manage_files_pattern(syslogd_t, var_log_t, var_log_t)
+Index: refpolicy/policy/modules/services/xserver.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/services/xserver.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/services/xserver.if	2014-09-13 16:02:56.736772265 +1000
-@@ -620,6 +620,42 @@
+--- refpolicy.orig/policy/modules/services/xserver.if
++++ refpolicy/policy/modules/services/xserver.if
+@@ -620,6 +620,42 @@ interface(`xserver_setattr_console_pipes
  
  ########################################
  ## <summary>
@@ -3422,11 +3453,11 @@ Index: refpolicy-2.20140421/policy/modules/services/xserver.if
  ##	Read and write the X windows console named pipe.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20140421/policy/modules/system/udev.if
+Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/udev.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/udev.if	2014-09-13 16:02:56.736772265 +1000
-@@ -378,3 +378,21 @@
+--- refpolicy.orig/policy/modules/system/udev.if
++++ refpolicy/policy/modules/system/udev.if
+@@ -378,3 +378,21 @@ interface(`udev_create_kobject_uevent_so
  
          allow $1 udev_t:netlink_kobject_uevent_socket create_socket_perms;
  ')
@@ -3448,11 +3479,11 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.if
 +
 +	allow udev_t $1:unix_stream_socket connectto;
 +')
-Index: refpolicy-2.20140421/policy/modules/contrib/logrotate.te
+Index: refpolicy/policy/modules/contrib/logrotate.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/logrotate.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/logrotate.te	2014-09-13 16:02:56.736772265 +1000
-@@ -124,6 +124,10 @@
+--- refpolicy.orig/policy/modules/contrib/logrotate.te
++++ refpolicy/policy/modules/contrib/logrotate.te
+@@ -124,6 +124,10 @@ ifdef(`distro_debian',`
  ')
  
  optional_policy(`
@@ -3463,11 +3494,11 @@ Index: refpolicy-2.20140421/policy/modules/contrib/logrotate.te
  	abrt_manage_cache(logrotate_t)
  ')
  
-Index: refpolicy-2.20140421/policy/modules/system/lvm.te
+Index: refpolicy/policy/modules/system/lvm.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/lvm.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/lvm.te	2014-09-13 16:02:56.736772265 +1000
-@@ -293,6 +293,11 @@
+--- refpolicy.orig/policy/modules/system/lvm.te
++++ refpolicy/policy/modules/system/lvm.te
+@@ -293,6 +293,11 @@ init_dontaudit_getattr_initctl(lvm_t)
  init_use_script_ptys(lvm_t)
  init_read_script_state(lvm_t)
  
@@ -3479,11 +3510,11 @@ Index: refpolicy-2.20140421/policy/modules/system/lvm.te
  # for systemd-cryptsetup
  dev_write_kmsg(lvm_t)
  
-Index: refpolicy-2.20140421/policy/modules/system/miscfiles.if
+Index: refpolicy/policy/modules/system/miscfiles.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/miscfiles.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/miscfiles.if	2014-09-13 16:02:56.740772439 +1000
-@@ -579,6 +579,25 @@
+--- refpolicy.orig/policy/modules/system/miscfiles.if
++++ refpolicy/policy/modules/system/miscfiles.if
+@@ -579,6 +579,25 @@ interface(`miscfiles_manage_man_pages',`
  
  ########################################
  ## <summary>
@@ -3509,11 +3540,11 @@ Index: refpolicy-2.20140421/policy/modules/system/miscfiles.if
  ##	Read man cache content.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20140421/policy/modules/kernel/filesystem.if
+Index: refpolicy/policy/modules/kernel/filesystem.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/filesystem.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/kernel/filesystem.if	2014-09-13 16:02:56.740772439 +1000
-@@ -827,6 +827,26 @@
+--- refpolicy.orig/policy/modules/kernel/filesystem.if
++++ refpolicy/policy/modules/kernel/filesystem.if
+@@ -827,6 +827,26 @@ interface(`fs_read_cgroup_files',`
  
  ########################################
  ## <summary>
@@ -3540,11 +3571,11 @@ Index: refpolicy-2.20140421/policy/modules/kernel/filesystem.if
  ##	Write cgroup files.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
+Index: refpolicy/policy/modules/contrib/dpkg.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/dpkg.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/dpkg.te	2014-09-13 16:02:56.740772439 +1000
-@@ -231,6 +231,7 @@
+--- refpolicy.orig/policy/modules/contrib/dpkg.te
++++ refpolicy/policy/modules/contrib/dpkg.te
+@@ -231,6 +231,7 @@ allow dpkg_script_t dpkg_script_tmpfs_t:
  allow dpkg_script_t dpkg_script_tmpfs_t:fifo_file manage_fifo_file_perms;
  fs_tmpfs_filetrans(dpkg_script_t, dpkg_script_tmpfs_t, { dir file lnk_file sock_file fifo_file })
  
@@ -3552,7 +3583,7 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
  kernel_read_kernel_sysctls(dpkg_script_t)
  kernel_read_system_state(dpkg_script_t)
  
-@@ -281,6 +282,7 @@
+@@ -281,6 +282,7 @@ files_manage_non_auth_files(dpkg_script_
  
  init_all_labeled_script_domtrans(dpkg_script_t)
  init_use_script_fds(dpkg_script_t)
@@ -3560,7 +3591,7 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
  
  libs_exec_ld_so(dpkg_script_t)
  libs_exec_lib_files(dpkg_script_t)
-@@ -295,6 +297,14 @@
+@@ -295,6 +297,15 @@ modutils_run_depmod(dpkg_script_t, dpkg_
  modutils_run_insmod(dpkg_script_t, dpkg_roles)
  ')
  
@@ -3570,16 +3601,17 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
 +
 +optional_policy(`
 +	systemd_config_all_services(dpkg_script_t)
++	restart_all_daemons(dpkg_script_t)
 +')
 +
  seutil_run_loadpolicy(dpkg_script_t, dpkg_roles)
  seutil_run_setfiles(dpkg_script_t, dpkg_roles)
  
-Index: refpolicy-2.20140421/policy/modules/contrib/dbus.te
+Index: refpolicy/policy/modules/contrib/dbus.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/dbus.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/dbus.te	2014-09-13 16:02:56.740772439 +1000
-@@ -140,6 +140,12 @@
+--- refpolicy.orig/policy/modules/contrib/dbus.te
++++ refpolicy/policy/modules/contrib/dbus.te
+@@ -140,6 +140,12 @@ userdom_dontaudit_use_unpriv_user_fds(sy
  userdom_dontaudit_search_user_home_dirs(system_dbusd_t)
  
  optional_policy(`
@@ -3592,10 +3624,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dbus.te
  	bluetooth_stream_connect(system_dbusd_t)
  ')
  
-Index: refpolicy-2.20140421/policy/modules/contrib/dirmngr.if
+Index: refpolicy/policy/modules/contrib/dirmngr.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/dirmngr.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/contrib/dirmngr.if	2014-09-13 16:02:56.740772439 +1000
+--- refpolicy.orig/policy/modules/contrib/dirmngr.if
++++ refpolicy/policy/modules/contrib/dirmngr.if
 @@ -2,6 +2,25 @@
  
  ########################################
@@ -3622,11 +3654,11 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dirmngr.if
  ##	All of the rules required to
  ##	administrate an dirmngr environment.
  ## </summary>
-Index: refpolicy-2.20140421/policy/modules/system/unconfined.te
+Index: refpolicy/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/unconfined.te	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/unconfined.te	2014-09-13 16:02:56.740772439 +1000
-@@ -59,6 +59,11 @@
+--- refpolicy.orig/policy/modules/system/unconfined.te
++++ refpolicy/policy/modules/system/unconfined.te
+@@ -59,6 +59,11 @@ ifdef(`direct_sysadm_daemon',`
  ')
  
  optional_policy(`
@@ -3638,11 +3670,11 @@ Index: refpolicy-2.20140421/policy/modules/system/unconfined.te
  	ada_domtrans(unconfined_t)
  ')
  
-Index: refpolicy-2.20140421/policy/modules/kernel/devices.if
+Index: refpolicy/policy/modules/kernel/devices.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/devices.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/kernel/devices.if	2014-09-13 16:02:56.740772439 +1000
-@@ -5081,3 +5081,33 @@
+--- refpolicy.orig/policy/modules/kernel/devices.if
++++ refpolicy/policy/modules/kernel/devices.if
+@@ -5081,3 +5081,33 @@ interface(`dev_create_generic_pipes',`
         allow $1 device_t:dir search_dir_perms;
         allow $1 device_t:file setattr_file_perms;
  ')
@@ -3676,11 +3708,21 @@ Index: refpolicy-2.20140421/policy/modules/kernel/devices.if
 +	allow $1 vhost_device_t:chr_file { getattr setattr relabelfrom relabelto create };
 +	allow $1 sound_device_t:chr_file { getattr setattr relabelfrom relabelto create };
 +')
-Index: refpolicy-2.20140421/policy/modules/system/logging.if
+Index: refpolicy/policy/modules/system/logging.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/logging.if	2014-09-13 16:02:52.812602731 +1000
-+++ refpolicy-2.20140421/policy/modules/system/logging.if	2014-09-13 16:02:56.740772439 +1000
-@@ -1123,3 +1123,23 @@
+--- refpolicy.orig/policy/modules/system/logging.if
++++ refpolicy/policy/modules/system/logging.if
+@@ -546,6 +546,9 @@ interface(`logging_send_syslog_msg',`
+ 	# will write to the console.
+ 	term_write_console($1)
+ 	term_dontaudit_read_console($1)
++
++	# because systemd is now using /run/systemd/journal/dev-log
++	init_search_pid_dirs($1)
+ ')
+ 
+ ########################################
+@@ -1123,3 +1126,23 @@ interface(`logging_admin',`
  	logging_admin_audit($1, $2)
  	logging_admin_syslog($1, $2)
  ')
@@ -3704,3 +3746,91 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.if
 +	allow $1 syslogd_tmp_t:file setattr;
 +')
 +
+Index: refpolicy/policy/modules/system/locallogin.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/locallogin.te
++++ refpolicy/policy/modules/system/locallogin.te
+@@ -143,6 +143,10 @@ ifdef(`distro_ubuntu',`
+ 	')
+ ')
+ 
++optional_policy(`
++	systemd_dbus_chat_logind(local_login_t)
++')
++
+ tunable_policy(`console_login',`
+ 	# Able to relabel /dev/console to user tty types.
+ 	term_relabel_console(local_login_t)
+Index: refpolicy/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/userdomain.if
++++ refpolicy/policy/modules/system/userdomain.if
+@@ -1047,6 +1047,10 @@ template(`userdom_unpriv_user_template',
+ 	optional_policy(`
+ 		setroubleshoot_stream_connect($1_t)
+ 	')
++
++	optional_policy(`
++		systemd_dbus_chat_logind($1_t)
++	')
+ ')
+ 
+ #######################################
+Index: refpolicy/policy/modules/contrib/policykit.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/policykit.te
++++ refpolicy/policy/modules/contrib/policykit.te
+@@ -109,6 +109,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_read_logind_sessions_files(policykit_t)
++')
++
++optional_policy(`
+ 	consolekit_read_pid_files(policykit_t)
+ ')
+ 
+Index: refpolicy/policy/modules/contrib/dbus.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/dbus.if
++++ refpolicy/policy/modules/contrib/dbus.if
+@@ -88,6 +88,10 @@ template(`dbus_role_template',`
+ 	ifdef(`hide_broken_symptoms',`
+ 		dontaudit $3 $1_dbusd_t:netlink_selinux_socket { read write };
+ 	')
++
++	optional_policy(`
++		systemd_login_read_pid_files($1_dbusd_t)
++	')
+ ')
+ 
+ #######################################
+Index: refpolicy/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/authlogin.if
++++ refpolicy/policy/modules/system/authlogin.if
+@@ -942,6 +942,23 @@ interface(`auth_rw_var_auth',`
+     rw_files_pattern($1, var_auth_t, var_auth_t)
+ ')
+ 
++#######################################
++## <summary>
++##  mount on /var/auth
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`auth_mounton_var_auth',`
++	gen_require(`
++		type var_auth_t;
++	')
++
++	allow $1 var_auth_t:dir mounton;
++')
+ ########################################
+ ## <summary>
+ ##	Manage var auth files. Used by various other applications

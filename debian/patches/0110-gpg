@@ -1,0 +1,880 @@
+Description: Create user_gpg_t etc domains, remove gpg_helper_t & gpg_pinentry_t
+ Create the domains user_gpg_t, staff_gpg_t, etc so that the gpg agent can
+ launch user domains (and to separate gpg agents). Also remove gpg_helper_t and
+ gpg_pinentry_t because they don't do any good.
+ .
+Author: Russell Coker <russell@coker.com.au>
+Last-Update: 2014-10-10
+
+Index: refpolicy/policy/modules/contrib/gpg.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/gpg.if
++++ refpolicy/policy/modules/contrib/gpg.if
+@@ -6,48 +6,238 @@
+ ## </summary>
+ ## <param name="role">
+ ##	<summary>
+-##	Role allowed access.
++##	The prefix of the user role (e.g., user
++##	is the prefix for user_r).
+ ##	</summary>
+ ## </param>
++## <param name="role">
++##      <summary>
++##      Role allowed access
++##      </summary>
++## </param>
+ ## <param name="domain">
+ ##	<summary>
+ ##	User domain for the role.
+ ##	</summary>
+ ## </param>
+ #
+-interface(`gpg_role',`
++template(`gpg_role_template',`
+ 	gen_require(`
+-		attribute_role gpg_roles, gpg_agent_roles, gpg_helper_roles, gpg_pinentry_roles;
+-		type gpg_t, gpg_exec_t, gpg_agent_t;
+-		type gpg_agent_exec_t, gpg_agent_tmp_t, gpg_helper_t;
+-		type gpg_pinentry_t, gpg_pinentry_tmp_t, gpg_secret_t;
++		type gpg_exec_t, gpg_agent_exec_t;
++	')
++
++	type $1_gpg_t;
++	userdom_user_application_domain($1_gpg_t, gpg_exec_t)
++	role $1_r types $1_gpg_t;
++	type $1_gpg_agent_t;
++	userdom_user_application_domain($1_gpg_agent_t, gpg_agent_exec_t)
++	role $1_r types $1_gpg_agent_t;
++
++	type $1_gpg_tmpfs_t;
++	userdom_user_tmpfs_file($1_gpg_tmpfs_t)
++	manage_dirs_pattern($1_gpg_t, $1_gpg_tmpfs_t, $1_gpg_tmpfs_t)
++	manage_files_pattern($1_gpg_t, $1_gpg_tmpfs_t, $1_gpg_tmpfs_t)
++	fs_tmpfs_filetrans($1_gpg_t, $1_gpg_tmpfs_t, { file dir })
++
++	domtrans_pattern($3, gpg_exec_t, $1_gpg_t)
++	domtrans_pattern($3, gpg_agent_exec_t, $1_gpg_agent_t)
++
++	allow $3 { $1_gpg_t $1_gpg_agent_t }:process { signal_perms };
++	ps_process_pattern($3, { $1_gpg_t $1_gpg_agent_t })
++
++	type $1_gpg_agent_tmp_t;
++	userdom_user_tmp_file($1_gpg_agent_tmp_t)
++
++	type $1_gpg_secret_t;
++	userdom_user_home_content($1_gpg_secret_t)
++
++	allow $1_gpg_t self:capability { ipc_lock setuid };
++	allow $1_gpg_t self:process { signal signull setrlimit getcap setcap getsched setsched setpgid };
++	dontaudit $1_gpg_t self:netlink_audit_socket r_netlink_socket_perms;
++	allow $1_gpg_t self:fifo_file rw_fifo_file_perms;
++	allow $1_gpg_t self:tcp_socket { accept listen };
++
++	manage_dirs_pattern($1_gpg_t, $1_gpg_agent_tmp_t, $1_gpg_agent_tmp_t)
++	manage_files_pattern($1_gpg_t, $1_gpg_agent_tmp_t, $1_gpg_agent_tmp_t)
++	files_tmp_filetrans($1_gpg_t, $1_gpg_agent_tmp_t, { dir file })
++
++	manage_dirs_pattern($1_gpg_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	manage_sock_files_pattern($1_gpg_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	manage_files_pattern($1_gpg_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	manage_lnk_files_pattern($1_gpg_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	userdom_user_home_dir_filetrans($1_gpg_t, $1_gpg_secret_t, dir)
++
++	gpg_stream_connect_agent($1_gpg_t)
++
++	domtrans_pattern($1_gpg_t, gpg_agent_exec_t, $1_gpg_agent_t)
++
++	kernel_read_sysctl($1_gpg_t)
++
++	corecmd_exec_shell($1_gpg_t)
++	corecmd_exec_bin($1_gpg_t)
++
++	corenet_all_recvfrom_unlabeled($1_gpg_t)
++	corenet_all_recvfrom_netlabel($1_gpg_t)
++	corenet_tcp_sendrecv_generic_if($1_gpg_t)
++	corenet_tcp_sendrecv_generic_node($1_gpg_t)
++
++	corenet_sendrecv_all_client_packets($1_gpg_t)
++	corenet_tcp_connect_all_ports($1_gpg_t)
++	corenet_tcp_sendrecv_all_ports($1_gpg_t)
++
++	dev_read_generic_usb_dev($1_gpg_t)
++	dev_read_rand($1_gpg_t)
++	dev_read_urand($1_gpg_t)
++
++	files_read_usr_files($1_gpg_t)
++	files_dontaudit_search_var($1_gpg_t)
++
++	fs_getattr_xattr_fs($1_gpg_t)
++	fs_list_inotifyfs($1_gpg_t)
++
++	domain_use_interactive_fds($1_gpg_t)
++
++	auth_use_nsswitch($1_gpg_t)
++
++	logging_send_syslog_msg($1_gpg_t)
++
++	miscfiles_read_localization($1_gpg_t)
++
++	userdom_use_user_terminals($1_gpg_t)
++
++	userdom_manage_user_tmp_files($1_gpg_t)
++	userdom_manage_user_home_content_files($1_gpg_t)
++	userdom_user_home_dir_filetrans_user_home_content($1_gpg_t, file)
++
++	tunable_policy(`use_nfs_home_dirs',`
++		fs_manage_nfs_dirs($1_gpg_t)
++		fs_manage_nfs_files($1_gpg_t)
++	')
++
++	tunable_policy(`use_samba_home_dirs',`
++		fs_manage_cifs_dirs($1_gpg_t)
++		fs_manage_cifs_files($1_gpg_t)
+ 	')
+ 
+-	roleattribute $1 gpg_roles;
+-	roleattribute $1 gpg_agent_roles;
+-	roleattribute $1 gpg_helper_roles;
+-	roleattribute $1 gpg_pinentry_roles;
++	optional_policy(`
++		gnome_read_generic_home_content($1_gpg_t)
++		gnome_stream_connect_all_gkeyringd($1_gpg_t)
++	')
++
++	optional_policy(`
++		mozilla_dontaudit_rw_user_home_files($1_gpg_t)
++	')
+ 
+-	domtrans_pattern($2, gpg_exec_t, gpg_t)
+-	domtrans_pattern($2, gpg_agent_exec_t, gpg_agent_t)
++	optional_policy(`
++		mta_read_spool_files($1_gpg_t)
++		mta_write_config($1_gpg_t)
++	')
+ 
+-	allow $2 { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t }:process { ptrace signal_perms };
+-	ps_process_pattern($2, { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t })
++	optional_policy(`
++		spamassassin_read_spamd_tmp_files($1_gpg_t)
++	')
+ 
+-	allow gpg_pinentry_t $2:process signull;
+-	allow gpg_helper_t $2:fd use;
+-	allow { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t } $2:fifo_file { read write };
++	optional_policy(`
++		cron_system_entry($1_gpg_t, gpg_exec_t)
++		cron_read_system_job_tmp_files($1_gpg_t)
++	')
+ 
+-	allow $2 { gpg_agent_tmp_t gpg_secret_t }:dir { manage_dir_perms relabel_dir_perms };
+-	allow $2 { gpg_agent_tmp_t gpg_secret_t }:file { manage_file_perms relabel_file_perms };
+-	allow $2 gpg_secret_t:lnk_file { manage_lnk_file_perms relabel_lnk_file_perms };
+-	allow $2 { gpg_agent_tmp_t gpg_pinentry_tmp_t gpg_secret_t }:sock_file { manage_sock_file_perms relabel_sock_file_perms };
+-	filetrans_pattern($2, gpg_secret_t, gpg_agent_tmp_t, sock_file, "log-socket")
+-	userdom_user_home_dir_filetrans($2, gpg_secret_t, dir, ".gnupg")
++	optional_policy(`
++		consolekit_dbus_chat($1_gpg_agent_t)
++	')
+ 
+ 	optional_policy(`
+-		gpg_pinentry_dbus_chat($2)
++		xserver_non_drawing_client($1_gpg_agent_t)
++		xserver_user_x_domain_template($1_gpg, $1_gpg_t, $1_gpg_tmpfs_t)
+ 	')
++
++	########################################
++	#
++	# Agent local policy
++	#
++
++	allow $1_gpg_agent_t self:process { setrlimit signal_perms };
++	allow $1_gpg_agent_t self:unix_stream_socket { create_stream_socket_perms connectto };
++	allow $1_gpg_agent_t self:fifo_file rw_fifo_file_perms;
++
++	allow $1_gpg_agent_t $1_t:process signull;
++
++	manage_dirs_pattern($1_gpg_agent_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	manage_sock_files_pattern($1_gpg_agent_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	manage_files_pattern($1_gpg_agent_t, $1_gpg_secret_t, $1_gpg_secret_t)
++	manage_lnk_files_pattern($1_gpg_agent_t, $1_gpg_secret_t, $1_gpg_secret_t)
++
++	xdm_sigchld($1_gpg_agent_t)
++	dbus_system_bus_client($1_gpg_agent_t)
++	auth_use_nsswitch($1_gpg_agent_t)
++
++	manage_dirs_pattern($1_gpg_agent_t, $1_gpg_agent_tmp_t, $1_gpg_agent_tmp_t)
++	manage_files_pattern($1_gpg_agent_t, $1_gpg_agent_tmp_t, $1_gpg_agent_tmp_t)
++	manage_sock_files_pattern($1_gpg_agent_t, $1_gpg_agent_tmp_t, $1_gpg_agent_tmp_t)
++	files_tmp_filetrans($1_gpg_agent_t, $1_gpg_agent_tmp_t, { file sock_file dir })
++
++	filetrans_pattern($1_gpg_agent_t, $1_gpg_secret_t, $1_gpg_agent_tmp_t, sock_file, "log-socket")
++
++	kernel_dontaudit_search_sysctl($1_gpg_agent_t)
++	kernel_read_core_if($1_gpg_agent_t)
++	kernel_read_system_state($1_gpg_agent_t)
++
++	corecmd_exec_bin($1_gpg_agent_t)
++	corecmd_exec_shell($1_gpg_agent_t)
++
++	dev_read_rand($1_gpg_agent_t)
++	dev_read_urand($1_gpg_agent_t)
++
++	domain_use_interactive_fds($1_gpg_agent_t)
++	fs_dontaudit_list_inotifyfs($1_gpg_agent_t)
++
++	miscfiles_read_localization($1_gpg_agent_t)
++
++	userdom_use_user_terminals($1_gpg_agent_t)
++	userdom_search_user_home_dirs($1_gpg_agent_t)
++
++	ifdef(`hide_broken_symptoms',`
++		userdom_dontaudit_read_user_tmp_files($1_gpg_agent_t)
++	')
++
++	tunable_policy(`gpg_agent_env_file',`
++		userdom_manage_user_home_content_dirs($1_gpg_agent_t)
++		userdom_manage_user_home_content_files($1_gpg_agent_t)
++		userdom_user_home_dir_filetrans_user_home_content($1_gpg_agent_t, file)
++	')
++
++	tunable_policy(`use_nfs_home_dirs',`
++		fs_manage_nfs_dirs($1_gpg_agent_t)
++		fs_manage_nfs_files($1_gpg_agent_t)
++		fs_manage_nfs_symlinks($1_gpg_agent_t)
++	')
++
++	tunable_policy(`use_samba_home_dirs',`
++		fs_manage_cifs_dirs($1_gpg_agent_t)
++		fs_manage_cifs_files($1_gpg_agent_t)
++		fs_manage_cifs_symlinks($1_gpg_agent_t)
++	')
++
++	optional_policy(`
++		mozilla_dontaudit_rw_user_home_files($1_gpg_agent_t)
++	')
++
++	optional_policy(`
++		pcscd_stream_connect($1_gpg_agent_t)
++	')
++
++
++	allow { $1_gpg_t $1_gpg_agent_t } $3:fifo_file { read write };
++
++	allow $3 { $1_gpg_agent_tmp_t $1_gpg_secret_t }:dir { manage_dir_perms relabel_dir_perms };
++	allow $3 { $1_gpg_agent_tmp_t $1_gpg_secret_t }:file { manage_file_perms relabel_file_perms };
++	allow $3 $1_gpg_secret_t:lnk_file { manage_lnk_file_perms relabel_lnk_file_perms };
++	allow $3 { $1_gpg_agent_tmp_t $1_gpg_secret_t }:sock_file { manage_sock_file_perms relabel_sock_file_perms };
++	filetrans_pattern($3, $1_gpg_secret_t, $1_gpg_agent_tmp_t, sock_file, "log-socket")
++	userdom_user_home_dir_filetrans($3, $1_gpg_secret_t, dir, ".gnupg")
++
++	allow $3 $1_gpg_t:dbus send_msg;
++	allow $1_gpg_t $3:dbus send_msg;
+ ')
+ 
+ ########################################
+@@ -62,11 +252,11 @@ interface(`gpg_role',`
+ #
+ interface(`gpg_domtrans',`
+ 	gen_require(`
+-		type gpg_t, gpg_exec_t;
++		type $1_gpg_t, gpg_exec_t;
+ 	')
+ 
+ 	corecmd_search_bin($1)
+-	domtrans_pattern($1, gpg_exec_t, gpg_t)
++	domtrans_pattern($1, gpg_exec_t, $1_gpg_t)
+ ')
+ 
+ ########################################
+@@ -167,52 +357,37 @@ interface(`gpg_entry_type',`
+ #
+ interface(`gpg_signal',`
+ 	gen_require(`
+-		type gpg_t;
++		type $1_gpg_t;
+ 	')
+ 
+-	allow $1 gpg_t:process signal;
++	allow $1 $1_gpg_t:process signal;
+ ')
+ 
+-########################################
++#######################################
+ ## <summary>
+-##	Read and write gpg agent pipes.
++##      Transition to $2_gpg_agent_t from another domain via gpg_agent_exec_t
+ ## </summary>
+ ## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
++##      <summary>
++##      source domain
++##      </summary>
+ ## </param>
+-#
+-interface(`gpg_rw_agent_pipes',`
+-	gen_require(`
+-		type gpg_agent_t;
+-	')
+-
+-	allow $1 gpg_agent_t:fifo_file rw_fifo_file_perms;
+-')
+-
+-########################################
+-## <summary>
+-##	Connect to gpg agent socket
+-## </summary>
+ ## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
++##      <summary>
++##      base of target domain
++##      </summary>
+ ## </param>
+ #
+-interface(`gpg_stream_connect_agent',`
++interface(`gpg_enter_user_gpg_agent_domain',`
+ 	gen_require(`
+-		type gpg_agent_t, gpg_agent_tmp_t;
++		type gpg_agent_exec_t, $2_gpg_agent_t;
+ 	')
+-
+-	stream_connect_pattern($1, gpg_agent_tmp_t, gpg_agent_tmp_t, gpg_agent_t)
++	domain_auto_trans($1, gpg_agent_exec_t, $2_gpg_agent_t)
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	Send messages to and from gpg
+-##	pinentry over DBUS.
++##	Connect to gpg agent socket
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -220,14 +395,12 @@ interface(`gpg_stream_connect_agent',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`gpg_pinentry_dbus_chat',`
++interface(`gpg_stream_connect_agent',`
+ 	gen_require(`
+-		type gpg_pinentry_t;
+-		class dbus send_msg;
++		type $1_gpg_agent_t, $1_gpg_agent_tmp_t;
+ 	')
+ 
+-	allow $1 gpg_pinentry_t:dbus send_msg;
+-	allow gpg_pinentry_t $1:dbus send_msg;
++	stream_connect_pattern($1, $1_gpg_agent_tmp_t, $1_gpg_agent_tmp_t, $1_gpg_agent_t)
+ ')
+ 
+ ########################################
+@@ -242,9 +415,9 @@ interface(`gpg_pinentry_dbus_chat',`
+ #
+ interface(`gpg_list_user_secrets',`
+ 	gen_require(`
+-		type gpg_secret_t;
++		type $1_gpg_secret_t;
+ 	')
+ 
+-	list_dirs_pattern($1, gpg_secret_t, gpg_secret_t)
++	list_dirs_pattern($1, $1_gpg_secret_t, $1_gpg_secret_t)
+ 	userdom_search_user_home_dirs($1)
+ ')
+Index: refpolicy/policy/modules/contrib/gpg.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/gpg.te
++++ refpolicy/policy/modules/contrib/gpg.te
+@@ -22,330 +22,9 @@ attribute_role gpg_agent_roles;
+ attribute_role gpg_helper_roles;
+ roleattribute system_r gpg_helper_roles;
+ 
+-attribute_role gpg_pinentry_roles;
+-
+-type gpg_t;
+ type gpg_exec_t;
+-typealias gpg_t alias { user_gpg_t staff_gpg_t sysadm_gpg_t };
+-typealias gpg_t alias { auditadm_gpg_t secadm_gpg_t };
+-userdom_user_application_domain(gpg_t, gpg_exec_t)
+-role gpg_roles types gpg_t;
+ 
+-type gpg_agent_t;
+ type gpg_agent_exec_t;
+-typealias gpg_agent_t alias { user_gpg_agent_t staff_gpg_agent_t sysadm_gpg_agent_t };
+-typealias gpg_agent_t alias { auditadm_gpg_agent_t secadm_gpg_agent_t };
+-userdom_user_application_domain(gpg_agent_t, gpg_agent_exec_t)
+-role gpg_agent_roles types gpg_agent_t;
+-
+-type gpg_agent_tmp_t;
+-typealias gpg_agent_tmp_t alias { user_gpg_agent_tmp_t staff_gpg_agent_tmp_t sysadm_gpg_agent_tmp_t };
+-typealias gpg_agent_tmp_t alias { auditadm_gpg_agent_tmp_t secadm_gpg_agent_tmp_t };
+-userdom_user_tmp_file(gpg_agent_tmp_t)
+-
+-type gpg_secret_t;
+-typealias gpg_secret_t alias { user_gpg_secret_t staff_gpg_secret_t sysadm_gpg_secret_t };
+-typealias gpg_secret_t alias { auditadm_gpg_secret_t secadm_gpg_secret_t };
+-userdom_user_home_content(gpg_secret_t)
+-
+-type gpg_helper_t;
+-type gpg_helper_exec_t;
+-typealias gpg_helper_t alias { user_gpg_helper_t staff_gpg_helper_t sysadm_gpg_helper_t };
+-typealias gpg_helper_t alias { auditadm_gpg_helper_t secadm_gpg_helper_t };
+-userdom_user_application_domain(gpg_helper_t, gpg_helper_exec_t)
+-role gpg_helper_roles types gpg_helper_t;
+-
+-type gpg_pinentry_t;
+-type pinentry_exec_t;
+-typealias gpg_pinentry_t alias { user_gpg_pinentry_t staff_gpg_pinentry_t sysadm_gpg_pinentry_t };
+-typealias gpg_pinentry_t alias { auditadm_gpg_pinentry_t secadm_gpg_pinentry_t };
+-userdom_user_application_domain(gpg_pinentry_t, pinentry_exec_t)
+-role gpg_pinentry_roles types gpg_pinentry_t;
+-
+-type gpg_pinentry_tmp_t;
+-userdom_user_tmp_file(gpg_pinentry_tmp_t)
+-
+-type gpg_pinentry_tmpfs_t;
+-userdom_user_tmpfs_file(gpg_pinentry_tmpfs_t)
+-
+-optional_policy(`
+-	pulseaudio_tmpfs_content(gpg_pinentry_tmpfs_t)
+-')
+-
+-########################################
+-#
+-# Local policy
+-#
+-
+-allow gpg_t self:capability { ipc_lock setuid };
+-allow gpg_t self:process { signal signull setrlimit getcap setcap getsched setsched setpgid };
+-dontaudit gpg_t self:netlink_audit_socket r_netlink_socket_perms;
+-allow gpg_t self:fifo_file rw_fifo_file_perms;
+-allow gpg_t self:tcp_socket { accept listen };
+-
+-manage_dirs_pattern(gpg_t, gpg_agent_tmp_t, gpg_agent_tmp_t)
+-manage_files_pattern(gpg_t, gpg_agent_tmp_t, gpg_agent_tmp_t)
+-files_tmp_filetrans(gpg_t, gpg_agent_tmp_t, { dir file })
+-
+-manage_dirs_pattern(gpg_t, gpg_secret_t, gpg_secret_t)
+-manage_sock_files_pattern(gpg_t, gpg_secret_t, gpg_secret_t)
+-manage_files_pattern(gpg_t, gpg_secret_t, gpg_secret_t)
+-manage_lnk_files_pattern(gpg_t, gpg_secret_t, gpg_secret_t)
+-userdom_user_home_dir_filetrans(gpg_t, gpg_secret_t, dir)
+-
+-gpg_stream_connect_agent(gpg_t)
+-
+-domtrans_pattern(gpg_t, gpg_agent_exec_t, gpg_agent_t)
+-domtrans_pattern(gpg_t, gpg_helper_exec_t, gpg_helper_t)
+-
+-kernel_read_sysctl(gpg_t)
+-
+-corecmd_exec_shell(gpg_t)
+-corecmd_exec_bin(gpg_t)
+-
+-corenet_all_recvfrom_unlabeled(gpg_t)
+-corenet_all_recvfrom_netlabel(gpg_t)
+-corenet_tcp_sendrecv_generic_if(gpg_t)
+-corenet_tcp_sendrecv_generic_node(gpg_t)
+-
+-corenet_sendrecv_all_client_packets(gpg_t)
+-corenet_tcp_connect_all_ports(gpg_t)
+-corenet_tcp_sendrecv_all_ports(gpg_t)
+-
+-dev_read_generic_usb_dev(gpg_t)
+-dev_read_rand(gpg_t)
+-dev_read_urand(gpg_t)
+-
+-files_read_usr_files(gpg_t)
+-files_dontaudit_search_var(gpg_t)
+-
+-fs_getattr_xattr_fs(gpg_t)
+-fs_list_inotifyfs(gpg_t)
+-
+-domain_use_interactive_fds(gpg_t)
+-
+-auth_use_nsswitch(gpg_t)
+-
+-logging_send_syslog_msg(gpg_t)
+-
+-miscfiles_read_localization(gpg_t)
+-
+-userdom_use_user_terminals(gpg_t)
+-
+-userdom_manage_user_tmp_files(gpg_t)
+-userdom_manage_user_home_content_files(gpg_t)
+-userdom_user_home_dir_filetrans_user_home_content(gpg_t, file)
+-
+-tunable_policy(`use_nfs_home_dirs',`
+-	fs_manage_nfs_dirs(gpg_t)
+-	fs_manage_nfs_files(gpg_t)
+-')
+-
+-tunable_policy(`use_samba_home_dirs',`
+-	fs_manage_cifs_dirs(gpg_t)
+-	fs_manage_cifs_files(gpg_t)
+-')
+-
+-optional_policy(`
+-	gnome_read_generic_home_content(gpg_t)
+-	gnome_stream_connect_all_gkeyringd(gpg_t)
+-')
+-
+-optional_policy(`
+-	mozilla_dontaudit_rw_user_home_files(gpg_t)
+-')
+-
+-optional_policy(`
+-	mta_read_spool_files(gpg_t)
+-	mta_write_config(gpg_t)
+-')
+-
+-optional_policy(`
+-	spamassassin_read_spamd_tmp_files(gpg_t)
+-')
+-
+-optional_policy(`
+-	cron_system_entry(gpg_t, gpg_exec_t)
+-	cron_read_system_job_tmp_files(gpg_t)
+-')
+-
+-optional_policy(`
+-	xserver_use_xdm_fds(gpg_t)
+-	xserver_rw_xdm_pipes(gpg_t)
+-')
+-
+-########################################
+-#
+-# Helper local policy
+-#
+-
+-allow gpg_helper_t self:process { getsched setsched };
+-allow gpg_helper_t self:unix_stream_socket create_stream_socket_perms;
+-
+-dontaudit gpg_helper_t gpg_secret_t:file read_file_perms;
+-
+-corenet_all_recvfrom_unlabeled(gpg_helper_t)
+-corenet_all_recvfrom_netlabel(gpg_helper_t)
+-corenet_tcp_sendrecv_generic_if(gpg_helper_t)
+-corenet_tcp_sendrecv_generic_node(gpg_helper_t)
+-corenet_tcp_sendrecv_all_ports(gpg_helper_t)
+-
+-corenet_sendrecv_all_client_packets(gpg_helper_t)
+-corenet_tcp_connect_all_ports(gpg_helper_t)
+-
+-auth_use_nsswitch(gpg_helper_t)
+-
+-userdom_use_user_terminals(gpg_helper_t)
+-
+-tunable_policy(`use_nfs_home_dirs',`
+-	fs_dontaudit_rw_nfs_files(gpg_helper_t)
+-')
+-
+-tunable_policy(`use_samba_home_dirs',`
+-	fs_dontaudit_rw_cifs_files(gpg_helper_t)
+-')
+-
+-########################################
+-#
+-# Agent local policy
+-#
+-
+-allow gpg_agent_t self:process { setrlimit signal_perms };
+-allow gpg_agent_t self:unix_stream_socket { create_stream_socket_perms connectto };
+-allow gpg_agent_t self:fifo_file rw_fifo_file_perms;
+-
+-manage_dirs_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
+-manage_sock_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
+-manage_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
+-manage_lnk_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
+-
+-xdm_sigchld(gpg_agent_t)
+-dbus_system_bus_client(gpg_agent_t)
+-auth_use_nsswitch(gpg_agent_t)
+-xserver_read_user_xauth(gpg_agent_t)
+-
+-manage_dirs_pattern(gpg_agent_t, gpg_agent_tmp_t, gpg_agent_tmp_t)
+-manage_files_pattern(gpg_agent_t, gpg_agent_tmp_t, gpg_agent_tmp_t)
+-manage_sock_files_pattern(gpg_agent_t, gpg_agent_tmp_t, gpg_agent_tmp_t)
+-files_tmp_filetrans(gpg_agent_t, gpg_agent_tmp_t, { file sock_file dir })
+-
+-filetrans_pattern(gpg_agent_t, gpg_secret_t, gpg_agent_tmp_t, sock_file, "log-socket")
+-
+-domtrans_pattern(gpg_agent_t, pinentry_exec_t, gpg_pinentry_t)
+-
+-kernel_dontaudit_search_sysctl(gpg_agent_t)
+-kernel_read_core_if(gpg_agent_t)
+-kernel_read_system_state(gpg_agent_t)
+-
+-corecmd_exec_bin(gpg_agent_t)
+-corecmd_exec_shell(gpg_agent_t)
+-
+-dev_read_rand(gpg_agent_t)
+-dev_read_urand(gpg_agent_t)
+-
+-domain_use_interactive_fds(gpg_agent_t)
+-
+-fs_dontaudit_list_inotifyfs(gpg_agent_t)
+-
+-miscfiles_read_localization(gpg_agent_t)
+-
+-userdom_use_user_terminals(gpg_agent_t)
+-userdom_search_user_home_dirs(gpg_agent_t)
+-
+-ifdef(`hide_broken_symptoms',`
+-	userdom_dontaudit_read_user_tmp_files(gpg_agent_t)
+-')
+-
+-tunable_policy(`gpg_agent_env_file',`
+-	userdom_manage_user_home_content_dirs(gpg_agent_t)
+-	userdom_manage_user_home_content_files(gpg_agent_t)
+-	userdom_user_home_dir_filetrans_user_home_content(gpg_agent_t, file)
+-')
+-
+-tunable_policy(`use_nfs_home_dirs',`
+-	fs_manage_nfs_dirs(gpg_agent_t)
+-	fs_manage_nfs_files(gpg_agent_t)
+-	fs_manage_nfs_symlinks(gpg_agent_t)
+-')
+-
+-tunable_policy(`use_samba_home_dirs',`
+-	fs_manage_cifs_dirs(gpg_agent_t)
+-	fs_manage_cifs_files(gpg_agent_t)
+-	fs_manage_cifs_symlinks(gpg_agent_t)
+-')
+-
+-optional_policy(`
+-	mozilla_dontaudit_rw_user_home_files(gpg_agent_t)
+-')
+-
+-optional_policy(`
+-	pcscd_stream_connect(gpg_agent_t)
+-')
+-
+-##############################
+-#
+-# Pinentry local policy
+-#
+-
+-allow gpg_pinentry_t self:process { getcap getsched setsched signal };
+-allow gpg_pinentry_t self:fifo_file rw_fifo_file_perms;
+-allow gpg_pinentry_t self:shm create_shm_perms;
+-allow gpg_pinentry_t self:tcp_socket { accept listen };
+-
+-manage_sock_files_pattern(gpg_pinentry_t, gpg_pinentry_tmp_t, gpg_pinentry_tmp_t)
+-userdom_user_tmp_filetrans(gpg_pinentry_t, gpg_pinentry_tmp_t, sock_file)
+-
+-manage_dirs_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
+-manage_files_pattern(gpg_pinentry_t, gpg_pinentry_tmpfs_t, gpg_pinentry_tmpfs_t)
+-fs_tmpfs_filetrans(gpg_pinentry_t, gpg_pinentry_tmpfs_t, { file dir })
+-
+-can_exec(gpg_pinentry_t, pinentry_exec_t)
+-
+-kernel_read_system_state(gpg_pinentry_t)
+-
+-corecmd_exec_shell(gpg_pinentry_t)
+-corecmd_exec_bin(gpg_pinentry_t)
+-
+-corenet_all_recvfrom_netlabel(gpg_pinentry_t)
+-corenet_all_recvfrom_unlabeled(gpg_pinentry_t)
+-corenet_tcp_sendrecv_generic_if(gpg_pinentry_t)
+-corenet_tcp_sendrecv_generic_node(gpg_pinentry_t)
+-
+-dev_read_urand(gpg_pinentry_t)
+-dev_read_rand(gpg_pinentry_t)
+-
+-domain_use_interactive_fds(gpg_pinentry_t)
+-
+-files_read_usr_files(gpg_pinentry_t)
+-
+-fs_dontaudit_list_inotifyfs(gpg_pinentry_t)
+-
+-auth_use_nsswitch(gpg_pinentry_t)
+-
+-logging_send_syslog_msg(gpg_pinentry_t)
+-
+-miscfiles_read_fonts(gpg_pinentry_t)
+-miscfiles_read_localization(gpg_pinentry_t)
+-
+-userdom_use_user_terminals(gpg_pinentry_t)
+-
+-tunable_policy(`use_nfs_home_dirs',`
+-	fs_read_nfs_files(gpg_pinentry_t)
+-')
+-
+-tunable_policy(`use_samba_home_dirs',`
+-	fs_read_cifs_files(gpg_pinentry_t)
+-')
+-
+-optional_policy(`
+-	dbus_all_session_bus_client(gpg_pinentry_t)
+-	dbus_system_bus_client(gpg_pinentry_t)
+-')
+ 
+-optional_policy(`
+-	pulseaudio_run(gpg_pinentry_t, gpg_pinentry_roles)
+-')
++typealias gpg_exec_t alias { pinentry_exec_t gpg_helper_exec_t };
+ 
+-optional_policy(`
+-	xserver_user_x_domain_template(gpg_pinentry, gpg_pinentry_t, gpg_pinentry_tmpfs_t)
+-')
+Index: refpolicy/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/userdomain.if
++++ refpolicy/policy/modules/system/userdomain.if
+@@ -600,6 +600,20 @@ template(`userdom_common_user_template',
+ 	')
+ 
+ 	optional_policy(`
++		ssh_role_template($1, $1_r, $1_t)
++		optional_policy(`
++			gpg_enter_user_gpg_agent_domain($1_ssh_agent_t, $1)
++		')
++	')
++
++	optional_policy(`
++		gpg_role_template($1, $1_r, $1_t)
++		optional_policy(`
++			dbus_enter_user_dbusd_domain($1_gpg_agent_t, $1)
++		')
++	')
++
++	optional_policy(`
+ 		dbus_system_bus_client($1_t)
+ 
+ 		optional_policy(`
+Index: refpolicy/policy/modules/contrib/gpg.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/gpg.fc
++++ refpolicy/policy/modules/contrib/gpg.fc
+@@ -1,10 +1,10 @@
+-HOME_DIR/\.gnupg(/.+)?	gen_context(system_u:object_r:gpg_secret_t,s0)
+-HOME_DIR/\.gnupg/log-socket	-s	gen_context(system_u:object_r:gpg_agent_tmp_t,s0)
++HOME_DIR/\.gnupg(/.+)?	gen_context(system_u:object_r:user_gpg_secret_t,s0)
++HOME_DIR/\.gnupg/log-socket	-s	gen_context(system_u:object_r:user_gpg_agent_tmp_t,s0)
+ 
+ /usr/bin/gpg(2)?	--	gen_context(system_u:object_r:gpg_exec_t,s0)
+ /usr/bin/gpgsm	--	gen_context(system_u:object_r:gpg_exec_t,s0)
+ /usr/bin/gpg-agent	--	gen_context(system_u:object_r:gpg_agent_exec_t,s0)
+-/usr/bin/pinentry.*	--	gen_context(system_u:object_r:pinentry_exec_t,s0)
++/usr/bin/pinentry.*	--	gen_context(system_u:object_r:gpg_exec_t,s0)
+ 
+ /usr/lib/gnupg/.*	--	gen_context(system_u:object_r:gpg_exec_t,s0)
+-/usr/lib/gnupg/gpgkeys.*	--	gen_context(system_u:object_r:gpg_helper_exec_t,s0)
++/usr/lib/gnupg/gpgkeys.*	--	gen_context(system_u:object_r:gpg_exec_t,s0)
+Index: refpolicy/policy/modules/roles/staff.te
+===================================================================
+--- refpolicy.orig/policy/modules/roles/staff.te
++++ refpolicy/policy/modules/roles/staff.te
+@@ -39,10 +39,6 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	ssh_role_template(staff, staff_r, staff_t)
+-')
+-
+-optional_policy(`
+ 	sudo_role_template(staff, staff_r, staff_t)
+ ')
+ 
+@@ -105,10 +101,6 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		gpg_role(staff_r, staff_t)
+-	')
+-
+-	optional_policy(`
+ 		irc_role(staff_r, staff_t)
+ 	')
+ 
+Index: refpolicy/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy.orig/policy/modules/roles/sysadm.te
++++ refpolicy/policy/modules/roles/sysadm.te
+@@ -330,10 +330,6 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	ssh_role_template(sysadm, sysadm_r, sysadm_t)
+-')
+-
+-optional_policy(`
+ 	staff_role_change(sysadm_r)
+ ')
+ 
+@@ -465,10 +461,6 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		gpg_role(sysadm_r, sysadm_t)
+-	')
+-
+-	optional_policy(`
+ 		irc_role(sysadm_r, sysadm_t)
+ 	')
+ 
+Index: refpolicy/policy/modules/roles/unprivuser.te
+===================================================================
+--- refpolicy.orig/policy/modules/roles/unprivuser.te
++++ refpolicy/policy/modules/roles/unprivuser.te
+@@ -78,10 +78,6 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		gpg_role(user_r, user_t)
+-	')
+-
+-	optional_policy(`
+ 		hadoop_role(user_r, user_t)
+ 	')
+ 
+@@ -134,10 +130,6 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		ssh_role_template(user, user_r, user_t)
+-	')
+-
+-	optional_policy(`
+ 		su_role_template(user, user_r, user_t)
+ 	')
+ 
+Index: refpolicy/policy/modules/contrib/dbus.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/dbus.if
++++ refpolicy/policy/modules/contrib/dbus.if
+@@ -128,6 +128,31 @@ interface(`dbus_system_bus_client',`
+ 
+ #######################################
+ ## <summary>
++##	Transition to $2_dbusd_t from another domain via dbusd_exec_t
++## </summary>
++## <param name="domain">
++##	<summary>
++##	source domain
++##	</summary>
++## </param>
++## <param name="domain">
++##	<summary>
++##	base of target domain
++##	</summary>
++## </param>
++#
++interface(`dbus_enter_user_dbusd_domain',`
++	gen_require(`
++		type dbusd_exec_t, $2_dbusd_t;
++	')
++	domain_auto_trans($1, dbusd_exec_t, $2_dbusd_t)
++	allow $2_dbusd_t $1:fifo_file rw_fifo_file_perms;
++	allow $2_dbusd_t $1:fd use;
++	allow $2_dbusd_t $1:process sigchld;
++')
++
++#######################################
++## <summary>
+ ##	Acquire service on DBUS
+ ##	session bus.
+ ## </summary>
