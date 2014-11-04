@@ -10,6 +10,8 @@ refpolicy (2:2.20140421-7.1) UNRELEASED; urgency=medium
   * Allow $1_user_ssh_agent_t to send sigchld to xdm_t
   * Allow local_login_t to write to systemd sessions pipes
   * Make gpg_exec_t and gpg_agent_exec_t file types
+  * Use USER in gpg.fc
+  * Remove subs line for /etc/rc.d/init.d because we don't use it
 
  -- Russell Coker <russell@coker.com.au>  Sun, 02 Nov 2014 17:38:52 +1100
 

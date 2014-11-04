@@ -8,7 +8,6 @@
 # It does not perform substitutions as done by sed(1), for
 # example, but aliasing.
 # 
-/etc/init.d /etc/rc.d/init.d
 /lib32 /lib
 /lib64 /lib
 /run /var/run
