@@ -2852,7 +2852,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -0,0 +1,478 @@
+@@ -0,0 +1,486 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -2926,6 +2926,10 @@ Index: refpolicy/policy/modules/system/systemd.te
 +allow systemd_tmpfiles_t systemd_journal_log_t:file { relabelfrom relabelto };
 +logging_log_file(systemd_journal_log_t)
 +
++optional_policy(`
++	xserver_create_xdm_tmp_dir(systemd_tmpfiles_t)
++')
++
 +#######################################
 +#
 +# Systemd_logind local policy
@@ -2977,6 +2981,10 @@ Index: refpolicy/policy/modules/system/systemd.te
 +dev_rw_input_dev(systemd_logind_t)
 +
 +domain_read_all_domains_state(systemd_logind_t)
++
++optional_policy(`
++	xserver_search_xdm_tmp(systemd_logind_t)
++')
 +
 +# /etc/udev/udev.conf should probably have a private type if only for confined administration
 +# /etc/nsswitch.conf
@@ -3453,6 +3461,49 @@ Index: refpolicy/policy/modules/services/xserver.if
  ##	Read and write the X windows console named pipe.
  ## </summary>
  ## <param name="domain">
+@@ -1098,6 +1134,42 @@ interface(`xserver_dontaudit_getattr_xdm
+ ')
+ 
+ ########################################
++## <summary>
++##	Search xdm_tmp_t directories
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to allow
++##	</summary>
++## </param>
++#
++interface(`xserver_search_xdm_tmp',`
++	gen_require(`
++		type xdm_tmp_t;
++	')
++
++	allow $1 xdm_tmp_t:dir search;
++')
++
++########################################
++## <summary>
++##	Create xdm_tmp_t directories
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to allow
++##	</summary>
++## </param>
++#
++interface(`xserver_create_xdm_tmp_dir',`
++	gen_require(`
++		type xdm_tmp_t;
++	')
++
++	allow $1 xdm_tmp_t:dir create;
++')
++
++########################################
+ ## <summary>
+ ##	Execute the X server in the X server domain.
+ ## </summary>
 Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.if
@@ -3750,12 +3801,13 @@ Index: refpolicy/policy/modules/system/locallogin.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/locallogin.te
 +++ refpolicy/policy/modules/system/locallogin.te
-@@ -143,6 +143,10 @@ ifdef(`distro_ubuntu',`
+@@ -143,6 +143,11 @@ ifdef(`distro_ubuntu',`
  	')
  ')
  
 +optional_policy(`
 +	systemd_dbus_chat_logind(local_login_t)
++	systemd_write_inherited_logind_sessions_pipes(local_login_t)
 +')
 +
  tunable_policy(`console_login',`

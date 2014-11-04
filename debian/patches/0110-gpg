@@ -388,7 +388,7 @@ Index: refpolicy/policy/modules/contrib/gpg.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/gpg.te
 +++ refpolicy/policy/modules/contrib/gpg.te
-@@ -22,330 +22,9 @@ attribute_role gpg_agent_roles;
+@@ -22,330 +22,11 @@ attribute_role gpg_agent_roles;
  attribute_role gpg_helper_roles;
  roleattribute system_r gpg_helper_roles;
  
@@ -400,6 +400,7 @@ Index: refpolicy/policy/modules/contrib/gpg.te
 -typealias gpg_t alias { auditadm_gpg_t secadm_gpg_t };
 -userdom_user_application_domain(gpg_t, gpg_exec_t)
 -role gpg_roles types gpg_t;
++files_type(gpg_exec_t)
  
 -type gpg_agent_t;
  type gpg_agent_exec_t;
@@ -711,6 +712,7 @@ Index: refpolicy/policy/modules/contrib/gpg.te
 -	dbus_all_session_bus_client(gpg_pinentry_t)
 -	dbus_system_bus_client(gpg_pinentry_t)
 -')
++files_type(gpg_agent_exec_t)
  
 -optional_policy(`
 -	pulseaudio_run(gpg_pinentry_t, gpg_pinentry_roles)
@@ -724,7 +726,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -600,6 +600,20 @@ template(`userdom_common_user_template',
+@@ -603,6 +603,20 @@ template(`userdom_common_user_template',
  	')
  
  	optional_policy(`

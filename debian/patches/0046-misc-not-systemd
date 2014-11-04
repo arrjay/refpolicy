@@ -2,10 +2,10 @@ Description: Misc stuff from the systemd patch that isn't all systemd specific
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-09-13
 
-Index: refpolicy-2.20140421/policy/global_tunables
+Index: refpolicy/policy/global_tunables
 ===================================================================
---- refpolicy-2.20140421.orig/policy/global_tunables
-+++ refpolicy-2.20140421/policy/global_tunables
+--- refpolicy.orig/policy/global_tunables
++++ refpolicy/policy/global_tunables
 @@ -6,6 +6,13 @@
  
  ## <desc>
@@ -20,10 +20,10 @@ Index: refpolicy-2.20140421/policy/global_tunables
  ## Allow unconfined executables to make their heap memory executable.  Doing this is a really bad idea. Probably indicates a badly coded executable, but could indicate an attack. This executable should be reported in bugzilla
  ## </p>
  ## </desc>
-Index: refpolicy-2.20140421/policy/modules/contrib/portslave.te
+Index: refpolicy/policy/modules/contrib/portslave.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/portslave.te
-+++ refpolicy-2.20140421/policy/modules/contrib/portslave.te
+--- refpolicy.orig/policy/modules/contrib/portslave.te
++++ refpolicy/policy/modules/contrib/portslave.te
 @@ -7,7 +7,6 @@ policy_module(portslave, 1.8.0)
  
  type portslave_t;
@@ -32,10 +32,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/portslave.te
  init_daemon_domain(portslave_t, portslave_exec_t)
  
  type portslave_etc_t;
-Index: refpolicy-2.20140421/policy/modules/system/init.fc
+Index: refpolicy/policy/modules/system/init.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/init.fc
-+++ refpolicy-2.20140421/policy/modules/system/init.fc
+--- refpolicy.orig/policy/modules/system/init.fc
++++ refpolicy/policy/modules/system/init.fc
 @@ -42,11 +42,24 @@ ifdef(`distro_gentoo', `
  #
  /usr/bin/sepg_ctl	--	gen_context(system_u:object_r:initrc_exec_t,s0)
@@ -61,10 +61,10 @@ Index: refpolicy-2.20140421/policy/modules/system/init.fc
  
  #
  # /var
-Index: refpolicy-2.20140421/policy/modules/system/logging.te
+Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/logging.te
-+++ refpolicy-2.20140421/policy/modules/system/logging.te
+--- refpolicy.orig/policy/modules/system/logging.te
++++ refpolicy/policy/modules/system/logging.te
 @@ -121,7 +121,9 @@ term_use_all_terms(auditctl_t)
  
  init_dontaudit_use_fds(auditctl_t)
@@ -94,10 +94,10 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20140421/policy/modules/system/lvm.fc
+Index: refpolicy/policy/modules/system/lvm.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/lvm.fc
-+++ refpolicy-2.20140421/policy/modules/system/lvm.fc
+--- refpolicy.orig/policy/modules/system/lvm.fc
++++ refpolicy/policy/modules/system/lvm.fc
 @@ -28,6 +28,7 @@ ifdef(`distro_gentoo',`
  #
  /lib/lvm-10/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
@@ -106,10 +106,10 @@ Index: refpolicy-2.20140421/policy/modules/system/lvm.fc
  /lib/udev/udisks-lvm-pv-export	--	gen_context(system_u:object_r:lvm_exec_t,s0)
  
  #
-Index: refpolicy-2.20140421/policy/modules/system/lvm.te
+Index: refpolicy/policy/modules/system/lvm.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/lvm.te
-+++ refpolicy-2.20140421/policy/modules/system/lvm.te
+--- refpolicy.orig/policy/modules/system/lvm.te
++++ refpolicy/policy/modules/system/lvm.te
 @@ -293,6 +293,9 @@ init_dontaudit_getattr_initctl(lvm_t)
  init_use_script_ptys(lvm_t)
  init_read_script_state(lvm_t)
@@ -120,10 +120,10 @@ Index: refpolicy-2.20140421/policy/modules/system/lvm.te
  logging_send_syslog_msg(lvm_t)
  
  miscfiles_read_localization(lvm_t)
-Index: refpolicy-2.20140421/policy/modules/system/udev.if
+Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/udev.if
-+++ refpolicy-2.20140421/policy/modules/system/udev.if
+--- refpolicy.orig/policy/modules/system/udev.if
++++ refpolicy/policy/modules/system/udev.if
 @@ -172,6 +172,24 @@ interface(`udev_dontaudit_search_db',`
  
  ########################################
@@ -198,10 +198,10 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.if
 +
 +        allow $1 udev_t:netlink_kobject_uevent_socket create_socket_perms;
 +')
-Index: refpolicy-2.20140421/policy/modules/system/userdomain.if
+Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20140421/policy/modules/system/userdomain.if
+--- refpolicy.orig/policy/modules/system/userdomain.if
++++ refpolicy/policy/modules/system/userdomain.if
 @@ -2853,6 +2853,35 @@ interface(`userdom_use_user_ptys',`
  
  ########################################
@@ -323,10 +323,10 @@ Index: refpolicy-2.20140421/policy/modules/system/userdomain.if
 +
 +	dontaudit $1 userdomain:unix_stream_socket rw_socket_perms;
 +')
-Index: refpolicy-2.20140421/policy/modules/kernel/files.if
+Index: refpolicy/policy/modules/kernel/files.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/files.if
-+++ refpolicy-2.20140421/policy/modules/kernel/files.if
+--- refpolicy.orig/policy/modules/kernel/files.if
++++ refpolicy/policy/modules/kernel/files.if
 @@ -4396,6 +4396,42 @@ interface(`files_rw_generic_tmp_sockets'
  
  ########################################
@@ -611,10 +611,10 @@ Index: refpolicy-2.20140421/policy/modules/kernel/files.if
 +
 +        allow $1 non_security_file_type:file_class_set unlink;
 +')
-Index: refpolicy-2.20140421/policy/modules/system/unconfined.if
+Index: refpolicy/policy/modules/system/unconfined.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/unconfined.if
-+++ refpolicy-2.20140421/policy/modules/system/unconfined.if
+--- refpolicy.orig/policy/modules/system/unconfined.if
++++ refpolicy/policy/modules/system/unconfined.if
 @@ -586,3 +586,22 @@ interface(`unconfined_dbus_connect',`
  
  	allow $1 unconfined_t:dbus acquire_svc;
@@ -638,10 +638,10 @@ Index: refpolicy-2.20140421/policy/modules/system/unconfined.if
 +
 +	dontaudit $1 unconfined_t:unix_stream_socket rw_socket_perms;
 +')
-Index: refpolicy-2.20140421/policy/modules/contrib/cron.if
+Index: refpolicy/policy/modules/contrib/cron.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/cron.if
-+++ refpolicy-2.20140421/policy/modules/contrib/cron.if
+--- refpolicy.orig/policy/modules/contrib/cron.if
++++ refpolicy/policy/modules/contrib/cron.if
 @@ -412,6 +412,24 @@ interface(`cron_sigchld',`
  
  ########################################
@@ -737,10 +737,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/cron.if
 +	files_search_spool($1)
 +	manage_files_pattern($1, cron_system_spool_t, cron_system_spool_t)
 +')
-Index: refpolicy-2.20140421/policy/modules/system/logging.if
+Index: refpolicy/policy/modules/system/logging.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/logging.if
-+++ refpolicy-2.20140421/policy/modules/system/logging.if
+--- refpolicy.orig/policy/modules/system/logging.if
++++ refpolicy/policy/modules/system/logging.if
 @@ -550,6 +550,26 @@ interface(`logging_send_syslog_msg',`
  
  ########################################
@@ -793,10 +793,10 @@ Index: refpolicy-2.20140421/policy/modules/system/logging.if
  ## <summary>
  ##	Read all log files.
  ## </summary>
-Index: refpolicy-2.20140421/policy/modules/kernel/devices.if
+Index: refpolicy/policy/modules/kernel/devices.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/devices.if
-+++ refpolicy-2.20140421/policy/modules/kernel/devices.if
+--- refpolicy.orig/policy/modules/kernel/devices.if
++++ refpolicy/policy/modules/kernel/devices.if
 @@ -154,6 +154,25 @@ interface(`dev_relabel_all_dev_nodes',`
  
  ########################################
@@ -973,10 +973,10 @@ Index: refpolicy-2.20140421/policy/modules/kernel/devices.if
 +       allow $1 device_t:dir search_dir_perms;
 +       allow $1 device_t:file setattr_file_perms;
 +')
-Index: refpolicy-2.20140421/policy/modules/kernel/filesystem.if
+Index: refpolicy/policy/modules/kernel/filesystem.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/filesystem.if
-+++ refpolicy-2.20140421/policy/modules/kernel/filesystem.if
+--- refpolicy.orig/policy/modules/kernel/filesystem.if
++++ refpolicy/policy/modules/kernel/filesystem.if
 @@ -689,6 +689,27 @@ interface(`fs_getattr_cgroup',`
  
  ########################################
@@ -1074,10 +1074,10 @@ Index: refpolicy-2.20140421/policy/modules/kernel/filesystem.if
  ## <summary>
  ##	Create, read, write, and delete
  ##	tmpfs directories
-Index: refpolicy-2.20140421/policy/modules/kernel/terminal.if
+Index: refpolicy/policy/modules/kernel/terminal.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/terminal.if
-+++ refpolicy-2.20140421/policy/modules/kernel/terminal.if
+--- refpolicy.orig/policy/modules/kernel/terminal.if
++++ refpolicy/policy/modules/kernel/terminal.if
 @@ -481,6 +481,24 @@ interface(`term_list_ptys',`
  
  ########################################
@@ -1103,10 +1103,10 @@ Index: refpolicy-2.20140421/policy/modules/kernel/terminal.if
  ##	Do not audit attempts to read the
  ##	/dev/pts directory.
  ## </summary>
-Index: refpolicy-2.20140421/policy/modules/system/lvm.if
+Index: refpolicy/policy/modules/system/lvm.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/lvm.if
-+++ refpolicy-2.20140421/policy/modules/system/lvm.if
+--- refpolicy.orig/policy/modules/system/lvm.if
++++ refpolicy/policy/modules/system/lvm.if
 @@ -123,3 +123,39 @@ interface(`lvm_domtrans_clvmd',`
  	corecmd_search_bin($1)
  	domtrans_pattern($1, clvmd_exec_t, clvmd_t)
@@ -1147,10 +1147,10 @@ Index: refpolicy-2.20140421/policy/modules/system/lvm.if
 +
 +        allow $1 lvm_t:process signull;
 +')
-Index: refpolicy-2.20140421/policy/support/obj_perm_sets.spt
+Index: refpolicy/policy/support/obj_perm_sets.spt
 ===================================================================
---- refpolicy-2.20140421.orig/policy/support/obj_perm_sets.spt
-+++ refpolicy-2.20140421/policy/support/obj_perm_sets.spt
+--- refpolicy.orig/policy/support/obj_perm_sets.spt
++++ refpolicy/policy/support/obj_perm_sets.spt
 @@ -192,7 +192,8 @@ define(`setattr_fifo_file_perms',`{ seta
  define(`read_fifo_file_perms',`{ getattr open read lock ioctl }')
  define(`append_fifo_file_perms',`{ getattr open append lock ioctl }')
@@ -1171,10 +1171,10 @@ Index: refpolicy-2.20140421/policy/support/obj_perm_sets.spt
  
  #
  # Sockets
-Index: refpolicy-2.20140421/policy/modules/system/application.if
+Index: refpolicy/policy/modules/system/application.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/application.if
-+++ refpolicy-2.20140421/policy/modules/system/application.if
+--- refpolicy.orig/policy/modules/system/application.if
++++ refpolicy/policy/modules/system/application.if
 @@ -189,6 +189,24 @@ interface(`application_dontaudit_signal'
  
  ########################################
@@ -1200,10 +1200,10 @@ Index: refpolicy-2.20140421/policy/modules/system/application.if
  ##	Do not audit attempts to send kill signals
  ##	to all application domains.
  ## </summary>
-Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
+Index: refpolicy/policy/modules/contrib/dpkg.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/dpkg.te
-+++ refpolicy-2.20140421/policy/modules/contrib/dpkg.te
+--- refpolicy.orig/policy/modules/contrib/dpkg.te
++++ refpolicy/policy/modules/contrib/dpkg.te
 @@ -183,13 +183,16 @@ domain_signull_all_domains(dpkg_t)
  files_read_etc_runtime_files(dpkg_t)
  files_exec_usr_files(dpkg_t)
@@ -1234,10 +1234,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/dpkg.te
  
  seutil_run_loadpolicy(dpkg_script_t, dpkg_roles)
  seutil_run_setfiles(dpkg_script_t, dpkg_roles)
-Index: refpolicy-2.20140421/policy/modules/system/selinuxutil.te
+Index: refpolicy/policy/modules/system/selinuxutil.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/selinuxutil.te
-+++ refpolicy-2.20140421/policy/modules/system/selinuxutil.te
+--- refpolicy.orig/policy/modules/system/selinuxutil.te
++++ refpolicy/policy/modules/system/selinuxutil.te
 @@ -346,7 +346,9 @@ files_relabel_non_auth_files(restorecond
  files_read_non_auth_files(restorecond_t)
  auth_use_nsswitch(restorecond_t)
@@ -1260,10 +1260,10 @@ Index: refpolicy-2.20140421/policy/modules/system/selinuxutil.te
  
  logging_send_syslog_msg(semanage_t)
  
-Index: refpolicy-2.20140421/policy/modules/system/sysnetwork.te
+Index: refpolicy/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20140421/policy/modules/system/sysnetwork.te
+--- refpolicy.orig/policy/modules/system/sysnetwork.te
++++ refpolicy/policy/modules/system/sysnetwork.te
 @@ -143,7 +143,9 @@ logging_send_syslog_msg(dhcpc_t)
  
  miscfiles_read_localization(dhcpc_t)
@@ -1286,10 +1286,10 @@ Index: refpolicy-2.20140421/policy/modules/system/sysnetwork.te
  
  seutil_use_runinit_fds(ifconfig_t)
  
-Index: refpolicy-2.20140421/policy/flask/access_vectors
+Index: refpolicy/policy/flask/access_vectors
 ===================================================================
---- refpolicy-2.20140421.orig/policy/flask/access_vectors
-+++ refpolicy-2.20140421/policy/flask/access_vectors
+--- refpolicy.orig/policy/flask/access_vectors
++++ refpolicy/policy/flask/access_vectors
 @@ -60,7 +60,7 @@ common socket
  	recv_msg
  	send_msg
@@ -1387,10 +1387,10 @@ Index: refpolicy-2.20140421/policy/flask/access_vectors
  }
  
  class tun_socket
-Index: refpolicy-2.20140421/policy/flask/security_classes
+Index: refpolicy/policy/flask/security_classes
 ===================================================================
---- refpolicy-2.20140421.orig/policy/flask/security_classes
-+++ refpolicy-2.20140421/policy/flask/security_classes
+--- refpolicy.orig/policy/flask/security_classes
++++ refpolicy/policy/flask/security_classes
 @@ -1,7 +1,7 @@
  # FLASK
  
@@ -1409,10 +1409,10 @@ Index: refpolicy-2.20140421/policy/flask/security_classes
  
  class tun_socket
  
-Index: refpolicy-2.20140421/policy/modules/system/init.te
+Index: refpolicy/policy/modules/system/init.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/init.te
-+++ refpolicy-2.20140421/policy/modules/system/init.te
+--- refpolicy.orig/policy/modules/system/init.te
++++ refpolicy/policy/modules/system/init.te
 @@ -194,10 +194,6 @@ ifdef(`distro_redhat',`
  
  tunable_policy(`init_upstart',`
@@ -1437,10 +1437,10 @@ Index: refpolicy-2.20140421/policy/modules/system/init.te
  
  seutil_read_config(initrc_t)
  
-Index: refpolicy-2.20140421/policy/modules/system/init.if
+Index: refpolicy/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/init.if
-+++ refpolicy-2.20140421/policy/modules/system/init.if
+--- refpolicy.orig/policy/modules/system/init.if
++++ refpolicy/policy/modules/system/init.if
 @@ -1851,3 +1851,24 @@ interface(`init_udp_recvfrom_all_daemons
  interface(`systemd_unit_file',`
  	files_type($1)
@@ -1466,10 +1466,10 @@ Index: refpolicy-2.20140421/policy/modules/system/init.if
 +	allow $1 init_t:fifo_file rw_file_perms;
 +	allow $1 init_t:process sigchld;
 +')
-Index: refpolicy-2.20140421/policy/modules/system/authlogin.te
+Index: refpolicy/policy/modules/system/authlogin.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/authlogin.te
-+++ refpolicy-2.20140421/policy/modules/system/authlogin.te
+--- refpolicy.orig/policy/modules/system/authlogin.te
++++ refpolicy/policy/modules/system/authlogin.te
 @@ -81,6 +81,7 @@ application_domain(utempter_t, utempter_
  #
  type var_auth_t;
@@ -1478,10 +1478,10 @@ Index: refpolicy-2.20140421/policy/modules/system/authlogin.te
  
  type wtmp_t;
  logging_log_file(wtmp_t)
-Index: refpolicy-2.20140421/policy/modules/system/udev.te
+Index: refpolicy/policy/modules/system/udev.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/udev.te
-+++ refpolicy-2.20140421/policy/modules/system/udev.te
+--- refpolicy.orig/policy/modules/system/udev.te
++++ refpolicy/policy/modules/system/udev.te
 @@ -54,6 +54,7 @@ allow udev_t self:unix_dgram_socket send
  allow udev_t self:unix_stream_socket connectto;
  allow udev_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -1499,10 +1499,10 @@ Index: refpolicy-2.20140421/policy/modules/system/udev.te
  kernel_getattr_core_if(udev_t)
  kernel_use_fds(udev_t)
  kernel_read_device_sysctls(udev_t)
-Index: refpolicy-2.20140421/policy/modules/services/xserver.fc
+Index: refpolicy/policy/modules/services/xserver.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/services/xserver.fc
-+++ refpolicy-2.20140421/policy/modules/services/xserver.fc
+--- refpolicy.orig/policy/modules/services/xserver.fc
++++ refpolicy/policy/modules/services/xserver.fc
 @@ -107,6 +107,7 @@ ifndef(`distro_debian',`
  /var/run/gdm(3)?(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/gdm(3)?\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
@@ -1511,10 +1511,10 @@ Index: refpolicy-2.20140421/policy/modules/services/xserver.fc
  /var/run/lxdm\.auth	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/lxdm\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/lxdm(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
-Index: refpolicy-2.20140421/policy/modules/contrib/kerneloops.te
+Index: refpolicy/policy/modules/contrib/kerneloops.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/kerneloops.te
-+++ refpolicy-2.20140421/policy/modules/contrib/kerneloops.te
+--- refpolicy.orig/policy/modules/contrib/kerneloops.te
++++ refpolicy/policy/modules/contrib/kerneloops.te
 @@ -28,6 +28,7 @@ manage_files_pattern(kerneloops_t, kerne
  files_tmp_filetrans(kerneloops_t, kerneloops_tmp_t, file)
  
@@ -1523,10 +1523,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/kerneloops.te
  
  domain_use_interactive_fds(kerneloops_t)
  
-Index: refpolicy-2.20140421/policy/modules/system/locallogin.te
+Index: refpolicy/policy/modules/system/locallogin.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/locallogin.te
-+++ refpolicy-2.20140421/policy/modules/system/locallogin.te
+--- refpolicy.orig/policy/modules/system/locallogin.te
++++ refpolicy/policy/modules/system/locallogin.te
 @@ -62,6 +62,8 @@ kernel_link_key(local_login_t)
  
  corecmd_list_bin(local_login_t)
@@ -1536,3 +1536,24 @@ Index: refpolicy-2.20140421/policy/modules/system/locallogin.te
  # cjp: these are probably not needed:
  corecmd_read_bin_files(local_login_t)
  corecmd_read_bin_pipes(local_login_t)
+Index: refpolicy/policy/modules/services/xserver.if
+===================================================================
+--- refpolicy.orig/policy/modules/services/xserver.if
++++ refpolicy/policy/modules/services/xserver.if
+@@ -811,7 +811,7 @@ interface(`xserver_setattr_xdm_tmp_dirs'
+ 
+ ########################################
+ ## <summary>
+-##	Create a named socket in a XDM
++##	Create and unlink a named socket in a XDM
+ ##	temporary directory.
+ ## </summary>
+ ## <param name="domain">
+@@ -828,6 +828,7 @@ interface(`xserver_create_xdm_tmp_socket
+ 	files_search_tmp($1)
+ 	allow $1 xdm_tmp_t:dir list_dir_perms;
+ 	create_sock_files_pattern($1, xdm_tmp_t, xdm_tmp_t)
++	allow $1 xdm_tmp_t:sock_file unlink;
+ ')
+ 
+ ########################################

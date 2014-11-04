@@ -377,11 +377,29 @@ Index: refpolicy/policy/modules/services/ssh.if
  	allow $1_ssh_agent_t { $1_ssh_agent_t $3 }:process signull;
  
  	allow $1_ssh_agent_t self:unix_stream_socket { create_stream_socket_perms connectto };
+@@ -432,6 +434,7 @@ template(`ssh_role_template',`
+ 	optional_policy(`
+ 		xserver_use_xdm_fds($1_ssh_agent_t)
+ 		xserver_rw_xdm_pipes($1_ssh_agent_t)
++		xdm_sigchld($1_ssh_agent_t)
+ 	')
+ ')
+ 
 Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -108,6 +108,11 @@ template(`userdom_base_user_template',`
+@@ -78,6 +78,9 @@ template(`userdom_base_user_template',`
+ 	dev_dontaudit_getattr_all_blk_files($1_t)
+ 	dev_dontaudit_getattr_all_chr_files($1_t)
+ 
++	# for X session unlock
++	allow $1_t self:netlink_audit_socket { create_socket_perms nlmsg_relay };
++
+ 	# When the user domain runs ps, there will be a number of access
+ 	# denials when ps tries to search /proc. Do not audit these denials.
+ 	domain_dontaudit_read_all_domains_state($1_t)
+@@ -108,6 +111,11 @@ template(`userdom_base_user_template',`
  
  	sysnet_read_config($1_t)
  

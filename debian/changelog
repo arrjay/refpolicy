@@ -1,3 +1,18 @@
+refpolicy (2:2.20140421-7.1) UNRELEASED; urgency=medium
+
+  * Make all of /etc/ssl apart from /etc/ssl/private etc_t
+  * Allow systemd_logind_t to search xdm_tmp_t:dir
+  * Allow systemd_tmpfiles_t to create xdm_tmp_t:dir
+  * Make xserver_create_xdm_tmp_socket also allow unlinking the socket
+  * Allow systemd_tmpfiles_t to create xdm_tmp_t dir
+  * Allow systemd_logind_t to search xdm_tmp_t
+  * Allow userdomains netlink_audit_socket access for logging of X unlock
+  * Allow $1_user_ssh_agent_t to send sigchld to xdm_t
+  * Allow local_login_t to write to systemd sessions pipes
+  * Make gpg_exec_t and gpg_agent_exec_t file types
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 02 Nov 2014 17:38:52 +1100
+
 refpolicy (2:2.20140421-7) unstable; urgency=medium
 
   * Label /run/systemd/journal/dev-log and /run/systemd/journal/stdout as
