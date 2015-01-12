@@ -546,7 +546,7 @@ Index: refpolicy/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.if
 +++ refpolicy/policy/modules/services/xserver.if
-@@ -1365,3 +1365,21 @@ interface(`xserver_unconfined',`
+@@ -1364,3 +1364,21 @@ interface(`xserver_unconfined',`
  	typeattribute $1 x_domain;
  	typeattribute $1 xserver_unconfined_type;
  ')
@@ -620,3 +620,15 @@ Index: refpolicy/policy/modules/system/miscfiles.fc
  /etc/timezone		--	gen_context(system_u:object_r:locale_t,s0)
  
  ifdef(`distro_debian',`
+Index: refpolicy/config/file_contexts.subs_dist
+===================================================================
+--- refpolicy.orig/config/file_contexts.subs_dist
++++ refpolicy/config/file_contexts.subs_dist
+@@ -8,7 +8,6 @@
+ # It does not perform substitutions as done by sed(1), for
+ # example, but aliasing.
+ # 
+-/etc/init.d /etc/rc.d/init.d
+ /lib32 /lib
+ /lib64 /lib
+ /run /var/run
