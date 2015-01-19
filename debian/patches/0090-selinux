@@ -389,20 +389,34 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -78,6 +78,9 @@ template(`userdom_base_user_template',`
+@@ -67,6 +67,7 @@ template(`userdom_base_user_template',`
+ 	dontaudit $1_t user_tty_device_t:chr_file ioctl;
+ 
+ 	kernel_read_kernel_sysctls($1_t)
++	kernel_read_vm_sysctls($1_t)
+ 	kernel_dontaudit_list_unlabeled($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_files($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_symlinks($1_t)
+@@ -78,6 +79,12 @@ template(`userdom_base_user_template',`
  	dev_dontaudit_getattr_all_blk_files($1_t)
  	dev_dontaudit_getattr_all_chr_files($1_t)
  
 +	# for X session unlock
 +	allow $1_t self:netlink_audit_socket { create_socket_perms nlmsg_relay };
 +
++	# for KDE
++	allow $1_t self:netlink_kobject_uevent_socket connected_socket_perms;
++
  	# When the user domain runs ps, there will be a number of access
  	# denials when ps tries to search /proc. Do not audit these denials.
  	domain_dontaudit_read_all_domains_state($1_t)
-@@ -108,6 +111,11 @@ template(`userdom_base_user_template',`
+@@ -108,6 +115,14 @@ template(`userdom_base_user_template',`
  
  	sysnet_read_config($1_t)
  
++	# kdeinit wants systemd status
++	init_status($1_t)
++
 +	optional_policy(`
 +		apt_read_cache($1_t)
 +		apt_read_db($1_t)
@@ -423,4 +437,28 @@ Index: refpolicy/policy/modules/contrib/gnome.if
 +	allow gconfd_t $3:dbus send_msg;
  	userdom_user_home_dir_filetrans($3, gconf_home_t, dir, ".gconf")
  	userdom_user_home_dir_filetrans($3, gconf_home_t, dir, ".gconfd")
+ 
+Index: refpolicy/policy/modules/system/selinuxutil.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/selinuxutil.te
++++ refpolicy/policy/modules/system/selinuxutil.te
+@@ -198,6 +198,7 @@ seutil_libselinux_linked(load_policy_t)
+ 
+ userdom_use_user_terminals(load_policy_t)
+ userdom_use_all_users_fds(load_policy_t)
++dev_read_urand(load_policy_t)
+ 
+ ifdef(`distro_ubuntu',`
+ 	optional_policy(`
+Index: refpolicy/policy/modules/services/xserver.te
+===================================================================
+--- refpolicy.orig/policy/modules/services/xserver.te
++++ refpolicy/policy/modules/services/xserver.te
+@@ -260,6 +260,7 @@ files_tmp_filetrans(xauth_t, xauth_tmp_t
+ 
+ allow xdm_t xauth_home_t:file manage_file_perms;
+ userdom_user_home_dir_filetrans(xdm_t, xauth_home_t, file)
++userdom_user_home_dir_filetrans(xdm_t, user_home_t, file, ".xsession-errors")
+ 
+ kernel_request_load_module(xauth_t)
  

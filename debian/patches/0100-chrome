@@ -2,19 +2,20 @@ Description: Policy for Chromium/Chrome
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-07-03
 
-Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.fc
+Index: refpolicy/policy/modules/contrib/mozilla.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/mozilla.fc
-+++ refpolicy-2.20140421/policy/modules/contrib/mozilla.fc
-@@ -1,5 +1,7 @@
+--- refpolicy.orig/policy/modules/contrib/mozilla.fc
++++ refpolicy/policy/modules/contrib/mozilla.fc
+@@ -1,5 +1,8 @@
  HOME_DIR/\.galeon(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.mozilla(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
 +HOME_DIR/\.config/chromium(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
++HOME_DIR/\.config/google-chrome(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
 +HOME_DIR/\.cache/chromium(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
  HOME_DIR/\.netscape(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.phoenix(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-@@ -36,3 +38,8 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
+@@ -36,3 +39,9 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
  /usr/lib/nspluginwrapper/npviewer.bin	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
  /usr/lib/nspluginwrapper/plugin-config	--	gen_context(system_u:object_r:mozilla_plugin_config_exec_t,s0)
  /usr/lib/xulrunner[^/]*/plugin-container	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
@@ -22,12 +23,24 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.fc
 +/usr/lib/chromium/chromium	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
 +/opt/google/chrome/chrome-sandbox --	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
 +/opt/google/chrome/chrome	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
++/opt/google/chrome/nacl_helper	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
 +
-Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.if
+Index: refpolicy/policy/modules/contrib/mozilla.if
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/mozilla.if
-+++ refpolicy-2.20140421/policy/modules/contrib/mozilla.if
-@@ -20,6 +20,7 @@ interface(`mozilla_role',`
+--- refpolicy.orig/policy/modules/contrib/mozilla.if
++++ refpolicy/policy/modules/contrib/mozilla.if
+@@ -14,12 +14,18 @@
+ ##	User domain for the role.
+ ##	</summary>
+ ## </param>
++## <param name="type">
++##	<summary>
++##	Type of the user tty
++##	</summary>
++## </param>
+ #
+ interface(`mozilla_role',`
+ 	gen_require(`
  		type mozilla_t, mozilla_exec_t, mozilla_home_t;
  		type mozilla_tmp_t, mozilla_tmpfs_t, mozilla_plugin_tmp_t;
  		type mozilla_plugin_tmpfs_t, mozilla_plugin_home_t;
@@ -35,7 +48,7 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.if
  		attribute_role mozilla_roles;
  	')
  
-@@ -36,6 +37,7 @@ interface(`mozilla_role',`
+@@ -36,6 +42,7 @@ interface(`mozilla_role',`
  	#
  
  	domtrans_pattern($2, mozilla_exec_t, mozilla_t)
@@ -43,7 +56,17 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.if
  
  	allow $2 mozilla_t:process { noatsecure siginh rlimitinh ptrace signal_perms };
  	ps_process_pattern($2, mozilla_t)
-@@ -301,10 +303,12 @@ interface(`mozilla_execmod_user_plugin_h
+@@ -45,6 +52,9 @@ interface(`mozilla_role',`
+ 
+ 	allow $2 mozilla_t:fd use;
+ 	allow $2 mozilla_t:shm rw_shm_perms;
++	allow chrome_sandbox_t $2:fd use;
++	allow chrome_sandbox_t $2:fifo_file write;
++	allow chrome_sandbox_t $3:chr_file { read write };
+ 
+ 	stream_connect_pattern($2, mozilla_tmpfs_t, mozilla_tmpfs_t, mozilla_t)
+ 
+@@ -301,10 +311,12 @@ interface(`mozilla_execmod_user_plugin_h
  interface(`mozilla_domtrans',`
  	gen_require(`
  		type mozilla_t, mozilla_exec_t;
@@ -56,10 +79,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.if
  ')
  
  ########################################
-Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
+Index: refpolicy/policy/modules/contrib/mozilla.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/contrib/mozilla.te
-+++ refpolicy-2.20140421/policy/modules/contrib/mozilla.te
+--- refpolicy.orig/policy/modules/contrib/mozilla.te
++++ refpolicy/policy/modules/contrib/mozilla.te
 @@ -21,7 +21,7 @@ type mozilla_t;
  type mozilla_exec_t;
  typealias mozilla_t alias { user_mozilla_t staff_mozilla_t sysadm_mozilla_t };
@@ -69,7 +92,7 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
  role mozilla_roles types mozilla_t;
  
  type mozilla_home_t;
-@@ -43,6 +43,41 @@ userdom_user_tmp_file(mozilla_plugin_tmp
+@@ -43,6 +43,45 @@ userdom_user_tmp_file(mozilla_plugin_tmp
  type mozilla_plugin_tmpfs_t;
  userdom_user_tmpfs_file(mozilla_plugin_tmpfs_t)
  
@@ -96,6 +119,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
 +allow chrome_sandbox_t proc_t:dir read;
 +allow chrome_sandbox_t self:process setrlimit;
 +type chrome_sandbox_tmp_t;
++
++# this is needed for Chrome (not Chromium) startup
++allow chrome_sandbox_t mozilla_t:process { siginh rlimitinh noatsecure };
++
 +files_tmp_file(chrome_sandbox_tmp_t)
 +ubac_constrained(chrome_sandbox_tmp_t)
 +files_tmp_filetrans(chrome_sandbox_t, chrome_sandbox_tmp_t, { file dir })
@@ -111,7 +138,7 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
  optional_policy(`
  	pulseaudio_tmpfs_content(mozilla_plugin_tmpfs_t)
  ')
-@@ -72,6 +107,20 @@ optional_policy(`
+@@ -72,6 +111,20 @@ optional_policy(`
  # Local policy
  #
  
@@ -132,7 +159,35 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
  allow mozilla_t self:capability { sys_nice setgid setuid };
  allow mozilla_t self:process { sigkill signal setsched getsched setrlimit };
  allow mozilla_t self:fifo_file rw_fifo_file_perms;
-@@ -199,6 +248,7 @@ mozilla_run_plugin(mozilla_t, mozilla_ro
+@@ -94,7 +147,9 @@ userdom_user_home_dir_filetrans(mozilla_
+ filetrans_pattern(mozilla_t, mozilla_home_t, mozilla_plugin_home_t, dir, "plugins")
+ 
+ manage_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
++manage_lnk_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
+ manage_dirs_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
++create_sock_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
+ files_tmp_filetrans(mozilla_t, mozilla_tmp_t, { file dir })
+ 
+ manage_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
+@@ -111,6 +166,8 @@ stream_connect_pattern(mozilla_t, mozill
+ 
+ can_exec(mozilla_t, { mozilla_exec_t mozilla_plugin_rw_t mozilla_plugin_home_t })
+ 
++allow mozilla_t self:netlink_kobject_uevent_socket create_socket_perms;
++
+ kernel_read_kernel_sysctls(mozilla_t)
+ kernel_read_network_state(mozilla_t)
+ kernel_read_system_state(mozilla_t)
+@@ -159,6 +216,8 @@ dev_read_rand(mozilla_t)
+ dev_read_urand(mozilla_t)
+ dev_rw_dri(mozilla_t)
+ dev_write_sound(mozilla_t)
++dev_dontaudit_getattr_all_chr_files(mozilla_t)
++dev_dontaudit_getattr_all_blk_files(mozilla_t)
+ 
+ domain_dontaudit_read_all_domains_state(mozilla_t)
+ 
+@@ -199,6 +258,7 @@ mozilla_run_plugin(mozilla_t, mozilla_ro
  mozilla_run_plugin_config(mozilla_t, mozilla_roles)
  
  xserver_user_x_domain_template(mozilla, mozilla_t, mozilla_tmpfs_t)
@@ -140,10 +195,10 @@ Index: refpolicy-2.20140421/policy/modules/contrib/mozilla.te
  xserver_dontaudit_read_xdm_tmp_files(mozilla_t)
  xserver_dontaudit_getattr_xdm_tmp_sockets(mozilla_t)
  
-Index: refpolicy-2.20140421/policy/modules/kernel/corecommands.fc
+Index: refpolicy/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20140421/policy/modules/kernel/corecommands.fc
+--- refpolicy.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy/policy/modules/kernel/corecommands.fc
 @@ -168,6 +168,7 @@ ifdef(`distro_gentoo',`
  /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
@@ -152,3 +207,55 @@ Index: refpolicy-2.20140421/policy/modules/kernel/corecommands.fc
  
  /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
+Index: refpolicy/policy/modules/contrib/xguest.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/xguest.te
++++ refpolicy/policy/modules/contrib/xguest.te
+@@ -101,7 +101,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	mozilla_role(xguest_r, xguest_t)
++	mozilla_role(xguest_r, xguest_t, user_devpts_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy/policy/modules/roles/staff.te
+===================================================================
+--- refpolicy.orig/policy/modules/roles/staff.te
++++ refpolicy/policy/modules/roles/staff.te
+@@ -125,7 +125,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		mozilla_role(staff_r, staff_t)
++		mozilla_role(staff_r, staff_t, user_devpts_t)
+ 	')
+ 
+ 	optional_policy(`
+Index: refpolicy/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy.orig/policy/modules/roles/sysadm.te
++++ refpolicy/policy/modules/roles/sysadm.te
+@@ -223,7 +223,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	mozilla_role(sysadm_r, sysadm_t)
++	mozilla_role(sysadm_r, sysadm_t, user_devpts_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy/policy/modules/roles/unprivuser.te
+===================================================================
+--- refpolicy.orig/policy/modules/roles/unprivuser.te
++++ refpolicy/policy/modules/roles/unprivuser.te
+@@ -102,7 +102,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		mozilla_role(user_r, user_t)
++		mozilla_role(user_r, user_t, user_devpts_t)
+ 	')
+ 
+ 	optional_policy(`

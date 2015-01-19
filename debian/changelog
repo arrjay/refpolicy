@@ -1,19 +1,59 @@
-refpolicy (2:2.20140421-7.1) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-8) unstable; urgency=medium
 
   * Make all of /etc/ssl apart from /etc/ssl/private etc_t
   * Allow systemd_logind_t to search xdm_tmp_t:dir
-  * Allow systemd_tmpfiles_t to create xdm_tmp_t:dir
-  * Make xserver_create_xdm_tmp_socket also allow unlinking the socket
-  * Allow systemd_tmpfiles_t to create xdm_tmp_t dir
-  * Allow systemd_logind_t to search xdm_tmp_t
+    Allow systemd_tmpfiles_t to create xdm_tmp_t:dir
+    Make xserver_create_xdm_tmp_socket also allow unlinking the socket
+    Allow systemd_tmpfiles_t to create xdm_tmp_t dir
+    Allow systemd_logind_t to search xdm_tmp_t
+    Allow system_dbusd_t to write to systemd_logind_var_run_t:fifo_file
+    for /run/systemd/inhibit/*.ref also added fc for /run/systemd/inhibit
+    Allow system_dbusd_t to write to /run/systemd/inhibit/* pipes
+    Allow user_t to talk to user_dbusd_t via unix sockets and also all
+    dbus clients
+    Allow systemd_tmpfiles_t to create xfs_tmp_t dirs
+    Closes: #771482
   * Allow userdomains netlink_audit_socket access for logging of X unlock
   * Allow $1_user_ssh_agent_t to send sigchld to xdm_t
   * Allow local_login_t to write to systemd sessions pipes
-  * Make gpg_exec_t and gpg_agent_exec_t file types
-  * Use USER in gpg.fc
-  * Remove subs line for /etc/rc.d/init.d because we don't use it
+  * Allow policykit_t to read /run/systemd/machines and /run/systemd/seats/*
+  * Allow init_status() for user domains for kdeinit
+  * Remove most of the gpg stuff that I put in 2:2.20140421-7.
+    Just remove gpg_helper_t, merge gpg_pinentry_t with the main gpg domain,
+    and make the gpg_t domain only used from user_t. Domain trans from
+    gpg_agent_t to user_t when running bin_t such as ck-launch-session.
+    Allow gpg_agent_t and *_ssh_agent_t to append to an inherited user_home_t
+    file
+    Closes: #771484
+  * Allow user_dbusd_t to append to user_home_t
+  * Allow load_policy_t to read /dev/urandom.
+  * Label /usr/lib/dovecot/(log)|(ssl-params)|(anvil) dovecot_exec_t so they
+    can be executed by the main dovecot daemon.
+    Closes: #775223
+  * Allow alsa_t to create lockfiles and added fc for
+    /run/lock/asound.state.lock
+  * Allow local_login_t capability net_admin
+  * Allow systemd_logind_t capability sys_admin and mount tmpfs_t
+  * Allow mozilla_t (Chrome) to manage symlinks in /tmp and create sockets
+    Allow chrome_sandbox_t to use user_t fd.
+    Allow mozilla_t to use netlink_kobject_uevent_socket.
+    Label ~/.config/google-chrome as mozilla_home_t
+    Label /opt/google/chrome/nacl_helper as chrome_browser_exec_t
+    Allow chrome_sandbox_t to write to users pty (for startup error messages)
+    Closes: #771483
+  * Allow userdomains to read vm sysctls and to create a
+    netlink_kobject_uevent_socket.
+  * Allow initrc_t to perform systemd service start/stop operations on
+    initrc_var_run_t files. This may be a bug in systemd.
+  * Label .xsession-errors as user_home_t when xdm_t creates it.
+  * Label /usr/sbin/dhcp6c as dhcpc_exec_t /run/dhcp6c.pid as dhcpc_var_run_t
+    and /var/lib/dhcpv6 as dhcpc_state_t
+  * Dontaudit getty_t capability sys_admin
+  * Allow cronjob_t read-write access to crond_tmp_t.
+  * Allow gconfd_t to read /var/lib/gconf/defaults and /proc/filesystems
+  * Allow fsadm_t to stat mount_var_run_t for /run/mount/utab
 
- -- Russell Coker <russell@coker.com.au>  Sun, 02 Nov 2014 17:38:52 +1100
+ -- Russell Coker <russell@coker.com.au>  Mon, 19 Jan 2015 16:27:05 +1100
 
 refpolicy (2:2.20140421-7) unstable; urgency=medium
 

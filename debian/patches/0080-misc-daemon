@@ -190,7 +190,17 @@ Index: refpolicy/policy/modules/system/fstools.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/fstools.te
 +++ refpolicy/policy/modules/system/fstools.te
-@@ -195,6 +195,10 @@ optional_policy(`
+@@ -45,6 +45,9 @@ allow fsadm_t fsadm_tmp_t:dir manage_dir
+ allow fsadm_t fsadm_tmp_t:file manage_file_perms;
+ files_tmp_filetrans(fsadm_t, fsadm_tmp_t, { file dir })
+ 
++# for /run/mount/utab
++stat_mount_var_run(fsadm_t)
++
+ # log files
+ allow fsadm_t fsadm_log_t:dir setattr;
+ manage_files_pattern(fsadm_t, fsadm_log_t, fsadm_log_t)
+@@ -195,6 +198,10 @@ optional_policy(`
  
  optional_policy(`
  	udev_read_db(fsadm_t)
@@ -280,6 +290,14 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
+@@ -469,6 +477,7 @@ allow system_cronjob_t cron_spool_t:dir
+ allow system_cronjob_t cron_spool_t:file rw_file_perms;
+ 
+ allow system_cronjob_t crond_tmp_t:file { read write };
++allow cronjob_t crond_tmp_t:file { read write };
+ 
+ kernel_read_kernel_sysctls(system_cronjob_t)
+ kernel_read_network_state(system_cronjob_t)
 Index: refpolicy/policy/modules/contrib/ntp.if
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/ntp.if
@@ -340,7 +358,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -477,6 +477,24 @@ interface(`systemd_read_fifo_file_passwd
+@@ -497,6 +497,24 @@ interface(`systemd_read_fifo_file_passwd
      read_sock_files_pattern($1, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
  ')
  
@@ -466,11 +484,22 @@ Index: refpolicy/policy/modules/contrib/alsa.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/alsa.te
 +++ refpolicy/policy/modules/contrib/alsa.te
-@@ -43,6 +43,8 @@ allow alsa_t self:unix_stream_socket { a
+@@ -24,6 +24,9 @@ files_tmpfs_file(alsa_tmpfs_t)
+ type alsa_var_lib_t;
+ files_type(alsa_var_lib_t)
+ 
++type alsa_lock_t;
++files_lock_file(alsa_lock_t)
++
+ type alsa_home_t;
+ userdom_user_home_content(alsa_home_t)
+ 
+@@ -43,6 +46,9 @@ allow alsa_t self:unix_stream_socket { a
  
  allow alsa_t alsa_home_t:file read_file_perms;
  
-+files_search_locks(alsa_t)
++files_lock_filetrans(alsa_t, alsa_lock_t, file)
++allow alsa_t alsa_lock_t:file manage_file_perms;
 +
  manage_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
  manage_lnk_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
@@ -620,15 +649,124 @@ Index: refpolicy/policy/modules/system/miscfiles.fc
  /etc/timezone		--	gen_context(system_u:object_r:locale_t,s0)
  
  ifdef(`distro_debian',`
-Index: refpolicy/config/file_contexts.subs_dist
+Index: refpolicy/policy/modules/contrib/dovecot.fc
 ===================================================================
---- refpolicy.orig/config/file_contexts.subs_dist
-+++ refpolicy/config/file_contexts.subs_dist
-@@ -8,7 +8,6 @@
- # It does not perform substitutions as done by sed(1), for
- # example, but aliasing.
- # 
--/etc/init.d /etc/rc.d/init.d
- /lib32 /lib
- /lib64 /lib
- /run /var/run
+--- refpolicy.orig/policy/modules/contrib/dovecot.fc
++++ refpolicy/policy/modules/contrib/dovecot.fc
+@@ -19,6 +19,9 @@
+ /usr/lib/dovecot/deliver	--	gen_context(system_u:object_r:dovecot_deliver_exec_t,s0)
+ /usr/lib/dovecot/dovecot-auth	--	gen_context(system_u:object_r:dovecot_auth_exec_t,s0)
+ /usr/lib/dovecot/dovecot-lda	--	gen_context(system_u:object_r:dovecot_deliver_exec_t,s0)
++/usr/lib/dovecot/log	--	gen_context(system_u:object_r:dovecot_exec_t,s0)
++/usr/lib/dovecot/ssl-params	--	gen_context(system_u:object_r:dovecot_exec_t,s0)
++/usr/lib/dovecot/anvil	--	gen_context(system_u:object_r:dovecot_exec_t,s0)
+ 
+ /usr/libexec/dovecot/auth	--	gen_context(system_u:object_r:dovecot_auth_exec_t,s0)
+ /usr/libexec/dovecot/deliver	--	gen_context(system_u:object_r:dovecot_deliver_exec_t,s0)
+Index: refpolicy/policy/modules/system/locallogin.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/locallogin.te
++++ refpolicy/policy/modules/system/locallogin.te
+@@ -32,7 +32,7 @@ role system_r types sulogin_t;
+ # Local login local policy
+ #
+ 
+-allow local_login_t self:capability { dac_override chown fowner fsetid kill setgid setuid sys_nice sys_resource sys_tty_config };
++allow local_login_t self:capability { dac_override chown fowner fsetid kill setgid setuid net_admin sys_nice sys_resource sys_tty_config };
+ allow local_login_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+ allow local_login_t self:process { setrlimit setexec };
+ allow local_login_t self:fd use;
+Index: refpolicy/policy/modules/contrib/alsa.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/alsa.fc
++++ refpolicy/policy/modules/contrib/alsa.fc
+@@ -23,5 +23,7 @@ ifdef(`distro_debian',`
+ /usr/share/alsa/alsa\.conf	gen_context(system_u:object_r:alsa_etc_rw_t,s0)
+ /usr/share/alsa/pcm(/.*)?	gen_context(system_u:object_r:alsa_etc_rw_t,s0)
+ 
++/var/run/lock/asound.state.lock -- gen_context(system_u:object_r:alsa_lock_t,s0)
++
+ /var/lib/alsa(/.*)?	gen_context(system_u:object_r:alsa_var_lib_t,s0)
+ /lib/systemd/system/alsa.*\.service -- gen_context(system_u:object_r:alsa_unit_file_t,s0)
+Index: refpolicy/policy/modules/system/sysnetwork.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/sysnetwork.fc
++++ refpolicy/policy/modules/system/sysnetwork.fc
+@@ -41,6 +41,7 @@ ifdef(`distro_redhat',`
+ /sbin/dhclient.*	--	gen_context(system_u:object_r:dhcpc_exec_t,s0)
+ /sbin/dhcdbd		--	gen_context(system_u:object_r:dhcpc_exec_t,s0)
+ /sbin/dhcpcd		--	gen_context(system_u:object_r:dhcpc_exec_t,s0)
++/usr/sbin/dhcp6c	--	gen_context(system_u:object_r:dhcpc_exec_t,s0)
+ /sbin/ethtool		--	gen_context(system_u:object_r:ifconfig_exec_t,s0)
+ /sbin/ifconfig		--	gen_context(system_u:object_r:ifconfig_exec_t,s0)
+ /sbin/ip		--	gen_context(system_u:object_r:ifconfig_exec_t,s0)
+@@ -63,11 +64,13 @@ ifdef(`distro_redhat',`
+ /var/lib/dhcp3?		-d	gen_context(system_u:object_r:dhcp_state_t,s0)
+ /var/lib/dhcp3?/dhclient.*	gen_context(system_u:object_r:dhcpc_state_t,s0)
+ /var/lib/dhcpcd(/.*)?		gen_context(system_u:object_r:dhcpc_state_t,s0)
++/var/lib/dhcpv6(/.*)?		gen_context(system_u:object_r:dhcpc_state_t,s0)
+ /var/lib/dhclient(/.*)?		gen_context(system_u:object_r:dhcpc_state_t,s0)
+ /var/lib/wifiroamd(/.*)?	gen_context(system_u:object_r:dhcpc_state_t,s0)
+ 
+ /var/run/dhclient.*	--	gen_context(system_u:object_r:dhcpc_var_run_t,s0)
+ /var/run/dhcpcd(/.*)?		gen_context(system_u:object_r:dhcpc_var_run_t,s0)
++/var/run/dhcp6c.pid	--	gen_context(system_u:object_r:dhcpc_var_run_t,s0)
+ 
+ ifdef(`distro_gentoo',`
+ /var/lib/dhcpc(/.*)?		gen_context(system_u:object_r:dhcpc_state_t,s0)
+Index: refpolicy/policy/modules/system/getty.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/getty.te
++++ refpolicy/policy/modules/system/getty.te
+@@ -34,7 +34,7 @@ files_pid_file(getty_var_run_t)
+ 
+ # Use capabilities.
+ allow getty_t self:capability { dac_override chown setgid sys_resource sys_tty_config fowner fsetid };
+-dontaudit getty_t self:capability sys_tty_config;
++dontaudit getty_t self:capability { sys_admin sys_tty_config };
+ allow getty_t self:process { getpgid setpgid getsession signal_perms };
+ allow getty_t self:fifo_file rw_fifo_file_perms;
+ 
+Index: refpolicy/policy/modules/contrib/gnome.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/gnome.te
++++ refpolicy/policy/modules/contrib/gnome.te
+@@ -90,6 +90,12 @@ userdom_user_tmp_filetrans(gconfd_t, gco
+ userdom_manage_user_tmp_dirs(gconfd_t)
+ userdom_tmp_filetrans_user_tmp(gconfd_t, dir)
+ 
++# for /var/lib/gconf/defaults
++files_read_var_lib_files(gconfd_t)
++
++# for /proc/filesystems
++kernel_read_system_state(gconfd_t)
++
+ optional_policy(`
+ 	dbus_all_session_domain(gconfd_t, gconfd_exec_t)
+ 
+Index: refpolicy/policy/modules/system/mount.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/mount.if
++++ refpolicy/policy/modules/system/mount.if
+@@ -191,3 +191,21 @@ interface(`mount_read_loopback_files',`
+ 
+ 	allow $1 mount_loopback_t:file read_file_perms;
+ ')
++
++########################################
++## <summary>
++##	Getattr on mount_var_run_t
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`stat_mount_var_run',`
++	gen_require(`
++		type mount_var_run_t;
++	')
++
++	allow $1 mount_var_run_t:file getattr;
++')
