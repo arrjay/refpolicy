@@ -275,7 +275,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -336,6 +336,14 @@ ifdef(`distro_debian',`
+@@ -336,6 +336,18 @@ ifdef(`distro_debian',`
  	optional_policy(`
  		logwatch_search_cache_dir(crond_t)
  	')
@@ -287,10 +287,14 @@ Index: refpolicy/policy/modules/contrib/cron.te
 +
 +optional_policy(`
 +	ntp_read_conf(system_cronjob_t)
++')
++
++optional_policy(`
++	apache_unlink_var_lib(system_cronjob_t)
  ')
  
  ifdef(`distro_redhat',`
-@@ -469,6 +477,7 @@ allow system_cronjob_t cron_spool_t:dir
+@@ -469,6 +481,7 @@ allow system_cronjob_t cron_spool_t:dir
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
  allow system_cronjob_t crond_tmp_t:file { read write };
@@ -298,6 +302,12 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
+@@ -736,3 +749,5 @@ tunable_policy(`cron_userdomain_transiti
+ optional_policy(`
+ 	unconfined_domain(unconfined_cronjob_t)
+ ')
++
++initrc_manage_service(unconfined_cronjob_t)
 Index: refpolicy/policy/modules/contrib/ntp.if
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/ntp.if
@@ -387,7 +397,24 @@ Index: refpolicy/policy/modules/contrib/clamav.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/clamav.te
 +++ refpolicy/policy/modules/contrib/clamav.te
-@@ -215,6 +215,10 @@ corenet_sendrecv_http_client_packets(fre
+@@ -73,7 +73,7 @@ logging_log_file(freshclam_var_log_t)
+ # Clamd local policy
+ #
+ 
+-allow clamd_t self:capability { kill setgid setuid dac_override };
++allow clamd_t self:capability { chown fowner fsetid kill setgid setuid dac_override };
+ dontaudit clamd_t self:capability sys_tty_config;
+ allow clamd_t self:process signal;
+ allow clamd_t self:fifo_file rw_fifo_file_perms;
+@@ -107,6 +107,7 @@ kernel_dontaudit_list_proc(clamd_t)
+ kernel_read_sysctl(clamd_t)
+ kernel_read_kernel_sysctls(clamd_t)
+ kernel_read_system_state(clamd_t)
++kernel_read_vm_sysctls(clamd_t)
+ 
+ corecmd_exec_shell(clamd_t)
+ 
+@@ -215,6 +216,10 @@ corenet_sendrecv_http_client_packets(fre
  corenet_tcp_connect_http_port(freshclam_t)
  corenet_tcp_sendrecv_http_port(freshclam_t)
  
@@ -457,7 +484,43 @@ Index: refpolicy/policy/modules/contrib/postfix.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postfix.te
 +++ refpolicy/policy/modules/contrib/postfix.te
-@@ -654,6 +654,10 @@ optional_policy(`
+@@ -234,6 +234,8 @@ manage_files_pattern(postfix_master_t, p
+ manage_lnk_files_pattern(postfix_master_t, postfix_spool_flush_t, postfix_spool_flush_t)
+ filetrans_pattern(postfix_master_t, postfix_spool_t, postfix_spool_flush_t, dir, "flush")
+ 
++hostname_exec(postfix_master_t)
++
+ create_dirs_pattern(postfix_master_t, postfix_spool_t, postfix_private_t)
+ manage_fifo_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
+ manage_sock_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
+@@ -371,6 +373,7 @@ allow postfix_cleanup_t self:process set
+ 
+ allow postfix_cleanup_t postfix_smtpd_t:tcp_socket rw_stream_socket_perms;
+ allow postfix_cleanup_t postfix_smtpd_t:unix_stream_socket rw_socket_perms;
++allow postfix_cleanup_t postfix_smtpd_t:fd use;
+ 
+ allow postfix_cleanup_t postfix_spool_maildrop_t:dir list_dir_perms;
+ allow postfix_cleanup_t postfix_spool_maildrop_t:file read_file_perms;
+@@ -400,6 +403,10 @@ optional_policy(`
+ 	mailman_read_data_files(postfix_cleanup_t)
+ ')
+ 
++optional_policy(`
++	dkim_stream_connect(postfix_cleanup_t)
++')
++
+ ########################################
+ #
+ # Local local policy
+@@ -432,6 +439,7 @@ tunable_policy(`postfix_local_write_mail
+ optional_policy(`
+ 	clamav_search_lib(postfix_local_t)
+ 	clamav_exec_clamscan(postfix_local_t)
++	clamav_stream_connect(postfix_smtpd_t)
+ ')
+ 
+ optional_policy(`
+@@ -654,6 +662,10 @@ optional_policy(`
  	ppp_sigchld(postfix_postqueue_t)
  ')
  
@@ -770,3 +833,392 @@ Index: refpolicy/policy/modules/system/mount.if
 +
 +	allow $1 mount_var_run_t:file getattr;
 +')
+Index: refpolicy/policy/modules/contrib/dovecot.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/dovecot.te
++++ refpolicy/policy/modules/contrib/dovecot.te
+@@ -92,7 +92,7 @@ miscfiles_read_localization(dovecot_doma
+ # Local policy
+ #
+ 
+-allow dovecot_t self:capability { dac_override dac_read_search chown fsetid kill setgid setuid sys_chroot };
++allow dovecot_t self:capability { dac_override dac_read_search chown fsetid kill setgid setuid sys_chroot sys_resource };
+ dontaudit dovecot_t self:capability sys_tty_config;
+ allow dovecot_t self:process { setrlimit signal_perms getcap setcap setsched };
+ allow dovecot_t self:tcp_socket { accept listen };
+@@ -133,6 +133,9 @@ allow dovecot_t dovecot_auth_t:process s
+ 
+ domtrans_pattern(dovecot_t, dovecot_auth_exec_t, dovecot_auth_t)
+ 
++files_list_usr(dovecot_t)
++files_read_usr_files(dovecot_t)
++
+ corenet_all_recvfrom_unlabeled(dovecot_t)
+ corenet_all_recvfrom_netlabel(dovecot_t)
+ corenet_tcp_sendrecv_generic_if(dovecot_t)
+@@ -242,6 +245,7 @@ files_tmp_filetrans(dovecot_auth_t, dove
+ 
+ allow dovecot_auth_t dovecot_var_run_t:dir list_dir_perms;
+ manage_sock_files_pattern(dovecot_auth_t, dovecot_var_run_t, dovecot_var_run_t)
++allow dovecot_auth_t dovecot_var_run_t:file manage_file_perms;
+ 
+ allow dovecot_auth_t dovecot_t:unix_stream_socket { connectto rw_stream_socket_perms };
+ 
+Index: refpolicy/policy/modules/contrib/dkim.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/dkim.te
++++ refpolicy/policy/modules/contrib/dkim.te
+@@ -20,16 +20,20 @@ init_daemon_run_dir(dkim_milter_data_t,
+ # Local policy
+ #
+ 
+-allow dkim_milter_t self:capability { setgid setuid };
++allow dkim_milter_t self:capability { dac_override setgid setuid };
+ allow dkim_milter_t self:process signal;
+ allow dkim_milter_t self:unix_stream_socket create_stream_socket_perms;
+ 
+ read_files_pattern(dkim_milter_t, dkim_milter_private_key_t, dkim_milter_private_key_t)
+ 
+ kernel_read_kernel_sysctls(dkim_milter_t)
++kernel_read_vm_sysctls(dkim_milter_t)
+ 
+ dev_read_urand(dkim_milter_t)
+ 
+ files_search_spool(dkim_milter_t)
+ 
+ mta_read_config(dkim_milter_t)
++
++corenet_udp_bind_generic_node(dkim_milter_t)
++corenet_udp_bind_all_unreserved_ports(dkim_milter_t)
+Index: refpolicy/policy/modules/contrib/perdition.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/perdition.fc
++++ refpolicy/policy/modules/contrib/perdition.fc
+@@ -2,6 +2,6 @@
+ 
+ /etc/perdition(/.*)?	gen_context(system_u:object_r:perdition_etc_t,s0)
+ 
+-/usr/sbin/perdition	--	gen_context(system_u:object_r:perdition_exec_t,s0)
++/usr/sbin/perdition.*	--	gen_context(system_u:object_r:perdition_exec_t,s0)
+ 
+ /var/run/perdition\.pid	--	gen_context(system_u:object_r:perdition_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/nagios.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/nagios.te
++++ refpolicy/policy/modules/contrib/nagios.te
+@@ -214,12 +214,15 @@ optional_policy(`
+ # Nrpe local policy
+ #
+ 
+-allow nrpe_t self:capability { setuid setgid };
++allow nrpe_t self:capability { dac_override setuid setgid };
+ dontaudit nrpe_t self:capability { sys_tty_config sys_resource };
+ allow nrpe_t self:process { setpgid signal_perms setsched setrlimit };
+ allow nrpe_t self:fifo_file rw_fifo_file_perms;
+ allow nrpe_t self:tcp_socket { accept listen };
+ 
++allow nrpe_t nagios_etc_t:dir list_dir_perms;
++allow nrpe_t nagios_etc_t:file read_file_perms;
++
+ allow nrpe_t nagios_plugin_domain:process { signal sigkill };
+ 
+ read_files_pattern(nrpe_t, nagios_etc_t, nrpe_etc_t)
+Index: refpolicy/policy/modules/contrib/apache.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/apache.te
++++ refpolicy/policy/modules/contrib/apache.te
+@@ -285,6 +285,7 @@ role httpd_helper_roles types httpd_help
+ 
+ type httpd_initrc_exec_t;
+ init_script_file(httpd_initrc_exec_t)
++init_rw_inherited_script_tmp_files(httpd_t)
+ 
+ type httpd_keytab_t;
+ files_type(httpd_keytab_t)
+Index: refpolicy/policy/modules/contrib/dkim.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/dkim.if
++++ refpolicy/policy/modules/contrib/dkim.if
+@@ -37,3 +37,23 @@ interface(`dkim_admin',`
+ 	files_search_pids($1)
+ 	admin_pattern($1, dkim_milter_data_t)
+ ')
++
++########################################
++## <summary>
++##	Allow a domain to talk to dkim via Unix domain socket
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dkim_stream_connect',`
++	gen_require(`
++		type dkim_milter_data_t, dkim_milter_t;
++	')
++
++	allow $1 dkim_milter_data_t:dir search_dir_perms;
++	allow postfix_cleanup_t dkim_milter_data_t:sock_file write;
++	allow postfix_cleanup_t dkim_milter_t:unix_stream_socket connectto;
++')
+Index: refpolicy/policy/support/obj_perm_sets.spt
+===================================================================
+--- refpolicy.orig/policy/support/obj_perm_sets.spt
++++ refpolicy/policy/support/obj_perm_sets.spt
+@@ -159,6 +159,7 @@ define(`exec_file_perms',`{ getattr open
+ define(`append_file_perms',`{ getattr open append lock ioctl }')
+ define(`write_file_perms',`{ getattr open write append lock ioctl }')
+ define(`rw_file_perms',`{ getattr open read write append ioctl lock }')
++define(`rw_inherited_file_perms',`{ getattr read write append ioctl lock }')
+ define(`create_file_perms',`{ getattr create open }')
+ define(`rename_file_perms',`{ getattr rename }')
+ define(`delete_file_perms',`{ getattr unlink }')
+Index: refpolicy/policy/modules/contrib/perdition.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/perdition.te
++++ refpolicy/policy/modules/contrib/perdition.te
+@@ -23,7 +23,7 @@ files_pid_file(perdition_var_run_t)
+ # Local policy
+ #
+ 
+-allow perdition_t self:capability { setgid setuid };
++allow perdition_t self:capability { chown dac_override fowner setgid setuid };
+ dontaudit perdition_t self:capability sys_tty_config;
+ allow perdition_t self:process signal_perms;
+ allow perdition_t self:tcp_socket { accept listen };
+@@ -33,7 +33,8 @@ allow perdition_t perdition_etc_t:file r
+ allow perdition_t perdition_etc_t:lnk_file read_lnk_file_perms;
+ 
+ manage_files_pattern(perdition_t, perdition_var_run_t, perdition_var_run_t)
+-files_pid_filetrans(perdition_t, perdition_var_run_t, file)
++allow perdition_t perdition_var_run_t:dir manage_dir_perms;
++files_pid_filetrans(perdition_t, perdition_var_run_t, { file dir })
+ 
+ kernel_read_kernel_sysctls(perdition_t)
+ kernel_list_proc(perdition_t)
+@@ -46,11 +47,18 @@ corenet_tcp_sendrecv_generic_node(perdit
+ corenet_tcp_sendrecv_all_ports(perdition_t)
+ corenet_tcp_bind_generic_node(perdition_t)
+ 
++corenet_tcp_connect_pop_port(perdition_t)
+ corenet_sendrecv_pop_server_packets(perdition_t)
+ corenet_tcp_bind_pop_port(perdition_t)
+ corenet_tcp_sendrecv_pop_port(perdition_t)
+ 
++corenet_tcp_connect_sieve_port(perdition_t)
++corenet_sendrecv_sieve_server_packets(perdition_t)
++corenet_tcp_bind_sieve_port(perdition_t)
++corenet_tcp_sendrecv_sieve_port(perdition_t)
++
+ dev_read_sysfs(perdition_t)
++dev_read_urand(perdition_t)
+ 
+ domain_use_interactive_fds(perdition_t)
+ 
+@@ -71,5 +79,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	mysql_tcp_connect(perdition_t)
++	mysql_stream_connect(perdition_t)
++')
++
++optional_policy(`
+ 	udev_read_db(perdition_t)
+ ')
+Index: refpolicy/policy/modules/kernel/corecommands.fc
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy/policy/modules/kernel/corecommands.fc
+@@ -196,6 +196,7 @@ ifdef(`distro_gentoo',`
+ 
+ /usr/lib/avahi/avahi-daemon-check-dns\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/ccache/bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
++/usr/lib/dovecot/.+			gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+Index: refpolicy/policy/modules/contrib/courier.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/courier.te
++++ refpolicy/policy/modules/contrib/courier.te
+@@ -100,6 +100,7 @@ allow courier_authdaemon_t courier_tcpd_
+ allow courier_authdaemon_t courier_tcpd_t:unix_stream_socket rw_stream_socket_perms;
+ 
+ can_exec(courier_authdaemon_t, courier_exec_t)
++corecmd_exec_shell(courier_authdaemon_t)
+ 
+ domtrans_pattern(courier_authdaemon_t, courier_pop_exec_t, courier_pop_t)
+ 
+Index: refpolicy/policy/modules/contrib/milter.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/milter.te
++++ refpolicy/policy/modules/contrib/milter.te
+@@ -94,6 +94,7 @@ mta_read_config(regex_milter_t)
+ #
+ 
+ allow spamass_milter_t spamass_milter_state_t:dir search_dir_perms;
++allow spamass_milter_t self:process sigkill;
+ 
+ kernel_read_system_state(spamass_milter_t)
+ 
+@@ -106,3 +107,7 @@ mta_send_mail(spamass_milter_t)
+ optional_policy(`
+ 	spamassassin_domtrans_client(spamass_milter_t)
+ ')
++
++optional_policy(`
++	postfix_search_spool(spamass_milter_t)
++')
+Index: refpolicy/policy/modules/contrib/procmail.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/procmail.fc
++++ refpolicy/policy/modules/contrib/procmail.fc
+@@ -1,6 +1,7 @@
+ HOME_DIR/\.procmailrc	--	gen_context(system_u:object_r:procmail_home_t,s0)
+ 
+ /usr/bin/procmail	--	gen_context(system_u:object_r:procmail_exec_t,s0)
++/usr/bin/maildrop	--	gen_context(system_u:object_r:procmail_exec_t,s0)
+ 
+ /var/log/procmail\.log.*	--	gen_context(system_u:object_r:procmail_log_t,s0)
+ /var/log/procmail(/.*)?	gen_context(system_u:object_r:procmail_log_t,s0)
+Index: refpolicy/policy/modules/contrib/courier.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/courier.if
++++ refpolicy/policy/modules/contrib/courier.if
+@@ -65,11 +65,11 @@ interface(`courier_domtrans_authdaemon',
+ #
+ interface(`courier_stream_connect_authdaemon',`
+ 	gen_require(`
+-		type courier_authdaemon_t, courier_spool_t;
++		type courier_authdaemon_t, courier_var_run_t;
+ 	')
+ 
+ 	files_search_spool($1)
+-	stream_connect_pattern($1, courier_spool_t, courier_spool_t, courier_authdaemon_t)
++	stream_connect_pattern($1, courier_var_run_t, courier_var_run_t, courier_authdaemon_t)
+ ')
+ 
+ ########################################
+Index: refpolicy/policy/modules/contrib/procmail.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/procmail.te
++++ refpolicy/policy/modules/contrib/procmail.te
+@@ -145,3 +145,8 @@ optional_policy(`
+ 	spamassassin_domtrans_client(procmail_t)
+ 	spamassassin_read_lib_files(procmail_t)
+ ')
++
++optional_policy(`
++	courier_read_config(procmail_t)
++	courier_stream_connect_authdaemon(procmail_t)
++')
+Index: refpolicy/policy/modules/contrib/spamassassin.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/spamassassin.te
++++ refpolicy/policy/modules/contrib/spamassassin.te
+@@ -46,6 +46,7 @@ type spamc_exec_t;
+ typealias spamc_t alias { user_spamc_t staff_spamc_t sysadm_spamc_t };
+ typealias spamc_t alias { auditadm_spamc_t secadm_spamc_t };
+ userdom_user_application_domain(spamc_t, spamc_exec_t)
++role system_r types spamc_t;
+ 
+ type spamc_tmp_t;
+ typealias spamc_tmp_t alias { user_spamc_tmp_t staff_spamc_tmp_t sysadm_spamc_tmp_t };
+Index: refpolicy/policy/modules/contrib/mta.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mta.te
++++ refpolicy/policy/modules/contrib/mta.te
+@@ -203,6 +203,10 @@ init_use_script_ptys(system_mail_t)
+ userdom_use_user_terminals(system_mail_t)
+ 
+ optional_policy(`
++	permit_in_unconfined_r(system_mail_t)
++')
++
++optional_policy(`
+ 	apache_read_squirrelmail_data(system_mail_t)
+ 	apache_append_squirrelmail_data(system_mail_t)
+ 	apache_dontaudit_append_log(system_mail_t)
+Index: refpolicy/policy/modules/contrib/apache.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/apache.if
++++ refpolicy/policy/modules/contrib/apache.if
+@@ -1346,3 +1346,22 @@ interface(`apache_admin',`
+ 	apache_run_all_scripts($1, $2)
+ 	apache_run_helper($1, $2)
+ ')
++
++########################################
++## <summary>
++##	Unlink httpd_var_lib_t files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain that can unlink the files
++##	</summary>
++## </param>
++#
++interface(`apache_unlink_var_lib',`
++	gen_require(`
++		type httpd_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	allow $1 httpd_var_lib_t:file unlink;
++')
+Index: refpolicy/policy/modules/system/unconfined.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/unconfined.if
++++ refpolicy/policy/modules/system/unconfined.if
+@@ -318,6 +318,23 @@ interface(`unconfined_run_to',`
+ 
+ ########################################
+ ## <summary>
++##	Allow the specified domain to be in the unconfined role
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to permit in unconfined_r
++##	</summary>
++## </param>
++#
++interface(`permit_in_unconfined_r',`
++	gen_require(`
++		role unconfined_r;
++	')
++	role unconfined_r types $1;
++')
++
++########################################
++## <summary>
+ ##	Inherit file descriptors from the unconfined domain.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy/policy/modules/contrib/xen.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/xen.fc
++++ refpolicy/policy/modules/contrib/xen.fc
+@@ -14,7 +14,7 @@
+ /usr/sbin/xenstored	--	gen_context(system_u:object_r:xenstored_exec_t,s0)
+ /usr/sbin/xl	--	gen_context(system_u:object_r:xm_exec_t,s0)
+ /usr/sbin/xm	--	gen_context(system_u:object_r:xm_exec_t,s0)
+-
++/usr/lib/xen-.*/xl --	gen_context(system_u:object_r:xm_exec_t,s0)
+ /var/lib/xen(/.*)?	gen_context(system_u:object_r:xend_var_lib_t,s0)
+ /var/lib/xen/images(/.*)?	gen_context(system_u:object_r:xen_image_t,s0)
+ /var/lib/xend(/.*)?	gen_context(system_u:object_r:xend_var_lib_t,s0)
+Index: refpolicy/policy/modules/contrib/apache.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/apache.fc
++++ refpolicy/policy/modules/contrib/apache.fc
+@@ -106,6 +106,7 @@ ifdef(`distro_suse',`
+ /var/lib/cherokee(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
+ /var/lib/dav(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
+ /var/lib/php(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
++/var/lib/php5(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
+ /var/lib/dokuwiki(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ /var/lib/drupal.*	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ /var/lib/glpi(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)

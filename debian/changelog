@@ -1,3 +1,50 @@
+refpolicy (2:2.20140421-9) unstable; urgency=medium
+
+  * Allow dovecot_t to read /usr/share/dovecot/protocols.d
+    Allow dovecot_t capability sys_resource
+    Label /usr/lib/dovecot/* as bin_t unless specified otherwise
+    Allow dovecot_auth_t to manage dovecot_var_run_t for auth tokens
+  * Allow clamd_t capability { chown fowner fsetid }
+    Allow clamd_t to read sysctl_vm_t
+  * Allow dkim_milter_t capability dac_override and read sysctl_vm_t
+    allow dkim_milter_t to bind to unreserved UDP ports
+  * Label all hard-links of perdition perdition_exec_t
+    Allow perdition to read /dev/urandom and capabilities dac_override, chown,
+    and fowner
+    Allow perdition file trans to perdition_var_run_t for directories
+    Also proxy the sieve service - sieve_port_t
+    Allow connecting to mysql for map data
+  * Allow nrpe_t to read nagios_etc_t and have capability dac_override
+  * Allow httpd_t to write to initrc_tmp_t files
+    Label /var/lib/php5(/.*)? as httpd_var_lib_t
+  * Allow postfix_cleanup_t to talk to the dkim filter
+    allow postfix_cleanup_t to use postfix_smtpd_t fds (for milters)
+    allow postfix_smtpd_t to talk to clamd_t via unix sockets
+    allow postfix_master_t to execute hostname for Debian startup scripts
+  * Allow unconfined_cronjob_t role system_r and allow it to restart daemons
+    via systemd
+    Allow system_cronjob_t to unlink httpd_var_lib_t files (for PHP session
+    cleanup)
+  * Allow spamass_milter_t to search the postfix spool and sigkill itself
+    allow spamc_t to be in system_r for when spamass_milter runs it
+  * Allow courier_authdaemon_t to execute a shell
+  * Label /usr/bin/maildrop as procmail_exec_t
+    Allow procmail_t to connect to courier authdaemon for the courier maildrop,
+    also changed courier_stream_connect_authdaemon to use courier_var_run_t
+    for the type of the socket file
+    Allow procmail_t to read courier config for maildrop.
+  * Allow system_mail_t to be in role unconfined_r
+  * Label ldconfig.real instead of ldconfig as ldconfig_exec_t
+  * Allow apt_t to list directories of type apt_var_log_t
+  * Allow dpkg_t to execute dpkg_tmp_t and load kernel modules for
+    dpkg-preconfigure
+  * Allow dpkg_script_t to create udp sockets, netlink audit sockets, manage
+    shadow files, process setfscreate, and capabilities audit_write net_admin
+    sys_ptrace
+  * Label /usr/lib/xen-*/xl as xm_exec_t
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 06 Feb 2015 02:31:05 +1100
+
 refpolicy (2:2.20140421-8) unstable; urgency=medium
 
   * Make all of /etc/ssl apart from /etc/ssl/private etc_t

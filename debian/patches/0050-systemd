@@ -553,7 +553,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	</summary>
  ## </param>
  #
-@@ -860,23 +1057,45 @@ interface(`init_spec_domtrans_script',`
+@@ -860,19 +1057,41 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -576,11 +576,11 @@ Index: refpolicy/policy/modules/system/init.if
  	ifdef(`enable_mls',`
 -		range_transition $1 initrc_exec_t:process s0 - mls_systemhigh;
 +		range_transition $1 init_script_file_type:process s0 - mls_systemhigh;
- 	')
- ')
- 
- ########################################
- ## <summary>
++	')
++')
++
++########################################
++## <summary>
 +##	Execute a file in a bin directory
 +##	in the initrc_t domain
 +## </summary>
@@ -593,16 +593,12 @@ Index: refpolicy/policy/modules/system/init.if
 +interface(`init_bin_domtrans_spec',`
 +	gen_require(`
 +		type initrc_t;
-+	')
+ 	')
 +
 +	corecmd_bin_domtrans($1, initrc_t)
-+')
-+
-+########################################
-+## <summary>
- ##	Execute a init script in a specified domain.
- ## </summary>
- ## <desc>
+ ')
+ 
+ ########################################
 @@ -928,9 +1147,14 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
@@ -1208,7 +1204,7 @@ Index: refpolicy/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1872,3 +2582,21 @@ interface(`init_shell_domtrans',`
+@@ -1872,3 +2582,39 @@ interface(`init_shell_domtrans',`
  	allow $1 init_t:fifo_file rw_file_perms;
  	allow $1 init_t:process sigchld;
  ')
@@ -1229,6 +1225,24 @@ Index: refpolicy/policy/modules/system/init.if
 +	')
 +
 +	allow $1 initrc_exec_t:service status;
++')
++
++########################################
++## <summary>
++##      Allow manage service for initrc_exec_t scripts
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Target domain
++##      </summary>
++## </param>
++#
++interface(`initrc_manage_service',`
++	gen_require(`
++		type initrc_exec_t;
++	')
++
++	allow $1 initrc_exec_t:service { start stop status };
 +')
 Index: refpolicy/policy/modules/system/init.te
 ===================================================================
@@ -3742,12 +3756,13 @@ Index: refpolicy/policy/modules/system/unconfined.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/unconfined.te
 +++ refpolicy/policy/modules/system/unconfined.te
-@@ -59,6 +59,11 @@ ifdef(`direct_sysadm_daemon',`
+@@ -59,6 +59,12 @@ ifdef(`direct_sysadm_daemon',`
  ')
  
  optional_policy(`
 +	systemd_config_all_services(unconfined_t)
 +	init_status(unconfined_t)
++	initrc_manage_service(unconfined_t)
 +')
 +
 +optional_policy(`

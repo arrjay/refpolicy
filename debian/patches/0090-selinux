@@ -341,7 +341,53 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dpkg.te
 +++ refpolicy/policy/modules/contrib/dpkg.te
-@@ -274,6 +274,7 @@ selinux_compute_access_vector(dpkg_scrip
+@@ -72,6 +72,7 @@ allow dpkg_t dpkg_lock_t:file manage_fil
+ manage_dirs_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
+ manage_files_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
+ files_tmp_filetrans(dpkg_t, dpkg_tmp_t, { file dir })
++can_exec(dpkg_t, dpkg_tmp_t)
+ 
+ manage_dirs_pattern(dpkg_t, dpkg_tmpfs_t, dpkg_tmpfs_t)
+ manage_files_pattern(dpkg_t, dpkg_tmpfs_t, dpkg_tmpfs_t)
+@@ -87,6 +88,9 @@ files_var_lib_filetrans(dpkg_t, dpkg_var
+ kernel_read_system_state(dpkg_t)
+ kernel_read_kernel_sysctls(dpkg_t)
+ 
++# for dpkg-preconfigure
++kernel_request_load_module(dpkg_t)
++
+ corecmd_exec_all_executables(dpkg_t)
+ 
+ corenet_all_recvfrom_unlabeled(dpkg_t)
+@@ -208,8 +212,8 @@ optional_policy(`
+ # Script Local policy
+ #
+ 
+-allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_chroot sys_nice mknod kill };
+-allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
++allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid net_admin ipc_lock sys_chroot sys_ptrace sys_nice mknod audit_write };
++allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setrlimit execmem execstack execheap };
+ allow dpkg_script_t self:fd use;
+ allow dpkg_script_t self:fifo_file rw_fifo_file_perms;
+ allow dpkg_script_t self:unix_dgram_socket create_socket_perms;
+@@ -220,6 +224,8 @@ allow dpkg_script_t self:shm create_shm_
+ allow dpkg_script_t self:sem create_sem_perms;
+ allow dpkg_script_t self:msgq create_msgq_perms;
+ allow dpkg_script_t self:msg { send receive };
++allow dpkg_script_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
++allow dpkg_script_t self:udp_socket create_socket_perms;
+ 
+ allow dpkg_script_t dpkg_tmp_t:file read_file_perms;
+ 
+@@ -237,6 +243,7 @@ fs_tmpfs_filetrans(dpkg_script_t, dpkg_s
+ restart_all_daemons(dpkg_script_t)
+ kernel_read_kernel_sysctls(dpkg_script_t)
+ kernel_read_system_state(dpkg_script_t)
++auth_manage_shadow(dpkg_script_t)
+ 
+ corecmd_exec_all_executables(dpkg_script_t)
+ 
+@@ -274,13 +281,13 @@ selinux_compute_access_vector(dpkg_scrip
  selinux_compute_create_context(dpkg_script_t)
  selinux_compute_relabel_context(dpkg_script_t)
  selinux_compute_user_contexts(dpkg_script_t)
@@ -349,6 +395,13 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  storage_raw_read_fixed_disk(dpkg_script_t)
  storage_raw_write_fixed_disk(dpkg_script_t)
+ 
+ term_use_all_terms(dpkg_script_t)
+ 
+-auth_dontaudit_getattr_shadow(dpkg_script_t)
+ files_manage_non_auth_files(dpkg_script_t)
+ 
+ init_all_labeled_script_domtrans(dpkg_script_t)
 Index: refpolicy/policy/modules/system/userdomain.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.te
@@ -461,4 +514,44 @@ Index: refpolicy/policy/modules/services/xserver.te
 +userdom_user_home_dir_filetrans(xdm_t, user_home_t, file, ".xsession-errors")
  
  kernel_request_load_module(xauth_t)
+ 
+Index: refpolicy/policy/modules/contrib/cron.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/cron.te
++++ refpolicy/policy/modules/contrib/cron.te
+@@ -733,6 +733,7 @@ optional_policy(`
+ type unconfined_cronjob_t;
+ domain_type(unconfined_cronjob_t)
+ domain_cron_exemption_target(unconfined_cronjob_t)
++role system_r types unconfined_cronjob_t;
+ 
+ dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
+ 
+Index: refpolicy/policy/modules/system/libraries.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/libraries.fc
++++ refpolicy/policy/modules/system/libraries.fc
+@@ -98,7 +98,11 @@ ifdef(`distro_redhat',`
+ #
+ # /sbin
+ #
++ifdef(`distro_debian',`
++/sbin/ldconfig.real				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
++',`
+ /sbin/ldconfig				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
++')
+ 
+ #
+ # /usr
+Index: refpolicy/policy/modules/contrib/apt.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/apt.te
++++ refpolicy/policy/modules/contrib/apt.te
+@@ -76,6 +76,7 @@ files_var_lib_filetrans(apt_t, apt_var_l
+ 
+ allow apt_t apt_var_log_t:file manage_file_perms;
+ logging_log_filetrans(apt_t, apt_var_log_t, file)
++allow apt_t apt_var_log_t:dir list_dir_perms;
+ 
+ can_exec(apt_t, apt_exec_t)
  
