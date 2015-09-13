@@ -3,15 +3,29 @@ refpolicy (2:2.20140421-9.1) UNRELEASED; urgency=medium
   * Allow ntpd_t to delete files for peerstats and loopstats
   * Add correct file labels for squid3 and tunable for squid pinger raw net
     access (default true)
-  * Allow qemu_t to read crypto sysctls
-  * Create xen_lock_t file lock files xl creates
+  * Allow qemu_t to read crypto sysctls, rw xenfs files, and connect to xenstored
+    unix sockets
+  * Allow qemu_t to read sysfs files for cpu online
+  * Allow qemu to append xend_var_log_t for /var/log/xen/qemu-dm-*
   * Allow xm_t (xl program) to create and rename xend_var_log_t files, read
     kernel images, execute qemu, and inherit fds from sshd etc.
+  * Allow xm_t and iptables_t to manage udev_var_run_t to communicate via
+    /run/xen-hotplug/iptables for when vif-bridge runs iptables
+  * Allow xm_t to write to xen_lock_t files not var_lock_t
+  * Allow xm_t to load kernel modules
+  * Allow xm_t to signal qemu_t and talk to it by unix domain sockets
+  * dontaudit xm_t searching home dir content
+  * Label /run/xen as xend_var_run_t
+  * Label /var/lock/xl as xen_lock_t
   * allow unconfined_t to execute xl/xm in xm_t domain.
   * Allow system_cronjob_t to configure all systemd services (restart all
     daemons)
   * Allow dpkg_script_t and unconfined_t to manage systemd service files of
     type null_device_t (symlinks to /dev/null)
+  * Label /var/run/lwresd/lwresd.pid as named_var_run_t
+  * Label /run/xen/qmp* as qemu_var_run_t
+  * Also label squid3.pid
+  * Allow iptables_t to be in unconfined_r (for Xen)
 
  -- Russell Coker <russell@coker.com.au>  Sun, 10 May 2015 10:36:43 +1000
 

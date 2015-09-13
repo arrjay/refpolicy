@@ -162,34 +162,51 @@ Index: refpolicy/policy/modules/contrib/xen.te
  
  fs_search_xenfs(xenstored_t)
  fs_manage_xenfs_files(xenstored_t)
-@@ -471,11 +479,17 @@ xen_append_log(xenstored_t)
+@@ -470,12 +478,24 @@ xen_append_log(xenstored_t)
+ # xm local policy
  #
  
- allow xm_t self:capability { setpcap dac_override ipc_lock sys_nice sys_tty_config };
+-allow xm_t self:capability { setpcap dac_override ipc_lock sys_nice sys_tty_config };
 -allow xm_t self:process { getcap getsched setsched setcap signal };
++allow xm_t self:capability { dac_override setpcap net_admin ipc_lock sys_nice sys_tty_config };
 +allow xm_t self:process { getcap getsched setsched setcap signal sigkill };
  allow xm_t self:fifo_file rw_fifo_file_perms;
  allow xm_t self:unix_stream_socket { accept connectto listen };
  allow xm_t self:tcp_socket { accept listen };
  
-+allow xm_t var_lock_t:file manage_file_perms;
 +files_lock_filetrans(xm_t, xen_lock_t, file)
++allow xm_t xen_lock_t:file write_file_perms;
 +domain_use_interactive_fds(xm_t)
++
++userdom_dontaudit_search_user_home_content(xm_t)
++
++# for vif-bridge to write to /run/xen-hotplug/iptables
++# maybe we need a different label for /run/xen-hotplug
++udev_manage_pid_files(xm_t)
 +
 +manage_files_pattern(xm_t, xend_var_log_t, xend_var_log_t)
 +
  manage_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
  manage_fifo_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
  manage_sock_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
-@@ -494,6 +508,7 @@ xen_stream_connect_xenstore(xm_t)
+@@ -494,12 +514,16 @@ xen_stream_connect_xenstore(xm_t)
  
  can_exec(xm_t, xm_exec_t)
  
++kernel_load_module(xm_t)
++kernel_request_load_module(xm_t)
 +files_read_kernel_img(xm_t)
  kernel_read_system_state(xm_t)
  kernel_read_network_state(xm_t)
  kernel_read_kernel_sysctls(xm_t)
-@@ -563,6 +578,14 @@ tunable_policy(`xen_use_samba',`
+ kernel_read_sysctl(xm_t)
+ kernel_read_xen_state(xm_t)
+ kernel_write_xen_state(xm_t)
++sysnet_domtrans_ifconfig(xm_t)
+ 
+ corecmd_exec_bin(xm_t)
+ corecmd_exec_shell(xm_t)
+@@ -563,6 +587,20 @@ tunable_policy(`xen_use_samba',`
  ')
  
  optional_policy(`
@@ -198,6 +215,12 @@ Index: refpolicy/policy/modules/contrib/xen.te
 +
 +optional_policy(`
 +	qemu_domtrans(xm_t)
++	qemu_signal(xm_t)
++	qemu_stream_connect(xm_t)
++')
++
++optional_policy(`
++	iptables_domtrans(xm_t)
 +')
 +
 +optional_policy(`
@@ -1262,6 +1285,20 @@ Index: refpolicy/policy/modules/contrib/xen.fc
  /var/lib/xen(/.*)?	gen_context(system_u:object_r:xend_var_lib_t,s0)
  /var/lib/xen/images(/.*)?	gen_context(system_u:object_r:xen_image_t,s0)
  /var/lib/xend(/.*)?	gen_context(system_u:object_r:xend_var_lib_t,s0)
+@@ -25,11 +25,13 @@
+ /var/log/xen-hotplug\.log.*	--	gen_context(system_u:object_r:xend_var_log_t,s0)
+ /var/log/xend\.log.*	--	gen_context(system_u:object_r:xend_var_log_t,s0)
+ /var/log/xend-debug\.log.*	--	gen_context(system_u:object_r:xend_var_log_t,s0)
++/var/lock/xl		--	gen_context(system_u:object_r:xen_lock_t,s0)
+ 
+ /var/run/evtchnd	-s	gen_context(system_u:object_r:evtchnd_var_run_t,s0)
+ /var/run/evtchnd\.pid	--	gen_context(system_u:object_r:evtchnd_var_run_t,s0)
+ /var/run/xenconsoled\.pid	--	gen_context(system_u:object_r:xenconsoled_var_run_t,s0)
+ /var/run/xend(/.*)?	gen_context(system_u:object_r:xend_var_run_t,s0)
++/var/run/xen		-d	gen_context(system_u:object_r:xend_var_run_t,s0)
+ /var/run/xend\.pid	--	gen_context(system_u:object_r:xend_var_run_t,s0)
+ /var/run/xenner(/.*)?	gen_context(system_u:object_r:xend_var_run_t,s0)
+ /var/run/xenstore\.pid	--	gen_context(system_u:object_r:xenstored_var_run_t,s0)
 Index: refpolicy/policy/modules/contrib/apache.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apache.fc
@@ -1309,7 +1346,8 @@ Index: refpolicy/policy/modules/contrib/squid.fc
 +/var/log/squid.*	gen_context(system_u:object_r:squid_log_t,s0)
  /var/log/squidGuard(/.*)?	gen_context(system_u:object_r:squid_log_t,s0)
  
- /var/run/squid\.pid	--	gen_context(system_u:object_r:squid_var_run_t,s0)
+-/var/run/squid\.pid	--	gen_context(system_u:object_r:squid_var_run_t,s0)
++/var/run/squid3?\.pid	--	gen_context(system_u:object_r:squid_var_run_t,s0)
 +/var/run/squid3(/.*)?	gen_context(system_u:object_r:squid_var_run_t,s0)
  
 -/var/spool/squid(/.*)?	gen_context(system_u:object_r:squid_cache_t,s0)
@@ -1351,22 +1389,111 @@ Index: refpolicy/policy/modules/contrib/qemu.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/qemu.te
 +++ refpolicy/policy/modules/contrib/qemu.te
-@@ -27,6 +27,8 @@ role qemu_roles types qemu_t;
+@@ -22,11 +22,20 @@ application_executable_file(qemu_exec_t)
+ virt_domain_template(qemu)
+ role qemu_roles types qemu_t;
+ 
++type qemu_var_run_t;
++files_pid_file(qemu_var_run_t);
++files_pid_filetrans(qemu_t, qemu_var_run_t, sock_file)
++allow qemu_t qemu_var_run_t:sock_file create_sock_file_perms;
++
+ ########################################
+ #
  # Local policy
  #
  
 +kernel_read_crypto_sysctls(qemu_t)
 +
++dev_read_sysfs(qemu_t)
++
  tunable_policy(`qemu_full_network',`
  	corenet_udp_sendrecv_generic_if(qemu_t)
  	corenet_udp_sendrecv_generic_node(qemu_t)
-@@ -38,6 +40,9 @@ tunable_policy(`qemu_full_network',`
+@@ -38,6 +47,15 @@ tunable_policy(`qemu_full_network',`
  ')
  
  optional_policy(`
++	fs_manage_xenfs_files(qemu_t)
++	xen_stream_connect_xenstore(qemu_t)
++	dev_rw_xen(qemu_t)
++	xen_append_log(qemu_t)
++')
++optional_policy(`
 +	permit_in_unconfined_r(qemu_t)
 +')
 +optional_policy(`
  	xserver_user_x_domain_template(qemu, qemu_t, qemu_tmpfs_t)
  ')
  
+Index: refpolicy/policy/modules/contrib/bind.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/bind.fc
++++ refpolicy/policy/modules/contrib/bind.fc
+@@ -52,6 +52,7 @@
+ /var/named/dynamic(/.*)?	gen_context(system_u:object_r:named_cache_t,s0)
+ 
+ /var/run/ndc	-s	gen_context(system_u:object_r:named_var_run_t,s0)
++/var/run/lwresd/lwresd\.pid	gen_context(system_u:object_r:named_var_run_t,s0)
+ /var/run/bind(/.*)?	gen_context(system_u:object_r:named_var_run_t,s0)
+ /var/run/named(/.*)?	gen_context(system_u:object_r:named_var_run_t,s0)
+ /var/run/unbound(/.*)?	gen_context(system_u:object_r:named_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/qemu.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/qemu.fc
++++ refpolicy/policy/modules/contrib/qemu.fc
+@@ -4,3 +4,4 @@
+ /usr/bin/kvm		--	gen_context(system_u:object_r:qemu_exec_t,s0)
+ 
+ /usr/libexec/qemu.*	--	gen_context(system_u:object_r:qemu_exec_t,s0)
++/var/run/xen/qmp.*	--	gen_context(system_u:object_r:qemu_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/qemu.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/qemu.if
++++ refpolicy/policy/modules/contrib/qemu.if
+@@ -374,3 +374,23 @@ interface(`qemu_entry_type',`
+ 
+ 	domain_entry_file($1, qemu_exec_t)
+ ')
++
++########################################
++## <summary>
++##	Connect to qemu with a unix
++##	domain stream socket.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`qemu_stream_connect',`
++	gen_require(`
++		type qemu_t, qemu_var_run_t;
++	')
++
++	files_search_pids($1)
++	stream_connect_pattern($1, qemu_var_run_t, qemu_var_run_t, qemu_t)
++')
+Index: refpolicy/policy/modules/system/iptables.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/iptables.te
++++ refpolicy/policy/modules/system/iptables.te
+@@ -105,6 +105,10 @@ ifdef(`hide_broken_symptoms',`
+ ')
+ 
+ optional_policy(`
++	permit_in_unconfined_r(iptables_t)
++')
++
++optional_policy(`
+ 	fail2ban_append_log(iptables_t)
+ ')
+ 
+@@ -151,4 +155,6 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	udev_read_db(iptables_t)
++	# this is for iptables_t to inherit a file hande from xen vif-bridge
++	udev_manage_pid_files(iptables_t)
+ ')
