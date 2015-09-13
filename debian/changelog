@@ -1,3 +1,20 @@
+refpolicy (2:2.20140421-9.1) UNRELEASED; urgency=medium
+
+  * Allow ntpd_t to delete files for peerstats and loopstats
+  * Add correct file labels for squid3 and tunable for squid pinger raw net
+    access (default true)
+  * Allow qemu_t to read crypto sysctls
+  * Create xen_lock_t file lock files xl creates
+  * Allow xm_t (xl program) to create and rename xend_var_log_t files, read
+    kernel images, execute qemu, and inherit fds from sshd etc.
+  * allow unconfined_t to execute xl/xm in xm_t domain.
+  * Allow system_cronjob_t to configure all systemd services (restart all
+    daemons)
+  * Allow dpkg_script_t and unconfined_t to manage systemd service files of
+    type null_device_t (symlinks to /dev/null)
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 10 May 2015 10:36:43 +1000
+
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
   * Allow dovecot_t to read /usr/share/dovecot/protocols.d

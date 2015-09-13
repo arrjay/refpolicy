@@ -126,7 +126,17 @@ Index: refpolicy/policy/modules/contrib/xen.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/xen.te
 +++ refpolicy/policy/modules/contrib/xen.te
-@@ -173,6 +173,9 @@ allow xend_t self:tcp_socket { accept li
+@@ -85,6 +85,9 @@ files_mountpoint(xend_var_lib_t)
+ type xend_var_log_t;
+ logging_log_file(xend_var_log_t)
+ 
++type xen_lock_t;
++files_lock_file(xen_lock_t)
++
+ type xend_var_run_t;
+ files_pid_file(xend_var_run_t)
+ files_mountpoint(xend_var_run_t)
+@@ -173,6 +176,9 @@ allow xend_t self:tcp_socket { accept li
  allow xend_t self:packet_socket create_socket_perms;
  allow xend_t self:tun_socket create_socket_perms;
  
@@ -136,7 +146,7 @@ Index: refpolicy/policy/modules/contrib/xen.te
  allow xend_t xen_image_t:dir list_dir_perms;
  manage_dirs_pattern(xend_t, xen_image_t, xen_image_t)
  manage_fifo_files_pattern(xend_t, xen_image_t, xen_image_t)
-@@ -219,6 +222,7 @@ domtrans_pattern(xend_t, xenstored_exec_
+@@ -219,6 +225,7 @@ domtrans_pattern(xend_t, xenstored_exec_
  xen_stream_connect_xenstore(xend_t)
  
  kernel_read_kernel_sysctls(xend_t)
@@ -144,7 +154,7 @@ Index: refpolicy/policy/modules/contrib/xen.te
  kernel_read_system_state(xend_t)
  kernel_write_xen_state(xend_t)
  kernel_read_xen_state(xend_t)
-@@ -450,6 +454,7 @@ dev_read_sysfs(xenstored_t)
+@@ -450,6 +457,7 @@ dev_read_sysfs(xenstored_t)
  
  files_read_etc_files(xenstored_t)
  files_read_usr_files(xenstored_t)
@@ -152,6 +162,48 @@ Index: refpolicy/policy/modules/contrib/xen.te
  
  fs_search_xenfs(xenstored_t)
  fs_manage_xenfs_files(xenstored_t)
+@@ -471,11 +479,17 @@ xen_append_log(xenstored_t)
+ #
+ 
+ allow xm_t self:capability { setpcap dac_override ipc_lock sys_nice sys_tty_config };
+-allow xm_t self:process { getcap getsched setsched setcap signal };
++allow xm_t self:process { getcap getsched setsched setcap signal sigkill };
+ allow xm_t self:fifo_file rw_fifo_file_perms;
+ allow xm_t self:unix_stream_socket { accept connectto listen };
+ allow xm_t self:tcp_socket { accept listen };
+ 
++allow xm_t var_lock_t:file manage_file_perms;
++files_lock_filetrans(xm_t, xen_lock_t, file)
++domain_use_interactive_fds(xm_t)
++
++manage_files_pattern(xm_t, xend_var_log_t, xend_var_log_t)
++
+ manage_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
+ manage_fifo_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
+ manage_sock_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
+@@ -494,6 +508,7 @@ xen_stream_connect_xenstore(xm_t)
+ 
+ can_exec(xm_t, xm_exec_t)
+ 
++files_read_kernel_img(xm_t)
+ kernel_read_system_state(xm_t)
+ kernel_read_network_state(xm_t)
+ kernel_read_kernel_sysctls(xm_t)
+@@ -563,6 +578,14 @@ tunable_policy(`xen_use_samba',`
+ ')
+ 
+ optional_policy(`
++	unconfined_run_to(xm_t, xm_exec_t)
++')
++
++optional_policy(`
++	qemu_domtrans(xm_t)
++')
++
++optional_policy(`
+ 	cron_system_entry(xm_t, xm_exec_t)
+ ')
+ 
 Index: refpolicy/policy/modules/system/udev.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.te
@@ -294,7 +346,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
-@@ -469,6 +481,7 @@ allow system_cronjob_t cron_spool_t:dir
+@@ -470,6 +482,7 @@ allow system_cronjob_t cron_spool_t:dir
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
  allow system_cronjob_t crond_tmp_t:file { read write };
@@ -302,7 +354,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
-@@ -736,3 +749,5 @@ tunable_policy(`cron_userdomain_transiti
+@@ -737,3 +750,5 @@ tunable_policy(`cron_userdomain_transiti
  optional_policy(`
  	unconfined_domain(unconfined_cronjob_t)
  ')
@@ -1222,3 +1274,99 @@ Index: refpolicy/policy/modules/contrib/apache.fc
  /var/lib/dokuwiki(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/drupal.*	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/glpi(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
+Index: refpolicy/policy/modules/contrib/ntp.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/ntp.te
++++ refpolicy/policy/modules/contrib/ntp.te
+@@ -63,9 +63,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
+ read_lnk_files_pattern(ntpd_t, ntpd_key_t, ntpd_key_t)
+ 
+ allow ntpd_t ntpd_log_t:dir setattr_dir_perms;
+-append_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
+-create_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
+-setattr_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
++manage_dirs_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
++manage_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
+ logging_log_filetrans(ntpd_t, ntpd_log_t, { file dir })
+ 
+ manage_dirs_pattern(ntpd_t, ntpd_tmp_t, ntpd_tmp_t)
+Index: refpolicy/policy/modules/contrib/squid.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/squid.fc
++++ refpolicy/policy/modules/contrib/squid.fc
+@@ -4,17 +4,18 @@
+ 
+ /usr/lib/squid/cachemgr\.cgi	--	gen_context(system_u:object_r:httpd_squid_script_exec_t,s0)
+ 
+-/usr/sbin/squid	--	gen_context(system_u:object_r:squid_exec_t,s0)
++/usr/sbin/squid.*	--	gen_context(system_u:object_r:squid_exec_t,s0)
+ 
+ /usr/share/squid(/.*)?	gen_context(system_u:object_r:squid_conf_t,s0)
+ 
+ /var/cache/squid(/.*)?	gen_context(system_u:object_r:squid_cache_t,s0)
+ 
+-/var/log/squid(/.*)?	gen_context(system_u:object_r:squid_log_t,s0)
++/var/log/squid.*	gen_context(system_u:object_r:squid_log_t,s0)
+ /var/log/squidGuard(/.*)?	gen_context(system_u:object_r:squid_log_t,s0)
+ 
+ /var/run/squid\.pid	--	gen_context(system_u:object_r:squid_var_run_t,s0)
++/var/run/squid3(/.*)?	gen_context(system_u:object_r:squid_var_run_t,s0)
+ 
+-/var/spool/squid(/.*)?	gen_context(system_u:object_r:squid_cache_t,s0)
++/var/spool/squid.*	gen_context(system_u:object_r:squid_cache_t,s0)
+ 
+ /var/squidGuard(/.*)?	gen_context(system_u:object_r:squid_cache_t,s0)
+Index: refpolicy/policy/modules/contrib/squid.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/squid.te
++++ refpolicy/policy/modules/contrib/squid.te
+@@ -21,6 +21,14 @@ gen_tunable(squid_connect_any, false)
+ ## </desc>
+ gen_tunable(squid_use_tproxy, false)
+ 
++## <desc>
++##	<p>
++##	Determine whether squid can use the
++##	pinger daemon (needs raw net access)
++##	</p>
++## </desc>
++gen_tunable(squid_use_pinger, true)
++
+ type squid_t;
+ type squid_exec_t;
+ init_daemon_domain(squid_t, squid_exec_t)
+@@ -188,6 +196,11 @@ tunable_policy(`squid_connect_any',`
+ 	corenet_tcp_sendrecv_all_ports(squid_t)
+ ')
+ 
++tunable_policy(`squid_use_pinger',`
++	allow squid_t self:rawip_socket connected_socket_perms;
++	allow squid_t self:capability net_raw;
++')
++
+ tunable_policy(`squid_use_tproxy',`
+ 	allow squid_t self:capability net_admin;
+ 	corenet_sendrecv_netport_server_packets(squid_t)
+Index: refpolicy/policy/modules/contrib/qemu.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/qemu.te
++++ refpolicy/policy/modules/contrib/qemu.te
+@@ -27,6 +27,8 @@ role qemu_roles types qemu_t;
+ # Local policy
+ #
+ 
++kernel_read_crypto_sysctls(qemu_t)
++
+ tunable_policy(`qemu_full_network',`
+ 	corenet_udp_sendrecv_generic_if(qemu_t)
+ 	corenet_udp_sendrecv_generic_node(qemu_t)
+@@ -38,6 +40,9 @@ tunable_policy(`qemu_full_network',`
+ ')
+ 
+ optional_policy(`
++	permit_in_unconfined_r(qemu_t)
++')
++optional_policy(`
+ 	xserver_user_x_domain_template(qemu, qemu_t, qemu_tmpfs_t)
+ ')
+ 

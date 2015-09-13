@@ -18,7 +18,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -415,6 +415,17 @@ optional_policy(`
+@@ -415,6 +415,18 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -30,6 +30,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 +	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
 +	# so cron jobs can restart daemons
 +	init_stream_connect(system_cronjob_t)
++	systemd_config_all_services(system_cronjob_t)
 +')
 +
 +optional_policy(`
@@ -3687,7 +3688,7 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  libs_exec_ld_so(dpkg_script_t)
  libs_exec_lib_files(dpkg_script_t)
-@@ -295,6 +297,15 @@ modutils_run_depmod(dpkg_script_t, dpkg_
+@@ -295,6 +297,16 @@ modutils_run_depmod(dpkg_script_t, dpkg_
  modutils_run_insmod(dpkg_script_t, dpkg_roles)
  ')
  
@@ -3698,6 +3699,7 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
 +optional_policy(`
 +	systemd_config_all_services(dpkg_script_t)
 +	restart_all_daemons(dpkg_script_t)
++	dev_null_manage_service(dpkg_script_t)
 +')
 +
  seutil_run_loadpolicy(dpkg_script_t, dpkg_roles)
@@ -3756,13 +3758,14 @@ Index: refpolicy/policy/modules/system/unconfined.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/unconfined.te
 +++ refpolicy/policy/modules/system/unconfined.te
-@@ -59,6 +59,12 @@ ifdef(`direct_sysadm_daemon',`
+@@ -59,6 +59,13 @@ ifdef(`direct_sysadm_daemon',`
  ')
  
  optional_policy(`
 +	systemd_config_all_services(unconfined_t)
 +	init_status(unconfined_t)
 +	initrc_manage_service(unconfined_t)
++	dev_null_manage_service(unconfined_t)
 +')
 +
 +optional_policy(`
@@ -3773,7 +3776,33 @@ Index: refpolicy/policy/modules/kernel/devices.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/devices.if
 +++ refpolicy/policy/modules/kernel/devices.if
-@@ -5081,3 +5081,33 @@ interface(`dev_create_generic_pipes',`
+@@ -3199,6 +3199,25 @@ interface(`dev_create_null_dev',`
+ 
+ ########################################
+ ## <summary>
++##	Manage services with script type null_device_t for when
++##	/lib/systemd/system/something.service is a link to /dev/null
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_null_manage_service',`
++	gen_require(`
++		type null_device_t;
++	')
++
++	allow $1 null_device_t:service { status start stop reload };
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to get the attributes
+ ##	of the BIOS non-volatile RAM device.
+ ## </summary>
+@@ -5081,3 +5100,33 @@ interface(`dev_create_generic_pipes',`
         allow $1 device_t:dir search_dir_perms;
         allow $1 device_t:file setattr_file_perms;
  ')
