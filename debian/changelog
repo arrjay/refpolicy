@@ -1,4 +1,4 @@
-refpolicy (2:2.20140421-9.1) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-10) unstable; urgency=medium
 
   * Allow ntpd_t to delete files for peerstats and loopstats
   * Add correct file labels for squid3 and tunable for squid pinger raw net
@@ -13,9 +13,11 @@ refpolicy (2:2.20140421-9.1) UNRELEASED; urgency=medium
     /run/xen-hotplug/iptables for when vif-bridge runs iptables
   * Allow xm_t to write to xen_lock_t files not var_lock_t
   * Allow xm_t to load kernel modules
-  * Allow xm_t to signal qemu_t and talk to it by unix domain sockets
+  * Allow xm_t to signal qemu_t, talk to it by unix domain sockets, and unlink it's
+    sockets
   * dontaudit xm_t searching home dir content
-  * Label /run/xen as xend_var_run_t
+  * Label /run/xen as xend_var_run_t and allow qemu_t to create sock_files in
+    xend_var_run_t directory
   * Label /var/lock/xl as xen_lock_t
   * allow unconfined_t to execute xl/xm in xm_t domain.
   * Allow system_cronjob_t to configure all systemd services (restart all
@@ -26,8 +28,10 @@ refpolicy (2:2.20140421-9.1) UNRELEASED; urgency=medium
   * Label /run/xen/qmp* as qemu_var_run_t
   * Also label squid3.pid
   * Allow iptables_t to be in unconfined_r (for Xen)
+  * Allow udev_t to restart systemd services
+    Closes: #756729
 
- -- Russell Coker <russell@coker.com.au>  Sun, 10 May 2015 10:36:43 +1000
+ -- Russell Coker <russell@coker.com.au>  Mon, 14 Sep 2015 10:54:43 +1000
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
