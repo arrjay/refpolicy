@@ -151,7 +151,7 @@ Index: refpolicy/policy/modules/system/init.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.te
 +++ refpolicy/policy/modules/system/init.te
-@@ -147,13 +147,18 @@ kernel_read_system_state(init_t)
+@@ -150,13 +150,18 @@ kernel_read_system_state(init_t)
  kernel_share_state(init_t)
  kernel_dontaudit_search_unlabeled(init_t)
  
@@ -170,7 +170,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  domain_getpgid_all_domains(init_t)
  domain_kill_all_domains(init_t)
-@@ -166,6 +171,8 @@ files_read_etc_files(init_t)
+@@ -169,6 +174,8 @@ files_read_etc_files(init_t)
  files_rw_generic_pids(init_t)
  files_manage_etc_runtime_files(init_t)
  files_etc_filetrans_etc_runtime(init_t, file)
@@ -179,7 +179,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Run /etc/X11/prefdm:
  files_exec_etc_files(init_t)
  # file descriptors inherited from the rootfs:
-@@ -200,11 +207,20 @@ seutil_read_config(init_t)
+@@ -203,11 +210,20 @@ seutil_read_config(init_t)
  
  miscfiles_read_localization(init_t)
  
@@ -200,7 +200,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  ifdef(`distro_gentoo',`
-@@ -224,6 +240,12 @@ tunable_policy(`init_upstart || init_sys
+@@ -227,6 +243,12 @@ tunable_policy(`init_upstart || init_sys
  ')
  
  optional_policy(`
@@ -213,7 +213,7 @@ Index: refpolicy/policy/modules/system/init.te
  	auth_rw_login_records(init_t)
  ')
  
-@@ -243,6 +265,8 @@ optional_policy(`
+@@ -246,6 +268,8 @@ optional_policy(`
  	udev_read_db(init_t)
  	udev_relabelto_db(init_t)
  	udev_create_kobject_uevent_socket(init_t)
@@ -222,7 +222,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  #optional_policy(`
-@@ -1134,15 +1158,19 @@ optional_policy(`
+@@ -1137,15 +1161,19 @@ optional_policy(`
  	clock_read_adjtime(init_t)
  ')
  
@@ -243,7 +243,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1174,6 +1202,7 @@ tunable_policy(`init_systemd',`
+@@ -1177,6 +1205,7 @@ tunable_policy(`init_systemd',`
  	# systemd writes to /dev/watchdog on shutdown
  	dev_write_watchdog(init_t)
  
@@ -251,7 +251,7 @@ Index: refpolicy/policy/modules/system/init.te
  	files_search_all(init_t)
  	files_mounton_all_mountpoints(init_t)
  	files_unmount_all_file_type_fs(init_t)
-@@ -1197,6 +1226,7 @@ tunable_policy(`init_systemd',`
+@@ -1200,6 +1229,7 @@ tunable_policy(`init_systemd',`
  	fs_getattr_all_fs(init_t)
  	fs_manage_cgroup_dirs(init_t)
  	fs_manage_cgroup_files(init_t)
@@ -259,7 +259,7 @@ Index: refpolicy/policy/modules/system/init.te
  	fs_manage_hugetlbfs_dirs(init_t)
  	fs_manage_tmpfs_dirs(init_t)
  	fs_relabel_tmpfs_dirs(init_t)
-@@ -1228,13 +1258,16 @@ tunable_policy(`init_systemd',`
+@@ -1231,13 +1261,16 @@ tunable_policy(`init_systemd',`
  	systemd_manage_all_unit_files(init_t)
  	systemd_logger_stream_connect(init_t)
  	systemd_manage_lnk_file_passwd_run(init_t)
@@ -359,18 +359,20 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  corecmd_exec_all_executables(dpkg_t)
  
  corenet_all_recvfrom_unlabeled(dpkg_t)
-@@ -208,8 +212,8 @@ optional_policy(`
+@@ -208,8 +212,10 @@ optional_policy(`
  # Script Local policy
  #
  
--allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_chroot sys_nice mknod kill };
+-allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid ipc_lock sys_chroot sys_nice mknod setfcap };
 -allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
-+allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid net_admin ipc_lock sys_chroot sys_ptrace sys_nice mknod audit_write };
++allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid net_admin ipc_lock sys_ptrace sys_chroot sys_nice mknod audit_write setfcap };
++
 +allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setrlimit execmem execstack execheap };
++
  allow dpkg_script_t self:fd use;
  allow dpkg_script_t self:fifo_file rw_fifo_file_perms;
  allow dpkg_script_t self:unix_dgram_socket create_socket_perms;
-@@ -220,6 +224,8 @@ allow dpkg_script_t self:shm create_shm_
+@@ -220,6 +226,8 @@ allow dpkg_script_t self:shm create_shm_
  allow dpkg_script_t self:sem create_sem_perms;
  allow dpkg_script_t self:msgq create_msgq_perms;
  allow dpkg_script_t self:msg { send receive };
@@ -379,7 +381,7 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  allow dpkg_script_t dpkg_tmp_t:file read_file_perms;
  
-@@ -237,6 +243,7 @@ fs_tmpfs_filetrans(dpkg_script_t, dpkg_s
+@@ -237,6 +245,7 @@ fs_tmpfs_filetrans(dpkg_script_t, dpkg_s
  restart_all_daemons(dpkg_script_t)
  kernel_read_kernel_sysctls(dpkg_script_t)
  kernel_read_system_state(dpkg_script_t)
@@ -387,7 +389,7 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  corecmd_exec_all_executables(dpkg_script_t)
  
-@@ -274,13 +281,13 @@ selinux_compute_access_vector(dpkg_scrip
+@@ -274,13 +283,13 @@ selinux_compute_access_vector(dpkg_scrip
  selinux_compute_create_context(dpkg_script_t)
  selinux_compute_relabel_context(dpkg_script_t)
  selinux_compute_user_contexts(dpkg_script_t)
@@ -519,7 +521,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -733,6 +733,7 @@ optional_policy(`
+@@ -734,6 +734,7 @@ optional_policy(`
  type unconfined_cronjob_t;
  domain_type(unconfined_cronjob_t)
  domain_cron_exemption_target(unconfined_cronjob_t)

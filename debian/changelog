@@ -1,3 +1,15 @@
+refpolicy (2:2.20140421-10.1) UNRELEASED; urgency=medium
+
+  * Allow jabber to connect to the jabber_interserver_port_t TCP port
+    Closes: #697843
+  * Allow xm_t to create xen_lock_t files for creating the first Xen DomU
+  * Allow init_t to manage init_var_run_t for service file symlinks
+  * Add init_telinit(dpkg_script_t) for upgrading systemd
+  * Allow dpkg_script_t the setfcap capability for systemd postinst.
+  * Add domain_getattr_all_domains(init_t) for upgrading strict mode systems
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 14 Sep 2015 15:27:03 +1000
+
 refpolicy (2:2.20140421-10) unstable; urgency=medium
 
   * Allow ntpd_t to delete files for peerstats and loopstats

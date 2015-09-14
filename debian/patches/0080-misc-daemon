@@ -177,7 +177,7 @@ Index: refpolicy/policy/modules/contrib/xen.te
 +allow xm_t xend_var_run_t:dir rw_dir_perms;
 +
 +files_lock_filetrans(xm_t, xen_lock_t, file)
-+allow xm_t xen_lock_t:file write_file_perms;
++allow xm_t xen_lock_t:file manage_file_perms;
 +domain_use_interactive_fds(xm_t)
 +
 +userdom_dontaudit_search_user_home_content(xm_t)
@@ -418,7 +418,7 @@ Index: refpolicy/policy/modules/system/init.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.te
 +++ refpolicy/policy/modules/system/init.te
-@@ -151,6 +151,7 @@ corecmd_exec_chroot(init_t)
+@@ -154,6 +154,7 @@ corecmd_exec_chroot(init_t)
  corecmd_exec_bin(init_t)
  
  dev_read_sysfs(init_t)
@@ -426,7 +426,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Early devtmpfs
  dev_rw_generic_chr_files(init_t)
  
-@@ -1141,6 +1142,7 @@ tunable_policy(`init_systemd',`
+@@ -1144,6 +1145,7 @@ tunable_policy(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -434,7 +434,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1225,6 +1227,7 @@ tunable_policy(`init_systemd',`
+@@ -1228,6 +1230,7 @@ tunable_policy(`init_systemd',`
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
  	systemd_logger_stream_connect(init_t)
@@ -517,6 +517,15 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  type dpkg_script_tmp_t;
  files_tmp_file(dpkg_script_tmp_t)
  
+@@ -205,7 +208,7 @@ optional_policy(`
+ # Script Local policy
+ #
+ 
+-allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_chroot sys_nice mknod kill };
++allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid ipc_lock sys_chroot sys_nice mknod setfcap };
+ allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+ allow dpkg_script_t self:fd use;
+ allow dpkg_script_t self:fifo_file rw_fifo_file_perms;
 Index: refpolicy/policy/modules/kernel/devices.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/devices.if
@@ -1558,3 +1567,15 @@ Index: refpolicy/policy/modules/contrib/xen.if
  ##	Execute a domain transition to run xm.
  ## </summary>
  ## <param name="domain">
+Index: refpolicy/policy/modules/contrib/jabber.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/jabber.te
++++ refpolicy/policy/modules/contrib/jabber.te
+@@ -96,6 +96,7 @@ corenet_tcp_sendrecv_jabber_client_port(
+ corenet_sendrecv_jabber_interserver_server_packets(jabberd_t)
+ corenet_tcp_bind_jabber_interserver_port(jabberd_t)
+ corenet_tcp_sendrecv_jabber_interserver_port(jabberd_t)
++corenet_tcp_connect_jabber_interserver_port(jabberd_t)
+ 
+ dev_read_rand(jabberd_t)
+ 
