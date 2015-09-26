@@ -554,7 +554,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	</summary>
  ## </param>
  #
-@@ -860,19 +1057,41 @@ interface(`init_spec_domtrans_script',`
+@@ -860,23 +1057,45 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -577,11 +577,11 @@ Index: refpolicy/policy/modules/system/init.if
  	ifdef(`enable_mls',`
 -		range_transition $1 initrc_exec_t:process s0 - mls_systemhigh;
 +		range_transition $1 init_script_file_type:process s0 - mls_systemhigh;
-+	')
-+')
-+
-+########################################
-+## <summary>
+ 	')
+ ')
+ 
+ ########################################
+ ## <summary>
 +##	Execute a file in a bin directory
 +##	in the initrc_t domain
 +## </summary>
@@ -594,12 +594,16 @@ Index: refpolicy/policy/modules/system/init.if
 +interface(`init_bin_domtrans_spec',`
 +	gen_require(`
 +		type initrc_t;
- 	')
++	')
 +
 +	corecmd_bin_domtrans($1, initrc_t)
- ')
- 
- ########################################
++')
++
++########################################
++## <summary>
+ ##	Execute a init script in a specified domain.
+ ## </summary>
+ ## <desc>
 @@ -928,9 +1147,14 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
@@ -992,7 +996,7 @@ Index: refpolicy/policy/modules/system/init.if
 -##      Create a file type used for systemd unit files.
 +##  Allow the specified domain to ioctl an
 +##  init with a unix domain stream sockets.
-+## </summary>
+ ## </summary>
 +## <param name="domain">
 +##  <summary>
 +##  Domain allowed access.
@@ -1086,7 +1090,7 @@ Index: refpolicy/policy/modules/system/init.if
 +########################################
 +## <summary>
 +##	Create a file type used for init socket files.
- ## </summary>
++## </summary>
 +## <desc>
 +##	<p>
 +##	This defines a type that init can create sock_file within for
@@ -1120,8 +1124,10 @@ Index: refpolicy/policy/modules/system/init.if
 +##	<summary>
 +##	Domain allowed access.
 +##	</summary>
-+## </param>
-+#
+ ## </param>
+ #
+-interface(`systemd_unit_file',`
+-	files_type($1)
 +interface(`init_read_pipes',`
 +	gen_require(`
 +		type init_var_run_t;
@@ -1174,10 +1180,8 @@ Index: refpolicy/policy/modules/system/init.if
 +##	<summary>
 +##	Domain allowed access.
 +##	</summary>
- ## </param>
- #
--interface(`systemd_unit_file',`
--	files_type($1)
++## </param>
++#
 +interface(`init_halt',`
 +	gen_require(`
 +		type init_t;
@@ -1205,7 +1209,7 @@ Index: refpolicy/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1872,3 +2582,39 @@ interface(`init_shell_domtrans',`
+@@ -1872,3 +2582,57 @@ interface(`init_shell_domtrans',`
  	allow $1 init_t:fifo_file rw_file_perms;
  	allow $1 init_t:process sigchld;
  ')
@@ -1244,6 +1248,24 @@ Index: refpolicy/policy/modules/system/init.if
 +	')
 +
 +	allow $1 initrc_exec_t:service { start stop status };
++')
++
++########################################
++## <summary>
++##      Rename and unlink init_var_run_t files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      domain
++##      </summary>
++## </param>
++#
++interface(`rename_unlink_init_var_run',`
++	gen_require(`
++		type init_var_run_t;
++	')
++
++	allow $1 init_var_run_t:file { rename getattr unlink };
 +')
 Index: refpolicy/policy/modules/system/init.te
 ===================================================================
@@ -1772,7 +1794,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -912,3 +1082,273 @@ optional_policy(`
+@@ -912,3 +1082,274 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -1844,6 +1866,7 @@ Index: refpolicy/policy/modules/system/init.te
 +	allow init_t self:udp_socket create_socket_perms;
 +	allow init_t self:netlink_route_socket create_netlink_socket_perms;
 +	allow init_t initrc_t:unix_dgram_socket create_socket_perms;
++	allow init_t self:capability2 audit_read;
 +
 +	kernel_list_unlabeled(init_t)
 +	kernel_read_network_state(init_t)
@@ -2104,7 +2127,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -0,0 +1,761 @@
+@@ -0,0 +1,764 @@
 +## <summary>SELinux policy for systemd components</summary>
 +
 +#######################################
@@ -2128,6 +2151,11 @@ Index: refpolicy/policy/modules/system/systemd.if
 +	type $1_systemctl_t, systemctl_domain;
 +	domain_type($1_systemctl_t)
 +	domain_entry_file($1_systemctl_t, systemd_systemctl_exec_t)
++
++	init_read_utmp($1_systemctl_t)
++
++	kernel_read_system_state($1_systemctl_t)
++	allow $1_systemctl_t self:capability net_admin;
 +
 +	role system_r types $1_systemctl_t;
 +
@@ -2750,8 +2778,6 @@ Index: refpolicy/policy/modules/system/systemd.if
 +		attribute systemd_unit_file_type;
 +	')
 +
-+	# it is probably a bug that we need init_var_run_t
-+	allow $1 init_var_run_t:service all_service_perms;
 +	allow $1 systemd_unit_file_type:service all_service_perms;
 +')
 +
@@ -2908,7 +2934,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -0,0 +1,494 @@
+@@ -0,0 +1,501 @@
 +policy_module(systemd, 1.0.0)
 +
 +#######################################
@@ -3193,6 +3219,10 @@ Index: refpolicy/policy/modules/system/systemd.te
 +kernel_read_system_state(systemd_tmpfiles_t)
 +kernel_read_kernel_sysctls(systemd_tmpfiles_t)
 +
++create_relabel_var_lib_log(systemd_tmpfiles_t)
++files_relabelto_home(systemd_tmpfiles_t)
++files_relabelfrom_home(systemd_tmpfiles_t)
++
 +allow systemd_tmpfiles_t systemd_journal_log_t:dir setattr;
 +
 +dev_write_kmsg(systemd_tmpfiles_t)
@@ -3270,6 +3300,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +
 +init_dgram_send(systemd_tmpfiles_t)
 +init_rw_stream_sockets(systemd_tmpfiles_t)
++init_read_state(systemd_tmpfiles_t)
 +
 +logging_create_devlog_dev(systemd_tmpfiles_t)
 +logging_send_syslog_msg(systemd_tmpfiles_t)
@@ -3396,6 +3427,8 @@ Index: refpolicy/policy/modules/system/systemd.te
 +
 +dev_write_kmsg(systemd_cgroups_t)
 +init_read_pipes(systemd_cgroups_t)
++init_read_state(systemd_cgroups_t)
++
 +allow systemd_cgroups_t self:unix_dgram_socket create_socket_perms;
 +allow systemd_cgroups_t self:capability net_admin;
 +
@@ -3439,7 +3472,7 @@ Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/logging.te
 +++ refpolicy/policy/modules/system/logging.te
-@@ -92,6 +92,21 @@ ifdef(`enable_mls',`
+@@ -92,6 +92,26 @@ ifdef(`enable_mls',`
  	init_ranged_daemon_domain(syslogd_t, syslogd_exec_t, mls_systemhigh)
  ')
  
@@ -3456,12 +3489,17 @@ Index: refpolicy/policy/modules/system/logging.te
 +	dev_read_urand(syslogd_t)
 +	domain_read_all_domains_state(syslogd_t)
 +	manage_systemd_journal_files(syslogd_t)
++
++	# for systemd-journal
++	allow syslogd_t self:netlink_audit_socket connected_socket_perms;
++	allow syslogd_t self:capability2 audit_read;
++	rename_unlink_init_var_run(syslogd_t)
 +')
 +
  ########################################
  #
  # Auditctl local policy
-@@ -222,6 +237,9 @@ optional_policy(`
+@@ -222,6 +242,9 @@ optional_policy(`
  	udev_read_db(auditd_t)
  ')
  
@@ -3471,7 +3509,7 @@ Index: refpolicy/policy/modules/system/logging.te
  ########################################
  #
  # audit dispatcher local policy
-@@ -384,6 +402,7 @@ allow syslogd_t syslog_conf_t:file read_
+@@ -384,6 +407,7 @@ allow syslogd_t syslog_conf_t:file read_
  # Create and bind to /dev/log or /var/run/log.
  allow syslogd_t devlog_t:sock_file manage_sock_file_perms;
  files_pid_filetrans(syslogd_t, devlog_t, sock_file)
@@ -3599,11 +3637,12 @@ Index: refpolicy/policy/modules/contrib/logrotate.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/logrotate.te
 +++ refpolicy/policy/modules/contrib/logrotate.te
-@@ -124,6 +124,10 @@ ifdef(`distro_debian',`
+@@ -124,6 +124,11 @@ ifdef(`distro_debian',`
  ')
  
  optional_policy(`
 +	systemd_systemctl_domain(logrotate)
++	systemd_config_all_services(logrotate_systemctl_t)
 +')
 +
 +optional_policy(`
@@ -4028,3 +4067,63 @@ Index: refpolicy/policy/modules/contrib/xfs.if
  ##	Connect to xfs with a unix
  ##	domain stream socket.
  ## </summary>
+Index: refpolicy/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/files.if
++++ refpolicy/policy/modules/kernel/files.if
+@@ -3588,6 +3588,24 @@ interface(`files_relabelto_home',`
+ 
+ ########################################
+ ## <summary>
++##	Relabel from user home root (/home).
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_relabelfrom_home',`
++	gen_require(`
++		type home_root_t;
++	')
++
++	allow $1 home_root_t:dir relabelfrom;
++')
++
++########################################
++## <summary>
+ ##	Create objects in /home.
+ ## </summary>
+ ## <param name="domain">
+@@ -5465,6 +5483,30 @@ interface(`files_search_var_lib',`
+ ')
+ 
+ ########################################
++## <summary>
++##	Create and label /var/lib and /var/log
++## </summary>
++## <desc>
++##	<p>
++##	This allows programs to setup directories under /var
++##	</p>
++## </desc>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <infoflow type="read" weight="5"/>
++#
++interface(`create_relabel_var_lib_log',`
++	gen_require(`
++		type var_t, var_lib_t, var_log_t;
++	')
++
++	allow $1 { var_t var_log_t var_lib_t }:dir { relabelfrom relabelto manage_dir_perms };
++')
++
++########################################
+ ## <summary>
+ ##	Do not audit attempts to search the
+ ##	contents of /var/lib.

@@ -1,4 +1,10 @@
-refpolicy (2:2.20140421-10.1) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
+
+  * new
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 26 Sep 2015 15:07:45 +1000
+
+refpolicy (2:2.20140421-11) unstable; urgency=medium
 
   * Allow jabber to connect to the jabber_interserver_port_t TCP port
     Closes: #697843
@@ -7,8 +13,20 @@ refpolicy (2:2.20140421-10.1) UNRELEASED; urgency=medium
   * Add init_telinit(dpkg_script_t) for upgrading systemd
   * Allow dpkg_script_t the setfcap capability for systemd postinst.
   * Add domain_getattr_all_domains(init_t) for upgrading strict mode systems
+  * Allow *_systemctl_t domains read initrc_var_run_t (/run/utmp), read proc_t,
+    and have capability net_admin.  Allow logrotate_systemctl_t to manage all
+    services.
+  * Give init_t the audit_read capability for systemd
+  * Allow iodined_t access to netlink_route_socket.
+  * add init_read_state(systemd_cgroups_t) and init_read_state(systemd_tmpfiles_t)
+    for /proc/1/environ
+  * Label /etc/openvpn/openvpn-status.log as openvpn_status_t as it seems to be some
+    sort of default location. /var/log is a better directory for this
+  * Allow syslogd_t to write to a netlink_audit_socket for systemd-journal
+  * Allow mandb_t to get filesystem attributes
+  * Allow syslogd to rename and unlink init_var_run_t files for systemd temporary files
 
- -- Russell Coker <russell@coker.com.au>  Mon, 14 Sep 2015 15:27:03 +1000
+ -- Russell Coker <russell@coker.com.au>  Wed, 16 Sep 2015 17:02:34 +1000
 
 refpolicy (2:2.20140421-10) unstable; urgency=medium
 

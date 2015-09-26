@@ -426,7 +426,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Early devtmpfs
  dev_rw_generic_chr_files(init_t)
  
-@@ -1144,6 +1145,7 @@ tunable_policy(`init_systemd',`
+@@ -1145,6 +1146,7 @@ tunable_policy(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -434,7 +434,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1228,6 +1230,7 @@ tunable_policy(`init_systemd',`
+@@ -1230,6 +1232,7 @@ tunable_policy(`init_systemd',`
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
  	systemd_logger_stream_connect(init_t)
@@ -446,7 +446,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -497,6 +497,24 @@ interface(`systemd_read_fifo_file_passwd
+@@ -503,6 +503,24 @@ interface(`systemd_read_fifo_file_passwd
      read_sock_files_pattern($1, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
  ')
  
@@ -1579,3 +1579,39 @@ Index: refpolicy/policy/modules/contrib/jabber.te
  
  dev_read_rand(jabberd_t)
  
+Index: refpolicy/policy/modules/contrib/iodine.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/iodine.te
++++ refpolicy/policy/modules/contrib/iodine.te
+@@ -21,6 +21,7 @@ allow iodined_t self:capability { net_ad
+ allow iodined_t self:rawip_socket create_socket_perms;
+ allow iodined_t self:tun_socket create_socket_perms;
+ allow iodined_t self:udp_socket connected_socket_perms;
++allow iodined_t self:netlink_route_socket rw_netlink_socket_perms;
+ 
+ kernel_read_net_sysctls(iodined_t)
+ kernel_read_network_state(iodined_t)
+Index: refpolicy/policy/modules/contrib/openvpn.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/openvpn.fc
++++ refpolicy/policy/modules/contrib/openvpn.fc
+@@ -5,6 +5,7 @@
+ 
+ /usr/sbin/openvpn	--	gen_context(system_u:object_r:openvpn_exec_t,s0)
+ 
++/etc/openvpn/openvpn-status\.log.* --	gen_context(system_u:object_r:openvpn_status_t,s0)
+ /var/log/openvpn-status\.log.*	--	gen_context(system_u:object_r:openvpn_status_t,s0)
+ /var/log/openvpn.*	gen_context(system_u:object_r:openvpn_var_log_t,s0)
+ 
+Index: refpolicy/policy/modules/contrib/mandb.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mandb.te
++++ refpolicy/policy/modules/contrib/mandb.te
+@@ -25,6 +25,7 @@ allow mandb_t self:unix_stream_socket cr
+ 
+ kernel_read_kernel_sysctls(mandb_t)
+ kernel_read_system_state(mandb_t)
++fs_getattr_xattr_fs(mandb_t)
+ 
+ corecmd_exec_bin(mandb_t)
+ corecmd_exec_shell(mandb_t)
