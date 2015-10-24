@@ -1,6 +1,21 @@
 refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
 
-  * new
+  * Allow init_t to manage init_var_run_t symlinks and self getsched
+    to relabel files and dirs to etc_runtime_t for /run/blkid
+    to read/write init_var_run_t fifos for /run/initctl
+    kernel_rw_unix_sysctls() for setting max_dgram_qlen (and eventually other
+    sysctls)
+  * Allow restorecond_t and setfiles_t to getattr pstore_t and debugfs_t filesystems
+  * Allow kernel_t to setattr/getattr/unlink tty_device_t for kdevtmpfs
+  * Label /usr/share/bug/.* files as bin_t for reportbug in strict configuration
+  * Label /run/tmpfiles.d/kmod.conf as kmod_var_run_t and allow insmod_t to create it
+  * apache_unlink_var_lib() now includes write access to httpd_var_lib_t:dir 
+  * Allow mailman_mail_t to be run from postfix_pipe_t
+  * Allow mailman_cgi_t to read localisation
+  * Allow system_mail_t read/write access to crond_tmp_t
+  * Allow mailman_mail_t and mailman_cgi_t to execute bin_t and allow mailman_cgi_t
+    access to most mailman data.
+  * Allow postfix_pipe_t to write to postfix_public_t sockets
 
  -- Russell Coker <russell@coker.com.au>  Sat, 26 Sep 2015 15:07:45 +1000
 

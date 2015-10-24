@@ -446,7 +446,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -503,6 +503,24 @@ interface(`systemd_read_fifo_file_passwd
+@@ -502,6 +502,24 @@ interface(`systemd_read_fifo_file_passwd
      read_sock_files_pattern($1, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
  ')
  
@@ -580,7 +580,15 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  create_dirs_pattern(postfix_master_t, postfix_spool_t, postfix_private_t)
  manage_fifo_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
  manage_sock_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
-@@ -371,6 +373,7 @@ allow postfix_cleanup_t self:process set
+@@ -326,6 +328,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	mailman_manage_data_files(postfix_master_t)
++	mailman_search_data(postfix_pipe_t)
+ ')
+ 
+ optional_policy(`
+@@ -371,6 +374,7 @@ allow postfix_cleanup_t self:process set
  
  allow postfix_cleanup_t postfix_smtpd_t:tcp_socket rw_stream_socket_perms;
  allow postfix_cleanup_t postfix_smtpd_t:unix_stream_socket rw_socket_perms;
@@ -588,7 +596,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  
  allow postfix_cleanup_t postfix_spool_maildrop_t:dir list_dir_perms;
  allow postfix_cleanup_t postfix_spool_maildrop_t:file read_file_perms;
-@@ -400,6 +403,10 @@ optional_policy(`
+@@ -400,6 +404,10 @@ optional_policy(`
  	mailman_read_data_files(postfix_cleanup_t)
  ')
  
@@ -599,7 +607,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ########################################
  #
  # Local local policy
-@@ -432,6 +439,7 @@ tunable_policy(`postfix_local_write_mail
+@@ -432,6 +440,7 @@ tunable_policy(`postfix_local_write_mail
  optional_policy(`
  	clamav_search_lib(postfix_local_t)
  	clamav_exec_clamscan(postfix_local_t)
@@ -607,7 +615,26 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ')
  
  optional_policy(`
-@@ -654,6 +662,10 @@ optional_policy(`
+@@ -557,6 +566,10 @@ domtrans_pattern(postfix_pipe_t, postfix
+ 
+ corecmd_exec_bin(postfix_pipe_t)
+ 
++write_sock_files_pattern(postfix_pipe_t, postfix_public_t, postfix_public_t)
++
++
++
+ optional_policy(`
+ 	dovecot_domtrans_deliver(postfix_pipe_t)
+ ')
+@@ -567,6 +580,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	mailman_domtrans_queue(postfix_pipe_t)
++	mailman_domtrans(postfix_pipe_t)
+ ')
+ 
+ optional_policy(`
+@@ -654,6 +668,10 @@ optional_policy(`
  	ppp_sigchld(postfix_postqueue_t)
  ')
  
@@ -955,19 +982,23 @@ Index: refpolicy/policy/modules/contrib/dkim.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.te
 +++ refpolicy/policy/modules/contrib/dkim.te
-@@ -20,16 +20,20 @@ init_daemon_run_dir(dkim_milter_data_t,
+@@ -20,16 +20,23 @@ init_daemon_run_dir(dkim_milter_data_t,
  # Local policy
  #
  
 -allow dkim_milter_t self:capability { setgid setuid };
+-allow dkim_milter_t self:process signal;
 +allow dkim_milter_t self:capability { dac_override setgid setuid };
- allow dkim_milter_t self:process signal;
++allow dkim_milter_t self:process { signal signull };
  allow dkim_milter_t self:unix_stream_socket create_stream_socket_perms;
  
  read_files_pattern(dkim_milter_t, dkim_milter_private_key_t, dkim_milter_private_key_t)
  
  kernel_read_kernel_sysctls(dkim_milter_t)
 +kernel_read_vm_sysctls(dkim_milter_t)
++
++# for cpu/online
++dev_read_sysfs(dkim_milter_t)
  
  dev_read_urand(dkim_milter_t)
  
@@ -1229,11 +1260,19 @@ Index: refpolicy/policy/modules/contrib/mta.te
  	apache_read_squirrelmail_data(system_mail_t)
  	apache_append_squirrelmail_data(system_mail_t)
  	apache_dontaudit_append_log(system_mail_t)
+@@ -233,6 +237,7 @@ optional_policy(`
+ 	cron_read_system_job_tmp_files(system_mail_t)
+ 	cron_dontaudit_write_pipes(system_mail_t)
+ 	cron_rw_system_job_stream_sockets(system_mail_t)
++	read_write_crond_tmp(system_mail_t)
+ ')
+ 
+ optional_policy(`
 Index: refpolicy/policy/modules/contrib/apache.if
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apache.if
 +++ refpolicy/policy/modules/contrib/apache.if
-@@ -1346,3 +1346,22 @@ interface(`apache_admin',`
+@@ -1346,3 +1346,23 @@ interface(`apache_admin',`
  	apache_run_all_scripts($1, $2)
  	apache_run_helper($1, $2)
  ')
@@ -1254,6 +1293,7 @@ Index: refpolicy/policy/modules/contrib/apache.if
 +	')
 +
 +	files_search_var_lib($1)
++	allow $1 httpd_var_lib_t:dir { write remove_name };
 +	allow $1 httpd_var_lib_t:file unlink;
 +')
 Index: refpolicy/policy/modules/system/unconfined.if
@@ -1615,3 +1655,112 @@ Index: refpolicy/policy/modules/contrib/mandb.te
  
  corecmd_exec_bin(mandb_t)
  corecmd_exec_shell(mandb_t)
+Index: refpolicy/policy/modules/contrib/mailman.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mailman.te
++++ refpolicy/policy/modules/contrib/mailman.te
+@@ -92,6 +92,25 @@ miscfiles_read_localization(mailman_doma
+ #
+ 
+ dev_read_urand(mailman_cgi_t)
++miscfiles_read_localization(mailman_cgi_t)
++corecmd_exec_bin(mailman_cgi_t)
++kernel_read_crypto_sysctls(mailman_cgi_t)
++
++allow mailman_cgi_t mailman_data_t:dir rw_dir_perms;
++allow mailman_cgi_t mailman_data_t:file manage_file_perms;
++allow mailman_cgi_t mailman_data_t:lnk_file read_lnk_file_perms;
++kernel_read_system_state(mailman_cgi_t)
++
++allow mailman_cgi_t mailman_log_t:file { append_file_perms read_file_perms };
++allow mailman_cgi_t mailman_log_t:dir search_dir_perms;
++logging_search_logs(mailman_cgi_t)
++
++files_search_locks(mailman_cgi_t)
++allow mailman_cgi_t mailman_lock_t:dir manage_dir_perms;
++allow mailman_cgi_t mailman_lock_t:file manage_file_perms;
++
++allow mailman_cgi_t mailman_archive_t:dir search_dir_perms;
++allow mailman_cgi_t mailman_archive_t:file read_file_perms;
+ 
+ term_use_controlling_term(mailman_cgi_t)
+ 
+@@ -118,6 +137,17 @@ optional_policy(`
+ allow mailman_mail_t self:capability { kill dac_override setuid setgid sys_tty_config };
+ allow mailman_mail_t self:process { signal signull };
+ 
++allow mailman_mail_t mailman_data_t:dir rw_dir_perms;
++allow mailman_mail_t mailman_data_t:file read_file_perms;
++allow mailman_mail_t mailman_data_t:lnk_file read_lnk_file_perms;
++
++allow mailman_mail_t mailman_log_t:dir search;
++
++allow mailman_mail_t self:process setsched;
++
++kernel_read_system_state(mailman_mail_t)
++miscfiles_read_localization(mailman_mail_t)
++
+ manage_files_pattern(mailman_mail_t, mailman_var_run_t, mailman_var_run_t)
+ manage_dirs_pattern(mailman_mail_t, mailman_var_run_t, mailman_var_run_t)
+ files_pid_filetrans(mailman_mail_t, mailman_var_run_t, { file dir })
+@@ -131,11 +161,13 @@ corenet_tcp_connect_spamd_port(mailman_m
+ corenet_tcp_sendrecv_spamd_port(mailman_mail_t)
+ 
+ dev_read_urand(mailman_mail_t)
++corecmd_exec_bin(mailman_mail_t)
+ 
+ fs_rw_anon_inodefs_files(mailman_mail_t)
+ 
+ mta_dontaudit_rw_delivery_tcp_sockets(mailman_mail_t)
+ mta_dontaudit_rw_queue(mailman_mail_t)
++inherit_mailserver_fd(mailman_mail_t)
+ 
+ optional_policy(`
+ 	courier_read_spool(mailman_mail_t)
+@@ -159,9 +191,17 @@ allow mailman_queue_t self:capability {
+ allow mailman_queue_t self:process { setsched signal_perms };
+ allow mailman_queue_t self:fifo_file rw_fifo_file_perms;
+ 
++allow mailman_queue_t mailman_data_t:dir list_dir_perms;
++allow mailman_queue_t mailman_data_t:file read_file_perms;
++allow mailman_queue_t mailman_data_t:lnk_file read_lnk_file_perms;
++
+ corenet_sendrecv_innd_client_packets(mailman_queue_t)
+ corenet_tcp_connect_innd_port(mailman_queue_t)
+ corenet_tcp_sendrecv_innd_port(mailman_queue_t)
++read_write_crond_tmp(mailman_queue_t)
++miscfiles_read_localization(mailman_queue_t)
++
++kernel_read_system_state(mailman_queue_t)
+ 
+ auth_domtrans_chk_passwd(mailman_queue_t)
+ 
+Index: refpolicy/policy/modules/contrib/mta.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mta.if
++++ refpolicy/policy/modules/contrib/mta.if
+@@ -286,6 +286,24 @@ interface(`mta_home_filetrans_mail_home_
+ 
+ ########################################
+ ## <summary>
++##	Inherit FDs from mailserver_domain domains
++## </summary>
++## <param name="type">
++##	<summary>
++##	Type for a list server or delivery agent that inherits fds
++##	</summary>
++## </param>
++#
++interface(`inherit_mailserver_fd',`
++	gen_require(`
++		attribute mailserver_domain;
++	')
++
++	allow $1 mailserver_domain:fd use;
++')
++
++########################################
++## <summary>
+ ##	Make the specified type by a system MTA.
+ ## </summary>
+ ## <param name="type">

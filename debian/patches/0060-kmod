@@ -2,10 +2,10 @@ Description: Change modutils policy to match the use of a single binary
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-06-25
 
-Index: refpolicy-2.20140421/policy/modules/system/modutils.te
+Index: refpolicy/policy/modules/system/modutils.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/modutils.te
-+++ refpolicy-2.20140421/policy/modules/system/modutils.te
+--- refpolicy.orig/policy/modules/system/modutils.te
++++ refpolicy/policy/modules/system/modutils.te
 @@ -5,15 +5,12 @@ policy_module(modutils, 1.15.0)
  # Declarations
  #
@@ -26,7 +26,7 @@ Index: refpolicy-2.20140421/policy/modules/system/modutils.te
  application_domain(insmod_t, insmod_exec_t)
  mls_file_write_all_levels(insmod_t)
  role system_r types insmod_t;
-@@ -26,78 +23,6 @@ files_type(modules_conf_t)
+@@ -26,77 +23,8 @@ files_type(modules_conf_t)
  type modules_dep_t;
  files_type(modules_dep_t)
  
@@ -101,11 +101,12 @@ Index: refpolicy-2.20140421/policy/modules/system/modutils.te
 -	# Read System.map from home directories.
 -	unconfined_domain(depmod_t)
 -')
--
++type kmod_var_run_t;
++files_pid_file(kmod_var_run_t)
+ 
  ########################################
  #
- # insmod local policy
-@@ -114,6 +39,9 @@ list_dirs_pattern(insmod_t, modules_conf
+@@ -114,6 +42,9 @@ list_dirs_pattern(insmod_t, modules_conf
  read_files_pattern(insmod_t, modules_conf_t, modules_conf_t)
  list_dirs_pattern(insmod_t, modules_dep_t, modules_dep_t)
  read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
@@ -115,7 +116,19 @@ Index: refpolicy-2.20140421/policy/modules/system/modutils.te
  
  can_exec(insmod_t, insmod_exec_t)
  
-@@ -230,6 +158,7 @@ optional_policy(`
+@@ -136,6 +67,11 @@ kernel_dontaudit_search_unlabeled(insmod
+ corecmd_exec_bin(insmod_t)
+ corecmd_exec_shell(insmod_t)
+ 
++# for /run/tmpfiles.d/kmod.conf
++files_pid_filetrans(insmod_t, kmod_var_run_t, dir)
++allow insmod_t kmod_var_run_t:dir manage_dir_perms;
++allow insmod_t kmod_var_run_t:file manage_file_perms;
++
+ dev_rw_sysfs(insmod_t)
+ dev_search_usbfs(insmod_t)
+ dev_rw_mtrr(insmod_t)
+@@ -230,6 +166,7 @@ optional_policy(`
  optional_policy(`
  	unconfined_domain(insmod_t)
  	unconfined_dontaudit_rw_pipes(insmod_t)
@@ -123,7 +136,7 @@ Index: refpolicy-2.20140421/policy/modules/system/modutils.te
  ')
  
  optional_policy(`
-@@ -239,85 +168,3 @@ optional_policy(`
+@@ -239,85 +176,3 @@ optional_policy(`
  	xserver_getattr_log(insmod_t)
  ')
  
@@ -209,3 +222,57 @@ Index: refpolicy-2.20140421/policy/modules/system/modutils.te
 -		unconfined_domain(update_modules_t)
 -	')
 -')
+Index: refpolicy/policy/modules/kernel/kernel.te
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/kernel.te
++++ refpolicy/policy/modules/kernel/kernel.te
+@@ -274,6 +274,9 @@ selinux_load_policy(kernel_t)
+ 
+ term_use_console(kernel_t)
+ 
++# for kdevtmpfs
++term_setattr_unlink_unallocated_ttys(kernel_t)
++
+ corecmd_exec_shell(kernel_t)
+ corecmd_list_bin(kernel_t)
+ # /proc/sys/kernel/modprobe is set to /bin/true if not using modules.
+Index: refpolicy/policy/modules/kernel/terminal.if
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/terminal.if
++++ refpolicy/policy/modules/kernel/terminal.if
+@@ -1085,6 +1085,26 @@ interface(`term_getattr_unallocated_ttys
+ 
+ ########################################
+ ## <summary>
++##	Setattr and unlink unallocated tty device nodes.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`term_setattr_unlink_unallocated_ttys',`
++	gen_require(`
++		type tty_device_t;
++	')
++
++	dev_list_all_dev_nodes($1)
++	allow $1 tty_device_t:chr_file { getattr setattr unlink };
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to get the attributes
+ ##	of all unallocated tty device nodes.
+ ## </summary>
+Index: refpolicy/policy/modules/system/modutils.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/modutils.fc
++++ refpolicy/policy/modules/system/modutils.fc
+@@ -23,3 +23,4 @@ ifdef(`distro_gentoo',`
+ /sbin/update-modules	--	gen_context(system_u:object_r:update_modules_exec_t,s0)
+ 
+ /usr/bin/kmod		--	gen_context(system_u:object_r:insmod_exec_t,s0)
++/var/run/tmpfiles.d(/.*)?	gen_context(system_u:object_r:kmod_var_run_t,s0)
