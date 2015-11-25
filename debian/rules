@@ -10,6 +10,8 @@ TYPE_mls = mls
 UBAC_mls = n
 UNK_PERMS_mls = deny
 
+BUILD_DATE := $(shell dpkg-parsechangelog --show-field Date)
+
 %:
 	dh $@
 
@@ -152,6 +154,6 @@ install-src: conf-src
 	                     $(CURDIR)/debian/tmp/etc/selinux/default/src/policy/build.conf
 	(cd $(CURDIR)/debian/tmp/etc/selinux/default/src/; mv policy selinux-policy-src;   \
 	                                          rm selinux-policy-src/support/pyplate.pyc; \
-	  tar zfc $(CURDIR)/debian/tmp/usr/src/selinux-policy-src.tar.gz selinux-policy-src)
+	  GZIP="-9n" tar zfc $(CURDIR)/debian/tmp/usr/src/selinux-policy-src.tar.gz --mtime="$(BUILD_DATE)" selinux-policy-src)
 	rm -rf               $(CURDIR)/debian/tmp/etc/selinux/default/src/
 	touch $@

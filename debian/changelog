@@ -4,8 +4,9 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
   * debian/control: Adjust and cleanup the {build-}dependencies (Closes:
     #805496)
   * debian/control: Bump Standards-Version to 3.9.6 (no further changes)
+  * debian/rules: Make the build reproducible (Closes: #778232)
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 25 Nov 2015 21:00:13 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 25 Nov 2015 21:27:53 +0100
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
