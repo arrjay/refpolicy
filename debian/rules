@@ -109,8 +109,7 @@ build-%-policy: conf-%-policy
 
 install-%-policy: build-%-policy
 	(cd $(CURDIR)/debian/build-$*; \
-	    $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) DESTDIR=$(CURDIR)/debian/tmp install \
-	    $(CURDIR)/debian/tmp/etc/selinux/$*/users/local.users $(CURDIR)/debian/tmp/etc/selinux/$*/users/system.users)
+	    $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) DESTDIR=$(CURDIR)/debian/tmp install)
 	cp -a debian/setrans.conf.$* $(CURDIR)/debian/tmp/etc/selinux/$*/setrans.conf
 	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/contexts/files/
 	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/modules/active/
