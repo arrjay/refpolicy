@@ -1,3 +1,9 @@
+refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
+
+  * debian/gbp.conf: Sign tags by default (Closes: #781670)
+
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 25 Nov 2015 18:38:57 +0100
+
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
   * Allow dovecot_t to read /usr/share/dovecot/protocols.d
