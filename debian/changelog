@@ -6,8 +6,9 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
   * debian/control: Bump Standards-Version to 3.9.6 (no further changes)
   * debian/rules: Make the build reproducible (Closes: #778232)
   * Remove deprecated system.users and local.users files
+  * debian/control: Update Homepage URL (Closes: #780934)
 
- -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Nov 2015 00:49:03 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Nov 2015 10:58:14 +0100
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 

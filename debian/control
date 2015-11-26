@@ -3,7 +3,7 @@ VCS-Git: git://anonscm.debian.org/selinux/refpolicy.git
 VCS-Browser: http://anonscm.debian.org/gitweb/?p=selinux/refpolicy.git;a=summary
 Priority: optional
 Section: admin
-Homepage: http://oss.tresys.com/projects/refpolicy/wiki/DownloadRelease
+Homepage: https://github.com/TresysTechnology/refpolicy/wiki
 Maintainer: Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>
 Uploaders: Russell Coker <russell@coker.com.au>
 Standards-Version: 3.9.6
