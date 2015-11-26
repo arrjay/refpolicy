@@ -9,8 +9,10 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
   * debian/control: Update Homepage URL (Closes: #780934)
   * debian/rules: Allow parallel build now that the build system is supporting
     it, see #677689
+  * debian/policygentool: Remove string exceptions so the script is Python >=
+    2.6 compatible (Closes: #585355)
 
- -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Nov 2015 11:11:31 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Nov 2015 16:55:44 +0100
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
