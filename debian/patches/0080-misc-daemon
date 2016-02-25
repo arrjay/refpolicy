@@ -970,7 +970,7 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  corenet_all_recvfrom_unlabeled(dovecot_t)
  corenet_all_recvfrom_netlabel(dovecot_t)
  corenet_tcp_sendrecv_generic_if(dovecot_t)
-@@ -242,6 +245,7 @@ files_tmp_filetrans(dovecot_auth_t, dove
+@@ -242,9 +245,12 @@ files_tmp_filetrans(dovecot_auth_t, dove
  
  allow dovecot_auth_t dovecot_var_run_t:dir list_dir_perms;
  manage_sock_files_pattern(dovecot_auth_t, dovecot_var_run_t, dovecot_var_run_t)
@@ -978,6 +978,11 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  
  allow dovecot_auth_t dovecot_t:unix_stream_socket { connectto rw_stream_socket_perms };
  
++selinux_get_enforce_mode(dovecot_auth_t)
++
+ files_search_pids(dovecot_auth_t)
+ files_read_usr_files(dovecot_auth_t)
+ files_read_var_lib_files(dovecot_auth_t)
 Index: refpolicy/policy/modules/contrib/dkim.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.te
@@ -1053,6 +1058,36 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  type httpd_keytab_t;
  files_type(httpd_keytab_t)
+@@ -405,11 +406,8 @@ allow httpd_t httpd_keytab_t:file read_f
+ allow httpd_t httpd_lock_t:file manage_file_perms;
+ files_lock_filetrans(httpd_t, httpd_lock_t, file)
+ 
+-allow httpd_t httpd_log_t:dir setattr_dir_perms;
+-create_dirs_pattern(httpd_t, httpd_log_t, httpd_log_t)
+-create_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
+-append_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
+-read_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
++manage_dirs_pattern(httpd_t, httpd_log_t, httpd_log_t)
++manage_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
+ read_lnk_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
+ logging_log_filetrans(httpd_t, httpd_log_t, file)
+ 
+@@ -464,6 +462,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+ domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
+ 
+ kernel_read_kernel_sysctls(httpd_t)
++kernel_read_vm_sysctls(httpd_t)
+ kernel_read_network_state(httpd_t)
+ kernel_read_system_state(httpd_t)
+ kernel_search_network_sysctl(httpd_t)
+@@ -1225,6 +1224,7 @@ allow httpd_sys_script_t squirrelmail_sp
+ allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
+ 
+ kernel_read_kernel_sysctls(httpd_sys_script_t)
++dev_read_sysfs(httpd_sys_script_t)
+ 
+ fs_search_auto_mountpoints(httpd_sys_script_t)
+ 
 Index: refpolicy/policy/modules/contrib/dkim.if
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.if
@@ -1158,6 +1193,14 @@ Index: refpolicy/policy/modules/kernel/corecommands.fc
  /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+@@ -275,6 +276,7 @@ ifdef(`distro_gentoo',`
+ /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
+ /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
+ 
++/usr/share/mdadm/checkarray	--	gen_context(system_u:object_r:bin_t,s0)
+ /usr/share/ajaxterm/ajaxterm.py.* --	gen_context(system_u:object_r:bin_t,s0)
+ /usr/share/ajaxterm/qweb.py.* --	gen_context(system_u:object_r:bin_t,s0)
+ /usr/share/apr-0/build/[^/]+\.sh --	gen_context(system_u:object_r:bin_t,s0)
 Index: refpolicy/policy/modules/contrib/courier.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/courier.te
@@ -1611,6 +1654,25 @@ Index: refpolicy/policy/modules/contrib/jabber.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/jabber.te
 +++ refpolicy/policy/modules/contrib/jabber.te
+@@ -77,15 +77,15 @@ allow jabberd_t self:udp_socket create_s
+ manage_files_pattern(jabberd_t, jabberd_lock_t, jabberd_lock_t)
+ 
+ allow jabberd_t jabberd_log_t:dir setattr_dir_perms;
+-append_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
+-create_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
+-setattr_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
++manage_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
+ logging_log_filetrans(jabberd_t, jabberd_log_t, { file dir })
+ 
+ manage_files_pattern(jabberd_domain, jabberd_spool_t, jabberd_spool_t)
+ 
+ manage_files_pattern(jabberd_t, jabberd_var_run_t, jabberd_var_run_t)
+ files_pid_filetrans(jabberd_t, jabberd_var_run_t, file)
++miscfiles_read_all_certs(jabberd_t)
++domain_dontaudit_search_all_domains_state(jabberd_t)
+ 
+ kernel_read_kernel_sysctls(jabberd_t)
+ 
 @@ -96,6 +96,7 @@ corenet_tcp_sendrecv_jabber_client_port(
  corenet_sendrecv_jabber_interserver_server_packets(jabberd_t)
  corenet_tcp_bind_jabber_interserver_port(jabberd_t)
@@ -1659,13 +1721,15 @@ Index: refpolicy/policy/modules/contrib/mailman.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mailman.te
 +++ refpolicy/policy/modules/contrib/mailman.te
-@@ -92,6 +92,25 @@ miscfiles_read_localization(mailman_doma
+@@ -92,6 +92,27 @@ miscfiles_read_localization(mailman_doma
  #
  
  dev_read_urand(mailman_cgi_t)
 +miscfiles_read_localization(mailman_cgi_t)
 +corecmd_exec_bin(mailman_cgi_t)
 +kernel_read_crypto_sysctls(mailman_cgi_t)
++
++allow mailman_cgi_t self:unix_dgram_socket { create connect };
 +
 +allow mailman_cgi_t mailman_data_t:dir rw_dir_perms;
 +allow mailman_cgi_t mailman_data_t:file manage_file_perms;
@@ -1685,26 +1749,55 @@ Index: refpolicy/policy/modules/contrib/mailman.te
  
  term_use_controlling_term(mailman_cgi_t)
  
-@@ -118,6 +137,17 @@ optional_policy(`
+@@ -118,10 +139,43 @@ optional_policy(`
  allow mailman_mail_t self:capability { kill dac_override setuid setgid sys_tty_config };
  allow mailman_mail_t self:process { signal signull };
  
 +allow mailman_mail_t mailman_data_t:dir rw_dir_perms;
-+allow mailman_mail_t mailman_data_t:file read_file_perms;
++allow mailman_mail_t mailman_data_t:file manage_file_perms;
 +allow mailman_mail_t mailman_data_t:lnk_file read_lnk_file_perms;
 +
++logging_search_logs(mailman_mail_t)
 +allow mailman_mail_t mailman_log_t:dir search;
++allow mailman_mail_t mailman_log_t:file read_file_perms;
++
++allow mailman_mail_t mailman_archive_t:dir manage_dir_perms;
++allow mailman_mail_t mailman_archive_t:file manage_file_perms;
++allow mailman_mail_t mailman_archive_t:lnk_file manage_lnk_file_perms;
++
++# this is far from ideal, but systemd reduces the importance of initrc_t
++init_signal_script(mailman_mail_t)
++init_signull_script(mailman_mail_t)
++
++# for python .path file
++libs_read_lib_files(mailman_mail_t)
 +
 +allow mailman_mail_t self:process setsched;
 +
 +kernel_read_system_state(mailman_mail_t)
 +miscfiles_read_localization(mailman_mail_t)
 +
++domain_auto_trans(mailman_mail_t, mailman_queue_exec_t, mailman_queue_t)
++allow mailman_mail_t mailman_queue_exec_t:file ioctl;
++
++can_exec(mailman_mail_t, mailman_mail_exec_t)
++
  manage_files_pattern(mailman_mail_t, mailman_var_run_t, mailman_var_run_t)
  manage_dirs_pattern(mailman_mail_t, mailman_var_run_t, mailman_var_run_t)
  files_pid_filetrans(mailman_mail_t, mailman_var_run_t, { file dir })
-@@ -131,11 +161,13 @@ corenet_tcp_connect_spamd_port(mailman_m
+ 
++files_search_locks(mailman_mail_t)
++allow mailman_mail_t mailman_lock_t:dir rw_dir_perms;
++allow mailman_mail_t mailman_lock_t:file manage_file_perms;
++
+ corenet_sendrecv_innd_client_packets(mailman_mail_t)
+ corenet_tcp_connect_innd_port(mailman_mail_t)
+ corenet_tcp_sendrecv_innd_port(mailman_mail_t)
+@@ -129,13 +183,16 @@ corenet_tcp_sendrecv_innd_port(mailman_m
+ corenet_sendrecv_spamd_client_packets(mailman_mail_t)
+ corenet_tcp_connect_spamd_port(mailman_mail_t)
  corenet_tcp_sendrecv_spamd_port(mailman_mail_t)
++corenet_tcp_connect_smtp_port(mailman_mail_t)
  
  dev_read_urand(mailman_mail_t)
 +corecmd_exec_bin(mailman_mail_t)
@@ -1717,13 +1810,25 @@ Index: refpolicy/policy/modules/contrib/mailman.te
  
  optional_policy(`
  	courier_read_spool(mailman_mail_t)
-@@ -159,9 +191,17 @@ allow mailman_queue_t self:capability {
+@@ -159,9 +216,29 @@ allow mailman_queue_t self:capability {
  allow mailman_queue_t self:process { setsched signal_perms };
  allow mailman_queue_t self:fifo_file rw_fifo_file_perms;
  
-+allow mailman_queue_t mailman_data_t:dir list_dir_perms;
-+allow mailman_queue_t mailman_data_t:file read_file_perms;
++allow mailman_queue_t mailman_data_t:dir rw_dir_perms;
++allow mailman_queue_t mailman_data_t:file manage_file_perms;
 +allow mailman_queue_t mailman_data_t:lnk_file read_lnk_file_perms;
++
++allow mailman_queue_t mailman_log_t:dir list_dir_perms;
++allow mailman_queue_t mailman_log_t:file manage_file_perms;
++
++allow mailman_queue_t mailman_archive_t:dir manage_dir_perms;
++allow mailman_queue_t mailman_archive_t:file manage_file_perms;
++
++files_search_locks(mailman_queue_t)
++allow mailman_queue_t mailman_lock_t:dir rw_dir_perms;
++allow mailman_queue_t mailman_lock_t:file manage_file_perms;
++
++corecmd_read_bin_files(mailman_queue_t)
 +
  corenet_sendrecv_innd_client_packets(mailman_queue_t)
  corenet_tcp_connect_innd_port(mailman_queue_t)
@@ -1764,3 +1869,253 @@ Index: refpolicy/policy/modules/contrib/mta.if
  ##	Make the specified type by a system MTA.
  ## </summary>
  ## <param name="type">
+Index: refpolicy/policy/modules/contrib/mailman.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mailman.fc
++++ refpolicy/policy/modules/contrib/mailman.fc
+@@ -2,11 +2,11 @@
+ 
+ /etc/mailman.*	gen_context(system_u:object_r:mailman_data_t,s0)
+ 
+-/usr/lib/mailman.*/bin/mailmanctl	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+-/usr/lib/mailman.*/bin/mm-handler.*	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+-/usr/lib/mailman.*/cron/.*	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
++/usr/lib/mailman/bin/mailmanctl	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/lib/mailman/bin/mm-handler.*	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/lib/mailman/cron/.*	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
+ /var/lib/mailman.*	gen_context(system_u:object_r:mailman_data_t,s0)
+-/var/lib/mailman.*/archives(/.*)?	gen_context(system_u:object_r:mailman_archive_t,s0)
++/var/lib/mailman/archives(/.*)?	gen_context(system_u:object_r:mailman_archive_t,s0)
+ 
+ /var/lock/mailman.*	gen_context(system_u:object_r:mailman_lock_t,s0)
+ /var/lock/subsys/mailman.*	--	gen_context(system_u:object_r:mailman_lock_t,s0)
+@@ -17,13 +17,13 @@
+ 
+ /var/spool/mailman.*	gen_context(system_u:object_r:mailman_data_t,s0)
+ 
+-/usr/lib/cgi-bin/mailman.*/.*	--	gen_context(system_u:object_r:mailman_cgi_exec_t,s0)
+-/usr/lib/mailman.*/bin/qrunner	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
+-/usr/lib/mailman.*/cgi-bin/.*	--	gen_context(system_u:object_r:mailman_cgi_exec_t,s0)
+-/usr/lib/mailman.*/mail/mailman	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+-/usr/lib/mailman.*/mail/wrapper	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+-/usr/lib/mailman.*/scripts/mailman	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/lib/cgi-bin/mailman/.*	--	gen_context(system_u:object_r:mailman_cgi_exec_t,s0)
++/usr/lib/mailman/bin/qrunner	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
++/usr/lib/mailman/cgi-bin/.*	--	gen_context(system_u:object_r:mailman_cgi_exec_t,s0)
++/usr/lib/mailman/mail/mailman	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/lib/mailman/mail/wrapper	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/lib/mailman/scripts/mailman	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+ 
+-/usr/mailman.*/mail/wrapper	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/mailman/mail/wrapper	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+ 
+-/usr/share/doc/mailman.*/mm-handler.*	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
++/usr/share/doc/mailman/mm-handler.*	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+Index: refpolicy/policy/modules/system/authlogin.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/authlogin.te
++++ refpolicy/policy/modules/system/authlogin.te
+@@ -107,6 +107,7 @@ files_list_etc(chkpwd_t)
+ kernel_read_crypto_sysctls(chkpwd_t)
+ # is_selinux_enabled
+ kernel_read_system_state(chkpwd_t)
++selinux_get_enforce_mode(chkpwd_t)
+ 
+ domain_dontaudit_use_interactive_fds(chkpwd_t)
+ 
+Index: refpolicy/policy/modules/contrib/logrotate.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/logrotate.te
++++ refpolicy/policy/modules/contrib/logrotate.te
+@@ -244,6 +244,11 @@ optional_policy(`
+ 	varnishd_manage_log(logrotate_t)
+ ')
+ 
++optional_policy(`
++	webalizer_usage_manage(logrotate_t)
++	webalizer_run(logrotate_t, system_r)
++')
++
+ #######################################
+ #
+ # Mail local policy
+Index: refpolicy/policy/modules/contrib/webalizer.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/webalizer.if
++++ refpolicy/policy/modules/contrib/webalizer.if
+@@ -45,3 +45,23 @@ interface(`webalizer_run',`
+ 	webalizer_domtrans($1)
+ 	roleattribute $2 webalizer_roles;
+ ')
++
++########################################
++## <summary>
++##	Manage webalizer usage files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to manage webalizer usage files
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`webalizer_usage_manage',`
++	gen_require(`
++		type webalizer_usage_t;
++	')
++
++	allow $1 webalizer_usage_t:dir manage_dir_perms;
++	allow $1 webalizer_usage_t:file manage_file_perms;
++')
+Index: refpolicy/policy/modules/contrib/webalizer.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/webalizer.te
++++ refpolicy/policy/modules/contrib/webalizer.te
+@@ -28,6 +28,9 @@ files_type(webalizer_var_lib_t)
+ type webalizer_write_t;
+ files_type(webalizer_write_t)
+ 
++type webalizer_log_t;
++logging_log_file(webalizer_log_t)
++
+ ########################################
+ #
+ # Local policy
+@@ -40,13 +43,19 @@ allow webalizer_t self:fifo_file rw_fifo
+ allow webalizer_t self:unix_dgram_socket sendto;
+ allow webalizer_t self:unix_stream_socket { accept connectto listen };
+ allow webalizer_t self:tcp_socket { accept listen };
++allow webalizer_t webalizer_usage_t:dir manage_dir_perms;
++allow webalizer_t webalizer_usage_t:file manage_file_perms;
+ 
+ allow webalizer_t webalizer_etc_t:file read_file_perms;
++files_read_usr_files(webalizer_t)
+ 
+ manage_dirs_pattern(webalizer_t, webalizer_tmp_t, webalizer_tmp_t)
+ manage_files_pattern(webalizer_t, webalizer_tmp_t, webalizer_tmp_t)
+ files_tmp_filetrans(webalizer_t, webalizer_tmp_t, { file dir })
+ 
++manage_dirs_pattern(webalizer_t, webalizer_log_t, webalizer_log_t)
++manage_files_pattern(webalizer_t, webalizer_log_t, webalizer_log_t)
++
+ manage_files_pattern(webalizer_t, webalizer_var_lib_t, webalizer_var_lib_t)
+ files_var_lib_filetrans(webalizer_t, webalizer_var_lib_t, file)
+ 
+@@ -56,6 +65,7 @@ kernel_read_kernel_sysctls(webalizer_t)
+ kernel_read_system_state(webalizer_t)
+ 
+ files_read_etc_runtime_files(webalizer_t)
++miscfiles_read_fonts(webalizer_t)
+ 
+ fs_search_auto_mountpoints(webalizer_t)
+ fs_getattr_xattr_fs(webalizer_t)
+Index: refpolicy/policy/modules/system/logging.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/logging.if
++++ refpolicy/policy/modules/system/logging.if
+@@ -494,6 +494,7 @@ interface(`logging_log_filetrans',`
+ 
+ 	files_search_var($1)
+ 	filetrans_pattern($1, var_log_t, $2, $3, $4)
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ ########################################
+@@ -649,6 +650,7 @@ interface(`logging_search_logs',`
+ 
+ 	files_search_var($1)
+ 	allow $1 var_log_t:dir search_dir_perms;
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ #######################################
+@@ -686,6 +688,7 @@ interface(`logging_list_logs',`
+ 
+ 	files_search_var($1)
+ 	allow $1 var_log_t:dir list_dir_perms;
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ #######################################
+@@ -705,6 +708,7 @@ interface(`logging_rw_generic_log_dirs',
+ 
+ 	files_search_var($1)
+ 	allow $1 var_log_t:dir rw_dir_perms;
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ #######################################
+@@ -800,6 +804,7 @@ interface(`logging_append_all_logs',`
+ 
+ 	files_search_var($1)
+ 	append_files_pattern($1, var_log_t, logfile)
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ ########################################
+@@ -942,6 +947,7 @@ interface(`logging_write_generic_logs',`
+ 	files_search_var($1)
+ 	allow $1 var_log_t:dir list_dir_perms;
+ 	write_files_pattern($1, var_log_t, var_log_t)
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ ########################################
+@@ -980,6 +986,7 @@ interface(`logging_rw_generic_logs',`
+ 	files_search_var($1)
+ 	allow $1 var_log_t:dir list_dir_perms;
+ 	rw_files_pattern($1, var_log_t, var_log_t)
++	allow $1 var_log_t:lnk_file read_lnk_file_perms;
+ ')
+ 
+ ########################################
+Index: refpolicy/policy/modules/contrib/postfixpolicyd.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/postfixpolicyd.te
++++ refpolicy/policy/modules/contrib/postfixpolicyd.te
+@@ -18,13 +18,18 @@ init_script_file(postfix_policyd_initrc_
+ type postfix_policyd_var_run_t;
+ files_pid_file(postfix_policyd_var_run_t)
+ 
++type postfix_policyd_tmp_t;
++files_type(postfix_policyd_tmp_t)
++
++
+ ########################################
+ #
+ # Local policy
+ #
+ 
+-allow postfix_policyd_t self:capability { sys_resource sys_chroot setgid setuid };
+-allow postfix_policyd_t self:process setrlimit;
++allow postfix_policyd_t self:capability { chown sys_resource sys_chroot setgid setuid };
++allow postfix_policyd_t self:process { setrlimit signal signull };
++
+ allow postfix_policyd_t self:tcp_socket { accept listen };
+ 
+ allow postfix_policyd_t postfix_policyd_conf_t:dir list_dir_perms;
+@@ -34,6 +39,9 @@ allow postfix_policyd_t postfix_policyd_
+ manage_files_pattern(postfix_policyd_t, postfix_policyd_var_run_t, postfix_policyd_var_run_t)
+ files_pid_filetrans(postfix_policyd_t, postfix_policyd_var_run_t, file)
+ 
++files_tmp_filetrans(postfix_policyd_t, postfix_policyd_tmp_t, { file sock_file })
++allow postfix_policyd_t postfix_policyd_tmp_t:{ file sock_file } manage_file_perms;
++
+ corenet_all_recvfrom_unlabeled(postfix_policyd_t)
+ corenet_tcp_sendrecv_generic_if(postfix_policyd_t)
+ corenet_tcp_sendrecv_generic_node(postfix_policyd_t)
+@@ -49,9 +57,14 @@ corenet_tcp_sendrecv_mysqld_port(postfix
+ 
+ files_read_etc_files(postfix_policyd_t)
+ files_read_usr_files(postfix_policyd_t)
++corecmd_exec_bin(postfix_policyd_t)
++dev_read_urand(postfix_policyd_t)
+ 
+ logging_send_syslog_msg(postfix_policyd_t)
+ 
+ miscfiles_read_localization(postfix_policyd_t)
+ 
+ sysnet_dns_name_resolve(postfix_policyd_t)
++
++kernel_search_network_sysctl(postfix_policyd_t)
++

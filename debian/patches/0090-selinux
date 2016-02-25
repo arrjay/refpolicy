@@ -169,7 +169,11 @@ Index: refpolicy/policy/modules/system/init.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.te
 +++ refpolicy/policy/modules/system/init.te
-@@ -137,6 +137,11 @@ allow init_t initrc_t:unix_stream_socket
+@@ -134,9 +134,15 @@ can_exec(init_t, init_exec_t)
+ allow init_t initrc_t:unix_stream_socket connectto;
+ 
+ # For /var/run/shutdown.pid.
++allow init_t init_var_run_t:lnk_file manage_lnk_file_perms;
  allow init_t init_var_run_t:file manage_file_perms;
  files_pid_filetrans(init_t, init_var_run_t, file)
  
@@ -181,7 +185,7 @@ Index: refpolicy/policy/modules/system/init.te
  # for systemd to manage service file symlinks
  allow init_t init_var_run_t:file manage_lnk_file_perms;
  
-@@ -150,13 +155,18 @@ kernel_read_system_state(init_t)
+@@ -150,13 +156,18 @@ kernel_read_system_state(init_t)
  kernel_share_state(init_t)
  kernel_dontaudit_search_unlabeled(init_t)
  
@@ -200,7 +204,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  domain_getpgid_all_domains(init_t)
  domain_kill_all_domains(init_t)
-@@ -170,6 +180,9 @@ files_read_etc_files(init_t)
+@@ -170,6 +181,9 @@ files_read_etc_files(init_t)
  files_rw_generic_pids(init_t)
  files_manage_etc_runtime_files(init_t)
  files_etc_filetrans_etc_runtime(init_t, file)
@@ -210,7 +214,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Run /etc/X11/prefdm:
  files_exec_etc_files(init_t)
  # file descriptors inherited from the rootfs:
-@@ -204,11 +217,20 @@ seutil_read_config(init_t)
+@@ -204,11 +218,20 @@ seutil_read_config(init_t)
  
  miscfiles_read_localization(init_t)
  
@@ -231,7 +235,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  ifdef(`distro_gentoo',`
-@@ -228,6 +250,12 @@ tunable_policy(`init_upstart || init_sys
+@@ -228,6 +251,12 @@ tunable_policy(`init_upstart || init_sys
  ')
  
  optional_policy(`
@@ -244,7 +248,7 @@ Index: refpolicy/policy/modules/system/init.te
  	auth_rw_login_records(init_t)
  ')
  
-@@ -247,6 +275,8 @@ optional_policy(`
+@@ -247,6 +276,8 @@ optional_policy(`
  	udev_read_db(init_t)
  	udev_relabelto_db(init_t)
  	udev_create_kobject_uevent_socket(init_t)
@@ -253,7 +257,17 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  #optional_policy(`
-@@ -1138,15 +1168,19 @@ optional_policy(`
+@@ -283,6 +314,9 @@ term_create_pty(initrc_t, initrc_devpts_
+ # Going to single user mode
+ init_telinit(initrc_t)
+ 
++# for logsave in strict configuration
++fstools_write_log(initrc_t)
++
+ can_exec(initrc_t, init_script_file_type)
+ 
+ create_dirs_pattern(initrc_t, daemonrundir, daemonrundir)
+@@ -1138,15 +1172,19 @@ optional_policy(`
  	clock_read_adjtime(init_t)
  ')
  
@@ -274,7 +288,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1162,6 +1196,7 @@ tunable_policy(`init_systemd',`
+@@ -1162,6 +1200,7 @@ tunable_policy(`init_systemd',`
  	kernel_read_software_raid_state(init_t)
  	kernel_unmount_debugfs(init_t)
  	kernel_setsched(init_t)
@@ -282,7 +296,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	dev_write_kmsg(init_t)
  	dev_write_urand(init_t)
-@@ -1179,6 +1214,7 @@ tunable_policy(`init_systemd',`
+@@ -1179,6 +1218,7 @@ tunable_policy(`init_systemd',`
  	# systemd writes to /dev/watchdog on shutdown
  	dev_write_watchdog(init_t)
  
@@ -290,7 +304,7 @@ Index: refpolicy/policy/modules/system/init.te
  	files_search_all(init_t)
  	files_mounton_all_mountpoints(init_t)
  	files_unmount_all_file_type_fs(init_t)
-@@ -1202,6 +1238,7 @@ tunable_policy(`init_systemd',`
+@@ -1202,6 +1242,7 @@ tunable_policy(`init_systemd',`
  	fs_getattr_all_fs(init_t)
  	fs_manage_cgroup_dirs(init_t)
  	fs_manage_cgroup_files(init_t)
@@ -298,7 +312,7 @@ Index: refpolicy/policy/modules/system/init.te
  	fs_manage_hugetlbfs_dirs(init_t)
  	fs_manage_tmpfs_dirs(init_t)
  	fs_relabel_tmpfs_dirs(init_t)
-@@ -1233,13 +1270,16 @@ tunable_policy(`init_systemd',`
+@@ -1233,13 +1274,16 @@ tunable_policy(`init_systemd',`
  	systemd_manage_all_unit_files(init_t)
  	systemd_logger_stream_connect(init_t)
  	systemd_manage_lnk_file_passwd_run(init_t)
@@ -420,7 +434,12 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  allow dpkg_script_t dpkg_tmp_t:file read_file_perms;
  
-@@ -237,6 +245,7 @@ fs_tmpfs_filetrans(dpkg_script_t, dpkg_s
+@@ -234,9 +242,12 @@ allow dpkg_script_t dpkg_script_tmpfs_t:
+ allow dpkg_script_t dpkg_script_tmpfs_t:fifo_file manage_fifo_file_perms;
+ fs_tmpfs_filetrans(dpkg_script_t, dpkg_script_tmpfs_t, { dir file lnk_file sock_file fifo_file })
+ 
++usermanage_domtrans_passwd(dpkg_script_t)
++
  restart_all_daemons(dpkg_script_t)
  kernel_read_kernel_sysctls(dpkg_script_t)
  kernel_read_system_state(dpkg_script_t)
@@ -428,7 +447,7 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  corecmd_exec_all_executables(dpkg_script_t)
  
-@@ -274,13 +283,13 @@ selinux_compute_access_vector(dpkg_scrip
+@@ -274,13 +285,13 @@ selinux_compute_access_vector(dpkg_scrip
  selinux_compute_create_context(dpkg_script_t)
  selinux_compute_relabel_context(dpkg_script_t)
  selinux_compute_user_contexts(dpkg_script_t)
@@ -562,6 +581,18 @@ Index: refpolicy/policy/modules/system/selinuxutil.te
  
  dev_read_urand(setfiles_t)
  dev_relabel_all_dev_nodes(setfiles_t)
+@@ -612,6 +617,11 @@ ifdef(`distro_debian',`
+ 	fs_rw_tmpfs_chr_files(setfiles_t)
+ ')
+ 
++# for dpkg-statoverride running as setfiles_t
++optional_policy(`
++	dpkg_read_db(setfiles_t)
++')
++
+ ifdef(`distro_redhat', `
+ 	fs_rw_tmpfs_chr_files(setfiles_t)
+ 	fs_rw_tmpfs_blk_files(setfiles_t)
 Index: refpolicy/policy/modules/services/xserver.te
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.te
@@ -606,7 +637,15 @@ Index: refpolicy/policy/modules/contrib/apt.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apt.te
 +++ refpolicy/policy/modules/contrib/apt.te
-@@ -76,6 +76,7 @@ files_var_lib_filetrans(apt_t, apt_var_l
+@@ -69,6 +69,7 @@ manage_sock_files_pattern(apt_t, apt_tmp
+ fs_tmpfs_filetrans(apt_t, apt_tmpfs_t, { dir file lnk_file sock_file fifo_file })
+ 
+ manage_files_pattern(apt_t, apt_var_cache_t, apt_var_cache_t)
++manage_dirs_pattern(apt_t, apt_var_cache_t, apt_var_cache_t)
+ files_var_filetrans(apt_t, apt_var_cache_t, dir)
+ 
+ manage_files_pattern(apt_t, apt_var_lib_t, apt_var_lib_t)
+@@ -76,6 +77,7 @@ files_var_lib_filetrans(apt_t, apt_var_l
  
  allow apt_t apt_var_log_t:file manage_file_perms;
  logging_log_filetrans(apt_t, apt_var_log_t, file)
@@ -649,7 +688,7 @@ Index: refpolicy/policy/modules/kernel/corecommands.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/corecommands.fc
 +++ refpolicy/policy/modules/kernel/corecommands.fc
-@@ -320,6 +320,7 @@ ifdef(`distro_debian',`
+@@ -321,6 +321,7 @@ ifdef(`distro_debian',`
  /usr/lib/ConsoleKit/.*		--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/gdm3/.*		--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/udisks/.*		--	gen_context(system_u:object_r:bin_t,s0)
@@ -657,3 +696,67 @@ Index: refpolicy/policy/modules/kernel/corecommands.fc
  ')
  
  ifdef(`distro_gentoo', `
+Index: refpolicy/policy/modules/admin/usermanage.te
+===================================================================
+--- refpolicy.orig/policy/modules/admin/usermanage.te
++++ refpolicy/policy/modules/admin/usermanage.te
+@@ -189,7 +189,7 @@ optional_policy(`
+ # Groupadd local policy
+ #
+ 
+-allow groupadd_t self:capability { dac_override chown kill setuid sys_resource audit_write };
++allow groupadd_t self:capability { dac_override fsetid chown kill setuid sys_resource audit_write };
+ dontaudit groupadd_t self:capability { fsetid sys_tty_config };
+ allow groupadd_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execheap execstack };
+ allow groupadd_t self:process { setrlimit setfscreate };
+Index: refpolicy/policy/modules/system/fstools.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/fstools.if
++++ refpolicy/policy/modules/system/fstools.if
+@@ -154,3 +154,21 @@ interface(`fstools_getattr_swap_files',`
+ 
+ 	allow $1 swapfile_t:file getattr;
+ ')
++
++########################################
++## <summary>
++##	Write to fsadm_log_t
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fstools_write_log',`
++	gen_require(`
++		type fsadm_log_t;
++	')
++
++	allow $1 fsadm_log_t:file write_file_perms;
++')
+Index: refpolicy/policy/modules/system/modutils.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/modutils.te
++++ refpolicy/policy/modules/system/modutils.te
+@@ -41,7 +41,7 @@ allow insmod_t self:rawip_socket create_
+ list_dirs_pattern(insmod_t, modules_conf_t, modules_conf_t)
+ read_files_pattern(insmod_t, modules_conf_t, modules_conf_t)
+ list_dirs_pattern(insmod_t, modules_dep_t, modules_dep_t)
+-read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
++manage_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
+ filetrans_add_pattern(insmod_t, modules_object_t, modules_dep_t, file)
+ create_files_pattern(insmod_t, modules_object_t, modules_dep_t)
+ delete_files_pattern(insmod_t, modules_object_t, modules_dep_t)
+Index: refpolicy/policy/modules/system/selinuxutil.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/selinuxutil.fc
++++ refpolicy/policy/modules/system/selinuxutil.fc
+@@ -25,6 +25,7 @@
+ /sbin/load_policy		--	gen_context(system_u:object_r:load_policy_exec_t,s0)
+ /sbin/restorecon		--	gen_context(system_u:object_r:setfiles_exec_t,s0)
+ /sbin/setfiles.*		--	gen_context(system_u:object_r:setfiles_exec_t,s0)
++/usr/bin/dpkg-statoverride	--	gen_context(system_u:object_r:setfiles_exec_t,s0)
+ 
+ #
+ # /usr
