@@ -65,7 +65,7 @@ refpolicy (2:2.20140421-11) unstable; urgency=medium
 
  -- Russell Coker <russell@coker.com.au>  Wed, 16 Sep 2015 17:02:34 +1000
 
-refpolicy (2:2.20140421-10) unstable; urgency=medium
+refpolicy (2:2.20140421-10.1) unstable; urgency=medium
 
   * Allow ntpd_t to delete files for peerstats and loopstats
   * Add correct file labels for squid3 and tunable for squid pinger raw net
@@ -97,8 +97,25 @@ refpolicy (2:2.20140421-10) unstable; urgency=medium
   * Allow iptables_t to be in unconfined_r (for Xen)
   * Allow udev_t to restart systemd services
     Closes: #756729
+  * Merge Laurent's changes with mine
 
  -- Russell Coker <russell@coker.com.au>  Mon, 14 Sep 2015 10:54:43 +1000
+
+refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
+
+  * debian/gbp.conf: Sign tags by default (Closes: #781670)
+  * debian/control: Adjust and cleanup the {build-}dependencies (Closes:
+    #805496)
+  * debian/control: Bump Standards-Version to 3.9.6 (no further changes)
+  * debian/rules: Make the build reproducible (Closes: #778232)
+  * Remove deprecated system.users and local.users files
+  * debian/control: Update Homepage URL (Closes: #780934)
+  * debian/rules: Allow parallel build now that the build system is supporting
+    it, see #677689
+  * debian/policygentool: Remove string exceptions so the script is Python >=
+    2.6 compatible (Closes: #585355)
+
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Nov 2015 16:55:44 +0100
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
