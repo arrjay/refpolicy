@@ -1,3 +1,106 @@
+refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
+
+  * Allow init_t to manage init_var_run_t symlinks and self getsched
+    to relabel files and dirs to etc_runtime_t for /run/blkid
+    to read/write init_var_run_t fifos for /run/initctl
+    kernel_rw_unix_sysctls() for setting max_dgram_qlen (and eventually other
+    sysctls)
+  * Allow restorecond_t and setfiles_t to getattr pstore_t and debugfs_t filesystems
+  * Allow kernel_t to setattr/getattr/unlink tty_device_t for kdevtmpfs
+  * Label /usr/share/bug/.* files as bin_t for reportbug in strict configuration
+  * Label /run/tmpfiles.d/kmod.conf as kmod_var_run_t and allow insmod_t to create it
+  * apache_unlink_var_lib() now includes write access to httpd_var_lib_t:dir 
+  * Allow apache to read sysctl_vm_t for overcommit_memory
+    Allow httpd_sys_script_t to read sysfs_t. allow httpd_t to manage httpd_log_t files
+    and directories for mod_pagespeed.
+  * Removed bogus .* in mailman file context that was breaking the regex
+  * Lots of mailman changes
+  * Allow system_mail_t read/write access to crond_tmp_t
+  * Allow postfix_pipe_t to write to postfix_public_t sockets
+  * Label /usr/share/mdadm/checkarray as bin_t
+  * Let systemd_passwd_agent_t, chkpwd_t, and dovecot_auth_t get enforcing status
+  * Allow systemd_tmpfiles_t to create the cpu_device_t device
+  * Allow init_t to manage init_var_run_t links
+  * Allow groupadd_t the fsetid capability
+  * Allow dpkg_script_t to transition to passwd_t. Label dpkg-statoverride as
+    setfiles_exec_t for changing SE Linux context. Allow setfiles_t to read
+    dpkg_var_lib_t so dpkg-statoverride can do it's job
+  * Allow initrc_t to write to fsadm_log_t for logsave in strict configuration
+  * Allow webalizer to read fonts and allow logrotate to manage webaliser_usage_t files
+    also allow it to be run by logrotate_t.
+  * Allow jabber to read ssl certs and give it full access to it's log files
+    Don't audit jabber running ps.
+  * Made logging_search_logs() allow reading var_log_t:lnk_file for symlinks in log dir
+  * Allow webalizer to read usr_t and created webalizer_log_t for it's logs
+  * Made logging_log_filetrans and several other logging macros also allow reading
+    var_log_t links so a variety of sysadmin symlinks in /var/log won't break things
+  * Allow postfix_policyd_t to execute bin_t, read urandom, and capability chown.
+    New type postfix_policyd_tmp_t
+  * Added user_udp_server boolean
+  * Allow apt_t to manage dirs of type apt_var_cache_t
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 26 Sep 2015 15:07:45 +1000
+
+refpolicy (2:2.20140421-11) unstable; urgency=medium
+
+  * Allow jabber to connect to the jabber_interserver_port_t TCP port
+    Closes: #697843
+  * Allow xm_t to create xen_lock_t files for creating the first Xen DomU
+  * Allow init_t to manage init_var_run_t for service file symlinks
+  * Add init_telinit(dpkg_script_t) for upgrading systemd
+  * Allow dpkg_script_t the setfcap capability for systemd postinst.
+  * Add domain_getattr_all_domains(init_t) for upgrading strict mode systems
+  * Allow *_systemctl_t domains read initrc_var_run_t (/run/utmp), read proc_t,
+    and have capability net_admin.  Allow logrotate_systemctl_t to manage all
+    services.
+  * Give init_t the audit_read capability for systemd
+  * Allow iodined_t access to netlink_route_socket.
+  * add init_read_state(systemd_cgroups_t) and init_read_state(systemd_tmpfiles_t)
+    for /proc/1/environ
+  * Label /etc/openvpn/openvpn-status.log as openvpn_status_t as it seems to be some
+    sort of default location. /var/log is a better directory for this
+  * Allow syslogd_t to write to a netlink_audit_socket for systemd-journal
+  * Allow mandb_t to get filesystem attributes
+  * Allow syslogd to rename and unlink init_var_run_t files for systemd temporary files
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 16 Sep 2015 17:02:34 +1000
+
+refpolicy (2:2.20140421-10.1) unstable; urgency=medium
+
+  * Allow ntpd_t to delete files for peerstats and loopstats
+  * Add correct file labels for squid3 and tunable for squid pinger raw net
+    access (default true)
+  * Allow qemu_t to read crypto sysctls, rw xenfs files, and connect to xenstored
+    unix sockets
+  * Allow qemu_t to read sysfs files for cpu online
+  * Allow qemu to append xend_var_log_t for /var/log/xen/qemu-dm-*
+  * Allow xm_t (xl program) to create and rename xend_var_log_t files, read
+    kernel images, execute qemu, and inherit fds from sshd etc.
+  * Allow xm_t and iptables_t to manage udev_var_run_t to communicate via
+    /run/xen-hotplug/iptables for when vif-bridge runs iptables
+  * Allow xm_t to write to xen_lock_t files not var_lock_t
+  * Allow xm_t to load kernel modules
+  * Allow xm_t to signal qemu_t, talk to it by unix domain sockets, and unlink it's
+    sockets
+  * dontaudit xm_t searching home dir content
+  * Label /run/xen as xend_var_run_t and allow qemu_t to create sock_files in
+    xend_var_run_t directory
+  * Label /var/lock/xl as xen_lock_t
+  * allow unconfined_t to execute xl/xm in xm_t domain.
+  * Allow system_cronjob_t to configure all systemd services (restart all
+    daemons)
+  * Allow dpkg_script_t and unconfined_t to manage systemd service files of
+    type null_device_t (symlinks to /dev/null)
+  * Label /var/run/lwresd/lwresd.pid as named_var_run_t
+  * Label /run/xen/qmp* as qemu_var_run_t
+  * Also label squid3.pid
+  * Allow iptables_t to be in unconfined_r (for Xen)
+  * Allow udev_t to restart systemd services
+    Closes: #756729
+  * Merge Laurent's changes with mine
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 14 Sep 2015 10:54:43 +1000
+
 refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
 
   * debian/gbp.conf: Sign tags by default (Closes: #781670)
