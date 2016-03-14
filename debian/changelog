@@ -1,6 +1,8 @@
 refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
 
   [ Laurent Bigonville ]
+  * Fix the maintainer script to support the new policy store from libsemnage
+    2.4 (Closes: #805492)
   * debian/gbp.conf: Sign tags by default (Closes: #781670)
   * debian/control: Adjust and cleanup the {build-}dependencies (Closes:
     #805496)

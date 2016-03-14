@@ -22,6 +22,7 @@ basedir="/etc/selinux/${flavour}"
 case "$1" in
     purge)
 	rm -rf "${basedir}"
+	rm -rf /var/lib/selinux/${flavour}
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
