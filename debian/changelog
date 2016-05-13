@@ -14,6 +14,9 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
     it, see #677689
   * debian/policygentool: Remove string exceptions so the script is Python >=
     2.6 compatible (Closes: #585355)
+  * Do not install semanage.read.LOCK, semanage.trans.LOCK and
+    file_contexts.local in /etc/selinux/* this is not needed anymore with the
+    new policy store.
 
   [ Russell Coker ]
   * Allow init_t to manage init_var_run_t symlinks and self getsched
@@ -105,7 +108,7 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
     Closes: #756729
   * Merge Laurent's changes with mine
 
- -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 12:20:06 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 13:25:28 +0200
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 

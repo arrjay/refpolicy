@@ -118,12 +118,7 @@ install-%-policy: build-%-policy
 	    $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) DESTDIR=$(CURDIR)/debian/tmp install)
 	cp -a debian/setrans.conf.$* $(CURDIR)/debian/tmp/etc/selinux/$*/setrans.conf
 	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/contexts/files/
-	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/modules/active/
-	touch $(CURDIR)/debian/tmp/etc/selinux/$*/modules/active/file_contexts.local
 	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/policy/
-	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/modules/
-	touch $(CURDIR)/debian/tmp/etc/selinux/$*/modules/semanage.read.LOCK $(CURDIR)/debian/tmp/etc/selinux/$*/modules/semanage.trans.LOCK
-	chmod 600 $(CURDIR)/debian/tmp/etc/selinux/$*/modules/semanage.read.LOCK $(CURDIR)/debian/tmp/etc/selinux/$*/modules/semanage.trans.LOCK
 	mkdir -p $(CURDIR)/debian/tmp/var/lib/selinux/$*
 # Create a list with the modules we are shipping
 	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; ls -1 | cut -d. -f1 > .modules)
