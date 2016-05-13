@@ -18,6 +18,7 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
     file_contexts.local in /etc/selinux/* this is not needed anymore with the
     new policy store.
   * debian/control: Use https for the Vcs-* URL's to please lintian
+  * debian/watch: Fix watch file URL now that the project has moved to github
 
   [ Russell Coker ]
   * Allow init_t to manage init_var_run_t symlinks and self getsched
@@ -117,7 +118,7 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
     Closes: #756729
   * Merge Laurent's changes with mine
 
- -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 13:59:25 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 14:44:11 +0200
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
