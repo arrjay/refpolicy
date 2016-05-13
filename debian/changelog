@@ -1,5 +1,6 @@
-refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-10) unstable; urgency=medium
 
+  * Team upload.
   [ Laurent Bigonville ]
   * Fix the maintainer script to support the new policy store from libsemnage
     2.4 (Closes: #805492)
@@ -118,7 +119,7 @@ refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
     Closes: #756729
   * Merge Laurent's changes with mine
 
- -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 14:44:11 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 22:29:59 +0200
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
