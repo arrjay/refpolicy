@@ -1,5 +1,19 @@
-refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
 
+  [ Laurent Bigonville ]
+  * debian/gbp.conf: Sign tags by default (Closes: #781670)
+  * debian/control: Adjust and cleanup the {build-}dependencies (Closes:
+    #805496)
+  * debian/control: Bump Standards-Version to 3.9.6 (no further changes)
+  * debian/rules: Make the build reproducible (Closes: #778232)
+  * Remove deprecated system.users and local.users files
+  * debian/control: Update Homepage URL (Closes: #780934)
+  * debian/rules: Allow parallel build now that the build system is supporting
+    it, see #677689
+  * debian/policygentool: Remove string exceptions so the script is Python >=
+    2.6 compatible (Closes: #585355)
+
+  [ Russell Coker ]
   * Allow init_t to manage init_var_run_t symlinks and self getsched
     to relabel files and dirs to etc_runtime_t for /run/blkid
     to read/write init_var_run_t fifos for /run/initctl
@@ -9,7 +23,7 @@ refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
   * Allow kernel_t to setattr/getattr/unlink tty_device_t for kdevtmpfs
   * Label /usr/share/bug/.* files as bin_t for reportbug in strict configuration
   * Label /run/tmpfiles.d/kmod.conf as kmod_var_run_t and allow insmod_t to create it
-  * apache_unlink_var_lib() now includes write access to httpd_var_lib_t:dir 
+  * apache_unlink_var_lib() now includes write access to httpd_var_lib_t:dir
   * Allow apache to read sysctl_vm_t for overcommit_memory
     Allow httpd_sys_script_t to read sysfs_t. allow httpd_t to manage httpd_log_t files
     and directories for mod_pagespeed.
@@ -38,11 +52,6 @@ refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
     New type postfix_policyd_tmp_t
   * Added user_udp_server boolean
   * Allow apt_t to manage dirs of type apt_var_cache_t
-
- -- Russell Coker <russell@coker.com.au>  Sat, 26 Sep 2015 15:07:45 +1000
-
-refpolicy (2:2.20140421-11) unstable; urgency=medium
-
   * Allow jabber to connect to the jabber_interserver_port_t TCP port
     Closes: #697843
   * Allow xm_t to create xen_lock_t files for creating the first Xen DomU
@@ -62,11 +71,6 @@ refpolicy (2:2.20140421-11) unstable; urgency=medium
   * Allow syslogd_t to write to a netlink_audit_socket for systemd-journal
   * Allow mandb_t to get filesystem attributes
   * Allow syslogd to rename and unlink init_var_run_t files for systemd temporary files
-
- -- Russell Coker <russell@coker.com.au>  Wed, 16 Sep 2015 17:02:34 +1000
-
-refpolicy (2:2.20140421-10.1) unstable; urgency=medium
-
   * Allow ntpd_t to delete files for peerstats and loopstats
   * Add correct file labels for squid3 and tunable for squid pinger raw net
     access (default true)
@@ -99,23 +103,7 @@ refpolicy (2:2.20140421-10.1) unstable; urgency=medium
     Closes: #756729
   * Merge Laurent's changes with mine
 
- -- Russell Coker <russell@coker.com.au>  Mon, 14 Sep 2015 10:54:43 +1000
-
-refpolicy (2:2.20140421-10) UNRELEASED; urgency=medium
-
-  * debian/gbp.conf: Sign tags by default (Closes: #781670)
-  * debian/control: Adjust and cleanup the {build-}dependencies (Closes:
-    #805496)
-  * debian/control: Bump Standards-Version to 3.9.6 (no further changes)
-  * debian/rules: Make the build reproducible (Closes: #778232)
-  * Remove deprecated system.users and local.users files
-  * debian/control: Update Homepage URL (Closes: #780934)
-  * debian/rules: Allow parallel build now that the build system is supporting
-    it, see #677689
-  * debian/policygentool: Remove string exceptions so the script is Python >=
-    2.6 compatible (Closes: #585355)
-
- -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Nov 2015 16:55:44 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 13 May 2016 12:20:06 +0200
 
 refpolicy (2:2.20140421-9) unstable; urgency=medium
 
