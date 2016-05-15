@@ -28,7 +28,7 @@ case "$1" in
 	echo -n "Updating selinux ${flavour} policy (this step might take a moment)..."
 
 	# list all the modules that are already installed with our priority
-	already_installed=`semodule --list-modules=full | grep -e "^${priority} " | cut -d' ' -f2`
+	already_installed=`semodule -s ${flavour} --list-modules=full | grep -e "^${priority} " | cut -d' ' -f2`
 
 	# record which non-default modules do not yet exist for disabling them later
 	to_disable=""
