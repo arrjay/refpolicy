@@ -121,7 +121,7 @@ install-%-policy: build-%-policy
 	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/policy/
 	mkdir -p $(CURDIR)/debian/tmp/var/lib/selinux/$*
 # Create a list with the modules we are shipping
-	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; ls -1 | cut -d. -f1 > .modules)
+	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; LC_ALL=C ls -1 | cut -d. -f1 > .modules)
 	touch $@
 
 # The headers are based on the default policy

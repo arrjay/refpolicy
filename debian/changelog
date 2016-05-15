@@ -1,3 +1,11 @@
+refpolicy (2:2.20140421-11) UNRELEASED; urgency=medium
+
+  * debian/rules:
+    - Make sure the content of the .modules file is sorted independently of
+      the locale where the package is built.
+
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 15 May 2016 11:36:05 +0200
+
 refpolicy (2:2.20140421-10) unstable; urgency=medium
 
   * Team upload.
