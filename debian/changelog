@@ -1,5 +1,6 @@
-refpolicy (2:2.20140421-11) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-11) unstable; urgency=medium
 
+  * Team upload.
   * debian/rules:
     - Make sure the content of the .modules file is sorted independently of
       the locale where the package is built.
@@ -11,7 +12,7 @@ refpolicy (2:2.20140421-11) UNRELEASED; urgency=medium
   * debian/postrm.policy: Remove the /var/lib/selinux/final/ directory when
     purging the package. This directory is created when loading the modules.
 
- -- Laurent Bigonville <bigon@debian.org>  Mon, 16 May 2016 12:47:57 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 16 May 2016 17:49:03 +0200
 
 refpolicy (2:2.20140421-10) unstable; urgency=medium
 
