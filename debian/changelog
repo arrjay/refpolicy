@@ -3,10 +3,12 @@ refpolicy (2:2.20140421-11) UNRELEASED; urgency=medium
   * debian/rules:
     - Make sure the content of the .modules file is sorted independently of
       the locale where the package is built.
+    - Force the mode of the files and directories when building the
+      selinux-policy-src tarball to make the build reproducible.
   * debian/postinst.policy: List the loaded modules from the expected store
     not from the one configured in the config file
 
- -- Laurent Bigonville <bigon@debian.org>  Sun, 15 May 2016 13:44:26 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 16 May 2016 10:20:51 +0200
 
 refpolicy (2:2.20140421-10) unstable; urgency=medium
 
