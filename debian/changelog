@@ -1,8 +1,8 @@
 refpolicy (2:2.20140421-12) unstable; urgency=medium
 
   * Team upload.
-  * Install the policy.dtd and policy.xml file in the -dev package, it is used
-    by some userspace tools
+  * Install the policy.dtd and policy.xml files in the -dev package, it is
+    used by some userspace tools
 
  -- Laurent Bigonville <bigon@debian.org>  Fri, 27 May 2016 20:23:35 +0200
 
