@@ -1,9 +1,9 @@
 refpolicy (2:2.20140421-12) UNRELEASED; urgency=medium
 
-  * Install the policy.xml file in the -dev package, it is used by some
-    userspace tools
+  * Install the policy.dtd and policy.xml file in the -dev package, it is used
+    by some userspace tools
 
- -- Laurent Bigonville <bigon@debian.org>  Fri, 27 May 2016 18:22:44 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 27 May 2016 20:16:49 +0200
 
 refpolicy (2:2.20140421-11) unstable; urgency=medium
 
