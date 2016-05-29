@@ -154,6 +154,25 @@ interface(`dev_relabel_all_dev_nodes',`
 
 ########################################
 ## <summary>
+##     Allow full relabeling (to and from) of all device files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+## <rolecap/>
+#
+interface(`dev_relabel_all_dev_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	relabel_files_pattern($1, device_t, device_t)
+')
+
+########################################
+## <summary>
 ##	List all of the device nodes in a device directory.
 ## </summary>
 ## <param name="domain">
@@ -462,6 +481,24 @@ interface(`dev_getattr_generic_blk_files',`
 
 ########################################
 ## <summary>
+##     write generic sock files in /dev.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain to not audit.
+##     </summary>
+## </param>
+#
+interface(`dev_write_generic_sock_files',`
+        gen_require(`
+                type device_t;
+        ')
+
+        write_sock_files_pattern($1, device_t, device_t)
+')
+
+########################################
+## <summary>
 ##	Dontaudit getattr on generic block devices.
 ## </summary>
 ## <param name="domain">
@@ -548,6 +585,24 @@ interface(`dev_getattr_generic_chr_files',`
 	')
 
 	getattr_chr_files_pattern($1, device_t, device_t)
+')
+
+########################################
+## <summary>
+##	Allow setattr for generic character device files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_generic_chr_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	setattr_chr_files_pattern($1, device_t, device_t)
 ')
 
 ########################################
@@ -1753,6 +1808,24 @@ interface(`dev_rw_cpu_microcode',`
 	')
 
 	rw_chr_files_pattern($1, device_t, cpu_device_t)
+')
+
+########################################
+## <summary>
+##	Create and setattr the CPU microcode device.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_create_cpu_microcode',`
+	gen_require(`
+		type device_t, cpu_device_t;
+	')
+
+	allow $1 cpu_device_t:chr_file { setattr create };
 ')
 
 ########################################
@@ -3162,6 +3235,25 @@ interface(`dev_create_null_dev',`
 
 ########################################
 ## <summary>
+##	Manage services with script type null_device_t for when
+##	/lib/systemd/system/something.service is a link to /dev/null
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_null_manage_service',`
+	gen_require(`
+		type null_device_t;
+	')
+
+	allow $1 null_device_t:service { status start stop reload };
+')
+
+########################################
+## <summary>
 ##	Do not audit attempts to get the attributes
 ##	of the BIOS non-volatile RAM device.
 ## </summary>
@@ -4070,6 +4162,44 @@ interface(`dev_rw_sysfs',`
 
 ########################################
 ## <summary>
+##     Relabel hardware state directories.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_relabel_sysfs_dirs',`
+	gen_require(`
+		type sysfs_t;
+	')
+
+	relabel_dirs_pattern($1, sysfs_t, sysfs_t)
+')
+
+########################################
+## <summary>
+##     Relabel hardware state files
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_relabel_all_sysfs',`
+        gen_require(`
+                type sysfs_t;
+        ')
+
+        relabel_dirs_pattern($1, sysfs_t, sysfs_t)
+        relabel_files_pattern($1, sysfs_t, sysfs_t)
+        relabel_lnk_files_pattern($1, sysfs_t, sysfs_t)
+')
+
+########################################
+## <summary>
 ##	Read and write the TPM device.
 ## </summary>
 ## <param name="domain">
@@ -4929,4 +5059,128 @@ interface(`dev_unconfined',`
 	')
 
 	typeattribute $1 devices_unconfined_type;
+')
+
+########################################
+## <summary>
+##     Relabel cpu online hardware state information.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_relabel_cpu_online',`
+        gen_require(`
+                type cpu_online_t;
+                type sysfs_t;
+        ')
+
+        dev_search_sysfs($1)
+        allow $1 cpu_online_t:file relabel_file_perms;
+')
+
+########################################
+## <summary>
+##     Relabel the printer device.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_relabel_printer',`
+        gen_require(`
+                type printer_device_t;
+        ')
+
+        allow $1 printer_device_t:chr_file relabel_chr_file_perms;
+')
+
+########################################
+## <summary>
+##     Read and write the printer device.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_manage_printer',`
+        gen_require(`
+                type device_t, printer_device_t;
+        ')
+
+        manage_chr_files_pattern($1, device_t, printer_device_t)
+')
+
+########################################
+## <summary>
+##      Create FIFO pipes in device directories.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`dev_create_generic_pipes',`
+        gen_require(`
+                type device_t;
+        ')
+       allow $1 device_t:dir add_entry_dir_perms;
+       allow $1 device_t:fifo_file { getattr create };
+       allow $1 device_t:dir search_dir_perms;
+       allow $1 device_t:file setattr_file_perms;
+')
+
+
+########################################
+## <summary>
+##      Create lots of device types that systemd-tmpfiles creates
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`create_devices_for_systemd_tmpfiles',`
+        gen_require(`
+                type device_t, event_device_t, fuse_device_t, loop_control_device_t, lvm_control_t, ppp_device_t;
+        ')
+
+	allow $1 autofs_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 device_t:dir { getattr setattr relabelfrom relabelto create };
+	allow $1 device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 event_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 fuse_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 loop_control_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 lvm_control_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 ppp_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 tty_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 tun_tap_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 vhost_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+	allow $1 sound_device_t:chr_file { getattr setattr relabelfrom relabelto create };
+')
+
+########################################
+## <summary>
+##      Create subdir of /dev
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`dev_create_subdir',`
+        gen_require(`
+                type device_t;
+        ')
+       allow $1 device_t:dir { add_entry_dir_perms create };
+       allow $1 device_t:dir search_dir_perms;
 ')

@@ -244,6 +244,8 @@ optional_policy(`
 allow sshd_t self:netlink_route_socket r_netlink_socket_perms;
 allow sshd_t self:key { search link write };
 
+allow sshd_t self:capability net_admin;
+
 allow sshd_t sshd_keytab_t:file read_file_perms;
 
 manage_dirs_pattern(sshd_t, sshd_tmp_t, sshd_tmp_t)
@@ -276,6 +278,11 @@ tunable_policy(`ssh_sysadm_login',`
 ',`
 	userdom_spec_domtrans_unpriv_users(sshd_t)
 	userdom_signal_unpriv_users(sshd_t)
+')
+
+optional_policy(`
+	systemd_write_inherited_logind_sessions_pipes(sshd_t)
+	systemd_dbus_chat_logind(sshd_t)
 ')
 
 optional_policy(`

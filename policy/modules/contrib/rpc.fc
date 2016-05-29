@@ -20,3 +20,6 @@
 
 /var/run/rpc\.statd(/.*)?	gen_context(system_u:object_r:rpcd_var_run_t,s0)
 /var/run/rpc\.statd\.pid	--	gen_context(system_u:object_r:rpcd_var_run_t,s0)
+
+/lib/systemd/system/nfs.*\.service --   gen_context(system_u:object_r:nfsd_unit_file_t,s0)
+/lib/systemd/system/rpc.*\.service --   gen_context(system_u:object_r:rpcd_unit_file_t,s0)

@@ -124,6 +124,11 @@ ifdef(`distro_debian',`
 ')
 
 optional_policy(`
+	systemd_systemctl_domain(logrotate)
+	systemd_config_all_services(logrotate_systemctl_t)
+')
+
+optional_policy(`
 	abrt_manage_cache(logrotate_t)
 ')
 
@@ -237,6 +242,11 @@ optional_policy(`
 
 optional_policy(`
 	varnishd_manage_log(logrotate_t)
+')
+
+optional_policy(`
+	webalizer_usage_manage(logrotate_t)
+	webalizer_run(logrotate_t, system_r)
 ')
 
 #######################################

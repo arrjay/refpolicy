@@ -38,6 +38,9 @@ files_config_file(mysqld_etc_t)
 type mysqld_home_t;
 userdom_user_home_content(mysqld_home_t)
 
+type mysqld_unit_file_t;
+systemd_unit_file(mysqld_unit_file_t)
+
 type mysqld_initrc_exec_t;
 init_script_file(mysqld_initrc_exec_t)
 
@@ -67,7 +70,7 @@ dontaudit mysqld_t self:capability sys_tty_config;
 allow mysqld_t self:process { setsched getsched setrlimit signal_perms rlimitinh };
 allow mysqld_t self:fifo_file rw_fifo_file_perms;
 allow mysqld_t self:shm create_shm_perms;
-allow mysqld_t self:unix_stream_socket { accept listen };
+allow mysqld_t self:unix_stream_socket { connectto accept listen };
 allow mysqld_t self:tcp_socket { accept listen };
 
 manage_dirs_pattern(mysqld_t, mysqld_db_t, mysqld_db_t)
@@ -96,6 +99,7 @@ manage_sock_files_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
 files_pid_filetrans(mysqld_t, mysqld_var_run_t, { dir file sock_file })
 
 kernel_read_kernel_sysctls(mysqld_t)
+kernel_read_vm_sysctls(mysqld_t)
 kernel_read_network_state(mysqld_t)
 kernel_read_system_state(mysqld_t)
 

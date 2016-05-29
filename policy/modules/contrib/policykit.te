@@ -96,6 +96,14 @@ auth_use_nsswitch(policykit_t)
 userdom_getattr_all_users(policykit_t)
 userdom_read_all_users_state(policykit_t)
 
+# for /run/systemd/machines
+init_list_pid_dirs(policykit_t)
+
+optional_policy(`
+	# for /run/systemd/seats/seat*
+	systemd_login_read_pid_files(policykit_t)
+	systemd_login_list_pid_dirs(policykit_t)
+')
 optional_policy(`
 	dbus_system_domain(policykit_t, policykit_exec_t)
 
@@ -106,6 +114,10 @@ optional_policy(`
 	optional_policy(`
 		rpm_dbus_chat(policykit_t)
 	')
+')
+
+optional_policy(`
+	systemd_read_logind_sessions_files(policykit_t)
 ')
 
 optional_policy(`

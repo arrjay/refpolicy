@@ -23,3 +23,7 @@
 /var/log/xntpd.*	--	gen_context(system_u:object_r:ntpd_log_t,s0)
 
 /var/run/ntpd\.pid	--	gen_context(system_u:object_r:ntpd_var_run_t,s0)
+
+/lib/systemd/system/ntpd.*\.service               --      gen_context(system_u:object_r:ntpd_unit_file_t,s0)
+
+/usr/lib/systemd/system/ntpd.*\.service               --      gen_context(system_u:object_r:ntpd_unit_file_t,s0)

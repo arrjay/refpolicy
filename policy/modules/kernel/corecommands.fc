@@ -135,7 +135,7 @@ ifdef(`distro_debian',`
 /lib/nut/.*			--	gen_context(system_u:object_r:bin_t,s0)
 /lib/readahead(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /lib/security/pam_krb5/pam_krb5_storetmp -- gen_context(system_u:object_r:bin_t,s0)
-/lib/systemd/systemd.*		--	gen_context(system_u:object_r:bin_t,s0)
+/lib/systemd/systemd-.*		--	gen_context(system_u:object_r:bin_t,s0)
 /lib/udev/[^/]*			--	gen_context(system_u:object_r:bin_t,s0)
 /lib/udev/scsi_id		--	gen_context(system_u:object_r:bin_t,s0)
 /lib/upstart(/.*)?			gen_context(system_u:object_r:bin_t,s0)
@@ -168,6 +168,7 @@ ifdef(`distro_gentoo',`
 /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
 /opt/google/talkplugin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/opt/google/chrome/cron/google-chrome -- gen_context(system_u:object_r:bin_t,s0)
 
 /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 
@@ -196,6 +197,7 @@ ifdef(`distro_gentoo',`
 
 /usr/lib/avahi/avahi-daemon-check-dns\.sh	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ccache/bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/dovecot/.+			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
@@ -275,6 +277,7 @@ ifdef(`distro_gentoo',`
 /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 
+/usr/share/mdadm/checkarray	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/ajaxterm.py.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/qweb.py.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/apr-0/build/[^/]+\.sh --	gen_context(system_u:object_r:bin_t,s0)
@@ -319,6 +322,7 @@ ifdef(`distro_debian',`
 /usr/lib/ConsoleKit/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/gdm3/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/udisks/.*		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/bug/.*		--	gen_context(system_u:object_r:bin_t,s0)
 ')
 
 ifdef(`distro_gentoo', `

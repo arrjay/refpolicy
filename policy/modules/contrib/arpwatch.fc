@@ -7,3 +7,5 @@
 /var/lib/arpwatch(/.*)?	gen_context(system_u:object_r:arpwatch_data_t,s0)
 
 /var/run/arpwatch.*\.pid	--	gen_context(system_u:object_r:arpwatch_var_run_t,s0)
+
+/lib/systemd/system/arpwatch.*\.service -- gen_context(system_u:object_r:arpwatch_unit_file_t,s0)

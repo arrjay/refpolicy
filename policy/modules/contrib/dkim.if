@@ -37,3 +37,23 @@ interface(`dkim_admin',`
 	files_search_pids($1)
 	admin_pattern($1, dkim_milter_data_t)
 ')
+
+########################################
+## <summary>
+##	Allow a domain to talk to dkim via Unix domain socket
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dkim_stream_connect',`
+	gen_require(`
+		type dkim_milter_data_t, dkim_milter_t;
+	')
+
+	allow $1 dkim_milter_data_t:dir search_dir_perms;
+	allow postfix_cleanup_t dkim_milter_data_t:sock_file write;
+	allow postfix_cleanup_t dkim_milter_t:unix_stream_socket connectto;
+')

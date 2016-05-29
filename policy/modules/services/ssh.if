@@ -349,6 +349,8 @@ template(`ssh_role_template',`
 	allow $1_ssh_agent_t self:process setrlimit;
 	allow $1_ssh_agent_t self:capability setgid;
 
+	allow $1_ssh_agent_t self:fifo_file rw_file_perms;
+
 	allow $1_ssh_agent_t { $1_ssh_agent_t $3 }:process signull;
 
 	allow $1_ssh_agent_t self:unix_stream_socket { create_stream_socket_perms connectto };
@@ -367,6 +369,7 @@ template(`ssh_role_template',`
 	ps_process_pattern($3, $1_ssh_agent_t)
 
 	domtrans_pattern($3, ssh_agent_exec_t, $1_ssh_agent_t)
+	userdom_append_inherited_user_home_content_files($1_ssh_agent_t)
 
 	kernel_read_kernel_sysctls($1_ssh_agent_t)
 
@@ -432,6 +435,7 @@ template(`ssh_role_template',`
 	optional_policy(`
 		xserver_use_xdm_fds($1_ssh_agent_t)
 		xserver_rw_xdm_pipes($1_ssh_agent_t)
+		xdm_sigchld($1_ssh_agent_t)
 	')
 ')
 

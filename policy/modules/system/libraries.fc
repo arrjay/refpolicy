@@ -98,7 +98,11 @@ ifdef(`distro_redhat',`
 #
 # /sbin
 #
+ifdef(`distro_debian',`
+/sbin/ldconfig.real				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
+',`
 /sbin/ldconfig				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
+')
 
 #
 # /usr

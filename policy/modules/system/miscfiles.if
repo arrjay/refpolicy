@@ -579,6 +579,25 @@ interface(`miscfiles_manage_man_pages',`
 
 ########################################
 ## <summary>
+##	relabel man cache
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`miscfiles_relabel_man_cache',`
+	gen_require(`
+		type man_cache_t;
+	')
+
+	relabel_dirs_pattern($1, man_cache_t, man_cache_t)
+	relabel_files_pattern($1, man_cache_t, man_cache_t)
+')
+
+########################################
+## <summary>
 ##	Read man cache content.
 ## </summary>
 ## <param name="domain">

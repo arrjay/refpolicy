@@ -214,7 +214,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Run /etc/X11/prefdm:
  files_exec_etc_files(init_t)
  # file descriptors inherited from the rootfs:
-@@ -204,11 +218,21 @@ seutil_read_config(init_t)
+@@ -204,11 +218,20 @@ seutil_read_config(init_t)
  
  miscfiles_read_localization(init_t)
  
@@ -236,7 +236,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  ifdef(`distro_gentoo',`
-@@ -228,6 +252,12 @@ tunable_policy(`init_upstart || init_sys
+@@ -228,6 +251,12 @@ tunable_policy(`init_upstart || init_sys
  ')
  
  optional_policy(`
@@ -249,7 +249,7 @@ Index: refpolicy/policy/modules/system/init.te
  	auth_rw_login_records(init_t)
  ')
  
-@@ -247,6 +277,8 @@ optional_policy(`
+@@ -247,6 +276,8 @@ optional_policy(`
  	udev_read_db(init_t)
  	udev_relabelto_db(init_t)
  	udev_create_kobject_uevent_socket(init_t)
@@ -258,7 +258,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  #optional_policy(`
-@@ -283,6 +315,9 @@ term_create_pty(initrc_t, initrc_devpts_
+@@ -283,6 +314,9 @@ term_create_pty(initrc_t, initrc_devpts_
  # Going to single user mode
  init_telinit(initrc_t)
  
@@ -306,7 +306,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1162,6 +1204,7 @@ tunable_policy(`init_systemd',`
+@@ -1162,6 +1200,7 @@ tunable_policy(`init_systemd',`
  	kernel_read_software_raid_state(init_t)
  	kernel_unmount_debugfs(init_t)
  	kernel_setsched(init_t)
@@ -314,7 +314,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	dev_write_kmsg(init_t)
  	dev_write_urand(init_t)
-@@ -1179,6 +1222,7 @@ tunable_policy(`init_systemd',`
+@@ -1179,6 +1218,7 @@ tunable_policy(`init_systemd',`
  	# systemd writes to /dev/watchdog on shutdown
  	dev_write_watchdog(init_t)
  
@@ -322,7 +322,7 @@ Index: refpolicy/policy/modules/system/init.te
  	files_search_all(init_t)
  	files_mounton_all_mountpoints(init_t)
  	files_unmount_all_file_type_fs(init_t)
-@@ -1202,6 +1246,7 @@ tunable_policy(`init_systemd',`
+@@ -1202,6 +1242,7 @@ tunable_policy(`init_systemd',`
  	fs_getattr_all_fs(init_t)
  	fs_manage_cgroup_dirs(init_t)
  	fs_manage_cgroup_files(init_t)
@@ -330,7 +330,7 @@ Index: refpolicy/policy/modules/system/init.te
  	fs_manage_hugetlbfs_dirs(init_t)
  	fs_manage_tmpfs_dirs(init_t)
  	fs_relabel_tmpfs_dirs(init_t)
-@@ -1233,13 +1278,16 @@ tunable_policy(`init_systemd',`
+@@ -1233,13 +1274,16 @@ tunable_policy(`init_systemd',`
  	systemd_manage_all_unit_files(init_t)
  	systemd_logger_stream_connect(init_t)
  	systemd_manage_lnk_file_passwd_run(init_t)
@@ -607,7 +607,7 @@ Index: refpolicy/policy/modules/system/selinuxutil.te
  
  dev_read_urand(setfiles_t)
  dev_relabel_all_dev_nodes(setfiles_t)
-@@ -612,6 +618,11 @@ ifdef(`distro_debian',`
+@@ -612,6 +617,11 @@ ifdef(`distro_debian',`
  	fs_rw_tmpfs_chr_files(setfiles_t)
  ')
  
@@ -635,7 +635,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -738,6 +738,7 @@ optional_policy(`
+@@ -734,6 +734,7 @@ optional_policy(`
  type unconfined_cronjob_t;
  domain_type(unconfined_cronjob_t)
  domain_cron_exemption_target(unconfined_cronjob_t)

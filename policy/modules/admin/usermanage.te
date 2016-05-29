@@ -189,7 +189,7 @@ optional_policy(`
 # Groupadd local policy
 #
 
-allow groupadd_t self:capability { dac_override chown kill setuid sys_resource audit_write };
+allow groupadd_t self:capability { dac_override fsetid chown kill setuid sys_resource audit_write };
 dontaudit groupadd_t self:capability { fsetid sys_tty_config };
 allow groupadd_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execheap execstack };
 allow groupadd_t self:process { setrlimit setfscreate };
@@ -358,6 +358,11 @@ userdom_dontaudit_search_user_home_content(passwd_t)
 
 optional_policy(`
 	nscd_run(passwd_t, passwd_roles)
+')
+
+optional_policy(`
+	# for dpkg to create users
+	permit_in_unconfined_r(passwd_t)
 ')
 
 ########################################

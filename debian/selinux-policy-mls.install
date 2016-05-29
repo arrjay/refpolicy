@@ -1,2 +1,4 @@
 etc/selinux/mls/
+usr/share/selinux/mls/.modules
 usr/share/selinux/mls/*.pp
+var/lib/selinux/mls/

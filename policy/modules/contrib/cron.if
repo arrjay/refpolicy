@@ -412,6 +412,24 @@ interface(`cron_sigchld',`
 
 ########################################
 ## <summary>
+##      Send a generic signal to cron daemon.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`cron_signal',`
+        gen_require(`
+                type crond_t;
+        ')
+
+        allow $1 crond_t:process signal;
+')
+
+########################################
+## <summary>
 ##	Set the attributes of cron log files.
 ## </summary>
 ## <param name="domain">
@@ -530,6 +548,46 @@ interface(`cron_read_pipes',`
 	')
 
 	allow $1 crond_t:fifo_file read_fifo_file_perms;
+')
+
+########################################
+## <summary>
+##      Read crond state files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`cron_read_state_crond',`
+        gen_require(`
+                type crond_t;
+        ')
+
+        kernel_search_proc($1)
+        ps_process_pattern($1, crond_t)
+')
+
+########################################
+## <summary>
+##      Send and receive messages from
+##      crond over dbus.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`cron_dbus_chat_crond',`
+        gen_require(`
+                type crond_t;
+                class dbus send_msg;
+        ')
+
+        allow $1 crond_t:dbus send_msg;
+        allow crond_t $1:dbus send_msg;
 ')
 
 ########################################
@@ -832,4 +890,41 @@ interface(`cron_dontaudit_write_system_job_tmp_files',`
 	')
 
 	dontaudit $1 system_cronjob_tmp_t:file write_file_perms;
+')
+
+########################################
+## <summary>
+##      Search the directory containing user cron tables.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`cron_manage_system_spool',`
+	gen_require(`
+		type cron_system_spool_t;
+	')
+
+	files_search_spool($1)
+	manage_files_pattern($1, cron_system_spool_t, cron_system_spool_t)
+')
+
+########################################
+## <summary>
+##      Access temporary files crond creates for script output
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`read_write_crond_tmp',`
+	gen_require(`
+		type crond_tmp_t;
+	')
+
+	allow $1 crond_tmp_t:file rw_file_perms;
 ')

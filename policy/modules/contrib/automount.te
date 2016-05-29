@@ -25,6 +25,9 @@ files_mountpoint(automount_tmp_t)
 type automount_var_run_t;
 files_pid_file(automount_var_run_t)
 
+type automount_unit_file_t;
+systemd_unit_file(automount_unit_file_t)
+
 ########################################
 #
 # Local policy

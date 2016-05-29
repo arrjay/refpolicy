@@ -24,3 +24,5 @@
 /var/run/clamd.*	gen_context(system_u:object_r:clamd_var_run_t,s0)
 
 /var/spool/amavisd/clamd\.sock	-s	gen_context(system_u:object_r:clamd_var_run_t,s0)
+
+/lib/systemd/system/clamd.*\.service -- gen_context(system_u:object_r:clamd_unit_file_t,s0)

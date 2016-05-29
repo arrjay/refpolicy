@@ -942,6 +942,23 @@ interface(`auth_rw_var_auth',`
     rw_files_pattern($1, var_auth_t, var_auth_t)
 ')
 
+#######################################
+## <summary>
+##  mount on /var/auth
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`auth_mounton_var_auth',`
+	gen_require(`
+		type var_auth_t;
+	')
+
+	allow $1 var_auth_t:dir mounton;
+')
 ########################################
 ## <summary>
 ##	Manage var auth files. Used by various other applications

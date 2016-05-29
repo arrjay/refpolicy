@@ -67,6 +67,7 @@ template(`userdom_base_user_template',`
 	dontaudit $1_t user_tty_device_t:chr_file ioctl;
 
 	kernel_read_kernel_sysctls($1_t)
+	kernel_read_vm_sysctls($1_t)
 	kernel_dontaudit_list_unlabeled($1_t)
 	kernel_dontaudit_getattr_unlabeled_files($1_t)
 	kernel_dontaudit_getattr_unlabeled_symlinks($1_t)
@@ -77,6 +78,12 @@ template(`userdom_base_user_template',`
 
 	dev_dontaudit_getattr_all_blk_files($1_t)
 	dev_dontaudit_getattr_all_chr_files($1_t)
+
+	# for X session unlock
+	allow $1_t self:netlink_audit_socket { create_socket_perms nlmsg_relay };
+
+	# for KDE
+	allow $1_t self:netlink_kobject_uevent_socket connected_socket_perms;
 
 	# When the user domain runs ps, there will be a number of access
 	# denials when ps tries to search /proc. Do not audit these denials.
@@ -108,6 +115,14 @@ template(`userdom_base_user_template',`
 
 	sysnet_read_config($1_t)
 
+	# kdeinit wants systemd status
+	init_status($1_t)
+
+	optional_policy(`
+		apt_read_cache($1_t)
+		apt_read_db($1_t)
+	')
+
 	tunable_policy(`allow_execmem',`
 		# Allow loading DSOs that require executable stack.
 		allow $1_t self:process execmem;
@@ -116,6 +131,10 @@ template(`userdom_base_user_template',`
 	tunable_policy(`allow_execmem && allow_execstack',`
 		# Allow making the stack executable via mprotect.
 		allow $1_t self:process execstack;
+	')
+
+	optional_policy(`
+		kerneloops_dbus_chat($1_t)
 	')
 ')
 
@@ -1034,6 +1053,13 @@ template(`userdom_unpriv_user_template', `
 		corenet_tcp_bind_generic_port($1_t)
 	')
 
+	# Allow users to run UDP servers (bind to ports and accept connection from
+	# the same domain and outside users)
+	tunable_policy(`user_udp_server',`
+		corenet_udp_bind_generic_node($1_t)
+		corenet_udp_bind_generic_port($1_t)
+	')
+
 	optional_policy(`
 		netutils_run_ping_cond($1_t, $1_r)
 		netutils_run_traceroute_cond($1_t, $1_r)
@@ -1046,6 +1072,10 @@ template(`userdom_unpriv_user_template', `
 
 	optional_policy(`
 		setroubleshoot_stream_connect($1_t)
+	')
+
+	optional_policy(`
+		systemd_dbus_chat_logind($1_t)
 	')
 ')
 
@@ -1918,6 +1948,24 @@ interface(`userdom_dontaudit_append_user_home_content_files',`
 	')
 
 	dontaudit $1 user_home_t:file append_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow append on inherited user home files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to allow.
+##	</summary>
+## </param>
+#
+interface(`userdom_append_inherited_user_home_content_files',`
+	gen_require(`
+		type user_home_t;
+	')
+
+	allow $1 user_home_t:file { append getattr ioctl };
 ')
 
 ########################################
@@ -2853,6 +2901,35 @@ interface(`userdom_use_user_ptys',`
 
 ########################################
 ## <summary>
+##     Read and write a inherited user TTYs and PTYs.
+## </summary>
+## <desc>
+##     <p>
+##     Allow the specified domain to read and write inherited user
+##     TTYs and PTYs. This will allow the domain to
+##     interact with the user via the terminal. Typically
+##     all interactive applications will require this
+##     access.
+##     </p>
+## </desc>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+## <infoflow type="both" weight="10"/>
+#
+interface(`userdom_use_inherited_user_terminals',`
+	gen_require(`
+		type user_tty_device_t, user_devpts_t;
+	')
+
+	allow $1 user_tty_device_t:chr_file rw_inherited_term_perms;
+	allow $1 user_devpts_t:chr_file rw_inherited_term_perms;
+')
+
+########################################
+## <summary>
 ##	Read and write a user TTYs and PTYs.
 ## </summary>
 ## <desc>
@@ -3403,6 +3480,42 @@ interface(`userdom_signal_all_users',`
 	allow $1 userdomain:process signal;
 ')
 
+#######################################
+## <summary>
+##  Send signull to all user domains.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`userdom_signull_all_users',`
+        gen_require(`
+                attribute userdomain;
+        ')
+
+        allow $1 userdomain:process signull;
+')
+
+########################################
+## <summary>
+##     Send kill signals to all user domains.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`userdom_kill_all_users',`
+        gen_require(`
+                attribute userdomain;
+        ')
+
+        allow $1 userdomain:process sigkill;
+')
+
 ########################################
 ## <summary>
 ##	Send a SIGCHLD signal to all user domains.
@@ -3456,4 +3569,42 @@ interface(`userdom_dbus_send_all_users',`
 	')
 
 	allow $1 userdomain:dbus send_msg;
+')
+
+########################################
+## <summary>
+##      Do not audit attempts to write users
+##      temporary files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain to not audit.
+##      </summary>
+## </param>
+#
+interface(`userdom_dontaudit_write_user_tmp_files',`
+	gen_require(`
+		type user_tmp_t;
+	')
+
+	dontaudit $1 user_tmp_t:file write;
+')
+
+########################################
+## <summary>
+##     Do not audit attempts to read and write
+##     unserdomain stream.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain to not audit.
+##     </summary>
+## </param>
+#
+interface(`userdom_dontaudit_rw_stream',`
+	gen_require(`
+		attribute userdomain;
+	')
+
+	dontaudit $1 userdomain:unix_stream_socket rw_socket_perms;
 ')

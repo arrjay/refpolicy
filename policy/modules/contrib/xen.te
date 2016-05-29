@@ -85,6 +85,9 @@ files_mountpoint(xend_var_lib_t)
 type xend_var_log_t;
 logging_log_file(xend_var_log_t)
 
+type xen_lock_t;
+files_lock_file(xen_lock_t)
+
 type xend_var_run_t;
 files_pid_file(xend_var_run_t)
 files_mountpoint(xend_var_run_t)
@@ -173,6 +176,9 @@ allow xend_t self:tcp_socket { accept listen };
 allow xend_t self:packet_socket create_socket_perms;
 allow xend_t self:tun_socket create_socket_perms;
 
+# for lsscsi
+storage_getattr_fixed_disk_dev(xend_t)
+
 allow xend_t xen_image_t:dir list_dir_perms;
 manage_dirs_pattern(xend_t, xen_image_t, xen_image_t)
 manage_fifo_files_pattern(xend_t, xen_image_t, xen_image_t)
@@ -219,6 +225,7 @@ domtrans_pattern(xend_t, xenstored_exec_t, xenstored_t)
 xen_stream_connect_xenstore(xend_t)
 
 kernel_read_kernel_sysctls(xend_t)
+kernel_read_vm_sysctls(xend_t)
 kernel_read_system_state(xend_t)
 kernel_write_xen_state(xend_t)
 kernel_read_xen_state(xend_t)
@@ -450,6 +457,7 @@ dev_read_sysfs(xenstored_t)
 
 files_read_etc_files(xenstored_t)
 files_read_usr_files(xenstored_t)
+corecmd_search_bin(xenstored_t)
 
 fs_search_xenfs(xenstored_t)
 fs_manage_xenfs_files(xenstored_t)
@@ -470,11 +478,25 @@ xen_append_log(xenstored_t)
 # xm local policy
 #
 
-allow xm_t self:capability { setpcap dac_override ipc_lock sys_nice sys_tty_config };
-allow xm_t self:process { getcap getsched setsched setcap signal };
+allow xm_t self:capability { dac_override setpcap net_admin ipc_lock sys_nice sys_tty_config };
+allow xm_t self:process { getcap getsched setsched setcap signal sigkill };
 allow xm_t self:fifo_file rw_fifo_file_perms;
 allow xm_t self:unix_stream_socket { accept connectto listen };
 allow xm_t self:tcp_socket { accept listen };
+
+allow xm_t xend_var_run_t:dir rw_dir_perms;
+
+files_lock_filetrans(xm_t, xen_lock_t, file)
+allow xm_t xen_lock_t:file manage_file_perms;
+domain_use_interactive_fds(xm_t)
+
+userdom_dontaudit_search_user_home_content(xm_t)
+
+# for vif-bridge to write to /run/xen-hotplug/iptables
+# maybe we need a different label for /run/xen-hotplug
+udev_manage_pid_files(xm_t)
+
+manage_files_pattern(xm_t, xend_var_log_t, xend_var_log_t)
 
 manage_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
 manage_fifo_files_pattern(xm_t, xend_var_lib_t, xend_var_lib_t)
@@ -494,12 +516,16 @@ xen_stream_connect_xenstore(xm_t)
 
 can_exec(xm_t, xm_exec_t)
 
+kernel_load_module(xm_t)
+kernel_request_load_module(xm_t)
+files_read_kernel_img(xm_t)
 kernel_read_system_state(xm_t)
 kernel_read_network_state(xm_t)
 kernel_read_kernel_sysctls(xm_t)
 kernel_read_sysctl(xm_t)
 kernel_read_xen_state(xm_t)
 kernel_write_xen_state(xm_t)
+sysnet_domtrans_ifconfig(xm_t)
 
 corecmd_exec_bin(xm_t)
 corecmd_exec_shell(xm_t)
@@ -560,6 +586,21 @@ tunable_policy(`xen_use_samba',`
 	fs_manage_cifs_dirs(xm_t)
 	fs_manage_cifs_files(xm_t)
 	fs_read_cifs_symlinks(xm_t)
+')
+
+optional_policy(`
+	unconfined_run_to(xm_t, xm_exec_t)
+')
+
+optional_policy(`
+	qemu_domtrans(xm_t)
+	qemu_signal(xm_t)
+	qemu_stream_connect(xm_t)
+	qemu_unlink_socket(xm_t)
+')
+
+optional_policy(`
+	iptables_domtrans(xm_t)
 ')
 
 optional_policy(`

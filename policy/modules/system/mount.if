@@ -191,3 +191,21 @@ interface(`mount_read_loopback_files',`
 
 	allow $1 mount_loopback_t:file read_file_perms;
 ')
+
+########################################
+## <summary>
+##	Getattr on mount_var_run_t
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`stat_mount_var_run',`
+	gen_require(`
+		type mount_var_run_t;
+	')
+
+	allow $1 mount_var_run_t:file getattr;
+')

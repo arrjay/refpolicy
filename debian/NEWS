@@ -1,3 +1,18 @@
+refpolicy (2:2.20140421-10) unstable; urgency=medium
+
+  Starting with this version, the policy packages support the new libsemanage
+  2.4 policy store. The modules shipped by these packages are automatically
+  installed with the priority 100. The system administrator can override any
+  of these modules by installing them using an higher priority (ie. 400).
+
+  During the update from a previous version, the existing module store is not
+  automatically migrated to the new format. All the existing modules and
+  configuration files are left untouched on the file system
+  (/etc/selinux/{default,mls}/modules/active/store). Any customisation should
+  be migrated manually.
+
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 16 May 2016 09:49:00 +0200
+
 refpolicy (2:2.20140206-1) unstable; urgency=medium
 
   The selinux-policy-dev package is now installing the headers and Makefile

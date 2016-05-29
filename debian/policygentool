@@ -277,7 +277,7 @@ Return to continue:"""
 	elif initsc == "y" or initsc == "Y":
 		initsc = True
 	else:
-		raise ValueError("Please answer with 'y' or 'n'!")
+		raise "Please answer with 'y' or 'n'!"
 	print 'Does the module use the network? [yN]'
 	network = sys.stdin.readline().rstrip()
 	if network == "" or network == "n" or network == "N":
@@ -285,7 +285,7 @@ Return to continue:"""
 	elif network == "y" or network == "Y":
 		network = True
 	else:
-		raise ValueError("Please answer with 'y' or 'n'!")
+		raise "Please answer with 'y' or 'n'!"
 
 	gen_policy(
 		module=sys.argv[1],

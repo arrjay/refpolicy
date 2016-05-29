@@ -26,3 +26,6 @@
 /var/log/vsftpd.*	--	gen_context(system_u:object_r:xferlog_t,s0)
 /var/log/xferlog.*	--	gen_context(system_u:object_r:xferlog_t,s0)
 /var/log/xferreport.*	--	gen_context(system_u:object_r:xferlog_t,s0)
+
+/lib/systemd/system/vsftpd.*\.service -- gen_context(system_u:object_r:iptables_unit_file_t,s0)
+/lib/systemd/system/proftpd.*\.service -- gen_context(system_u:object_r:iptables_unit_file_t,s0)

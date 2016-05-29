@@ -101,7 +101,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	mozilla_role(xguest_r, xguest_t)
+	mozilla_role(xguest_r, xguest_t, user_devpts_t)
 ')
 
 optional_policy(`

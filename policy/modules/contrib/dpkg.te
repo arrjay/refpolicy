@@ -38,6 +38,9 @@ domain_system_change_exemption(dpkg_script_t)
 domain_interactive_fd(dpkg_script_t)
 role dpkg_roles types dpkg_script_t;
 
+spec_domtrans_pattern(dpkg_t, dpkg_var_lib_t, dpkg_script_t)
+domain_entry_file(dpkg_script_t, dpkg_var_lib_t)
+
 type dpkg_script_tmp_t;
 files_tmp_file(dpkg_script_tmp_t)
 
@@ -69,6 +72,7 @@ allow dpkg_t dpkg_lock_t:file manage_file_perms;
 manage_dirs_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
 manage_files_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
 files_tmp_filetrans(dpkg_t, dpkg_tmp_t, { file dir })
+can_exec(dpkg_t, dpkg_tmp_t)
 
 manage_dirs_pattern(dpkg_t, dpkg_tmpfs_t, dpkg_tmpfs_t)
 manage_files_pattern(dpkg_t, dpkg_tmpfs_t, dpkg_tmpfs_t)
@@ -83,6 +87,9 @@ files_var_lib_filetrans(dpkg_t, dpkg_var_lib_t, dir)
 
 kernel_read_system_state(dpkg_t)
 kernel_read_kernel_sysctls(dpkg_t)
+
+# for dpkg-preconfigure
+kernel_request_load_module(dpkg_t)
 
 corecmd_exec_all_executables(dpkg_t)
 
@@ -183,11 +190,14 @@ domain_signull_all_domains(dpkg_t)
 files_read_etc_runtime_files(dpkg_t)
 files_exec_usr_files(dpkg_t)
 miscfiles_read_localization(dpkg_t)
-modutils_run_depmod(dpkg_t, dpkg_roles)
-modutils_run_insmod(dpkg_t, dpkg_roles)
 seutil_run_loadpolicy(dpkg_t, dpkg_roles)
 seutil_run_setfiles(dpkg_t, dpkg_roles)
 userdom_use_all_users_fds(dpkg_t)
+
+optional_policy(`
+modutils_run_depmod(dpkg_t, dpkg_roles)
+modutils_run_insmod(dpkg_t, dpkg_roles)
+')
 
 optional_policy(`
 	mta_send_mail(dpkg_t)
@@ -202,8 +212,10 @@ optional_policy(`
 # Script Local policy
 #
 
-allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid setgid setuid ipc_lock sys_chroot sys_nice mknod kill };
-allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+allow dpkg_script_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid net_admin ipc_lock sys_ptrace sys_chroot sys_nice mknod audit_write setfcap };
+
+allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setrlimit execmem execstack execheap };
+
 allow dpkg_script_t self:fd use;
 allow dpkg_script_t self:fifo_file rw_fifo_file_perms;
 allow dpkg_script_t self:unix_dgram_socket create_socket_perms;
@@ -214,6 +226,8 @@ allow dpkg_script_t self:shm create_shm_perms;
 allow dpkg_script_t self:sem create_sem_perms;
 allow dpkg_script_t self:msgq create_msgq_perms;
 allow dpkg_script_t self:msg { send receive };
+allow dpkg_script_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
+allow dpkg_script_t self:udp_socket create_socket_perms;
 
 allow dpkg_script_t dpkg_tmp_t:file read_file_perms;
 
@@ -228,8 +242,12 @@ allow dpkg_script_t dpkg_script_tmpfs_t:sock_file manage_sock_file_perms;
 allow dpkg_script_t dpkg_script_tmpfs_t:fifo_file manage_fifo_file_perms;
 fs_tmpfs_filetrans(dpkg_script_t, dpkg_script_tmpfs_t, { dir file lnk_file sock_file fifo_file })
 
+usermanage_domtrans_passwd(dpkg_script_t)
+
+restart_all_daemons(dpkg_script_t)
 kernel_read_kernel_sysctls(dpkg_script_t)
 kernel_read_system_state(dpkg_script_t)
+auth_manage_shadow(dpkg_script_t)
 
 corecmd_exec_all_executables(dpkg_script_t)
 
@@ -267,17 +285,19 @@ selinux_compute_access_vector(dpkg_script_t)
 selinux_compute_create_context(dpkg_script_t)
 selinux_compute_relabel_context(dpkg_script_t)
 selinux_compute_user_contexts(dpkg_script_t)
+selinux_read_policy(dpkg_script_t)
 
 storage_raw_read_fixed_disk(dpkg_script_t)
 storage_raw_write_fixed_disk(dpkg_script_t)
 
 term_use_all_terms(dpkg_script_t)
 
-auth_dontaudit_getattr_shadow(dpkg_script_t)
 files_manage_non_auth_files(dpkg_script_t)
 
 init_all_labeled_script_domtrans(dpkg_script_t)
 init_use_script_fds(dpkg_script_t)
+init_status(dpkg_script_t)
+init_telinit(dpkg_script_t)
 
 libs_exec_ld_so(dpkg_script_t)
 libs_exec_lib_files(dpkg_script_t)
@@ -287,8 +307,20 @@ logging_send_syslog_msg(dpkg_script_t)
 
 miscfiles_read_localization(dpkg_script_t)
 
+optional_policy(`
 modutils_run_depmod(dpkg_script_t, dpkg_roles)
 modutils_run_insmod(dpkg_script_t, dpkg_roles)
+')
+
+optional_policy(`
+	dirmngr_service_manage(dpkg_script_t)
+')
+
+optional_policy(`
+	systemd_config_all_services(dpkg_script_t)
+	restart_all_daemons(dpkg_script_t)
+	dev_null_manage_service(dpkg_script_t)
+')
 
 seutil_run_loadpolicy(dpkg_script_t, dpkg_roles)
 seutil_run_setfiles(dpkg_script_t, dpkg_roles)

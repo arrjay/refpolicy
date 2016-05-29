@@ -71,6 +71,9 @@ domain_cron_exemption_source(crond_t)
 type crond_initrc_exec_t;
 init_script_file(crond_initrc_exec_t)
 
+type crond_unit_file_t;
+systemd_unit_file(crond_unit_file_t)
+
 type crond_tmp_t;
 files_tmp_file(crond_tmp_t)
 files_poly_parent(crond_tmp_t)
@@ -333,6 +336,18 @@ ifdef(`distro_debian',`
 	optional_policy(`
 		logwatch_search_cache_dir(crond_t)
 	')
+	optional_policy(`
+		apt_manage_cache(system_cronjob_t)
+		apt_read_db(system_cronjob_t)
+	')
+')
+
+optional_policy(`
+	ntp_read_conf(system_cronjob_t)
+')
+
+optional_policy(`
+	apache_unlink_var_lib(system_cronjob_t)
 ')
 
 ifdef(`distro_redhat',`
@@ -412,6 +427,18 @@ optional_policy(`
 ')
 
 optional_policy(`
+	systemd_use_fds_logind(crond_t)
+	systemd_write_inherited_logind_sessions_pipes(crond_t)
+')
+optional_policy(`
+	systemd_dbus_chat_logind(system_cronjob_t)
+	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
+	# so cron jobs can restart daemons
+	init_stream_connect(system_cronjob_t)
+	systemd_config_all_services(system_cronjob_t)
+')
+
+optional_policy(`
 	udev_read_db(crond_t)
 ')
 
@@ -455,6 +482,7 @@ allow system_cronjob_t cron_spool_t:dir list_dir_perms;
 allow system_cronjob_t cron_spool_t:file rw_file_perms;
 
 allow system_cronjob_t crond_tmp_t:file { read write };
+allow cronjob_t crond_tmp_t:file { read write };
 
 kernel_read_kernel_sysctls(system_cronjob_t)
 kernel_read_network_state(system_cronjob_t)
@@ -543,6 +571,10 @@ optional_policy(`
 	apache_read_config(system_cronjob_t)
 	apache_read_log(system_cronjob_t)
 	apache_read_sys_content(system_cronjob_t)
+')
+
+optional_policy(`
+	read_mrtg_etc(system_cronjob_t)
 ')
 
 optional_policy(`
@@ -706,6 +738,7 @@ optional_policy(`
 type unconfined_cronjob_t;
 domain_type(unconfined_cronjob_t)
 domain_cron_exemption_target(unconfined_cronjob_t)
+role system_r types unconfined_cronjob_t;
 
 dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
 
@@ -722,3 +755,5 @@ tunable_policy(`cron_userdomain_transition',`
 optional_policy(`
 	unconfined_domain(unconfined_cronjob_t)
 ')
+
+initrc_manage_service(unconfined_cronjob_t)

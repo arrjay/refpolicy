@@ -1,2 +1,4 @@
 etc/selinux/default/
+usr/share/selinux/default/.modules
 usr/share/selinux/default/*.pp
+var/lib/selinux/default/

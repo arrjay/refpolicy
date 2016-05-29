@@ -127,6 +127,9 @@ init_script_file(ftpd_initrc_exec_t)
 type ftpd_keytab_t;
 files_type(ftpd_keytab_t)
 
+type ftpd_unit_file_t;
+systemd_unit_file(ftpd_unit_file_t)
+
 type ftpd_lock_t;
 files_lock_file(ftpd_lock_t)
 

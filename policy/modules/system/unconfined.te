@@ -59,6 +59,13 @@ ifdef(`direct_sysadm_daemon',`
 ')
 
 optional_policy(`
+	systemd_config_all_services(unconfined_t)
+	init_status(unconfined_t)
+	initrc_manage_service(unconfined_t)
+	dev_null_manage_service(unconfined_t)
+')
+
+optional_policy(`
 	ada_domtrans(unconfined_t)
 ')
 

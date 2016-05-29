@@ -105,10 +105,6 @@ ifndef(`distro_redhat',`
 	')
 
 	optional_policy(`
-		gpg_role(staff_r, staff_t)
-	')
-
-	optional_policy(`
 		irc_role(staff_r, staff_t)
 	')
 
@@ -125,7 +121,7 @@ ifndef(`distro_redhat',`
 	')
 
 	optional_policy(`
-		mozilla_role(staff_r, staff_t)
+		mozilla_role(staff_r, staff_t, user_devpts_t)
 	')
 
 	optional_policy(`

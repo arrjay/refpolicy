@@ -154,3 +154,21 @@ interface(`fstools_getattr_swap_files',`
 
 	allow $1 swapfile_t:file getattr;
 ')
+
+########################################
+## <summary>
+##	Write to fsadm_log_t
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fstools_write_log',`
+	gen_require(`
+		type fsadm_log_t;
+	')
+
+	allow $1 fsadm_log_t:file write_file_perms;
+')

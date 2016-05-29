@@ -263,7 +263,17 @@ dev_create_generic_blk_files(kernel_t)
 dev_delete_generic_blk_files(kernel_t)
 dev_create_generic_chr_files(kernel_t)
 dev_delete_generic_chr_files(kernel_t)
+dev_setattr_generic_chr_files(kernel_t)
 dev_mounton(kernel_t)
+
+ifdef(`distro_debian',`
+	# for systemd access to /run before transition
+	fs_search_tmpfs(kernel_t)
+	# also for systemd before transition
+	selinux_compute_create_context(kernel_t)
+	kernel_read_unlabeled_state(kernel_t)
+')
+
 
 # Mount root file system. Used when loading a policy
 # from initrd, then mounting the root filesystem
@@ -273,6 +283,9 @@ fs_unmount_all_fs(kernel_t)
 selinux_load_policy(kernel_t)
 
 term_use_console(kernel_t)
+
+# for kdevtmpfs
+term_setattr_unlink_unallocated_ttys(kernel_t)
 
 corecmd_exec_shell(kernel_t)
 corecmd_list_bin(kernel_t)
@@ -305,6 +318,8 @@ optional_policy(`
 
 optional_policy(`
 	init_sigchld(kernel_t)
+	init_dyntrans(kernel_t)
+	domain_dyntrans_type(kernel_t)
 ')
 
 optional_policy(`

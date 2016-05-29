@@ -1,0 +1,1 @@
+selinux-policy-mls: non-standard-dir-perm var/lib/selinux/mls/ 0700 != 0755

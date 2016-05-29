@@ -982,7 +982,7 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  corenet_all_recvfrom_unlabeled(dovecot_t)
  corenet_all_recvfrom_netlabel(dovecot_t)
  corenet_tcp_sendrecv_generic_if(dovecot_t)
-@@ -242,9 +245,13 @@ files_tmp_filetrans(dovecot_auth_t, dove
+@@ -242,9 +245,12 @@ files_tmp_filetrans(dovecot_auth_t, dove
  
  allow dovecot_auth_t dovecot_var_run_t:dir list_dir_perms;
  manage_sock_files_pattern(dovecot_auth_t, dovecot_var_run_t, dovecot_var_run_t)
@@ -1861,7 +1861,7 @@ Index: refpolicy/policy/modules/contrib/mailman.te
  
  optional_policy(`
  	courier_read_spool(mailman_mail_t)
-@@ -159,9 +216,30 @@ allow mailman_queue_t self:capability {
+@@ -159,9 +216,29 @@ allow mailman_queue_t self:capability {
  allow mailman_queue_t self:process { setsched signal_perms };
  allow mailman_queue_t self:fifo_file rw_fifo_file_perms;
  
@@ -2171,8 +2171,6 @@ Index: refpolicy/policy/modules/contrib/postfixpolicyd.te
 +
 +kernel_search_network_sysctl(postfix_policyd_t)
 +
-Index: refpolicy/policy/modules/contrib/mrtg.if
-===================================================================
 --- refpolicy.orig/policy/modules/contrib/mrtg.if
 +++ refpolicy/policy/modules/contrib/mrtg.if
 @@ -2,6 +2,24 @@
@@ -2293,3 +2291,4 @@ Index: refpolicy/policy/modules/admin/netutils.te
  
  auth_use_nsswitch(ping_t)
  
+=======

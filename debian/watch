@@ -1,5 +1,5 @@
 version=3
 
 opts="uversionmangle=s/^2./2./" \
-http://oss.tresys.com/projects/refpolicy/wiki/DownloadRelease \
- /files/refpolicy/refpolicy-(.*)\.tar\.bz2
+https://github.com/TresysTechnology/refpolicy/wiki/DownloadRelease \
+ (?:.*)/refpolicy/files/refpolicy-(.*)\.tar\.bz2
