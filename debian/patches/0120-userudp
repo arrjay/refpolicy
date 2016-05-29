@@ -2,8 +2,10 @@ Description: Add boolean to allow binding to UDP sockets
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2016-01-20
 
---- refpolicy-2.20140421.orig/policy/global_tunables
-+++ refpolicy-2.20140421/policy/global_tunables
+Index: refpolicy/policy/global_tunables
+===================================================================
+--- refpolicy.orig/policy/global_tunables
++++ refpolicy/policy/global_tunables
 @@ -118,3 +118,11 @@ gen_tunable(use_samba_home_dirs,false)
  ## </p>
  ## </desc>
@@ -16,8 +18,10 @@ Last-Update: 2016-01-20
 +## </p>
 +## </desc>
 +gen_tunable(user_udp_server,false)
---- refpolicy-2.20140421.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20140421/policy/modules/system/userdomain.if
+Index: refpolicy/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/userdomain.if
++++ refpolicy/policy/modules/system/userdomain.if
 @@ -1053,6 +1053,13 @@ template(`userdom_unpriv_user_template',
  		corenet_tcp_bind_generic_port($1_t)
  	')

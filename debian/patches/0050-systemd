@@ -3898,7 +3898,7 @@ Index: refpolicy/policy/modules/kernel/devices.if
 +
 +########################################
 +## <summary>
-+##      Create FIFO pipes in device directories.
++##      Create lots of device types that systemd-tmpfiles creates
 +## </summary>
 +## <param name="domain">
 +##      <summary>
@@ -4125,11 +4125,10 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create objects in /home.
  ## </summary>
  ## <param name="domain">
-@@ -5465,6 +5483,30 @@ interface(`files_search_var_lib',`
- ')
+@@ -5466,6 +5484,30 @@ interface(`files_search_var_lib',`
  
  ########################################
-+## <summary>
+ ## <summary>
 +##	Create and label /var/lib and /var/log
 +## </summary>
 +## <desc>
@@ -4153,6 +4152,41 @@ Index: refpolicy/policy/modules/kernel/files.if
 +')
 +
 +########################################
- ## <summary>
++## <summary>
  ##	Do not audit attempts to search the
  ##	contents of /var/lib.
+ ## </summary>
+@@ -6798,3 +6840,21 @@ interface(`files_delete_all_non_security
+ 
+         allow $1 non_security_file_type:file_class_set unlink;
+ ')
++
++########################################
++## <summary>
++##     Allow a domain to get service status for etc_t (/etc/fstab)
++## </summary>
++## <param name="domain">
++##     <summary>
++##     Domain to get status of etc_t service
++##     </summary>
++## </param>
++#
++interface(`get_etc_service_status',`
++        gen_require(`
++                type etc_t;
++        ')
++
++        allow $1 etc_t:service status;
++')
+Index: refpolicy/policy/modules/system/unconfined.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/unconfined.if
++++ refpolicy/policy/modules/system/unconfined.if
+@@ -43,6 +43,7 @@ interface(`unconfined_domain_noaudit',`
+ 	files_unconfined($1)
+ 	fs_unconfined($1)
+ 	selinux_unconfined($1)
++	get_etc_service_status($1)
+ 
+ 	tunable_policy(`allow_execheap',`
+ 		# Allow making the stack executable via mprotect.

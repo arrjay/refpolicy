@@ -1,0 +1,88 @@
+Description: Fixes for boinc policy
+Author: Russell Coker <russell@coker.com.au>
+
+Index: refpolicy/policy/modules/contrib/boinc.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/boinc.fc
++++ refpolicy/policy/modules/contrib/boinc.fc
+@@ -1,9 +1,13 @@
+ /etc/rc\.d/init\.d/boinc-client	--	gen_context(system_u:object_r:boinc_initrc_exec_t,s0)
+ 
+ /usr/bin/boinc_client	--	gen_context(system_u:object_r:boinc_exec_t,s0)
++/usr/bin/boinc		--	gen_context(system_u:object_r:boinc_exec_t,s0)
+ 
+ /var/lib/boinc(/.*)?	gen_context(system_u:object_r:boinc_var_lib_t,s0)
++/var/lib/boinc-client(/.*)?	gen_context(system_u:object_r:boinc_var_lib_t,s0)
+ /var/lib/boinc/projects(/.*)?	gen_context(system_u:object_r:boinc_project_var_lib_t,s0)
+ /var/lib/boinc/slots(/.*)?	gen_context(system_u:object_r:boinc_project_var_lib_t,s0)
+ 
+ /var/log/boinc\.log.*	--	gen_context(system_u:object_r:boinc_log_t,s0)
++/var/log/boincerr\.log.*	--	gen_context(system_u:object_r:boinc_log_t,s0)
++/etc/boinc-client/global_prefs_override.xml -- gen_context(system_u:object_r:boinc_var_lib_t,s0)
+Index: refpolicy/policy/modules/contrib/boinc.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/boinc.te
++++ refpolicy/policy/modules/contrib/boinc.te
+@@ -47,6 +47,7 @@ files_tmp_file(boinc_project_tmp_t)
+ # Local policy
+ #
+ 
++can_exec(boinc_t, boinc_exec_t)
+ allow boinc_t self:process { setsched setpgid signull sigkill };
+ allow boinc_t self:unix_stream_socket { accept listen };
+ allow boinc_t self:tcp_socket { accept listen };
+@@ -71,12 +72,13 @@ manage_files_pattern(boinc_t, boinc_proj
+ filetrans_pattern(boinc_t, boinc_var_lib_t, boinc_project_var_lib_t, dir, "slots")
+ filetrans_pattern(boinc_t, boinc_var_lib_t, boinc_project_var_lib_t, dir, "projects")
+ 
+-append_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
++manage_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
+ create_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
+ setattr_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
+ logging_log_filetrans(boinc_t, boinc_log_t, file)
+ 
+ can_exec(boinc_t, boinc_var_lib_t)
++libs_exec_lib_files(boinc_t)
+ 
+ domtrans_pattern(boinc_t, boinc_project_var_lib_t, boinc_project_t)
+ 
+@@ -170,6 +172,11 @@ manage_files_pattern(boinc_project_t, bo
+ 
+ allow boinc_project_t boinc_project_var_lib_t:file execmod;
+ can_exec(boinc_project_t, boinc_project_var_lib_t)
++term_getattr_ptmx(boinc_t)
++dev_getattr_input_dev(boinc_t)
++dev_getattr_mouse_dev(boinc_t)
++term_getattr_generic_ptys(boinc_t)
++userdom_getattr_user_ttys(boinc_t)
+ 
+ allow boinc_project_t boinc_t:shm rw_shm_perms;
+ allow boinc_project_t boinc_tmpfs_t:file { read write };
+Index: refpolicy/policy/modules/kernel/terminal.if
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/terminal.if
++++ refpolicy/policy/modules/kernel/terminal.if
+@@ -537,6 +537,23 @@ interface(`term_dontaudit_manage_pty_dir
+ 
+ ########################################
+ ## <summary>
++##	Get the attributes of generic pty devices.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to allow
++##	</summary>
++## </param>
++#
++interface(`term_getattr_generic_ptys',`
++	gen_require(`
++		type devpts_t;
++	')
++
++	allow $1 devpts_t:chr_file getattr;
++')
++########################################
++## <summary>
+ ##	Do not audit attempts to get the attributes
+ ##	of generic pty devices.
+ ## </summary>

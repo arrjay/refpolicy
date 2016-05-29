@@ -1378,6 +1378,13 @@ modemmanager = module
 mojomojo = module
 
 # Layer: contrib
+# Module: mon
+#
+# mon network monitoring daemon
+# 
+mon = module
+
+# Layer: contrib
 # Module: mongodb
 #
 # Scalable, high-performance, open source NoSQL database.

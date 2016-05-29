@@ -380,7 +380,18 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
-@@ -737,3 +750,5 @@ tunable_policy(`cron_userdomain_transiti
+@@ -561,6 +574,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	read_mrtg_etc(system_cronjob_t)
++')
++
++optional_policy(`
+ 	cyrus_manage_data(system_cronjob_t)
+ ')
+ 
+@@ -737,3 +754,5 @@ tunable_policy(`cron_userdomain_transiti
  optional_policy(`
  	unconfined_domain(unconfined_cronjob_t)
  ')
@@ -484,15 +495,16 @@ Index: refpolicy/policy/modules/contrib/clamav.te
  dontaudit clamd_t self:capability sys_tty_config;
  allow clamd_t self:process signal;
  allow clamd_t self:fifo_file rw_fifo_file_perms;
-@@ -107,6 +107,7 @@ kernel_dontaudit_list_proc(clamd_t)
+@@ -107,6 +107,8 @@ kernel_dontaudit_list_proc(clamd_t)
  kernel_read_sysctl(clamd_t)
  kernel_read_kernel_sysctls(clamd_t)
  kernel_read_system_state(clamd_t)
 +kernel_read_vm_sysctls(clamd_t)
++dev_read_sysfs(clamd_t)
  
  corecmd_exec_shell(clamd_t)
  
-@@ -215,6 +216,10 @@ corenet_sendrecv_http_client_packets(fre
+@@ -215,6 +217,10 @@ corenet_sendrecv_http_client_packets(fre
  corenet_tcp_connect_http_port(freshclam_t)
  corenet_tcp_sendrecv_http_port(freshclam_t)
  
@@ -970,7 +982,7 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  corenet_all_recvfrom_unlabeled(dovecot_t)
  corenet_all_recvfrom_netlabel(dovecot_t)
  corenet_tcp_sendrecv_generic_if(dovecot_t)
-@@ -242,9 +245,12 @@ files_tmp_filetrans(dovecot_auth_t, dove
+@@ -242,9 +245,13 @@ files_tmp_filetrans(dovecot_auth_t, dove
  
  allow dovecot_auth_t dovecot_var_run_t:dir list_dir_perms;
  manage_sock_files_pattern(dovecot_auth_t, dovecot_var_run_t, dovecot_var_run_t)
@@ -979,6 +991,7 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  allow dovecot_auth_t dovecot_t:unix_stream_socket { connectto rw_stream_socket_perms };
  
 +selinux_get_enforce_mode(dovecot_auth_t)
++selinux_get_fs_mount(dovecot_auth_t)
 +
  files_search_pids(dovecot_auth_t)
  files_read_usr_files(dovecot_auth_t)
@@ -1072,7 +1085,16 @@ Index: refpolicy/policy/modules/contrib/apache.te
  read_lnk_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
  logging_log_filetrans(httpd_t, httpd_log_t, file)
  
-@@ -464,6 +462,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+@@ -427,6 +425,8 @@ manage_lnk_files_pattern(httpd_t, httpd_
+ allow httpd_t httpd_suexec_exec_t:file read_file_perms;
+ 
+ allow httpd_t httpd_sys_script_t:unix_stream_socket connectto;
++allow httpd_t httpd_sys_script_t:process signull;
++
+ 
+ manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
+ manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
+@@ -464,6 +464,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
  
  kernel_read_kernel_sysctls(httpd_t)
@@ -1080,7 +1102,23 @@ Index: refpolicy/policy/modules/contrib/apache.te
  kernel_read_network_state(httpd_t)
  kernel_read_system_state(httpd_t)
  kernel_search_network_sysctl(httpd_t)
-@@ -1225,6 +1224,7 @@ allow httpd_sys_script_t squirrelmail_sp
+@@ -590,6 +591,7 @@ tunable_policy(`httpd_builtin_scripting'
+ tunable_policy(`httpd_enable_cgi',`
+ 	allow httpd_t httpd_script_domains:process { signal sigkill sigstop };
+ 	allow httpd_t httpd_script_exec_type:dir list_dir_perms;
++	allow httpd_t httpd_script_exec_type:lnk_file read_lnk_file_perms;
+ ')
+ 
+ tunable_policy(`httpd_enable_cgi && httpd_use_nfs',`
+@@ -1215,6 +1217,7 @@ optional_policy(`
+ allow httpd_sys_script_t self:tcp_socket { accept listen };
+ 
+ allow httpd_sys_script_t httpd_t:tcp_socket { read write };
++allow httpd_sys_script_t httpd_t:unix_stream_socket { read write ioctl };
+ 
+ dontaudit httpd_sys_script_t httpd_config_t:dir search;
+ 
+@@ -1225,6 +1228,7 @@ allow httpd_sys_script_t squirrelmail_sp
  allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
@@ -1217,15 +1255,18 @@ Index: refpolicy/policy/modules/contrib/milter.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/milter.te
 +++ refpolicy/policy/modules/contrib/milter.te
-@@ -94,6 +94,7 @@ mta_read_config(regex_milter_t)
+@@ -94,8 +94,10 @@ mta_read_config(regex_milter_t)
  #
  
  allow spamass_milter_t spamass_milter_state_t:dir search_dir_perms;
 +allow spamass_milter_t self:process sigkill;
  
  kernel_read_system_state(spamass_milter_t)
++dev_read_sysfs(spamass_milter_t)
  
-@@ -106,3 +107,7 @@ mta_send_mail(spamass_milter_t)
+ corecmd_exec_shell(spamass_milter_t)
+ 
+@@ -106,3 +108,7 @@ mta_send_mail(spamass_milter_t)
  optional_policy(`
  	spamassassin_domtrans_client(spamass_milter_t)
  ')
@@ -1343,7 +1384,7 @@ Index: refpolicy/policy/modules/system/unconfined.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/unconfined.if
 +++ refpolicy/policy/modules/system/unconfined.if
-@@ -318,6 +318,23 @@ interface(`unconfined_run_to',`
+@@ -319,6 +319,23 @@ interface(`unconfined_run_to',`
  
  ########################################
  ## <summary>
@@ -1654,7 +1695,12 @@ Index: refpolicy/policy/modules/contrib/jabber.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/jabber.te
 +++ refpolicy/policy/modules/contrib/jabber.te
-@@ -77,15 +77,15 @@ allow jabberd_t self:udp_socket create_s
+@@ -73,21 +73,25 @@ allow jabberd_t self:capability dac_over
+ dontaudit jabberd_t self:capability sys_tty_config;
+ allow jabberd_t self:tcp_socket create_socket_perms;
+ allow jabberd_t self:udp_socket create_socket_perms;
++allow jabberd_t self:netlink_route_socket r_netlink_socket_perms;
+ 
  manage_files_pattern(jabberd_t, jabberd_lock_t, jabberd_lock_t)
  
  allow jabberd_t jabberd_log_t:dir setattr_dir_perms;
@@ -1672,8 +1718,13 @@ Index: refpolicy/policy/modules/contrib/jabber.te
 +domain_dontaudit_search_all_domains_state(jabberd_t)
  
  kernel_read_kernel_sysctls(jabberd_t)
++corecmd_exec_bin(jabberd_t)
++# usr for lua modules
++files_read_usr_files(jabberd_t)
  
-@@ -96,6 +96,7 @@ corenet_tcp_sendrecv_jabber_client_port(
+ corenet_sendrecv_jabber_client_server_packets(jabberd_t)
+ corenet_tcp_bind_jabber_client_port(jabberd_t)
+@@ -96,6 +100,7 @@ corenet_tcp_sendrecv_jabber_client_port(
  corenet_sendrecv_jabber_interserver_server_packets(jabberd_t)
  corenet_tcp_bind_jabber_interserver_port(jabberd_t)
  corenet_tcp_sendrecv_jabber_interserver_port(jabberd_t)
@@ -1810,7 +1861,7 @@ Index: refpolicy/policy/modules/contrib/mailman.te
  
  optional_policy(`
  	courier_read_spool(mailman_mail_t)
-@@ -159,9 +216,29 @@ allow mailman_queue_t self:capability {
+@@ -159,9 +216,30 @@ allow mailman_queue_t self:capability {
  allow mailman_queue_t self:process { setsched signal_perms };
  allow mailman_queue_t self:fifo_file rw_fifo_file_perms;
  
@@ -1829,6 +1880,7 @@ Index: refpolicy/policy/modules/contrib/mailman.te
 +allow mailman_queue_t mailman_lock_t:file manage_file_perms;
 +
 +corecmd_read_bin_files(mailman_queue_t)
++corecmd_read_bin_symlinks(mailman_queue_t)
 +
  corenet_sendrecv_innd_client_packets(mailman_queue_t)
  corenet_tcp_connect_innd_port(mailman_queue_t)
@@ -2119,3 +2171,125 @@ Index: refpolicy/policy/modules/contrib/postfixpolicyd.te
 +
 +kernel_search_network_sysctl(postfix_policyd_t)
 +
+Index: refpolicy/policy/modules/contrib/mrtg.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mrtg.if
++++ refpolicy/policy/modules/contrib/mrtg.if
+@@ -2,6 +2,24 @@
+ 
+ ########################################
+ ## <summary>
++##	Read mrtg configuration
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`read_mrtg_etc',`
++	gen_require(`
++		type mrtg_etc_t;
++	')
++
++	allow $1 mrtg_etc_t:file read_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Create and append mrtg log files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy/policy/modules/contrib/postgrey.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/postgrey.te
++++ refpolicy/policy/modules/contrib/postgrey.te
+@@ -55,7 +55,7 @@ files_pid_filetrans(postgrey_t, postgrey
+ kernel_read_system_state(postgrey_t)
+ kernel_read_kernel_sysctls(postgrey_t)
+ 
+-corecmd_search_bin(postgrey_t)
++corecmd_read_bin_files(postgrey_t)
+ 
+ corenet_all_recvfrom_unlabeled(postgrey_t)
+ corenet_all_recvfrom_netlabel(postgrey_t)
+Index: refpolicy/policy/modules/contrib/jabber.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/jabber.fc
++++ refpolicy/policy/modules/contrib/jabber.fc
+@@ -8,18 +8,22 @@
+ /usr/sbin/ejabberd	--	gen_context(system_u:object_r:jabberd_exec_t,s0)
+ /usr/sbin/ejabberdctl	--	gen_context(system_u:object_r:jabberd_exec_t,s0)
+ /usr/sbin/jabberd	--	gen_context(system_u:object_r:jabberd_exec_t,s0)
++/usr/bin/prosody	--	gen_context(system_u:object_r:jabberd_exec_t,s0)
+ 
+ /var/lock/ejabberdctl(/.*)	gen_context(system_u:object_r:jabberd_lock_t,s0)
+ 
+ /var/log/ejabberd(/.*)?	gen_context(system_u:object_r:jabberd_log_t,s0)
+ /var/log/jabber(/.*)?	gen_context(system_u:object_r:jabberd_log_t,s0)
++/var/log/prosody(/.*)?	gen_context(system_u:object_r:jabberd_log_t,s0)
+ 
+ /var/lib/ejabberd(/.*)?	gen_context(system_u:object_r:jabberd_var_lib_t,s0)
+ /var/lib/ejabberd/spool(/.*)?	gen_context(system_u:object_r:jabberd_spool_t,s0)
+ /var/lib/jabber(/.*)?	gen_context(system_u:object_r:jabberd_var_lib_t,s0)
+ /var/lib/jabberd(/.*)?	gen_context(system_u:object_r:jabberd_var_lib_t,s0)
++/var/lib/prosody(/.*)?	gen_context(system_u:object_r:jabberd_var_lib_t,s0)
+ /var/lib/jabberd/log(/.*)?	gen_context(system_u:object_r:jabberd_log_t,s0)
+ /var/lib/jabberd/pid(/.*)?	gen_context(system_u:object_r:jabberd_var_run_t,s0)
+ 
++/var/run/prosody(/.*)?		gen_context(system_u:object_r:jabberd_var_run_t,s0)
+ /var/run/ejabber\.pid	--	gen_context(system_u:object_r:jabberd_var_run_t,s0)
+ /var/run/jabber\.pid	--	gen_context(system_u:object_r:jabberd_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/spamassassin.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/spamassassin.fc
++++ refpolicy/policy/modules/contrib/spamassassin.fc
+@@ -23,6 +23,7 @@ HOME_DIR/\.spamd(/.*)?	gen_context(syste
+ /var/log/mimedefang.*	--	gen_context(system_u:object_r:spamd_log_t,s0)
+ 
+ /var/run/spamassassin(/.*)?	gen_context(system_u:object_r:spamd_var_run_t,s0)
++/var/run/spamassassin\.pid --	gen_context(system_u:object_r:spamd_var_run_t,s0)
+ 
+ /var/spool/spamassassin(/.*)?	gen_context(system_u:object_r:spamd_spool_t,s0)
+ /var/spool/spamd(/.*)?	gen_context(system_u:object_r:spamd_spool_t,s0)
+Index: refpolicy/policy/modules/admin/usermanage.te
+===================================================================
+--- refpolicy.orig/policy/modules/admin/usermanage.te
++++ refpolicy/policy/modules/admin/usermanage.te
+@@ -360,6 +360,11 @@ optional_policy(`
+ 	nscd_run(passwd_t, passwd_roles)
+ ')
+ 
++optional_policy(`
++	# for dpkg to create users
++	permit_in_unconfined_r(passwd_t)
++')
++
+ ########################################
+ #
+ # Password admin local policy
+Index: refpolicy/policy/modules/kernel/corenetwork.te.in
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/corenetwork.te.in
++++ refpolicy/policy/modules/kernel/corenetwork.te.in
+@@ -209,7 +209,7 @@ network_port(pop, tcp,106,s0, tcp,109,s0
+ network_port(portmap, udp,111,s0, tcp,111,s0)
+ network_port(postfix_policyd, tcp,10031,s0)
+ network_port(postgresql, tcp,5432,s0)
+-network_port(postgrey, tcp,60000,s0)
++network_port(postgrey, tcp,10023,s0, tcp,60000,s0)
+ network_port(pptp, tcp,1723,s0, udp,1723,s0)
+ network_port(prelude, tcp,4690,s0, udp,4690,s0)
+ network_port(presence, tcp,5298-5299,s0, udp,5298-5299,s0)
+Index: refpolicy/policy/modules/admin/netutils.te
+===================================================================
+--- refpolicy.orig/policy/modules/admin/netutils.te
++++ refpolicy/policy/modules/admin/netutils.te
+@@ -131,6 +131,7 @@ files_read_etc_files(ping_t)
+ files_dontaudit_search_var(ping_t)
+ 
+ kernel_read_system_state(ping_t)
++dev_read_urand(ping_t)
+ 
+ auth_use_nsswitch(ping_t)
+ 

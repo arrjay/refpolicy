@@ -1,4 +1,51 @@
-refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
+refpolicy (2:2.20140421-13.1) jessie; urgency=medium
+
+  * Allow mon_test_t to get RAID status and write to mon_var_lib_t
+    Allow mon_test_t to exec mon_test_exec_t (for chained tests)
+    Allow mon_test_t to read BIND config files
+  * Added auth_read_var_auth(mozilla_t) and allowed mozilla to create mozilla_tmpfs_t
+    directories for /var/run/auth/PID/pulse. Allow mozilla_t setcap and exec of
+    mozilla_home_t for plugins. Allow mozilla to read vm_sysctls for overcommit memory
+    status.
+  * Label /usr/bin/boinc as boinc_exec_t and /var/lib/boinc-client(/.*)? as
+    boinc_var_lib_t. Allow boinc to exec itself. Allow boinc to exec lib_t.
+    Label /var/log/boincerr.log. Allow boinc-client to write to
+    /etc/boinc-client/global_prefs_override.xml
+    Allow boinc to event_device_t, mouse_device_t, ptmx_t, devpts_t, and
+    user_tty_device_t character devices to
+    find out when system is idle
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 10 May 2016 00:40:21 +1000
+
+refpolicy (2:2.20140421-13) jessie; urgency=medium
+
+  * Allow dovecot_auth_t to get the SE Linux mount point for PAM authentication
+  * Allow unconfined domains to get the service status for etc_t.
+  * Allow mailman_queue_t to read bin_t symlinks
+  * Allow clamd_t and spamass_milter_t to read sysfs_t files
+  * Allow system_cronjob_t to read mrtg_etc_t to see if it's enabled
+  * Allow httpd_t to send signull to httpd_sys_script_t
+    Allow httpd_sys_script_t to read/write stream sockets it inherits from httpd_t
+    Allow httpd_t to read httpd_script_exec_type symlinks
+  * Allow postgrey_t to read bin_t for perl
+  * Label /usr/bin/prosody, /var/run/prosody, /var/lib/prosody, and /var/log/prosody
+    as jabber types.
+    Allow jabberd_t to exec bin_t (to run env), read usr_t (for lua modules), and
+    have netlink read access.
+  * Set context for /var/run/spamassassin.pid
+  * Allow passwd_t to be in unconfined_r for dpkg to create new users
+  * Reserve port 10023 for postgrey too
+  * Allow semanage_t to execute a shell for "semanage permissive" commands.
+  * Allow ping to read /dev/urandom
+  * Make create_chr_file_perms include setattr access for autofs device
+  * Allow initrc_t to create and setattr var_run_t dirs
+  * Allow initrc_t to create dirs under /dev for /dev/net (needed for 6to4)
+  * Allow initrc_t to create tmpfs_t files
+  * Added policy for mon network monitoring
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 05 May 2016 16:27:38 +1000
+
+refpolicy (2:2.20140421-12) jessie; urgency=medium
 
   * Allow init_t to manage init_var_run_t symlinks and self getsched
     to relabel files and dirs to etc_runtime_t for /run/blkid
@@ -39,7 +86,7 @@ refpolicy (2:2.20140421-11.1) UNRELEASED; urgency=medium
   * Added user_udp_server boolean
   * Allow apt_t to manage dirs of type apt_var_cache_t
 
- -- Russell Coker <russell@coker.com.au>  Sat, 26 Sep 2015 15:07:45 +1000
+ -- Russell Coker <russell@coker.com.au>  Sun, 28 Feb 2016 12:39:36 +1100
 
 refpolicy (2:2.20140421-11) unstable; urgency=medium
 
