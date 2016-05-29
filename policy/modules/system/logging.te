@@ -12,9 +12,6 @@ type auditctl_exec_t;
 init_system_domain(auditctl_t, auditctl_exec_t)
 role system_r types auditctl_t;
 
-type auditd_unit_file_t;
-systemd_unit_file(auditd_unit_file_t)
-
 type auditd_etc_t;
 files_security_file(auditd_etc_t)
 
@@ -68,9 +65,6 @@ type syslogd_t;
 type syslogd_exec_t;
 init_daemon_domain(syslogd_t, syslogd_exec_t)
 
-type syslogd_unit_file_t;
-systemd_unit_file(syslogd_unit_file_t)
-
 type syslogd_initrc_exec_t;
 init_script_file(syslogd_initrc_exec_t)
 
@@ -90,26 +84,6 @@ files_mountpoint(var_log_t)
 ifdef(`enable_mls',`
 	init_ranged_daemon_domain(auditd_t, auditd_exec_t, mls_systemhigh)
 	init_ranged_daemon_domain(syslogd_t, syslogd_exec_t, mls_systemhigh)
-')
-
-tunable_policy(`init_systemd', `
-	dev_read_kmsg(syslogd_t)
-	dev_write_kmsg(syslogd_t)
-	allow syslogd_t self:capability sys_ptrace;
-	init_read_pipes(syslogd_t)
-	init_read_state(syslogd_t)
-	allow syslogd_t init_var_run_t:file { read write create open };
-	allow syslogd_t var_run_t:dir create;
-	init_create_pid_dirs(syslogd_t)
-	kernel_read_ring_buffer(syslogd_t)
-	dev_read_urand(syslogd_t)
-	domain_read_all_domains_state(syslogd_t)
-	manage_systemd_journal_files(syslogd_t)
-
-	# for systemd-journal
-	allow syslogd_t self:netlink_audit_socket connected_socket_perms;
-	allow syslogd_t self:capability2 audit_read;
-	rename_unlink_init_var_run(syslogd_t)
 ')
 
 ########################################
@@ -141,9 +115,7 @@ term_use_all_terms(auditctl_t)
 
 init_dontaudit_use_fds(auditctl_t)
 
-optional_policy(`
-	locallogin_dontaudit_use_fds(auditctl_t)
-')
+locallogin_dontaudit_use_fds(auditctl_t)
 
 logging_set_audit_parameters(auditctl_t)
 logging_send_syslog_msg(auditctl_t)
@@ -241,9 +213,6 @@ optional_policy(`
 optional_policy(`
 	udev_read_db(auditd_t)
 ')
-
-# for systemd but can not be conditional
-filetrans_pattern(syslogd_t, var_run_t, syslogd_tmp_t, dir, "log")
 
 ########################################
 #
@@ -386,7 +355,7 @@ optional_policy(`
 # sys_admin for the integrated klog of syslog-ng and metalog
 # sys_nice for rsyslog
 # cjp: why net_admin!
-allow syslogd_t self:capability { dac_override setgid setuid sys_resource sys_tty_config net_admin sys_admin sys_nice chown fsetid };
+allow syslogd_t self:capability { dac_override sys_resource sys_tty_config net_admin sys_admin sys_nice chown fsetid };
 dontaudit syslogd_t self:capability sys_tty_config;
 # setpgid for metalog
 # setrlimit for syslog-ng
@@ -407,7 +376,6 @@ allow syslogd_t syslog_conf_t:file read_file_perms;
 # Create and bind to /dev/log or /var/run/log.
 allow syslogd_t devlog_t:sock_file manage_sock_file_perms;
 files_pid_filetrans(syslogd_t, devlog_t, sock_file)
-init_pid_filetrans(syslogd_t, devlog_t, sock_file, "dev-log")
 
 # create/append log files.
 manage_files_pattern(syslogd_t, var_log_t, var_log_t)
@@ -554,8 +522,6 @@ optional_policy(`
 
 optional_policy(`
 	udev_read_db(syslogd_t)
-	# for systemd-journal to read seat data from /run/udev/data
-	udev_read_pid_files(syslogd_t)
 ')
 
 optional_policy(`

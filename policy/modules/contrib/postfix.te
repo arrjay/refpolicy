@@ -234,8 +234,6 @@ manage_files_pattern(postfix_master_t, postfix_spool_flush_t, postfix_spool_flus
 manage_lnk_files_pattern(postfix_master_t, postfix_spool_flush_t, postfix_spool_flush_t)
 filetrans_pattern(postfix_master_t, postfix_spool_t, postfix_spool_flush_t, dir, "flush")
 
-hostname_exec(postfix_master_t)
-
 create_dirs_pattern(postfix_master_t, postfix_spool_t, postfix_private_t)
 manage_fifo_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
 manage_sock_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
@@ -328,7 +326,6 @@ optional_policy(`
 
 optional_policy(`
 	mailman_manage_data_files(postfix_master_t)
-	mailman_search_data(postfix_pipe_t)
 ')
 
 optional_policy(`
@@ -374,7 +371,6 @@ allow postfix_cleanup_t self:process setrlimit;
 
 allow postfix_cleanup_t postfix_smtpd_t:tcp_socket rw_stream_socket_perms;
 allow postfix_cleanup_t postfix_smtpd_t:unix_stream_socket rw_socket_perms;
-allow postfix_cleanup_t postfix_smtpd_t:fd use;
 
 allow postfix_cleanup_t postfix_spool_maildrop_t:dir list_dir_perms;
 allow postfix_cleanup_t postfix_spool_maildrop_t:file read_file_perms;
@@ -402,10 +398,6 @@ mta_read_aliases(postfix_cleanup_t)
 
 optional_policy(`
 	mailman_read_data_files(postfix_cleanup_t)
-')
-
-optional_policy(`
-	dkim_stream_connect(postfix_cleanup_t)
 ')
 
 ########################################
@@ -440,7 +432,6 @@ tunable_policy(`postfix_local_write_mail_spool',`
 optional_policy(`
 	clamav_search_lib(postfix_local_t)
 	clamav_exec_clamscan(postfix_local_t)
-	clamav_stream_connect(postfix_smtpd_t)
 ')
 
 optional_policy(`
@@ -566,10 +557,6 @@ domtrans_pattern(postfix_pipe_t, postfix_postdrop_exec_t, postfix_postdrop_t)
 
 corecmd_exec_bin(postfix_pipe_t)
 
-write_sock_files_pattern(postfix_pipe_t, postfix_public_t, postfix_public_t)
-
-
-
 optional_policy(`
 	dovecot_domtrans_deliver(postfix_pipe_t)
 ')
@@ -580,7 +567,6 @@ optional_policy(`
 
 optional_policy(`
 	mailman_domtrans_queue(postfix_pipe_t)
-	mailman_domtrans(postfix_pipe_t)
 ')
 
 optional_policy(`
@@ -666,10 +652,6 @@ optional_policy(`
 optional_policy(`
 	ppp_use_fds(postfix_postqueue_t)
 	ppp_sigchld(postfix_postqueue_t)
-')
-
-optional_policy(`
-	userdom_sigchld_all_users(postfix_postqueue_t)
 ')
 
 ########################################

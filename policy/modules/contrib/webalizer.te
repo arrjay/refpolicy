@@ -28,9 +28,6 @@ files_type(webalizer_var_lib_t)
 type webalizer_write_t;
 files_type(webalizer_write_t)
 
-type webalizer_log_t;
-logging_log_file(webalizer_log_t)
-
 ########################################
 #
 # Local policy
@@ -43,18 +40,12 @@ allow webalizer_t self:fifo_file rw_fifo_file_perms;
 allow webalizer_t self:unix_dgram_socket sendto;
 allow webalizer_t self:unix_stream_socket { accept connectto listen };
 allow webalizer_t self:tcp_socket { accept listen };
-allow webalizer_t webalizer_usage_t:dir manage_dir_perms;
-allow webalizer_t webalizer_usage_t:file manage_file_perms;
 
 allow webalizer_t webalizer_etc_t:file read_file_perms;
-files_read_usr_files(webalizer_t)
 
 manage_dirs_pattern(webalizer_t, webalizer_tmp_t, webalizer_tmp_t)
 manage_files_pattern(webalizer_t, webalizer_tmp_t, webalizer_tmp_t)
 files_tmp_filetrans(webalizer_t, webalizer_tmp_t, { file dir })
-
-manage_dirs_pattern(webalizer_t, webalizer_log_t, webalizer_log_t)
-manage_files_pattern(webalizer_t, webalizer_log_t, webalizer_log_t)
 
 manage_files_pattern(webalizer_t, webalizer_var_lib_t, webalizer_var_lib_t)
 files_var_lib_filetrans(webalizer_t, webalizer_var_lib_t, file)
@@ -65,7 +56,6 @@ kernel_read_kernel_sysctls(webalizer_t)
 kernel_read_system_state(webalizer_t)
 
 files_read_etc_runtime_files(webalizer_t)
-miscfiles_read_fonts(webalizer_t)
 
 fs_search_auto_mountpoints(webalizer_t)
 fs_getattr_xattr_fs(webalizer_t)

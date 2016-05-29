@@ -85,9 +85,6 @@ init_daemon_domain(restorecond_t, restorecond_exec_t)
 domain_obj_id_change_exemption(restorecond_t)
 role system_r types restorecond_t;
 
-type restorecond_unit_file_t;
-systemd_unit_file(restorecond_unit_file_t)
-
 type restorecond_var_run_t;
 files_pid_file(restorecond_var_run_t)
 
@@ -198,7 +195,6 @@ seutil_libselinux_linked(load_policy_t)
 
 userdom_use_user_terminals(load_policy_t)
 userdom_use_all_users_fds(load_policy_t)
-dev_read_urand(load_policy_t)
 
 ifdef(`distro_ubuntu',`
 	optional_policy(`
@@ -331,8 +327,6 @@ files_pid_filetrans(restorecond_t, restorecond_var_run_t, file)
 kernel_use_fds(restorecond_t)
 kernel_rw_pipes(restorecond_t)
 kernel_read_system_state(restorecond_t)
-kernel_getattr_debugfs(restorecond_t)
-getattr_pstorefs(restorecond_t)
 
 fs_relabelfrom_noxattr_fs(restorecond_t)
 fs_dontaudit_list_nfs(restorecond_t)
@@ -349,9 +343,7 @@ files_relabel_non_auth_files(restorecond_t )
 files_read_non_auth_files(restorecond_t)
 auth_use_nsswitch(restorecond_t)
 
-optional_policy(`
-	locallogin_dontaudit_use_fds(restorecond_t)
-')
+locallogin_dontaudit_use_fds(restorecond_t)
 
 logging_send_syslog_msg(restorecond_t)
 
@@ -469,7 +461,6 @@ kernel_read_system_state(semanage_t)
 kernel_read_kernel_sysctls(semanage_t)
 
 corecmd_exec_bin(semanage_t)
-corecmd_exec_shell(semanage_t)
 
 dev_read_urand(semanage_t)
 
@@ -494,9 +485,7 @@ term_use_all_terms(semanage_t)
 # Running genhomedircon requires this for finding all users
 auth_use_nsswitch(semanage_t)
 
-optional_policy(`
-	locallogin_use_fds(semanage_t)
-')
+locallogin_use_fds(semanage_t)
 
 logging_send_syslog_msg(semanage_t)
 
@@ -554,10 +543,7 @@ kernel_rw_pipes(setfiles_t)
 kernel_rw_unix_dgram_sockets(setfiles_t)
 kernel_dontaudit_list_all_proc(setfiles_t)
 kernel_dontaudit_list_all_sysctls(setfiles_t)
-kernel_getattr_debugfs(setfiles_t)
-getattr_pstorefs(setfiles_t)
 
-dev_read_urand(setfiles_t)
 dev_relabel_all_dev_nodes(setfiles_t)
 # to handle when /dev/console needs to be relabeled
 dev_rw_generic_chr_files(setfiles_t)
@@ -616,11 +602,6 @@ ifdef(`distro_debian',`
 	# and then relabeled afterwards; thus
 	# /dev/console has the tmpfs type
 	fs_rw_tmpfs_chr_files(setfiles_t)
-')
-
-# for dpkg-statoverride running as setfiles_t
-optional_policy(`
-	dpkg_read_db(setfiles_t)
 ')
 
 ifdef(`distro_redhat', `

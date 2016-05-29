@@ -75,5 +75,3 @@
 /var/run/ptal-mlcd(/.*)?	gen_context(system_u:object_r:ptal_var_run_t,s0)
 /var/run/udev-configure-printer(/.*)?	gen_context(system_u:object_r:cupsd_config_var_run_t,s0)
 /var/turboprint(/.*)?	gen_context(system_u:object_r:cupsd_var_run_t,s0)
-
-/lib/systemd/system/cups.*\.service -- gen_context(system_u:object_r:cupsd_unit_file_t,s0)

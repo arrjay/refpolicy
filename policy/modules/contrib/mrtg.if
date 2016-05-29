@@ -2,24 +2,6 @@
 
 ########################################
 ## <summary>
-##	Read mrtg configuration
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`read_mrtg_etc',`
-	gen_require(`
-		type mrtg_etc_t;
-	')
-
-	allow $1 mrtg_etc_t:file read_file_perms;
-')
-
-########################################
-## <summary>
 ##	Create and append mrtg log files.
 ## </summary>
 ## <param name="domain">

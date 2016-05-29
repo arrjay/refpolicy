@@ -145,8 +145,3 @@ optional_policy(`
 	spamassassin_domtrans_client(procmail_t)
 	spamassassin_read_lib_files(procmail_t)
 ')
-
-optional_policy(`
-	courier_read_config(procmail_t)
-	courier_stream_connect_authdaemon(procmail_t)
-')

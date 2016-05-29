@@ -28,5 +28,3 @@ HOME_DIR/\.ppprc	--	gen_context(system_u:object_r:ppp_home_t,s0)
 /var/run/pppd[0-9]*\.tdb	--	gen_context(system_u:object_r:pppd_var_run_t,s0)
 /var/run/ppp(/.*)?	gen_context(system_u:object_r:pppd_var_run_t,s0)
 /var/run/pptp(/.*)?	gen_context(system_u:object_r:pptp_var_run_t,s0)
-
-/lib/systemd/system/ppp.*\.service      --      gen_context(system_u:object_r:pppd_unit_file_t,s0)

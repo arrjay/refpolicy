@@ -25,5 +25,3 @@ HOME_DIR/\.my\.cnf	--	gen_context(system_u:object_r:mysqld_home_t,s0)
 /var/run/mysqld.*	gen_context(system_u:object_r:mysqld_var_run_t,s0)
 /var/run/mysqlmanager.*	--	gen_context(system_u:object_r:mysqlmanagerd_var_run_t,s0)
 /var/run/mysqld/mysqlmanager.*	--	gen_context(system_u:object_r:mysqlmanagerd_var_run_t,s0)
-
-/lib/systemd/system/mysqld.*\.service -- gen_context(system_u:object_r:mysqld_unit_file_t,s0)

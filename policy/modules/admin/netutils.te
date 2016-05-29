@@ -131,7 +131,6 @@ files_read_etc_files(ping_t)
 files_dontaudit_search_var(ping_t)
 
 kernel_read_system_state(ping_t)
-dev_read_urand(ping_t)
 
 auth_use_nsswitch(ping_t)
 

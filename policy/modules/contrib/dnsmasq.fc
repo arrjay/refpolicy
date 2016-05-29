@@ -12,4 +12,3 @@
 
 /var/run/dnsmasq.*	--	gen_context(system_u:object_r:dnsmasq_var_run_t,s0)
 /var/run/libvirt/network(/.*)?	gen_context(system_u:object_r:dnsmasq_var_run_t,s0)
-/lib/systemd/system/dnsmasq.*\.service  --      gen_context(system_u:object_r:dnsmasq_unit_file_t,s0)

@@ -41,9 +41,6 @@ files_type(pppd_etc_rw_t)
 type pppd_initrc_exec_t alias pppd_script_exec_t;
 init_script_file(pppd_initrc_exec_t)
 
-type pppd_unit_file_t;
-systemd_unit_file(pppd_unit_file_t)
-
 type pppd_secret_t;
 files_type(pppd_secret_t)
 

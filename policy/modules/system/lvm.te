@@ -293,14 +293,6 @@ init_dontaudit_getattr_initctl(lvm_t)
 init_use_script_ptys(lvm_t)
 init_read_script_state(lvm_t)
 
-# for systemd-cryptsetup to talk to /run/systemd/journal/socket
-init_stream_connect(lvm_t)
-# for systemd-cryptsetup
-kernel_read_crypto_sysctls(lvm_t)
-
-# for systemd-cryptsetup
-dev_write_kmsg(lvm_t)
-
 logging_send_syslog_msg(lvm_t)
 
 miscfiles_read_localization(lvm_t)

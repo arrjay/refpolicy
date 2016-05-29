@@ -31,11 +31,6 @@ interface(`gpg_role',`
 	domtrans_pattern($2, gpg_exec_t, gpg_t)
 	domtrans_pattern($2, gpg_agent_exec_t, gpg_agent_t)
 
-	# transition to user_t when running ck-launch-session or other bin_t
-	corecmd_bin_domtrans(gpg_agent_t, $2)
-	allow gpg_agent_t $2:process signull;
-	allow $2 gpg_agent_t:fd use;
-
 	allow $2 { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t }:process { ptrace signal_perms };
 	ps_process_pattern($2, { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t })
 
@@ -49,9 +44,6 @@ interface(`gpg_role',`
 	allow $2 { gpg_agent_tmp_t gpg_pinentry_tmp_t gpg_secret_t }:sock_file { manage_sock_file_perms relabel_sock_file_perms };
 	filetrans_pattern($2, gpg_secret_t, gpg_agent_tmp_t, sock_file, "log-socket")
 	userdom_user_home_dir_filetrans($2, gpg_secret_t, dir, ".gnupg")
-
-	# so gpg_agent_t can append to .xsession-errors
-	userdom_append_inherited_user_home_content_files(gpg_agent_t)
 
 	optional_policy(`
 		gpg_pinentry_dbus_chat($2)
@@ -179,28 +171,6 @@ interface(`gpg_signal',`
 	')
 
 	allow $1 gpg_t:process signal;
-')
-
-#######################################
-## <summary>
-##      Transition to $2_gpg_agent_t from another domain via gpg_agent_exec_t
-## </summary>
-## <param name="domain">
-##      <summary>
-##      source domain
-##      </summary>
-## </param>
-## <param name="domain">
-##      <summary>
-##      base of target domain
-##      </summary>
-## </param>
-#
-interface(`gpg_enter_user_gpg_agent_domain',`
-        gen_require(`
-                type gpg_agent_exec_t, $2_gpg_agent_t;
-        ')
-        domain_auto_trans($1, gpg_agent_exec_t, $2_gpg_agent_t)
 ')
 
 ########################################

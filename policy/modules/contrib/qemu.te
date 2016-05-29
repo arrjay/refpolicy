@@ -22,19 +22,10 @@ application_executable_file(qemu_exec_t)
 virt_domain_template(qemu)
 role qemu_roles types qemu_t;
 
-type qemu_var_run_t;
-files_pid_file(qemu_var_run_t);
-files_pid_filetrans(qemu_t, qemu_var_run_t, sock_file)
-allow qemu_t qemu_var_run_t:sock_file create_sock_file_perms;
-
 ########################################
 #
 # Local policy
 #
-
-kernel_read_crypto_sysctls(qemu_t)
-
-dev_read_sysfs(qemu_t)
 
 tunable_policy(`qemu_full_network',`
 	corenet_udp_sendrecv_generic_if(qemu_t)
@@ -46,16 +37,6 @@ tunable_policy(`qemu_full_network',`
 	corenet_tcp_connect_all_ports(qemu_t)
 ')
 
-optional_policy(`
-	fs_manage_xenfs_files(qemu_t)
-	xen_stream_connect_xenstore(qemu_t)
-	dev_rw_xen(qemu_t)
-	xen_append_log(qemu_t)
-	create_in_xend_var_run(qemu_t, qemu_var_run_t, sock_file)
-')
-optional_policy(`
-	permit_in_unconfined_r(qemu_t)
-')
 optional_policy(`
 	xserver_user_x_domain_template(qemu, qemu_t, qemu_tmpfs_t)
 ')

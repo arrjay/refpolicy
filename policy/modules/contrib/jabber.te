@@ -73,25 +73,21 @@ allow jabberd_t self:capability dac_override;
 dontaudit jabberd_t self:capability sys_tty_config;
 allow jabberd_t self:tcp_socket create_socket_perms;
 allow jabberd_t self:udp_socket create_socket_perms;
-allow jabberd_t self:netlink_route_socket r_netlink_socket_perms;
 
 manage_files_pattern(jabberd_t, jabberd_lock_t, jabberd_lock_t)
 
 allow jabberd_t jabberd_log_t:dir setattr_dir_perms;
-manage_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
+append_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
+create_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
+setattr_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
 logging_log_filetrans(jabberd_t, jabberd_log_t, { file dir })
 
 manage_files_pattern(jabberd_domain, jabberd_spool_t, jabberd_spool_t)
 
 manage_files_pattern(jabberd_t, jabberd_var_run_t, jabberd_var_run_t)
 files_pid_filetrans(jabberd_t, jabberd_var_run_t, file)
-miscfiles_read_all_certs(jabberd_t)
-domain_dontaudit_search_all_domains_state(jabberd_t)
 
 kernel_read_kernel_sysctls(jabberd_t)
-corecmd_exec_bin(jabberd_t)
-# usr for lua modules
-files_read_usr_files(jabberd_t)
 
 corenet_sendrecv_jabber_client_server_packets(jabberd_t)
 corenet_tcp_bind_jabber_client_port(jabberd_t)
@@ -100,7 +96,6 @@ corenet_tcp_sendrecv_jabber_client_port(jabberd_t)
 corenet_sendrecv_jabber_interserver_server_packets(jabberd_t)
 corenet_tcp_bind_jabber_interserver_port(jabberd_t)
 corenet_tcp_sendrecv_jabber_interserver_port(jabberd_t)
-corenet_tcp_connect_jabber_interserver_port(jabberd_t)
 
 dev_read_rand(jabberd_t)
 

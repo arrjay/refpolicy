@@ -6,4 +6,3 @@
 /var/lib/dhcp(3)?/dhcpd\.leases.*	--	gen_context(system_u:object_r:dhcpd_state_t,s0)
 
 /var/run/dhcpd(6)?\.pid	--	gen_context(system_u:object_r:dhcpd_var_run_t,s0)
-/lib/systemd/system/dhcpcd.*\.service   --      gen_context(system_u:object_r:dhcpd_unit_file_t,s0)

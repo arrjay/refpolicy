@@ -172,24 +172,6 @@ interface(`udev_dontaudit_search_db',`
 
 ########################################
 ## <summary>
-##     Allow process to read the table dir
-## </summary>
-## <param name="domain">
-##     <summary>
-##     The type of the process performing this action.
-##     </summary>
-## </param>
-#
-interface(`udev_list_table_dir',`
-        gen_require(`
-                type udev_tbl_t;
-        ')
-
-        allow $1 udev_tbl_t:dir list_dir_perms;
-')
-
-########################################
-## <summary>
 ##	Read the udev device table.
 ## </summary>
 ## <desc>
@@ -261,24 +243,6 @@ interface(`udev_search_pids',`
 
 ########################################
 ## <summary>
-##	dontaudit attempts to read/write udev pidfiles
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dontaudit_udev_pidfile_rw',`
-	gen_require(`
-		type udev_var_run_t;
-	')
-
-	dontaudit $1 udev_var_run_t:file { read write };
-')
-
-########################################
-## <summary>
 ##	Create, read, write, and delete
 ##	udev pid directories
 ## </summary>
@@ -295,26 +259,6 @@ interface(`udev_manage_pid_dirs',`
 
 	files_search_var($1)
 	manage_dirs_pattern($1, udev_var_run_t, udev_var_run_t)
-')
-
-########################################
-## <summary>
-##      Allow process to modify relabelto udev database
-## </summary>
-## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
-## </param>
-#
-interface(`udev_relabelto_db',`
-	gen_require(`
-		type udev_var_run_t;
-	')
-
-	files_search_pids($1)
-	allow $1 udev_var_run_t:file relabelto_file_perms;
-	allow $1 udev_var_run_t:lnk_file relabelto_file_perms;
 ')
 
 ########################################
@@ -377,41 +321,4 @@ interface(`udev_generic_pid_filetrans_run_dirs',`
 	')
 
 	files_pid_filetrans($1, udev_var_run_t, dir, $2)
-')
-
-#######################################
-## <summary>
-##      Allow caller to create kobject uevent socket for udev
-## </summary>
-## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
-## </param>
-#
-interface(`udev_create_kobject_uevent_socket',`
-        gen_require(`
-                type udev_t;
-                role system_r;
-        ')
-
-        allow $1 udev_t:netlink_kobject_uevent_socket create_socket_perms;
-')
-
-#######################################
-## <summary>
-##      Allow udev_t to write to a unix_stream_socket
-## </summary>
-## <param name="domain">
-##      <summary>
-##      domain to connect to
-##      </summary>
-## </param>
-#
-interface(`udev_write_socket',`
-        gen_require(`
-                type udev_t;
-	')
-
-	allow udev_t $1:unix_stream_socket connectto;
 ')

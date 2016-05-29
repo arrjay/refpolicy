@@ -6,5 +6,3 @@
 /var/lock/subsys/autofs	--	gen_context(system_u:object_r:automount_lock_t,s0)
 
 /var/run/autofs.*	gen_context(system_u:object_r:automount_var_run_t,s0)
-
-/lib/systemd/system/autofs.*\.service -- gen_context(system_u:object_r:automount_unit_file_t,s0)

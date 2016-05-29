@@ -1346,23 +1346,3 @@ interface(`apache_admin',`
 	apache_run_all_scripts($1, $2)
 	apache_run_helper($1, $2)
 ')
-
-########################################
-## <summary>
-##	Unlink httpd_var_lib_t files
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain that can unlink the files
-##	</summary>
-## </param>
-#
-interface(`apache_unlink_var_lib',`
-	gen_require(`
-		type httpd_var_lib_t;
-	')
-
-	files_search_var_lib($1)
-	allow $1 httpd_var_lib_t:dir { write remove_name };
-	allow $1 httpd_var_lib_t:file unlink;
-')

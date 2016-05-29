@@ -620,42 +620,6 @@ interface(`xserver_setattr_console_pipes',`
 
 ########################################
 ## <summary>
-##	Create the X windows console named pipes.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`xserver_create_console_pipes',`
-	gen_require(`
-		type xconsole_device_t;
-	')
-
-	allow $1 xconsole_device_t:fifo_file create;
-')
-
-########################################
-## <summary>
-##	Label the X windows console named pipes.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`relabelto_setattr_xconsole_pipes',`
-	gen_require(`
-		type xconsole_device_t;
-	')
-
-	allow $1 xconsole_device_t:fifo_file { getattr relabelfrom relabelto setattr };
-')
-
-########################################
-## <summary>
 ##	Read and write the X windows console named pipe.
 ## </summary>
 ## <param name="domain">
@@ -847,7 +811,7 @@ interface(`xserver_setattr_xdm_tmp_dirs',`
 
 ########################################
 ## <summary>
-##	Create and unlink a named socket in a XDM
+##	Create a named socket in a XDM
 ##	temporary directory.
 ## </summary>
 ## <param name="domain">
@@ -864,7 +828,6 @@ interface(`xserver_create_xdm_tmp_sockets',`
 	files_search_tmp($1)
 	allow $1 xdm_tmp_t:dir list_dir_perms;
 	create_sock_files_pattern($1, xdm_tmp_t, xdm_tmp_t)
-	allow $1 xdm_tmp_t:sock_file unlink;
 ')
 
 ########################################
@@ -1135,42 +1098,6 @@ interface(`xserver_dontaudit_getattr_xdm_tmp_sockets',`
 
 ########################################
 ## <summary>
-##	Search xdm_tmp_t directories
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain to allow
-##	</summary>
-## </param>
-#
-interface(`xserver_search_xdm_tmp',`
-	gen_require(`
-		type xdm_tmp_t;
-	')
-
-	allow $1 xdm_tmp_t:dir search;
-')
-
-########################################
-## <summary>
-##	Create xdm_tmp_t directories
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain to allow
-##	</summary>
-## </param>
-#
-interface(`xserver_create_xdm_tmp_dir',`
-	gen_require(`
-		type xdm_tmp_t;
-	')
-
-	allow $1 xdm_tmp_t:dir create;
-')
-
-########################################
-## <summary>
 ##	Execute the X server in the X server domain.
 ## </summary>
 ## <param name="domain">
@@ -1363,22 +1290,4 @@ interface(`xserver_unconfined',`
 
 	typeattribute $1 x_domain;
 	typeattribute $1 xserver_unconfined_type;
-')
-
-########################################
-## <summary>
-##	Allow domain to send sigchld to xdm_t
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`xdm_sigchld',`
-	gen_require(`
-		type xdm_t;
-	')
-
-	allow $1 xdm_t:process sigchld;
 ')

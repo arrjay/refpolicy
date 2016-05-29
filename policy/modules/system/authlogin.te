@@ -30,9 +30,6 @@ role system_r types chkpwd_t;
 
 type faillog_t;
 logging_log_file(faillog_t)
-optional_policy(`
-	systemd_tmpfiles_manage_object(faillog_t, file)
-')
 
 type lastlog_t;
 logging_log_file(lastlog_t)
@@ -84,10 +81,6 @@ application_domain(utempter_t, utempter_exec_t)
 #
 type var_auth_t;
 files_type(var_auth_t)
-files_mountpoint(var_auth_t)
-optional_policy(`
-	systemd_tmpfiles_manage_object(var_auth_t, dir)
-')
 
 type wtmp_t;
 logging_log_file(wtmp_t)
@@ -107,7 +100,6 @@ files_list_etc(chkpwd_t)
 kernel_read_crypto_sysctls(chkpwd_t)
 # is_selinux_enabled
 kernel_read_system_state(chkpwd_t)
-selinux_get_enforce_mode(chkpwd_t)
 
 domain_dontaudit_use_interactive_fds(chkpwd_t)
 

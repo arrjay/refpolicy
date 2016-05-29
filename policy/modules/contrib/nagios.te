@@ -214,14 +214,11 @@ optional_policy(`
 # Nrpe local policy
 #
 
-allow nrpe_t self:capability { dac_override setuid setgid };
+allow nrpe_t self:capability { setuid setgid };
 dontaudit nrpe_t self:capability { sys_tty_config sys_resource };
 allow nrpe_t self:process { setpgid signal_perms setsched setrlimit };
 allow nrpe_t self:fifo_file rw_fifo_file_perms;
 allow nrpe_t self:tcp_socket { accept listen };
-
-allow nrpe_t nagios_etc_t:dir list_dir_perms;
-allow nrpe_t nagios_etc_t:file read_file_perms;
 
 allow nrpe_t nagios_plugin_domain:process { signal sigkill };
 

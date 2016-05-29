@@ -21,7 +21,6 @@ allow iodined_t self:capability { net_admin net_raw sys_chroot setgid setuid };
 allow iodined_t self:rawip_socket create_socket_perms;
 allow iodined_t self:tun_socket create_socket_perms;
 allow iodined_t self:udp_socket connected_socket_perms;
-allow iodined_t self:netlink_route_socket rw_netlink_socket_perms;
 
 kernel_read_net_sysctls(iodined_t)
 kernel_read_network_state(iodined_t)

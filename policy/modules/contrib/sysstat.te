@@ -24,7 +24,8 @@ allow sysstat_t self:capability { dac_override sys_admin sys_resource sys_tty_co
 allow sysstat_t self:fifo_file rw_fifo_file_perms;
 
 manage_dirs_pattern(sysstat_t,sysstat_log_t,sysstat_log_t)
-manage_files_pattern(sysstat_t, sysstat_log_t, sysstat_log_t)
+append_files_pattern(sysstat_t, sysstat_log_t, sysstat_log_t)
+create_files_pattern(sysstat_t, sysstat_log_t, sysstat_log_t)
 setattr_files_pattern(sysstat_t, sysstat_log_t, sysstat_log_t)
 manage_lnk_files_pattern(sysstat_t,sysstat_log_t,sysstat_log_t)
 logging_log_filetrans(sysstat_t, sysstat_log_t, { file dir })
@@ -38,15 +39,12 @@ kernel_read_fs_sysctls(sysstat_t)
 kernel_read_rpc_sysctls(sysstat_t)
 
 corecmd_exec_bin(sysstat_t)
-corecmd_exec_shell(sysstat_t)
 
 dev_read_sysfs(sysstat_t)
-dev_getattr_sysfs(sysstat_t)
 dev_read_urand(sysstat_t)
 
 files_search_var(sysstat_t)
 files_read_etc_runtime_files(sysstat_t)
-files_search_all_mountpoints(sysstat_t)
 
 fs_getattr_xattr_fs(sysstat_t)
 fs_list_inotifyfs(sysstat_t)
@@ -68,5 +66,4 @@ userdom_dontaudit_list_user_home_dirs(sysstat_t)
 
 optional_policy(`
 	cron_system_entry(sysstat_t, sysstat_exec_t)
-	read_write_crond_tmp(sysstat_t)
 ')

@@ -1,7 +1,7 @@
 # FLASK
 
 #
-# Define the security object classes
+# Define the security object classes 
 #
 
 # Classes marked as userspace are classes
@@ -117,7 +117,7 @@ class x_synthetic_event		# userspace
 class x_application_data	# userspace
 
 # kernel services that need to override task security, e.g. cachefiles
-class kernel_service
+class kernel_service 
 
 class tun_socket
 
@@ -130,11 +130,5 @@ class db_schema			# userspace
 class db_view			# userspace
 class db_sequence		# userspace
 class db_language		# userspace
-
-# systemd services
-class service
-
-# gssd services
-class proxy
 
 # FLASK

@@ -47,9 +47,6 @@ init_script_file(named_initrc_exec_t)
 type named_keytab_t;
 files_type(named_keytab_t)
 
-type named_unit_file_t;
-systemd_unit_file(named_unit_file_t)
-
 type named_log_t;
 logging_log_file(named_log_t)
 
@@ -113,7 +110,6 @@ read_files_pattern(named_t, named_zone_t, named_zone_t)
 read_lnk_files_pattern(named_t, named_zone_t, named_zone_t)
 
 kernel_read_kernel_sysctls(named_t)
-kernel_read_vm_sysctls(named_t)
 kernel_read_system_state(named_t)
 kernel_read_network_state(named_t)
 
@@ -219,7 +215,6 @@ optional_policy(`
 #
 
 allow ndc_t self:capability { dac_override net_admin };
-allow ndc_t self:capability2 block_suspend;
 allow ndc_t self:process signal_perms;
 allow ndc_t self:fifo_file rw_fifo_file_perms;
 allow ndc_t self:unix_stream_socket { accept listen };

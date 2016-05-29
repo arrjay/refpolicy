@@ -1,14 +1,10 @@
 /dev/log		-s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
-/var/run/systemd/journal/dev-log -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
-/var/run/systemd/journal/stdout -s gen_context(system_u:object_r:devlog_t,mls_systemhigh)
 
 /etc/rsyslog.conf		gen_context(system_u:object_r:syslog_conf_t,s0)
 /etc/syslog.conf		gen_context(system_u:object_r:syslog_conf_t,s0)
 /etc/audit(/.*)?		gen_context(system_u:object_r:auditd_etc_t,mls_systemhigh)
 /etc/rc\.d/init\.d/auditd --	gen_context(system_u:object_r:auditd_initrc_exec_t,s0)
 /etc/rc\.d/init\.d/rsyslog --	gen_context(system_u:object_r:syslogd_initrc_exec_t,s0)
-
-/lib/systemd/system/auditd.*\.service	--	gen_context(system_u:object_r:auditd_unit_file_t,s0)
 
 /sbin/audispd		--	gen_context(system_u:object_r:audisp_exec_t,s0)
 /sbin/audisp-remote	--	gen_context(system_u:object_r:audisp_remote_exec_t,s0)
@@ -27,7 +23,6 @@
 /usr/sbin/rsyslogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
 /usr/sbin/syslog-ng	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
 /usr/sbin/syslogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
-/lib/systemd/system/rsyslog.*\.service -- gen_context(system_u:object_r:syslogd_unit_file_t,s0)
 
 /var/lib/misc/syslog-ng.persist-? -- gen_context(system_u:object_r:syslogd_var_lib_t,s0)
 /var/lib/syslog-ng(/.*)? 	gen_context(system_u:object_r:syslogd_var_lib_t,s0)
@@ -72,7 +67,6 @@ ifdef(`distro_redhat',`
 /var/run/syslog-ng.ctl	--	gen_context(system_u:object_r:syslogd_var_run_t,s0)
 /var/run/syslog-ng\.pid	--	gen_context(system_u:object_r:syslogd_var_run_t,mls_systemhigh)
 /var/run/syslog-ng(/.*)?	gen_context(system_u:object_r:syslogd_var_run_t,s0)
-/var/run/systemd/journal/syslog	-s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
 
 /var/spool/audit(/.*)?		gen_context(system_u:object_r:audit_spool_t,mls_systemhigh)
 /var/spool/bacula/log(/.*)? 	gen_context(system_u:object_r:var_log_t,s0)
@@ -81,20 +75,3 @@ ifdef(`distro_redhat',`
 /var/spool/rsyslog(/.*)? 	gen_context(system_u:object_r:var_log_t,s0)
 
 /var/tinydns/log/main(/.*)?	gen_context(system_u:object_r:var_log_t,s0)
-
-/lib/systemd/systemd-journald		--	gen_context(system_u:object_r:syslogd_exec_t,s0)
-/lib/systemd/systemd-kmsg-syslogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
-
-/opt/zimbra/log(/.*)?		gen_context(system_u:object_r:var_log_t,s0)
-/opt/Symantec/scspagent/IDS/system(/.*)?	gen_context(system_u:object_r:var_log_t,s0)
-
-/usr/lib/systemd/systemd-journald	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
-/usr/lib/systemd/systemd-kmsg-syslogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)
-
-/usr/local/centreon/log(/.*)?	gen_context(system_u:object_r:var_log_t,s0)
-
-/usr/sbin/audispd	--	gen_context(system_u:object_r:audisp_exec_t,s0)
-/usr/sbin/audisp-remote	--	gen_context(system_u:object_r:audisp_remote_exec_t,s0)
-/usr/sbin/auditctl	--	gen_context(system_u:object_r:auditctl_exec_t,s0)
-/usr/sbin/auditd	--	gen_context(system_u:object_r:auditd_exec_t,s0)
-/usr/sbin/minilogd	--	gen_context(system_u:object_r:syslogd_exec_t,s0)

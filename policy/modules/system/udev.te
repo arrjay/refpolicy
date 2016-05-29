@@ -54,10 +54,6 @@ allow udev_t self:unix_dgram_socket sendto;
 allow udev_t self:unix_stream_socket connectto;
 allow udev_t self:netlink_kobject_uevent_socket create_socket_perms;
 allow udev_t self:rawip_socket create_socket_perms;
-fs_read_cgroup_files(udev_t)
-
-# for systemd-udevd to rename interfaces
-allow udev_t self:netlink_route_socket nlmsg_write;
 
 allow udev_t udev_exec_t:file write;
 can_exec(udev_t, udev_exec_t)
@@ -83,16 +79,6 @@ files_pid_filetrans(udev_t, udev_var_run_t, dir, "udev")
 
 kernel_read_system_state(udev_t)
 kernel_request_load_module(udev_t)
-modutils_read_module_objects(udev_t)
-
-# systemd-udevd needs kernel_load_module and files_read_kernel_modules
-kernel_load_module(udev_t)
-files_read_kernel_modules(udev_t)
-# systemd-udevd searches /run/systemd
-init_search_pid_dirs(udev_t)
-# for hdparm init script run by udev
-initrc_service_status(udev_t)
-
 kernel_getattr_core_if(udev_t)
 kernel_use_fds(udev_t)
 kernel_read_device_sysctls(udev_t)
@@ -187,9 +173,6 @@ sysnet_signal_dhcpc(udev_t)
 sysnet_manage_config(udev_t)
 sysnet_etc_filetrans_config(udev_t)
 
-systemd_login_read_pid_files(udev_t)
-systemd_config_all_services(udev_t)
-
 userdom_dontaudit_search_user_home_content(udev_t)
 
 ifdef(`distro_debian',`
@@ -206,11 +189,6 @@ ifdef(`distro_debian',`
 		avahi_setattr_pid_dirs(udev_t)
 		avahi_filetrans_pid(udev_t, dir, "avahi-daemon")
 	')
-')
-
-optional_policy(`
-	# for systemd-udevd when starting xen domu
-	virt_read_config(udev_t)
 ')
 
 ifdef(`distro_gentoo',`
@@ -340,7 +318,6 @@ optional_policy(`
 	kernel_read_xen_state(udev_t)
 	xen_manage_log(udev_t)
 	xen_read_image_files(udev_t)
-	fs_manage_xenfs_files(udev_t)
 ')
 
 optional_policy(`

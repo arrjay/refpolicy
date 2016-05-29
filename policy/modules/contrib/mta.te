@@ -203,10 +203,6 @@ init_use_script_ptys(system_mail_t)
 userdom_use_user_terminals(system_mail_t)
 
 optional_policy(`
-	permit_in_unconfined_r(system_mail_t)
-')
-
-optional_policy(`
 	apache_read_squirrelmail_data(system_mail_t)
 	apache_append_squirrelmail_data(system_mail_t)
 	apache_dontaudit_append_log(system_mail_t)
@@ -237,7 +233,6 @@ optional_policy(`
 	cron_read_system_job_tmp_files(system_mail_t)
 	cron_dontaudit_write_pipes(system_mail_t)
 	cron_rw_system_job_stream_sockets(system_mail_t)
-	read_write_crond_tmp(system_mail_t)
 ')
 
 optional_policy(`

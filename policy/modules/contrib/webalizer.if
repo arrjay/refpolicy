@@ -45,23 +45,3 @@ interface(`webalizer_run',`
 	webalizer_domtrans($1)
 	roleattribute $2 webalizer_roles;
 ')
-
-########################################
-## <summary>
-##	Manage webalizer usage files
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed to manage webalizer usage files
-##	</summary>
-## </param>
-## <rolecap/>
-#
-interface(`webalizer_usage_manage',`
-	gen_require(`
-		type webalizer_usage_t;
-	')
-
-	allow $1 webalizer_usage_t:dir manage_dir_perms;
-	allow $1 webalizer_usage_t:file manage_file_perms;
-')

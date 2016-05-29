@@ -21,14 +21,6 @@ gen_tunable(squid_connect_any, false)
 ## </desc>
 gen_tunable(squid_use_tproxy, false)
 
-## <desc>
-##	<p>
-##	Determine whether squid can use the
-##	pinger daemon (needs raw net access)
-##	</p>
-## </desc>
-gen_tunable(squid_use_pinger, true)
-
 type squid_t;
 type squid_exec_t;
 init_daemon_domain(squid_t, squid_exec_t)
@@ -194,11 +186,6 @@ tunable_policy(`squid_connect_any',`
 	corenet_tcp_bind_all_ports(squid_t)
 	corenet_sendrecv_all_packets(squid_t)
 	corenet_tcp_sendrecv_all_ports(squid_t)
-')
-
-tunable_policy(`squid_use_pinger',`
-	allow squid_t self:rawip_socket connected_socket_perms;
-	allow squid_t self:capability net_raw;
 ')
 
 tunable_policy(`squid_use_tproxy',`

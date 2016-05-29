@@ -45,9 +45,6 @@ allow fsadm_t fsadm_tmp_t:dir manage_dir_perms;
 allow fsadm_t fsadm_tmp_t:file manage_file_perms;
 files_tmp_filetrans(fsadm_t, fsadm_tmp_t, { file dir })
 
-# for /run/mount/utab
-stat_mount_var_run(fsadm_t)
-
 # log files
 allow fsadm_t fsadm_log_t:dir setattr;
 manage_files_pattern(fsadm_t, fsadm_log_t, fsadm_log_t)
@@ -198,10 +195,6 @@ optional_policy(`
 
 optional_policy(`
 	udev_read_db(fsadm_t)
-
-	# Xen causes losetup to run with a presumably accidentally inherited
-	# file handle for /run/xen-hotplug/block
-	dontaudit_udev_pidfile_rw(fsadm_t)
 ')
 
 optional_policy(`

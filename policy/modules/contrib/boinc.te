@@ -47,7 +47,6 @@ files_tmp_file(boinc_project_tmp_t)
 # Local policy
 #
 
-can_exec(boinc_t, boinc_exec_t)
 allow boinc_t self:process { setsched setpgid signull sigkill };
 allow boinc_t self:unix_stream_socket { accept listen };
 allow boinc_t self:tcp_socket { accept listen };
@@ -72,13 +71,12 @@ manage_files_pattern(boinc_t, boinc_project_var_lib_t, boinc_project_var_lib_t)
 filetrans_pattern(boinc_t, boinc_var_lib_t, boinc_project_var_lib_t, dir, "slots")
 filetrans_pattern(boinc_t, boinc_var_lib_t, boinc_project_var_lib_t, dir, "projects")
 
-manage_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
+append_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
 create_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
 setattr_files_pattern(boinc_t, boinc_log_t, boinc_log_t)
 logging_log_filetrans(boinc_t, boinc_log_t, file)
 
 can_exec(boinc_t, boinc_var_lib_t)
-libs_exec_lib_files(boinc_t)
 
 domtrans_pattern(boinc_t, boinc_project_var_lib_t, boinc_project_t)
 
@@ -172,11 +170,6 @@ manage_files_pattern(boinc_project_t, boinc_project_var_lib_t, boinc_project_var
 
 allow boinc_project_t boinc_project_var_lib_t:file execmod;
 can_exec(boinc_project_t, boinc_project_var_lib_t)
-term_getattr_ptmx(boinc_t)
-dev_getattr_input_dev(boinc_t)
-dev_getattr_mouse_dev(boinc_t)
-term_getattr_generic_ptys(boinc_t)
-userdom_getattr_user_ttys(boinc_t)
 
 allow boinc_project_t boinc_t:shm rw_shm_perms;
 allow boinc_project_t boinc_tmpfs_t:file { read write };

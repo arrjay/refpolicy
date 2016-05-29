@@ -32,7 +32,7 @@ role system_r types sulogin_t;
 # Local login local policy
 #
 
-allow local_login_t self:capability { dac_override chown fowner fsetid kill setgid setuid net_admin sys_nice sys_resource sys_tty_config };
+allow local_login_t self:capability { dac_override chown fowner fsetid kill setgid setuid sys_nice sys_resource sys_tty_config };
 allow local_login_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
 allow local_login_t self:process { setrlimit setexec };
 allow local_login_t self:fd use;
@@ -62,8 +62,6 @@ kernel_link_key(local_login_t)
 
 corecmd_list_bin(local_login_t)
 corecmd_read_bin_symlinks(local_login_t)
-# for /bin/uname
-corecmd_exec_bin(local_login_t)
 # cjp: these are probably not needed:
 corecmd_read_bin_files(local_login_t)
 corecmd_read_bin_pipes(local_login_t)
@@ -141,11 +139,6 @@ ifdef(`distro_ubuntu',`
 	optional_policy(`
 		unconfined_domain(local_login_t)
 	')
-')
-
-optional_policy(`
-	systemd_dbus_chat_logind(local_login_t)
-	systemd_write_inherited_logind_sessions_pipes(local_login_t)
 ')
 
 tunable_policy(`console_login',`

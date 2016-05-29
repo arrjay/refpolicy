@@ -26,9 +26,6 @@ HOME_DIR/((www)|(web)|(public_html))(/.*)?/logs(/.*)?	gen_context(system_u:objec
 /etc/WebCalendar(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 /etc/zabbix/web(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 
-/lib/systemd/system/httpd.*\.service -- gen_context(system_u:object_r:httpd_unit_file_t,s0)
-/lib/systemd/system/jetty.*\.service -- gen_context(system_u:object_r:httpd_unit_file_t,s0)
-
 /opt/.*\.cgi	--	gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
 /opt/dirsrv/var/run/dirsrv/dsgw/cookies(/.*)?	gen_context(system_u:object_r:httpd_var_run_t,s0)
 
@@ -106,7 +103,6 @@ ifdef(`distro_suse',`
 /var/lib/cherokee(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
 /var/lib/dav(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
 /var/lib/php(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
-/var/lib/php5(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
 /var/lib/dokuwiki(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 /var/lib/drupal.*	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
 /var/lib/glpi(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)

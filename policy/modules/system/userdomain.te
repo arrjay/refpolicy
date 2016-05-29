@@ -53,10 +53,6 @@ attribute admindomain;
 # all user domains
 attribute userdomain;
 
-ifdef(`distro_debian', `
-        dpkg_read_db(userdomain)
-')
-
 # unprivileged user domains
 attribute unpriv_userdomain;
 

@@ -121,23 +121,6 @@ interface(`mta_role',`
 
 ########################################
 ## <summary>
-##	Enable system_mail_t to run in the specified role
-## </summary>
-## <param name="role">
-##	<summary>
-##	Role allowed access.
-##	</summary>
-## </param>
-#
-interface(`system_mail_role',`
-	gen_require(`
-		type system_mail_t;
-	')
-	role $1 types system_mail_t;
-')
-
-########################################
-## <summary>
 ##	Make the specified domain usable for a mail server.
 ## </summary>
 ## <param name="type">
@@ -299,24 +282,6 @@ interface(`mta_home_filetrans_mail_home_rw',`
 	')
 
 	userdom_user_home_dir_filetrans($1, mail_home_rw_t, $2, $3)
-')
-
-########################################
-## <summary>
-##	Inherit FDs from mailserver_domain domains
-## </summary>
-## <param name="type">
-##	<summary>
-##	Type for a list server or delivery agent that inherits fds
-##	</summary>
-## </param>
-#
-interface(`inherit_mailserver_fd',`
-	gen_require(`
-		attribute mailserver_domain;
-	')
-
-	allow $1 mailserver_domain:fd use;
 ')
 
 ########################################

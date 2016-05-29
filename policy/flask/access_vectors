@@ -60,7 +60,7 @@ common socket
 	recv_msg
 	send_msg
 	name_bind
-}
+}	
 
 #
 # Define a common prefix for ipc access vectors.
@@ -244,7 +244,7 @@ inherits socket
 	node_bind
 }
 
-class node
+class node 
 {
 	tcp_recv
 	tcp_send
@@ -362,7 +362,7 @@ inherits ipc
 
 
 #
-# Define the access vector interpretation for the security server.
+# Define the access vector interpretation for the security server. 
 #
 
 class security
@@ -389,14 +389,10 @@ class security
 class system
 {
 	ipc_info
-	syslog_read
+	syslog_read  
 	syslog_mod
 	syslog_console
 	module_request
-	halt
-	reboot
-	status
-	undefined
 }
 
 #
@@ -410,33 +406,33 @@ class capability
 	# Care should be taken to ensure that these are consistent with
 	# those definitions. (Order matters)
 
-	chown
-	dac_override
-	dac_read_search
-	fowner
-	fsetid
-	kill
-	setgid
-	setuid
-	setpcap
-	linux_immutable
-	net_bind_service
-	net_broadcast
-	net_admin
-	net_raw
-	ipc_lock
-	ipc_owner
-	sys_module
-	sys_rawio
-	sys_chroot
-	sys_ptrace
-	sys_pacct
-	sys_admin
-	sys_boot
-	sys_nice
-	sys_resource
-	sys_time
-	sys_tty_config
+	chown           
+	dac_override    
+	dac_read_search 
+	fowner          
+	fsetid          
+	kill            
+	setgid           
+	setuid           
+	setpcap          
+	linux_immutable  
+	net_bind_service 
+	net_broadcast    
+	net_admin        
+	net_raw          
+	ipc_lock         
+	ipc_owner        
+	sys_module       
+	sys_rawio        
+	sys_chroot       
+	sys_ptrace       
+	sys_pacct        
+	sys_admin        
+	sys_boot         
+	sys_nice         
+	sys_resource     
+	sys_time         
+	sys_tty_config  
 	mknod
 	lease
 	audit_write
@@ -451,7 +447,6 @@ class capability2
 	syslog
 	wake_alarm
 	block_suspend
-	audit_read
 }
 
 #
@@ -827,7 +822,7 @@ class x_application_data
 class kernel_service
 {
 	use_as_override
-	create_files_as
+	create_files_as	
 }
 
 class tun_socket
@@ -869,21 +864,4 @@ inherits database
 {
 	implement
 	execute
-}
-
-class service
-{
-	start
-	stop
-	status
-	reload
-	kill
-	load
-	enable
-	disable
-}
-
-class proxy
-{
-	read
 }
