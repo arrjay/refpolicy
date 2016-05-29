@@ -4125,11 +4125,10 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create objects in /home.
  ## </summary>
  ## <param name="domain">
-@@ -5465,6 +5483,30 @@ interface(`files_search_var_lib',`
- ')
+@@ -5466,6 +5484,30 @@ interface(`files_search_var_lib',`
  
  ########################################
-+## <summary>
+ ## <summary>
 +##	Create and label /var/lib and /var/log
 +## </summary>
 +## <desc>
@@ -4191,7 +4190,3 @@ Index: refpolicy/policy/modules/system/unconfined.if
  
  	tunable_policy(`allow_execheap',`
  		# Allow making the stack executable via mprotect.
-=======
- ## <summary>
- ##	Do not audit attempts to search the
- ##	contents of /var/lib.
