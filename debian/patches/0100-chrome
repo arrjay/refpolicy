@@ -206,7 +206,7 @@ Index: refpolicy/policy/modules/contrib/mozilla.te
  kernel_read_net_sysctls(mozilla_t)
  
 +# for overcommit_memory
-+kernel_read_vm_sysctls(mozilla_t)
++kernel_read_vm_overcommit_sysctl(mozilla_t)
 +
  corecmd_list_bin(mozilla_t)
  corecmd_exec_shell(mozilla_t)

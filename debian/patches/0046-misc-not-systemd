@@ -1167,7 +1167,7 @@ Index: refpolicy/policy/modules/system/sysnetwork.te
  
  sysnet_run_ifconfig(dhcpc_t, dhcpc_roles)
  
-@@ -328,7 +330,9 @@ logging_send_syslog_msg(ifconfig_t)
+@@ -327,7 +329,9 @@ logging_send_syslog_msg(ifconfig_t)
  
  miscfiles_read_localization(ifconfig_t)
  

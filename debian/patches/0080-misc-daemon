@@ -465,7 +465,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -831,3 +831,20 @@ interface(`manage_systemd_journal_files'
+@@ -812,3 +812,20 @@ interface(`manage_systemd_journal_files'
  	manage_files_pattern($1, systemd_journal_log_t, systemd_journal_log_t)
  ')
  
@@ -665,7 +665,7 @@ Index: refpolicy/policy/modules/contrib/bind.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/bind.te
 +++ refpolicy/policy/modules/contrib/bind.te
-@@ -219,6 +219,7 @@ optional_policy(`
+@@ -218,6 +218,7 @@ optional_policy(`
  #
  
  allow ndc_t self:capability { dac_override net_admin };

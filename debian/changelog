@@ -1,3 +1,12 @@
+refpolicy (2:2.20151208-1.1) unstable; urgency=medium
+
+  * Rename the patches that are included upstream to 9xxx for easier tracking
+    and easier removal when it's time to rebase.
+  * Remove the patch for ifconfig to load kernel modules, shouldn't be needed.
+  * Backported kernel_read_vm_overcommit_sysctl() etc from git.
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 03 Aug 2016 12:34:23 +1000
+
 refpolicy (2:2.20151208-1) unstable; urgency=medium
 
   * Rebase to new upstream
