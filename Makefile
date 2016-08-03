@@ -134,6 +134,7 @@ globaltun = $(poldir)/global_tunables
 globalbool = $(poldir)/global_booleans
 user_files := $(poldir)/users
 policycaps := $(poldir)/policy_capabilities
+ctx_defaults := $(poldir)/context_defaults
 
 # local config file paths
 ifndef LOCAL_ROOT
@@ -185,13 +186,12 @@ ifneq ($(DISTRO),)
 	M4PARAM += -D distro_$(DISTRO)
 endif
 
-# rhel4 also implies redhat
-ifeq "$(DISTRO)" "rhel4"
-	M4PARAM += -D distro_redhat
-endif
-
 ifeq "$(DISTRO)" "ubuntu"
 	M4PARAM += -D distro_debian
+endif
+
+ifeq "$(SYSTEMD)" "y"
+	M4PARAM += -D init_systemd
 endif
 
 ifneq ($(OUTPUT_POLICY),)
@@ -206,7 +206,7 @@ endif
 NAME ?= $(TYPE)
 
 # default unknown permissions setting
-#UNK_PERMS ?= deny
+UNK_PERMS ?= deny
 
 ifeq ($(DIRECT_INITRC),y)
 	M4PARAM += -D direct_sysadm_daemon
@@ -526,6 +526,7 @@ ifneq "$(DISTRO)" ""
 endif
 	$(verbose) echo "MONOLITHIC ?= n" >> $(headerdir)/build.conf
 	$(verbose) echo "DIRECT_INITRC ?= $(DIRECT_INITRC)" >> $(headerdir)/build.conf
+	$(verbose) echo "SYSTEMD ?= $(SYSTEMD)" >> $(headerdir)/build.conf
 	$(verbose) echo "override UBAC := $(UBAC)" >> $(headerdir)/build.conf
 	$(verbose) echo "override MLS_SENS := $(MLS_SENS)" >> $(headerdir)/build.conf
 	$(verbose) echo "override MLS_CATS := $(MLS_CATS)" >> $(headerdir)/build.conf

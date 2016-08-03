@@ -32,7 +32,7 @@ all_interfaces := $(all_modules:.te=.if) $(off_mods:.te=.if)
 all_te_files := $(all_modules)
 all_fc_files := $(all_modules:.te=.fc)
 
-pre_te_files := $(secclass) $(isids) $(avs) $(m4support) $(poldir)/mls $(poldir)/mcs $(policycaps)
+pre_te_files := $(secclass) $(isids) $(avs) $(ctx_defaults) $(m4support) $(poldir)/mls $(poldir)/mcs $(policycaps)
 post_te_files := $(user_files) $(poldir)/constraints
 
 policy_sections := $(tmpdir)/pre_te_files.conf $(tmpdir)/all_attrs_types.conf $(tmpdir)/global_bools.conf $(tmpdir)/only_te_rules.conf $(tmpdir)/all_post.conf
@@ -63,9 +63,6 @@ resetlabels:  $(fcpath)
 #
 # Build a binary policy locally
 #
-ifneq "$(UNK_PERMS)" ""
-$(polver): CHECKPOLICY += -U $(UNK_PERMS)
-endif
 $(polver): $(policy_conf)
 	@echo "Compiling $(NAME) $(polver)"
 ifneq ($(pv),$(kv))
@@ -73,15 +70,12 @@ ifneq ($(pv),$(kv))
 	@echo "WARNING: Policy version mismatch!  Is your OUTPUT_POLICY set correctly?"
 	@echo
 endif
-	$(verbose) $(CHECKPOLICY) $^ -o $@
+	$(verbose) $(CHECKPOLICY) -U $(UNK_PERMS) $^ -o $@
 
 ########################################
 #
 # Install a binary policy
 #
-ifneq "$(UNK_PERMS)" ""
-$(loadpath): CHECKPOLICY += -U $(UNK_PERMS)
-endif
 $(loadpath): $(policy_conf)
 	@echo "Compiling and installing $(NAME) $(loadpath)"
 ifneq ($(pv),$(kv))
@@ -90,7 +84,7 @@ ifneq ($(pv),$(kv))
 	@echo
 endif
 	@$(INSTALL) -d -m 0755 $(@D)
-	$(verbose) $(CHECKPOLICY) $^ -o $@
+	$(verbose) $(CHECKPOLICY) -U $(UNK_PERMS)  $^ -o $@
 
 ########################################
 #
@@ -201,13 +195,6 @@ $(fcpath): $(fc) $(loadpath) $(userpath)/system.users
 	$(verbose) $(INSTALL) -m 0644 $(fc) $(fcpath)
 	$(verbose) $(INSTALL) -m 0644 $(homedir_template) $(homedirpath)
 	$(verbose) $(UMASK) 022 ; $(genhomedircon) -d $(topdir) -t $(NAME) $(USEPWD)
-ifeq "$(DISTRO)" "rhel4"
-# Setfiles in RHEL4 does not look at file_contexts.homedirs.
-	$(verbose) cat $@.homedirs >> $@
-# Delete the file_contexts.homedirs in case the toolchain has
-# been updated, to prevent duplicate match errors.
-	$(verbose) rm -f $@.homedirs
-endif
 
 ########################################
 #
@@ -217,6 +204,15 @@ $(ncpath): $(net_contexts)
 	@echo "Installing $(NAME) netfilter_contexts."
 	@$(INSTALL) -d -m 0755 $(@D)
 	$(verbose) $(INSTALL) -m 0644 $^ $@
+
+########################################
+#
+# Validate file contexts
+#
+validate: $(fc) $(polver)
+	@echo "Validating $(NAME) file_contexts."
+	$(verbose) $(SETFILES) -q -c $(polver) $(fc)
+	@echo "Success."
 
 ########################################
 #
