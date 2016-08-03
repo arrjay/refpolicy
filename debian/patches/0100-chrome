@@ -15,7 +15,7 @@ Index: refpolicy/policy/modules/contrib/mozilla.fc
  HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
  HOME_DIR/\.netscape(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.phoenix(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-@@ -36,3 +39,9 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
+@@ -37,3 +40,9 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
  /usr/lib/nspluginwrapper/npviewer.bin	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
  /usr/lib/nspluginwrapper/plugin-config	--	gen_context(system_u:object_r:mozilla_plugin_config_exec_t,s0)
  /usr/lib/xulrunner[^/]*/plugin-container	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
@@ -270,7 +270,7 @@ Index: refpolicy/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/roles/sysadm.te
 +++ refpolicy/policy/modules/roles/sysadm.te
-@@ -223,7 +223,7 @@ optional_policy(`
+@@ -635,7 +635,7 @@ optional_policy(`
  ')
  
  optional_policy(`

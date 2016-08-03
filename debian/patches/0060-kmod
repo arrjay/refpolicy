@@ -6,7 +6,7 @@ Index: refpolicy/policy/modules/system/modutils.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/modutils.te
 +++ refpolicy/policy/modules/system/modutils.te
-@@ -5,15 +5,12 @@ policy_module(modutils, 1.15.0)
+@@ -5,15 +5,12 @@ policy_module(modutils, 1.16.0)
  # Declarations
  #
  
@@ -128,7 +128,7 @@ Index: refpolicy/policy/modules/system/modutils.te
  dev_rw_sysfs(insmod_t)
  dev_search_usbfs(insmod_t)
  dev_rw_mtrr(insmod_t)
-@@ -230,6 +166,7 @@ optional_policy(`
+@@ -238,6 +174,7 @@ optional_policy(`
  optional_policy(`
  	unconfined_domain(insmod_t)
  	unconfined_dontaudit_rw_pipes(insmod_t)
@@ -136,7 +136,7 @@ Index: refpolicy/policy/modules/system/modutils.te
  ')
  
  optional_policy(`
-@@ -239,85 +176,3 @@ optional_policy(`
+@@ -247,85 +184,3 @@ optional_policy(`
  	xserver_getattr_log(insmod_t)
  ')
  
@@ -240,7 +240,7 @@ Index: refpolicy/policy/modules/kernel/terminal.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/terminal.if
 +++ refpolicy/policy/modules/kernel/terminal.if
-@@ -1085,6 +1085,26 @@ interface(`term_getattr_unallocated_ttys
+@@ -1104,6 +1104,26 @@ interface(`term_getattr_unallocated_ttys
  
  ########################################
  ## <summary>

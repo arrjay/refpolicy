@@ -10,9 +10,11 @@ Signed-off-by: Dominick Grift <dominick.grift@gmail.com>
  policy/modules/system/init.te | 5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/policy/modules/system/init.te
-+++ b/policy/modules/system/init.te
-@@ -434,6 +434,9 @@ userdom_read_user_home_content_files(ini
+Index: refpolicy/policy/modules/system/init.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/init.te
++++ refpolicy/policy/modules/system/init.te
+@@ -563,6 +563,9 @@ userdom_read_user_home_content_files(ini
  userdom_use_user_terminals(initrc_t)
  
  ifdef(`distro_debian',`

@@ -2,11 +2,11 @@ Description: allow ifconfig_t to load modules
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-06-03
 
-Index: refpolicy-2.20140421/policy/modules/system/sysnetwork.te
+Index: refpolicy/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20140421.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20140421/policy/modules/system/sysnetwork.te
-@@ -256,6 +256,7 @@ optional_policy(`
+--- refpolicy.orig/policy/modules/system/sysnetwork.te
++++ refpolicy/policy/modules/system/sysnetwork.te
+@@ -261,6 +261,7 @@ optional_policy(`
  # Ifconfig local policy
  #
  

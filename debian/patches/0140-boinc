@@ -62,7 +62,7 @@ Index: refpolicy/policy/modules/kernel/terminal.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/terminal.if
 +++ refpolicy/policy/modules/kernel/terminal.if
-@@ -537,6 +537,23 @@ interface(`term_dontaudit_manage_pty_dir
+@@ -556,6 +556,23 @@ interface(`term_relabel_pty_dirs',`
  
  ########################################
  ## <summary>

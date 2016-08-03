@@ -2726,7 +2726,7 @@ staff = module
 #
 # General system administration role
 # 
-sysadm = module
+sysadm = base
 
 # Layer: roles
 # Module: unprivuser
@@ -2839,7 +2839,7 @@ libraries = base
 #
 # Policy for local logins.
 # 
-locallogin = module
+locallogin = base
 
 # Layer: system
 # Module: logging
@@ -2867,7 +2867,7 @@ miscfiles = base
 #
 # Policy for kernel module utilities
 # 
-modutils = module
+modutils = base
 
 # Layer: system
 # Module: mount
@@ -2909,7 +2909,7 @@ sysnetwork = base
 #
 # Policy for udev.
 # 
-udev = module
+udev = base
 
 # Layer: system
 # Module: unconfined

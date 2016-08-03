@@ -1,4 +1,33 @@
-refpolicy (2:2.20140421-13.1) jessie; urgency=medium
+refpolicy (2:2.20151208-1) unstable; urgency=medium
+
+  * Rebase to new upstream
+  * Move locallogin, sysadm, udev, and modutils to base
+  * Add /lib/systemd to file_contexts.subs_dist and remove duplicate fcontexts
+  * Allow unconfined_t to manage all init units
+  * Allow dmesg_t and sysadm_t to read /dev/kmsg
+  * Label /usr/lib/selinux/hll/pp as bin_t
+  * Allow udev_t to create /var/run/network with type net_conf_t
+  * Allow auditctl_t to getcap
+  * Allow auditd_t setattr on /var/log/audit
+  * Allow semanage_t to search policy_src_t dirs for /usr/lib/selinux/hll
+  * Label /lib/systemd/libsystemd-shared-.*.so as lib_t
+  * Allow systemd_tmpfiles_t and systemd_cgroups_t to read /proc/1/environ
+    and /proc/cmdline, and have capability net_admin
+  * Allow systemd_tmpfiles_t to create and relabel var_t directories
+  * Allow systemd_cgroups_t to send unix dgrams to init.
+  * Label /var/run/alsa as alsa_var_lock_t and use type trans for alsa_t to
+    create it
+  * Allow syslogd_t to create syslogd_var_run_t dirs for
+    /run/systemd/journal/streams/
+  * Allow alsa_t to manage directories and lnk_files of type alsa_var_lock_t
+    for directories under /run/alsa
+
+  * This policy works well for a VM but is known to not work on bare metal.
+    I'll upload a new version that fixes this soon.
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 03 Aug 2016 10:42:57 +1000
+
+refpolicy (2:2.20140421-14) jessie; urgency=medium
 
   * Allow mon_test_t to get RAID status and write to mon_var_lib_t
     Allow mon_test_t to exec mon_test_exec_t (for chained tests)
