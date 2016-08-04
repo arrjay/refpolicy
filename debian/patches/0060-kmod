@@ -106,10 +106,12 @@ Index: refpolicy/policy/modules/system/modutils.te
  
  ########################################
  #
-@@ -114,6 +42,9 @@ list_dirs_pattern(insmod_t, modules_conf
+@@ -113,7 +41,10 @@ allow insmod_t self:rawip_socket create_
+ list_dirs_pattern(insmod_t, modules_conf_t, modules_conf_t)
  read_files_pattern(insmod_t, modules_conf_t, modules_conf_t)
  list_dirs_pattern(insmod_t, modules_dep_t, modules_dep_t)
- read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
+-read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
++manage_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
 +filetrans_add_pattern(insmod_t, modules_object_t, modules_dep_t, file)
 +create_files_pattern(insmod_t, modules_object_t, modules_dep_t)
 +delete_files_pattern(insmod_t, modules_object_t, modules_dep_t)

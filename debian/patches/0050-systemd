@@ -2133,7 +2133,7 @@ Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.if
 +++ refpolicy/policy/modules/system/udev.if
-@@ -397,3 +397,21 @@ interface(`udev_create_kobject_uevent_so
+@@ -398,3 +398,21 @@ interface(`udev_create_kobject_uevent_so
  
          allow $1 udev_t:netlink_kobject_uevent_socket create_socket_perms;
  ')
@@ -3556,15 +3556,3 @@ Index: refpolicy/config/file_contexts.subs_dist
  /usr/local/lib /usr/lib
  /var/run/lock /var/lock
 +/lib/systemd /usr/lib/systemd
-Index: refpolicy/policy/modules/system/libraries.fc
-===================================================================
---- refpolicy.orig/policy/modules/system/libraries.fc
-+++ refpolicy/policy/modules/system/libraries.fc
-@@ -114,6 +114,7 @@ ifdef(`distro_debian',`
- /usr/(.*/)?dh-python/dh_pypy		--	gen_context(system_u:object_r:lib_t,s0)
- ')
- 
-+/lib/systemd/libsystemd-shared-.*.so --	gen_context(system_u:object_r:lib_t,s0)
- /usr/lib/altivec/libavcodec\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
- /usr/lib/cedega/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
- /usr/lib/dovecot/(.*/)?lib.*\.so.*      --      gen_context(system_u:object_r:lib_t,s0)

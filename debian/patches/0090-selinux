@@ -46,18 +46,6 @@ Index: refpolicy/policy/modules/kernel/kernel.te
  # Mount root file system. Used when loading a policy
  # from initrd, then mounting the root filesystem
  fs_mount_all_fs(kernel_t)
-Index: refpolicy/policy/modules/system/udev.if
-===================================================================
---- refpolicy.orig/policy/modules/system/udev.if
-+++ refpolicy/policy/modules/system/udev.if
-@@ -333,6 +333,7 @@ interface(`udev_relabelto_db',`
- 
- 	files_search_pids($1)
- 	allow $1 udev_var_run_t:file relabelto_file_perms;
-+	allow $1 udev_var_run_t:lnk_file relabelto_file_perms;
- ')
- 
- ########################################
 Index: refpolicy/policy/modules/kernel/filesystem.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/filesystem.if
@@ -786,19 +774,6 @@ Index: refpolicy/policy/modules/system/fstools.if
 +
 +	allow $1 fsadm_log_t:file write_file_perms;
 +')
-Index: refpolicy/policy/modules/system/modutils.te
-===================================================================
---- refpolicy.orig/policy/modules/system/modutils.te
-+++ refpolicy/policy/modules/system/modutils.te
-@@ -41,7 +41,7 @@ allow insmod_t self:rawip_socket create_
- list_dirs_pattern(insmod_t, modules_conf_t, modules_conf_t)
- read_files_pattern(insmod_t, modules_conf_t, modules_conf_t)
- list_dirs_pattern(insmod_t, modules_dep_t, modules_dep_t)
--read_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
-+manage_files_pattern(insmod_t, modules_dep_t, modules_dep_t)
- filetrans_add_pattern(insmod_t, modules_object_t, modules_dep_t, file)
- create_files_pattern(insmod_t, modules_object_t, modules_dep_t)
- delete_files_pattern(insmod_t, modules_object_t, modules_dep_t)
 Index: refpolicy/policy/modules/system/selinuxutil.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/selinuxutil.fc
