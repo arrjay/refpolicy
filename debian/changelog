@@ -4,6 +4,12 @@ refpolicy (2:2.20151208-1.1) unstable; urgency=medium
     and easier removal when it's time to rebase.
   * Remove the patch for ifconfig to load kernel modules, shouldn't be needed.
   * Backported kernel_read_vm_overcommit_sysctl() etc from git.
+  * Removed class proxy, don't know why we had it
+  * This policy can't be installed without policycoreutils 2.5 or newer, made
+    it depend and build-depend on version 2.5 of everything just in case.
+  * Made the policy postinst not redirect stdout/stderr to /dev/null.
+    All the output will be ignored when things go well and when things break
+    we need it.
 
  -- Russell Coker <russell@coker.com.au>  Wed, 03 Aug 2016 12:34:23 +1000
 
