@@ -74,7 +74,7 @@ case "$1" in
 	fi
 
 	ret=0
-	semodule -X $priority $noreload -s $flavour $to_remove $to_install $to_disable > /dev/null 2>&1 || ret=$?
+	semodule -X $priority $noreload -s $flavour $to_remove $to_install $to_disable || ret=$?
 	if [ $ret -eq 0 ]; then
 	    echo " done."
 	else
