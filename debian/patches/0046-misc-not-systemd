@@ -148,11 +148,11 @@ Index: refpolicy/policy/modules/system/udev.if
  ##	Read the udev device table.
  ## </summary>
  ## <desc>
-@@ -282,6 +300,25 @@ interface(`udev_manage_pid_dirs',`
+@@ -282,6 +300,26 @@ interface(`udev_manage_pid_dirs',`
  
  ########################################
  ## <summary>
-+##      Allow process to modify relabelto udev database
++##      Allow process to relabelto udev database
 +## </summary>
 +## <param name="domain">
 +##      <summary>
@@ -167,6 +167,7 @@ Index: refpolicy/policy/modules/system/udev.if
 +
 +	files_search_pids($1)
 +	allow $1 udev_var_run_t:file relabelto_file_perms;
++	allow $1 udev_var_run_t:lnk_file relabelto_file_perms;
 +')
 +
 +########################################
@@ -174,7 +175,7 @@ Index: refpolicy/policy/modules/system/udev.if
  ##	Read udev pid files.
  ## </summary>
  ## <param name="domain">
-@@ -341,3 +378,22 @@ interface(`udev_generic_pid_filetrans_ru
+@@ -341,3 +379,22 @@ interface(`udev_generic_pid_filetrans_ru
  
  	files_pid_filetrans($1, udev_var_run_t, dir, $2)
  ')
