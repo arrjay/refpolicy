@@ -557,31 +557,6 @@ Index: refpolicy/policy/modules/system/logging.fc
  
  /var/lib/misc/syslog-ng.persist-? -- gen_context(system_u:object_r:syslogd_var_lib_t,s0)
  /var/lib/syslog-ng(/.*)? 	gen_context(system_u:object_r:syslogd_var_lib_t,s0)
-Index: refpolicy/policy/flask/access_vectors
-===================================================================
---- refpolicy.orig/policy/flask/access_vectors
-+++ refpolicy/policy/flask/access_vectors
-@@ -931,3 +931,8 @@ class service
- 	enable
- 	disable
- }
-+
-+class proxy
-+{
-+	read
-+}
-Index: refpolicy/policy/flask/security_classes
-===================================================================
---- refpolicy.orig/policy/flask/security_classes
-+++ refpolicy/policy/flask/security_classes
-@@ -147,4 +147,7 @@ class db_language		# userspace
- 
- class service			# userspace
- 
-+# gssd services
-+class proxy
-+
- # FLASK
 Index: refpolicy/policy/modules/system/selinuxutil.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/selinuxutil.fc
