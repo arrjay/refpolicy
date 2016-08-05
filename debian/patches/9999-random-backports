@@ -3,9 +3,11 @@ Author: Russell Coker <russell@coker.com.au>
 
 Last-Update: 2016-08-04
 
---- refpolicy-2.20151208.orig/policy/modules/system/libraries.fc
-+++ refpolicy-2.20151208/policy/modules/system/libraries.fc
-@@ -143,6 +143,7 @@ ifdef(`distro_debian',`
+Index: refpolicy/policy/modules/system/libraries.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/libraries.fc
++++ refpolicy/policy/modules/system/libraries.fc
+@@ -144,6 +144,7 @@ ifdef(`distro_debian',`
  /usr/lib/fglrx/.*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/libjs\.so.*			--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/sse2/libx264\.so(\.[^/]*)* 	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -13,3 +15,15 @@ Last-Update: 2016-08-04
  /usr/lib(/.*)?/libnvidia.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib(/.*)?/nvidia_drv.*\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/nero/plug-ins/libMP3\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
+Index: refpolicy/policy/flask/access_vectors
+===================================================================
+--- refpolicy.orig/policy/flask/access_vectors
++++ refpolicy/policy/flask/access_vectors
+@@ -379,6 +379,7 @@ class security
+ 	setsecparam
+ 	setcheckreqprot
+ 	read_policy
++	validate_trans
+ }
+ 
+ 

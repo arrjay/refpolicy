@@ -6,7 +6,7 @@ Index: refpolicy/policy/modules/contrib/bind.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/bind.te
 +++ refpolicy/policy/modules/contrib/bind.te
-@@ -113,6 +113,7 @@ read_files_pattern(named_t, named_zone_t
+@@ -110,6 +110,7 @@ read_files_pattern(named_t, named_zone_t
  read_lnk_files_pattern(named_t, named_zone_t, named_zone_t)
  
  kernel_read_kernel_sysctls(named_t)
@@ -30,7 +30,7 @@ Index: refpolicy/policy/modules/contrib/networkmanager.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/networkmanager.te
 +++ refpolicy/policy/modules/contrib/networkmanager.te
-@@ -92,6 +92,7 @@ kernel_read_crypto_sysctls(NetworkManage
+@@ -89,6 +89,7 @@ kernel_read_crypto_sysctls(NetworkManage
  kernel_read_system_state(NetworkManager_t)
  kernel_read_network_state(NetworkManager_t)
  kernel_read_kernel_sysctls(NetworkManager_t)
@@ -116,7 +116,7 @@ Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/logging.te
 +++ refpolicy/policy/modules/system/logging.te
-@@ -447,6 +447,8 @@ kernel_read_kernel_sysctls(syslogd_t)
+@@ -441,6 +441,8 @@ kernel_read_kernel_sysctls(syslogd_t)
  kernel_read_proc_symlinks(syslogd_t)
  # Allow access to /proc/kmsg for syslog-ng
  kernel_read_messages(syslogd_t)

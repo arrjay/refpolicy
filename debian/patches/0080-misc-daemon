@@ -18,7 +18,7 @@ Index: refpolicy/policy/modules/contrib/mysql.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mysql.te
 +++ refpolicy/policy/modules/contrib/mysql.te
-@@ -70,7 +70,7 @@ dontaudit mysqld_t self:capability sys_t
+@@ -67,7 +67,7 @@ dontaudit mysqld_t self:capability sys_t
  allow mysqld_t self:process { setsched getsched setrlimit signal_perms rlimitinh };
  allow mysqld_t self:fifo_file rw_fifo_file_perms;
  allow mysqld_t self:shm create_shm_perms;
@@ -27,7 +27,7 @@ Index: refpolicy/policy/modules/contrib/mysql.te
  allow mysqld_t self:tcp_socket { accept listen };
  
  manage_dirs_pattern(mysqld_t, mysqld_db_t, mysqld_db_t)
-@@ -99,6 +99,7 @@ manage_sock_files_pattern(mysqld_t, mysq
+@@ -96,6 +96,7 @@ manage_sock_files_pattern(mysqld_t, mysq
  files_pid_filetrans(mysqld_t, mysqld_var_run_t, { dir file sock_file })
  
  kernel_read_kernel_sysctls(mysqld_t)
@@ -39,7 +39,7 @@ Index: refpolicy/policy/modules/contrib/tor.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/tor.te
 +++ refpolicy/policy/modules/contrib/tor.te
-@@ -41,7 +41,7 @@ init_unit_file(tor_unit_t)
+@@ -38,7 +38,7 @@ init_unit_file(tor_unit_t)
  # Local policy
  #
  
@@ -251,8 +251,8 @@ Index: refpolicy/policy/modules/system/udev.te
 +sysnet_var_run_dirtrans_config(udev_t, "network")
  
  systemd_login_read_pid_files(udev_t)
- systemd_config_all_services(udev_t)
-@@ -207,6 +211,11 @@ ifdef(`distro_debian',`
+ init_start_all_units(udev_t)
+@@ -208,6 +212,11 @@ ifdef(`distro_debian',`
  	')
  ')
  
@@ -264,7 +264,7 @@ Index: refpolicy/policy/modules/system/udev.te
  ifdef(`distro_gentoo',`
  	# during boot, init scripts use /dev/.rcsysinit
  	# existence to determine if we are in early booting
-@@ -346,6 +355,7 @@ optional_policy(`
+@@ -347,6 +356,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
@@ -361,7 +361,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -336,6 +336,18 @@ ifdef(`distro_debian',`
+@@ -335,6 +335,18 @@ ifdef(`distro_debian',`
  	optional_policy(`
  		logwatch_search_cache_dir(crond_t)
  	')
@@ -380,7 +380,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
-@@ -472,6 +484,7 @@ allow system_cronjob_t cron_spool_t:dir
+@@ -470,6 +482,7 @@ allow system_cronjob_t cron_spool_t:dir
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
  allow system_cronjob_t crond_tmp_t:file { read write };
@@ -388,7 +388,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
-@@ -563,6 +576,10 @@ optional_policy(`
+@@ -561,6 +574,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -399,7 +399,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  	cyrus_manage_data(system_cronjob_t)
  ')
  
-@@ -739,3 +756,5 @@ tunable_policy(`cron_userdomain_transiti
+@@ -737,3 +754,5 @@ tunable_policy(`cron_userdomain_transiti
  optional_policy(`
  	unconfined_domain(unconfined_cronjob_t)
  ')
@@ -445,7 +445,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Early devtmpfs
  dev_rw_generic_chr_files(init_t)
  
-@@ -1329,6 +1330,7 @@ tunable_policy(`init_systemd',`
+@@ -1333,6 +1334,7 @@ tunable_policy(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -453,7 +453,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1409,6 +1411,7 @@ tunable_policy(`init_systemd',`
+@@ -1413,6 +1415,7 @@ tunable_policy(`init_systemd',`
  
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
@@ -465,7 +465,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -812,3 +812,20 @@ interface(`manage_systemd_journal_files'
+@@ -790,3 +790,20 @@ interface(`manage_systemd_journal_files'
  	manage_files_pattern($1, systemd_journal_log_t, systemd_journal_log_t)
  ')
  
@@ -490,7 +490,7 @@ Index: refpolicy/policy/modules/contrib/clamav.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/clamav.te
 +++ refpolicy/policy/modules/contrib/clamav.te
-@@ -73,7 +73,7 @@ logging_log_file(freshclam_var_log_t)
+@@ -70,7 +70,7 @@ logging_log_file(freshclam_var_log_t)
  # Clamd local policy
  #
  
@@ -499,7 +499,7 @@ Index: refpolicy/policy/modules/contrib/clamav.te
  dontaudit clamd_t self:capability sys_tty_config;
  allow clamd_t self:process signal;
  allow clamd_t self:fifo_file rw_fifo_file_perms;
-@@ -107,6 +107,8 @@ kernel_dontaudit_list_proc(clamd_t)
+@@ -104,6 +104,8 @@ kernel_dontaudit_list_proc(clamd_t)
  kernel_read_sysctl(clamd_t)
  kernel_read_kernel_sysctls(clamd_t)
  kernel_read_system_state(clamd_t)
@@ -508,7 +508,7 @@ Index: refpolicy/policy/modules/contrib/clamav.te
  
  corecmd_exec_shell(clamd_t)
  
-@@ -215,6 +217,10 @@ corenet_sendrecv_http_client_packets(fre
+@@ -212,6 +214,10 @@ corenet_sendrecv_http_client_packets(fre
  corenet_tcp_connect_http_port(freshclam_t)
  corenet_tcp_sendrecv_http_port(freshclam_t)
  
@@ -665,7 +665,7 @@ Index: refpolicy/policy/modules/contrib/bind.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/bind.te
 +++ refpolicy/policy/modules/contrib/bind.te
-@@ -218,6 +218,7 @@ optional_policy(`
+@@ -215,6 +215,7 @@ optional_policy(`
  #
  
  allow ndc_t self:capability { dac_override net_admin };
@@ -1028,15 +1028,15 @@ Index: refpolicy/policy/modules/contrib/apache.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apache.te
 +++ refpolicy/policy/modules/contrib/apache.te
-@@ -285,6 +285,7 @@ role httpd_helper_roles types httpd_help
- 
- type httpd_initrc_exec_t;
- init_script_file(httpd_initrc_exec_t)
+@@ -282,6 +282,7 @@ type httpd_helper_t;
+ type httpd_helper_exec_t;
+ application_domain(httpd_helper_t, httpd_helper_exec_t)
+ role httpd_helper_roles types httpd_helper_t;
 +init_rw_inherited_script_tmp_files(httpd_t)
  
  type httpd_keytab_t;
  files_type(httpd_keytab_t)
-@@ -405,11 +406,8 @@ allow httpd_t httpd_keytab_t:file read_f
+@@ -402,11 +403,8 @@ allow httpd_t httpd_keytab_t:file read_f
  allow httpd_t httpd_lock_t:file manage_file_perms;
  files_lock_filetrans(httpd_t, httpd_lock_t, file)
  
@@ -1050,7 +1050,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  read_lnk_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
  logging_log_filetrans(httpd_t, httpd_log_t, file)
  
-@@ -427,6 +425,8 @@ manage_lnk_files_pattern(httpd_t, httpd_
+@@ -424,6 +422,8 @@ manage_lnk_files_pattern(httpd_t, httpd_
  allow httpd_t httpd_suexec_exec_t:file read_file_perms;
  
  allow httpd_t httpd_sys_script_t:unix_stream_socket connectto;
@@ -1059,7 +1059,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
  manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
-@@ -464,6 +464,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+@@ -461,6 +461,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
  
  kernel_read_kernel_sysctls(httpd_t)
@@ -1067,7 +1067,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  kernel_read_network_state(httpd_t)
  kernel_read_system_state(httpd_t)
  kernel_search_network_sysctl(httpd_t)
-@@ -590,6 +591,7 @@ tunable_policy(`httpd_builtin_scripting'
+@@ -587,6 +588,7 @@ tunable_policy(`httpd_builtin_scripting'
  tunable_policy(`httpd_enable_cgi',`
  	allow httpd_t httpd_script_domains:process { signal sigkill sigstop };
  	allow httpd_t httpd_script_exec_type:dir list_dir_perms;
@@ -1075,7 +1075,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_enable_cgi && httpd_use_nfs',`
-@@ -1215,6 +1217,7 @@ optional_policy(`
+@@ -1212,6 +1214,7 @@ optional_policy(`
  allow httpd_sys_script_t self:tcp_socket { accept listen };
  
  allow httpd_sys_script_t httpd_t:tcp_socket { read write };
@@ -1083,7 +1083,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  dontaudit httpd_sys_script_t httpd_config_t:dir search;
  
-@@ -1225,6 +1228,7 @@ allow httpd_sys_script_t squirrelmail_sp
+@@ -1222,6 +1225,7 @@ allow httpd_sys_script_t squirrelmail_sp
  allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
@@ -1188,7 +1188,14 @@ Index: refpolicy/policy/modules/kernel/corecommands.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/corecommands.fc
 +++ refpolicy/policy/modules/kernel/corecommands.fc
-@@ -196,6 +196,7 @@ ifdef(`distro_gentoo',`
+@@ -190,12 +190,14 @@ ifdef(`distro_gentoo',`
+ /usr/bin/tcsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
+ 
+ /usr/lib(.*/)?bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
++/usr/lib/postfix/configure-instance.sh -- gen_context(system_u:object_r:bin_t,s0)
+ 
+ /usr/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib(.*/)?sbin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
  
  /usr/lib/avahi/avahi-daemon-check-dns\.sh	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/ccache/bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
@@ -1196,7 +1203,7 @@ Index: refpolicy/policy/modules/kernel/corecommands.fc
  /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-@@ -233,6 +234,7 @@ ifdef(`distro_gentoo',`
+@@ -233,6 +235,7 @@ ifdef(`distro_gentoo',`
  /usr/lib/rpm/rpmk		-- 	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/rpm/rpmq		-- 	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/rpm/rpmv		-- 	gen_context(system_u:object_r:bin_t,s0)
@@ -1204,7 +1211,7 @@ Index: refpolicy/policy/modules/kernel/corecommands.fc
  /usr/lib/sftp-server		--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/sudo/sesh		--	gen_context(system_u:object_r:shell_exec_t,s0)
  /usr/lib/systemd/system-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
-@@ -280,6 +282,7 @@ ifdef(`distro_gentoo',`
+@@ -280,6 +283,7 @@ ifdef(`distro_gentoo',`
  /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
  /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
  
@@ -1424,7 +1431,7 @@ Index: refpolicy/policy/modules/contrib/ntp.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/ntp.te
 +++ refpolicy/policy/modules/contrib/ntp.te
-@@ -64,9 +64,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
+@@ -61,9 +61,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
  read_lnk_files_pattern(ntpd_t, ntpd_key_t, ntpd_key_t)
  
  allow ntpd_t ntpd_log_t:dir setattr_dir_perms;
@@ -1607,7 +1614,7 @@ Index: refpolicy/policy/modules/system/iptables.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/iptables.te
 +++ refpolicy/policy/modules/system/iptables.te
-@@ -106,6 +106,10 @@ ifdef(`hide_broken_symptoms',`
+@@ -103,6 +103,10 @@ ifdef(`hide_broken_symptoms',`
  ')
  
  optional_policy(`
@@ -1618,7 +1625,7 @@ Index: refpolicy/policy/modules/system/iptables.te
  	fail2ban_append_log(iptables_t)
  ')
  
-@@ -152,4 +156,6 @@ optional_policy(`
+@@ -149,4 +153,6 @@ optional_policy(`
  
  optional_policy(`
  	udev_read_db(iptables_t)
@@ -1952,7 +1959,7 @@ Index: refpolicy/policy/modules/contrib/logrotate.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/logrotate.te
 +++ refpolicy/policy/modules/contrib/logrotate.te
-@@ -246,6 +246,11 @@ optional_policy(`
+@@ -245,6 +245,11 @@ optional_policy(`
  	varnishd_manage_log(logrotate_t)
  ')
  
@@ -2098,7 +2105,7 @@ Index: refpolicy/policy/modules/contrib/postfixpolicyd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postfixpolicyd.te
 +++ refpolicy/policy/modules/contrib/postfixpolicyd.te
-@@ -18,13 +18,18 @@ init_script_file(postfix_policyd_initrc_
+@@ -18,13 +18,18 @@ init_unit_file(postfix_policyd_unit_t)
  type postfix_policyd_var_run_t;
  files_pid_file(postfix_policyd_var_run_t)
  
@@ -2319,7 +2326,7 @@ Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/logging.te
 +++ refpolicy/policy/modules/system/logging.te
-@@ -120,6 +120,7 @@ tunable_policy(`init_systemd', `
+@@ -114,6 +114,7 @@ tunable_policy(`init_systemd', `
  
  allow auditctl_t self:capability { fsetid dac_read_search dac_override };
  allow auditctl_t self:netlink_audit_socket nlmsg_readpriv;
@@ -2327,7 +2334,7 @@ Index: refpolicy/policy/modules/system/logging.te
  
  read_files_pattern(auditctl_t, auditd_etc_t, auditd_etc_t)
  allow auditctl_t auditd_etc_t:dir list_dir_perms;
-@@ -171,6 +172,7 @@ allow auditd_t auditd_etc_t:file read_fi
+@@ -165,6 +166,7 @@ allow auditd_t auditd_etc_t:file read_fi
  
  manage_files_pattern(auditd_t, auditd_log_t, auditd_log_t)
  manage_lnk_files_pattern(auditd_t, auditd_log_t, auditd_log_t)
@@ -2372,3 +2379,54 @@ Index: refpolicy/policy/modules/contrib/alsa.te
  files_etc_filetrans(alsa_t, alsa_etc_rw_t, file)
  
  can_exec(alsa_t, alsa_exec_t)
+Index: refpolicy/policy/modules/contrib/postfix.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/postfix.fc
++++ refpolicy/policy/modules/contrib/postfix.fc
+@@ -4,20 +4,20 @@
+ 
+ /etc/rc\.d/init\.d/postfix	--	gen_context(system_u:object_r:postfix_unit_t,s0)
+ 
+-/usr/lib/postfix/.*	--	gen_context(system_u:object_r:postfix_exec_t,s0)
+-/usr/lib/postfix/cleanup	--	gen_context(system_u:object_r:postfix_cleanup_exec_t,s0)
+-/usr/lib/postfix/local	--	gen_context(system_u:object_r:postfix_local_exec_t,s0)
+-/usr/lib/postfix/master	--	gen_context(system_u:object_r:postfix_master_exec_t,s0)
+-/usr/lib/postfix/pickup	--	gen_context(system_u:object_r:postfix_pickup_exec_t,s0)
+-/usr/lib/postfix/(n)?qmgr	--	gen_context(system_u:object_r:postfix_qmgr_exec_t,s0)
+-/usr/lib/postfix/showq	--	gen_context(system_u:object_r:postfix_showq_exec_t,s0)
+-/usr/lib/postfix/smtp	--	gen_context(system_u:object_r:postfix_smtp_exec_t,s0)
+-/usr/lib/postfix/lmtp	--	gen_context(system_u:object_r:postfix_smtp_exec_t,s0)
+-/usr/lib/postfix/scache	--	gen_context(system_u:object_r:postfix_smtp_exec_t,s0)
+-/usr/lib/postfix/smtpd	--	gen_context(system_u:object_r:postfix_smtpd_exec_t,s0)
+-/usr/lib/postfix/bounce	--	gen_context(system_u:object_r:postfix_bounce_exec_t,s0)
+-/usr/lib/postfix/pipe	--	gen_context(system_u:object_r:postfix_pipe_exec_t,s0)
+-/usr/lib/postfix/virtual	--	gen_context(system_u:object_r:postfix_virtual_exec_t,s0)
++/usr/lib/postfix/(sbin/)?.*	--	gen_context(system_u:object_r:postfix_exec_t,s0)
++/usr/lib/postfix/(sbin/)?cleanup	--	gen_context(system_u:object_r:postfix_cleanup_exec_t,s0)
++/usr/lib/postfix/(sbin/)?local	--	gen_context(system_u:object_r:postfix_local_exec_t,s0)
++/usr/lib/postfix/(sbin/)?master	--	gen_context(system_u:object_r:postfix_master_exec_t,s0)
++/usr/lib/postfix/(sbin/)?pickup	--	gen_context(system_u:object_r:postfix_pickup_exec_t,s0)
++/usr/lib/postfix/(sbin/)?(n)?qmgr	--	gen_context(system_u:object_r:postfix_qmgr_exec_t,s0)
++/usr/lib/postfix/(sbin/)?showq	--	gen_context(system_u:object_r:postfix_showq_exec_t,s0)
++/usr/lib/postfix/(sbin/)?smtp	--	gen_context(system_u:object_r:postfix_smtp_exec_t,s0)
++/usr/lib/postfix/(sbin/)?lmtp	--	gen_context(system_u:object_r:postfix_smtp_exec_t,s0)
++/usr/lib/postfix/(sbin/)?scache	--	gen_context(system_u:object_r:postfix_smtp_exec_t,s0)
++/usr/lib/postfix/(sbin/)?smtpd	--	gen_context(system_u:object_r:postfix_smtpd_exec_t,s0)
++/usr/lib/postfix/(sbin/)?bounce	--	gen_context(system_u:object_r:postfix_bounce_exec_t,s0)
++/usr/lib/postfix/(sbin/)?pipe	--	gen_context(system_u:object_r:postfix_pipe_exec_t,s0)
++/usr/lib/postfix/(sbin/)?virtual	--	gen_context(system_u:object_r:postfix_virtual_exec_t,s0)
+ 
+ /usr/libexec/postfix/.*	--	gen_context(system_u:object_r:postfix_exec_t,s0)
+ /usr/libexec/postfix/cleanup	--	gen_context(system_u:object_r:postfix_cleanup_exec_t,s0)
+Index: refpolicy/policy/modules/system/libraries.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/libraries.fc
++++ refpolicy/policy/modules/system/libraries.fc
+@@ -114,6 +114,7 @@ ifdef(`distro_debian',`
+ /usr/(.*/)?dh-python/dh_pypy		--	gen_context(system_u:object_r:lib_t,s0)
+ ')
+ 
++/usr/lib/postfix/lib.*so.*		--	gen_context(system_u:object_r:lib_t,s0)
+ /usr/lib/altivec/libavcodec\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
+ /usr/lib/cedega/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+ /usr/lib/dovecot/(.*/)?lib.*\.so.*      --      gen_context(system_u:object_r:lib_t,s0)

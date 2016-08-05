@@ -6,7 +6,7 @@ Index: refpolicy/policy/modules/contrib/boinc.fc
 --- refpolicy.orig/policy/modules/contrib/boinc.fc
 +++ refpolicy/policy/modules/contrib/boinc.fc
 @@ -1,9 +1,13 @@
- /etc/rc\.d/init\.d/boinc-client	--	gen_context(system_u:object_r:boinc_initrc_exec_t,s0)
+ /etc/rc\.d/init\.d/boinc-client	--	gen_context(system_u:object_r:boinc_unit_t,s0)
  
  /usr/bin/boinc_client	--	gen_context(system_u:object_r:boinc_exec_t,s0)
 +/usr/bin/boinc		--	gen_context(system_u:object_r:boinc_exec_t,s0)
