@@ -618,3 +618,56 @@ Index: refpolicy/policy/modules/contrib/ftp.fc
 +
 +/usr/lib/systemd/system/vsftpd.*\.service -- gen_context(system_u:object_r:ftpd_unit_t,s0)
 +/usr/lib/systemd/system/proftpd.*\.service -- gen_context(system_u:object_r:ftpd_unit_t,s0)
+Index: refpolicy/policy/modules/system/init.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/init.te
++++ refpolicy/policy/modules/system/init.te
+@@ -191,6 +191,8 @@ seutil_read_config(init_t)
+ miscfiles_read_localization(init_t)
+ 
+ ifdef(`init_systemd',`
++	init_stop_all_units(init_t)
++
+ 	# handle instances where an old labeled init script is encountered.
+ 	typeattribute init_t init_run_all_scripts_domain;
+ 
+Index: refpolicy/policy/modules/system/init.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/init.if
++++ refpolicy/policy/modules/system/init.if
+@@ -2504,3 +2504,22 @@ interface(`init_reload_all_units',`
+ 
+ 	allow $1 systemdunit:service reload;
+ ')
++
++#######################################
++## <summary>
++##	All perms on all systemd units.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_manage_all_units',`
++	gen_require(`
++		attribute systemdunit;
++		class service all_service_perms;
++	')
++
++	allow $1 systemdunit:service all_service_perms;
++')
+Index: refpolicy/policy/support/obj_perm_sets.spt
+===================================================================
+--- refpolicy.orig/policy/support/obj_perm_sets.spt
++++ refpolicy/policy/support/obj_perm_sets.spt
+@@ -271,3 +271,8 @@ define(`server_stream_socket_perms', `{
+ # Keys
+ #
+ define(`manage_key_perms', `{ create link read search setattr view write } ')
++
++#
++# services
++#
++define(`all_service_perms', `{ start stop status reload enable disable }')

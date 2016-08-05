@@ -64,7 +64,7 @@ Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/logging.te
 +++ refpolicy/policy/modules/system/logging.te
-@@ -122,7 +122,9 @@ term_use_all_terms(auditctl_t)
+@@ -116,7 +116,9 @@ term_use_all_terms(auditctl_t)
  
  init_dontaudit_use_fds(auditctl_t)
  
@@ -75,7 +75,7 @@ Index: refpolicy/policy/modules/system/logging.te
  
  logging_set_audit_parameters(auditctl_t)
  logging_send_syslog_msg(auditctl_t)
-@@ -370,7 +372,7 @@ optional_policy(`
+@@ -364,7 +366,7 @@ optional_policy(`
  # sys_admin for the integrated klog of syslog-ng and metalog
  # sys_nice for rsyslog
  # cjp: why net_admin!
@@ -84,7 +84,7 @@ Index: refpolicy/policy/modules/system/logging.te
  dontaudit syslogd_t self:capability sys_tty_config;
  # setpgid for metalog
  # setrlimit for syslog-ng
-@@ -557,6 +559,8 @@ optional_policy(`
+@@ -551,6 +553,8 @@ optional_policy(`
  
  optional_policy(`
  	udev_read_db(syslogd_t)
@@ -1306,7 +1306,7 @@ Index: refpolicy/policy/modules/system/init.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.te
 +++ refpolicy/policy/modules/system/init.te
-@@ -294,10 +294,6 @@ ifdef(`init_systemd',`
+@@ -297,10 +297,6 @@ ifdef(`init_systemd',`
  ',`
  	tunable_policy(`init_upstart',`
  		corecmd_shell_domtrans(init_t, initrc_t)
@@ -1317,7 +1317,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  ')
  
-@@ -551,8 +547,10 @@ miscfiles_read_localization(initrc_t)
+@@ -554,8 +550,10 @@ miscfiles_read_localization(initrc_t)
  # slapd needs to read cert files from its initscript
  miscfiles_read_generic_certs(initrc_t)
  
@@ -1334,9 +1334,9 @@ Index: refpolicy/policy/modules/system/init.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.if
 +++ refpolicy/policy/modules/system/init.if
-@@ -2504,3 +2504,24 @@ interface(`init_reload_all_units',`
+@@ -2483,3 +2483,24 @@ interface(`init_manage_all_units',`
  
- 	allow $1 systemdunit:service reload;
+ 	allow $1 systemdunit:service all_service_perms;
  ')
 +
 +########################################

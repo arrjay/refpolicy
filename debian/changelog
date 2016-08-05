@@ -10,6 +10,13 @@ refpolicy (2:2.20151208-1.1) unstable; urgency=medium
   * Made the policy postinst not redirect stdout/stderr to /dev/null.
     All the output will be ignored when things go well and when things break
     we need it.
+  * New patch 9999-random-backports for stuff backported from upstream git.
+    Added validate_trans to class security
+  * Allow init_t to stop all systemd units and reload init_t.
+  * Allow systemd_tmpfiles_t to create and manage all pidfiles directories, relabel /home,
+    relabel man cache, create lock dirs, create xdm and xfs tmp files
+  * Labeling dpkg-statoverride as setfiles_exec_t was a bad idea, reverting
+  * Changed labelling for Postfix 3.x
 
  -- Russell Coker <russell@coker.com.au>  Wed, 03 Aug 2016 12:34:23 +1000
 
