@@ -997,7 +997,7 @@ guest = module
 #
 # Software for reliable, scalable, distributed computing.
 # 
-hadoop = module
+hadoop = off
 
 # Layer: contrib
 # Module: hal

@@ -198,7 +198,7 @@ Index: refpolicy/policy/modules/system/init.if
 +
 +    role system_r types $1;
 +
-+    tunable_policy(`init_systemd',`
++    ifdef(`init_systemd',`
 +        domtrans_pattern(init_t,$2,$1)
 +        allow init_t $1:unix_stream_socket create_stream_socket_perms;
 +        allow init_t $1:unix_dgram_socket create_socket_perms;
@@ -217,7 +217,7 @@ Index: refpolicy/policy/modules/system/init.if
  	role system_r types $1;
  
 -	domtrans_pattern(init_t, $2, $1)
-+	tunable_policy(`init_systemd', `
++	ifdef(`init_systemd', `
 +		domtrans_pattern(init_t, $2, $1)
 +		allow init_t $1:unix_stream_socket create_stream_socket_perms;
 +		allow $1 init_t:unix_dgram_socket sendto;
@@ -240,7 +240,7 @@ Index: refpolicy/policy/modules/system/init.if
  
  	domtrans_pattern(initrc_t, $2, $1)
  
-+	tunable_policy(`init_systemd', `
++	ifdef(`init_systemd', `
 +		domtrans_pattern(init_t, $2, $1)
 +		allow init_t $1:unix_stream_socket create_stream_socket_perms;
 +		allow $1 init_t:unix_dgram_socket sendto;
@@ -405,7 +405,7 @@ Index: refpolicy/policy/modules/system/init.if
  	init_exec($1)
  
 -	tunable_policy(`init_upstart',`
-+	tunable_policy(`init_upstart || init_systemd',`
++	ifdef(`init_systemd',`
  		gen_require(`
  			type init_t;
  		')
@@ -1097,17 +1097,10 @@ Index: refpolicy/policy/modules/system/init.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.te
 +++ refpolicy/policy/modules/system/init.te
-@@ -16,13 +16,38 @@ gen_require(`
+@@ -16,13 +16,31 @@ gen_require(`
  ## </desc>
  gen_tunable(init_upstart, false)
  
-+## <desc>
-+## <p>
-+## Enable support for systemd as the init program.
-+## </p>
-+## </desc>
-+gen_tunable(init_systemd, true)
-+
 +## <desc>
 +## <p>
 +## Allow all daemons the ability to read/write terminals
@@ -1136,7 +1129,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  # Mark file type as a daemon pid file
  attribute daemonpidfile;
-@@ -33,7 +58,7 @@ attribute daemonrundir;
+@@ -33,7 +51,7 @@ attribute daemonrundir;
  #
  # init_t is the domain of the init process.
  #
@@ -1145,7 +1138,7 @@ Index: refpolicy/policy/modules/system/init.te
  type init_exec_t;
  domain_type(init_t)
  domain_entry_file(init_t, init_exec_t)
-@@ -67,6 +92,7 @@ domain_type(initrc_t)
+@@ -67,6 +85,7 @@ domain_type(initrc_t)
  domain_entry_file(initrc_t, initrc_exec_t)
  domtrans_pattern(init_run_all_scripts_domain, systemdunit, initrc_t)
  init_named_socket_activation(initrc_t, init_var_run_t)
@@ -1153,7 +1146,7 @@ Index: refpolicy/policy/modules/system/init.te
  role system_r types initrc_t;
  # should be part of the true block
  # of the below init_upstart tunable
-@@ -111,6 +137,7 @@ ifdef(`enable_mls',`
+@@ -111,6 +130,7 @@ ifdef(`enable_mls',`
  
  # Use capabilities. old rule:
  allow init_t self:capability ~sys_module;
@@ -1161,7 +1154,7 @@ Index: refpolicy/policy/modules/system/init.te
  # is ~sys_module really needed? observed:
  # sys_boot
  # sys_tty_config
-@@ -129,6 +156,9 @@ allow init_t initrc_t:unix_stream_socket
+@@ -129,6 +149,9 @@ allow init_t initrc_t:unix_stream_socket
  allow init_t init_var_run_t:file manage_file_perms;
  files_pid_filetrans(init_t, init_var_run_t, file)
  
@@ -1171,7 +1164,7 @@ Index: refpolicy/policy/modules/system/init.te
  allow init_t initctl_t:fifo_file manage_fifo_file_perms;
  dev_filetrans(init_t, initctl_t, fifo_file)
  
-@@ -148,6 +178,7 @@ dev_rw_generic_chr_files(init_t)
+@@ -148,6 +171,7 @@ dev_rw_generic_chr_files(init_t)
  
  domain_getpgid_all_domains(init_t)
  domain_kill_all_domains(init_t)
@@ -1179,15 +1172,18 @@ Index: refpolicy/policy/modules/system/init.te
  domain_signal_all_domains(init_t)
  domain_signull_all_domains(init_t)
  domain_sigstop_all_domains(init_t)
-@@ -193,6 +224,7 @@ miscfiles_read_localization(init_t)
+@@ -274,7 +298,9 @@ ifdef(`init_systemd',`
  
- ifdef(`init_systemd',`
- 	init_stop_all_units(init_t)
-+	allow init_t self:system reload;
+ 	term_relabel_pty_dirs(init_t)
  
- 	# handle instances where an old labeled init script is encountered.
- 	typeattribute init_t init_run_all_scripts_domain;
-@@ -340,6 +372,17 @@ optional_policy(`
+-	clock_read_adjtime(init_t)
++	optional_policy(`
++		clock_read_adjtime(init_t)
++	')
+ 
+ 	logging_manage_pid_sockets(init_t)
+ 	logging_send_audit_msgs(init_t)
+@@ -342,6 +368,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1205,7 +1201,7 @@ Index: refpolicy/policy/modules/system/init.te
  	unconfined_domain(init_t)
  ')
  
-@@ -393,6 +436,7 @@ manage_files_pattern(initrc_t, initrc_tm
+@@ -395,6 +432,7 @@ manage_files_pattern(initrc_t, initrc_tm
  manage_dirs_pattern(initrc_t, initrc_tmp_t, initrc_tmp_t)
  manage_lnk_files_pattern(initrc_t, initrc_tmp_t, initrc_tmp_t)
  files_tmp_filetrans(initrc_t, initrc_tmp_t, { file dir })
@@ -1213,7 +1209,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  manage_dirs_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
  manage_files_pattern(initrc_t, initrc_var_log_t, initrc_var_log_t)
-@@ -435,6 +479,7 @@ corenet_sendrecv_all_client_packets(init
+@@ -437,6 +475,7 @@ corenet_sendrecv_all_client_packets(init
  
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
@@ -1221,7 +1217,7 @@ Index: refpolicy/policy/modules/system/init.te
  dev_write_kmsg(initrc_t)
  dev_write_rand(initrc_t)
  dev_write_urand(initrc_t)
-@@ -445,8 +490,10 @@ dev_write_framebuffer(initrc_t)
+@@ -447,8 +486,10 @@ dev_write_framebuffer(initrc_t)
  dev_read_realtime_clock(initrc_t)
  dev_read_sound_mixer(initrc_t)
  dev_write_sound_mixer(initrc_t)
@@ -1232,7 +1228,7 @@ Index: refpolicy/policy/modules/system/init.te
  dev_delete_lvm_control_dev(initrc_t)
  dev_manage_generic_symlinks(initrc_t)
  dev_manage_generic_files(initrc_t)
-@@ -454,17 +501,16 @@ dev_manage_generic_files(initrc_t)
+@@ -456,17 +497,16 @@ dev_manage_generic_files(initrc_t)
  dev_delete_generic_symlinks(initrc_t)
  dev_getattr_all_blk_files(initrc_t)
  dev_getattr_all_chr_files(initrc_t)
@@ -1252,7 +1248,7 @@ Index: refpolicy/policy/modules/system/init.te
  domain_getsession_all_domains(initrc_t)
  domain_use_interactive_fds(initrc_t)
  # for lsof which is used by alsa shutdown:
-@@ -472,6 +518,7 @@ domain_dontaudit_getattr_all_udp_sockets
+@@ -474,6 +514,7 @@ domain_dontaudit_getattr_all_udp_sockets
  domain_dontaudit_getattr_all_tcp_sockets(initrc_t)
  domain_dontaudit_getattr_all_dgram_sockets(initrc_t)
  domain_dontaudit_getattr_all_pipes(initrc_t)
@@ -1260,7 +1256,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  files_getattr_all_dirs(initrc_t)
  files_getattr_all_files(initrc_t)
-@@ -479,8 +526,10 @@ files_getattr_all_symlinks(initrc_t)
+@@ -481,8 +522,10 @@ files_getattr_all_symlinks(initrc_t)
  files_getattr_all_pipes(initrc_t)
  files_getattr_all_sockets(initrc_t)
  files_purge_tmp(initrc_t)
@@ -1272,7 +1268,7 @@ Index: refpolicy/policy/modules/system/init.te
  files_delete_all_pids(initrc_t)
  files_delete_all_pid_dirs(initrc_t)
  files_read_etc_files(initrc_t)
-@@ -494,8 +543,12 @@ files_manage_generic_spool(initrc_t)
+@@ -496,8 +539,12 @@ files_manage_generic_spool(initrc_t)
  # cjp: not sure why these are here; should use mount policy
  files_list_default(initrc_t)
  files_mounton_default(initrc_t)
@@ -1286,7 +1282,7 @@ Index: refpolicy/policy/modules/system/init.te
  fs_list_inotifyfs(initrc_t)
  fs_register_binary_executable_type(initrc_t)
  # rhgb-console writes to ramfs
-@@ -505,9 +558,13 @@ fs_mount_all_fs(initrc_t)
+@@ -507,9 +554,13 @@ fs_mount_all_fs(initrc_t)
  fs_unmount_all_fs(initrc_t)
  fs_remount_all_fs(initrc_t)
  fs_getattr_all_fs(initrc_t)
@@ -1300,7 +1296,7 @@ Index: refpolicy/policy/modules/system/init.te
  mcs_killall(initrc_t)
  mcs_process_set_categories(initrc_t)
  
-@@ -517,6 +574,7 @@ mls_process_read_all_levels(initrc_t)
+@@ -519,6 +570,7 @@ mls_process_read_all_levels(initrc_t)
  mls_process_write_all_levels(initrc_t)
  mls_rangetrans_source(initrc_t)
  mls_fd_share_all_levels(initrc_t)
@@ -1308,7 +1304,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  selinux_get_enforce_mode(initrc_t)
  
-@@ -548,7 +606,11 @@ logging_read_audit_config(initrc_t)
+@@ -550,7 +602,11 @@ logging_read_audit_config(initrc_t)
  
  miscfiles_read_localization(initrc_t)
  # slapd needs to read cert files from its initscript
@@ -1321,7 +1317,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  optional_policy(`
  	modutils_read_module_config(initrc_t)
-@@ -561,7 +623,7 @@ userdom_read_user_home_content_files(ini
+@@ -563,7 +619,7 @@ userdom_read_user_home_content_files(ini
  # Allow access to the sysadm TTYs. Note that this will give access to the
  # TTYs to any process in the initrc_t domain. Therefore, daemons and such
  # started from init should be placed in their own domain.
@@ -1330,7 +1326,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  ifdef(`distro_debian',`
  	kernel_getattr_core_if(initrc_t)
-@@ -619,7 +681,9 @@ ifdef(`distro_gentoo',`
+@@ -621,7 +677,9 @@ ifdef(`distro_gentoo',`
  	files_mountpoint(initrc_state_t)
  
  	# init scripts touch this
@@ -1341,7 +1337,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	logging_send_audit_msgs(initrc_t)
  
-@@ -633,6 +697,10 @@ ifdef(`distro_gentoo',`
+@@ -635,6 +693,10 @@ ifdef(`distro_gentoo',`
  	sysnet_setattr_config(initrc_t)
  
  	optional_policy(`
@@ -1352,7 +1348,7 @@ Index: refpolicy/policy/modules/system/init.te
  		alsa_read_lib(initrc_t)
  	')
  
-@@ -653,7 +721,7 @@ ifdef(`distro_redhat',`
+@@ -655,7 +717,7 @@ ifdef(`distro_redhat',`
  
  	# Red Hat systems seem to have a stray
  	# fd open from the initrd
@@ -1361,7 +1357,7 @@ Index: refpolicy/policy/modules/system/init.te
  	files_dontaudit_read_root_files(initrc_t)
  
  	# These seem to be from the initrd
-@@ -688,6 +756,7 @@ ifdef(`distro_redhat',`
+@@ -690,6 +752,7 @@ ifdef(`distro_redhat',`
  	miscfiles_rw_localization(initrc_t)
  	miscfiles_setattr_localization(initrc_t)
  	miscfiles_relabel_localization(initrc_t)
@@ -1369,7 +1365,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	miscfiles_read_fonts(initrc_t)
  	miscfiles_read_hwdata(initrc_t)
-@@ -697,8 +766,35 @@ ifdef(`distro_redhat',`
+@@ -699,8 +762,35 @@ ifdef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -1405,7 +1401,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  
  	optional_policy(`
-@@ -706,14 +802,27 @@ ifdef(`distro_redhat',`
+@@ -708,14 +798,27 @@ ifdef(`distro_redhat',`
  		rpc_write_exports(initrc_t)
  		rpc_manage_nfs_state_data(initrc_t)
  	')
@@ -1433,7 +1429,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  ')
  
-@@ -778,6 +887,32 @@ ifdef(`init_systemd',`
+@@ -780,6 +883,32 @@ ifdef(`init_systemd',`
  	')
  ')
  
@@ -1466,7 +1462,7 @@ Index: refpolicy/policy/modules/system/init.te
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -790,6 +925,8 @@ optional_policy(`
+@@ -792,6 +921,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -1475,7 +1471,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -811,6 +948,7 @@ optional_policy(`
+@@ -813,6 +944,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -1483,7 +1479,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -827,6 +965,12 @@ optional_policy(`
+@@ -829,6 +961,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1496,7 +1492,7 @@ Index: refpolicy/policy/modules/system/init.te
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -843,9 +987,13 @@ optional_policy(`
+@@ -845,9 +983,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -1510,7 +1506,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  
  	optional_policy(`
-@@ -887,6 +1035,11 @@ optional_policy(`
+@@ -889,6 +1031,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1522,7 +1518,7 @@ Index: refpolicy/policy/modules/system/init.te
  	inn_exec_config(initrc_t)
  ')
  
-@@ -927,6 +1080,7 @@ optional_policy(`
+@@ -929,6 +1076,7 @@ optional_policy(`
  	lpd_list_spool(initrc_t)
  
  	lpd_read_config(initrc_t)
@@ -1530,7 +1526,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -945,6 +1099,7 @@ optional_policy(`
+@@ -947,6 +1095,7 @@ optional_policy(`
  
  optional_policy(`
  	mta_read_config(initrc_t)
@@ -1538,7 +1534,7 @@ Index: refpolicy/policy/modules/system/init.te
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -967,6 +1122,10 @@ optional_policy(`
+@@ -969,6 +1118,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1549,7 +1545,7 @@ Index: refpolicy/policy/modules/system/init.te
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -979,6 +1138,7 @@ optional_policy(`
+@@ -981,6 +1134,7 @@ optional_policy(`
  	puppet_rw_tmp(initrc_t)
  ')
  
@@ -1557,7 +1553,7 @@ Index: refpolicy/policy/modules/system/init.te
  optional_policy(`
  	quota_manage_flags(initrc_t)
  ')
-@@ -1009,8 +1169,6 @@ optional_policy(`
+@@ -1011,8 +1165,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -1566,7 +1562,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -1028,10 +1186,12 @@ optional_policy(`
+@@ -1030,10 +1182,12 @@ optional_policy(`
  	squid_manage_logs(initrc_t)
  ')
  
@@ -1579,7 +1575,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -1047,7 +1207,6 @@ optional_policy(`
+@@ -1049,7 +1203,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1587,7 +1583,7 @@ Index: refpolicy/policy/modules/system/init.te
  	udev_manage_pid_files(initrc_t)
  	udev_manage_pid_dirs(initrc_t)
  	udev_manage_rules_files(initrc_t)
-@@ -1064,6 +1223,10 @@ optional_policy(`
+@@ -1066,6 +1219,10 @@ optional_policy(`
  
  optional_policy(`
  	unconfined_domain(initrc_t)
@@ -1598,7 +1594,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	ifdef(`distro_redhat',`
  		# system-config-services causes avc messages that should be dontaudited
-@@ -1073,6 +1236,15 @@ optional_policy(`
+@@ -1075,6 +1232,15 @@ optional_policy(`
  	optional_policy(`
  		mono_domtrans(initrc_t)
  	')
@@ -1614,7 +1610,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -1098,3 +1270,271 @@ optional_policy(`
+@@ -1100,3 +1266,267 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -1671,11 +1667,7 @@ Index: refpolicy/policy/modules/system/init.te
 +	mta_read_aliases(init_t)
 +')
 +
-+optional_policy(`
-+	clock_read_adjtime(init_t)
-+')
-+
-+tunable_policy(`init_systemd',`
++ifdef(`init_systemd',`
 +	allow init_t self:system { status reboot halt };
 +
 +	allow init_t self:unix_dgram_socket { create_socket_perms sendto };
@@ -1781,7 +1773,7 @@ Index: refpolicy/policy/modules/system/init.te
 +	lvm_rw_pipes(init_t)
 +')
 +
-+tunable_policy(`init_systemd',`
++ifdef(`init_systemd',`
 +	allow init_t daemon:unix_stream_socket create_stream_socket_perms;
 +	allow init_t daemon:unix_dgram_socket create_socket_perms;
 +	allow init_t daemon:tcp_socket create_stream_socket_perms;
@@ -1827,7 +1819,7 @@ Index: refpolicy/policy/modules/system/init.te
 +dontaudit systemprocess init_t:unix_stream_socket getattr;
 +
 +
-+tunable_policy(`init_systemd',`
++ifdef(`init_systemd',`
 +	# Handle upstart/systemd direct transition to a executable
 +	allow init_t systemprocess:process { dyntransition siginh };
 +	allow init_t systemprocess:unix_stream_socket create_stream_socket_perms;
@@ -1976,7 +1968,7 @@ Index: refpolicy/policy/modules/system/logging.te
  	init_ranged_daemon_domain(syslogd_t, syslogd_exec_t, mls_systemhigh)
  ')
  
-+tunable_policy(`init_systemd', `
++ifdef(`init_systemd', `
 +	dev_read_kmsg(syslogd_t)
 +	dev_write_kmsg(syslogd_t)
 +	allow syslogd_t self:capability sys_ptrace;

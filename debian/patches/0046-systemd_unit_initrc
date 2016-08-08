@@ -1,4 +1,4 @@
-Description: Add systemd unit types
+Description: Add systemd unit types (hadoop is special)
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-09-13
 
@@ -3597,105 +3597,6 @@ Index: refpolicy/policy/modules/contrib/gpsd.te
  
  type gpsd_tmpfs_t;
  files_tmpfs_file(gpsd_tmpfs_t)
-Index: refpolicy/policy/modules/contrib/hadoop.fc
-===================================================================
---- refpolicy.orig/policy/modules/contrib/hadoop.fc
-+++ refpolicy/policy/modules/contrib/hadoop.fc
-@@ -1,12 +1,12 @@
- /etc/hadoop.*	gen_context(system_u:object_r:hadoop_etc_t,s0)
- 
--/etc/rc\.d/init\.d/hadoop-(.*-)?datanode	--	gen_context(system_u:object_r:hadoop_datanode_initrc_exec_t,s0)
--/etc/rc\.d/init\.d/hadoop-(.*-)?jobtracker	--	gen_context(system_u:object_r:hadoop_jobtracker_initrc_exec_t,s0)
--/etc/rc\.d/init\.d/hadoop-(.*-)?namenode	--	gen_context(system_u:object_r:hadoop_namenode_initrc_exec_t,s0)
--/etc/rc\.d/init\.d/hadoop-(.*-)?secondarynamenode	--	gen_context(system_u:object_r:hadoop_secondarynamenode_initrc_exec_t,s0)
--/etc/rc\.d/init\.d/hadoop-(.*-)?tasktracker	--	gen_context(system_u:object_r:hadoop_tasktracker_initrc_exec_t,s0)
--/etc/rc\.d/init\.d/hadoop-zookeeper	--	gen_context(system_u:object_r:zookeeper_server_initrc_exec_t,s0)
--/etc/rc\.d/init\.d/zookeeper	--	gen_context(system_u:object_r:zookeeper_server_initrc_exec_t,s0)
-+/etc/rc\.d/init\.d/hadoop-(.*-)?datanode	--	gen_context(system_u:object_r:hadoop_datanode_unit_t,s0)
-+/etc/rc\.d/init\.d/hadoop-(.*-)?jobtracker	--	gen_context(system_u:object_r:hadoop_jobtracker_unit_t,s0)
-+/etc/rc\.d/init\.d/hadoop-(.*-)?namenode	--	gen_context(system_u:object_r:hadoop_namenode_unit_t,s0)
-+/etc/rc\.d/init\.d/hadoop-(.*-)?secondarynamenode	--	gen_context(system_u:object_r:hadoop_secondarynamenode_unit_t,s0)
-+/etc/rc\.d/init\.d/hadoop-(.*-)?tasktracker	--	gen_context(system_u:object_r:hadoop_tasktracker_unit_t,s0)
-+/etc/rc\.d/init\.d/hadoop-zookeeper	--	gen_context(system_u:object_r:zookeeper_server_unit_t,s0)
-+/etc/rc\.d/init\.d/zookeeper	--	gen_context(system_u:object_r:zookeeper_server_unit_t,s0)
- 
- /etc/zookeeper(/.*)?	gen_context(system_u:object_r:zookeeper_etc_t,s0)
- /etc/zookeeper\.dist(/.*)?	gen_context(system_u:object_r:zookeeper_etc_t,s0)
-Index: refpolicy/policy/modules/contrib/hadoop.if
-===================================================================
---- refpolicy.orig/policy/modules/contrib/hadoop.if
-+++ refpolicy/policy/modules/contrib/hadoop.if
-@@ -30,8 +30,8 @@ template(`hadoop_domain_template',`
- 	role system_r types hadoop_$1_t;
- 
- 	type hadoop_$1_initrc_t, hadoop_initrc_domain;
--	type hadoop_$1_initrc_exec_t, hadoop_init_script_file;
--	init_script_domain(hadoop_$1_initrc_t, hadoop_$1_initrc_exec_t)
-+	type hadoop_$1_unit_t, hadoop_init_script_file;
-+	init_script_domain(hadoop_$1_initrc_t, hadoop_$1_unit_t)
- 	role system_r types hadoop_$1_initrc_t;
- 
- 	type hadoop_$1_initrc_var_run_t, hadoop_pid_file;
-@@ -252,10 +252,10 @@ interface(`hadoop_recvfrom_zookeeper_ser
- #
- interface(`hadoop_initrc_domtrans_zookeeper_server',`
- 	gen_require(`
--		type zookeeper_server_initrc_exec_t;
-+		type zookeeper_server_unit_t;
- 	')
- 
--	init_labeled_script_domtrans($1, zookeeper_server_initrc_exec_t)
-+	init_labeled_script_domtrans($1, zookeeper_server_unit_t)
- ')
- 
- ########################################
-@@ -436,21 +436,21 @@ interface(`hadoop_admin',`
- 		type zookeeper_t, zookeeper_etc_t, zookeeper_server_t;
- 		type zookeeper_server_var_t;
- 
--		type hadoop_datanode_initrc_t, hadoop_datanode_initrc_exec_t;
--		type hadoop_jobtracker_initrc_t, hadoop_jobtracker_initrc_exec_t;
--		type hadoop_namenode_initrc_t, hadoop_namenode_initrc_exec_t;
--		type hadoop_secondarynamenode_initrc_t, hadoop_secondarynamenode_initrc_exec_t;
--		type hadoop_tasktracker_initrc_t, hadoop_tasktracker_initrc_exec_t;
-+		type hadoop_datanode_initrc_t, hadoop_datanode_unit_t;
-+		type hadoop_jobtracker_initrc_t, hadoop_jobtracker_unit_t;
-+		type hadoop_namenode_initrc_t, hadoop_namenode_unit_t;
-+		type hadoop_secondarynamenode_initrc_t, hadoop_secondarynamenode_unit_t;
-+		type hadoop_tasktracker_initrc_t, hadoop_tasktracker_unit_t;
- 	')
- 
- 	allow $1 { hadoop_domain hadoop_initrc_domain hadoop_t zookeeper_t zookeeper_server_t }:process { ptrace signal_perms };
- 	ps_process_pattern($1, { hadoop_domain hadoop_initrc_domain hadoop_t zookeeper_t zookeeper_server_t })
- 
--	init_startstop_service($1, $2, hadoop_datanode_initrc_t, hadoop_datanode_initrc_exec_t)
--	init_startstop_service($1, $2, hadoop_jobtracker_initrc_t, hadoop_jobtracker_initrc_exec_t)
--	init_startstop_service($1, $2, hadoop_namenode_initrc_t, hadoop_namenode_initrc_exec_t)
--	init_startstop_service($1, $2, hadoop_secondarynamenode_initrc_t, hadoop_secondarynamenode_initrc_exec_t)
--	init_startstop_service($1, $2, hadoop_tasktracker_initrc_t, hadoop_tasktracker_initrc_exec_t)
-+	init_startstop_service($1, $2, hadoop_datanode_initrc_t, hadoop_datanode_unit_t)
-+	init_startstop_service($1, $2, hadoop_jobtracker_initrc_t, hadoop_jobtracker_unit_t)
-+	init_startstop_service($1, $2, hadoop_namenode_initrc_t, hadoop_namenode_unit_t)
-+	init_startstop_service($1, $2, hadoop_secondarynamenode_initrc_t, hadoop_secondarynamenode_unit_t)
-+	init_startstop_service($1, $2, hadoop_tasktracker_initrc_t, hadoop_tasktracker_unit_t)
- 
- 	files_search_etc($1)
- 	admin_pattern($1, { hadoop_etc_t zookeeper_etc_t })
-Index: refpolicy/policy/modules/contrib/hadoop.te
-===================================================================
---- refpolicy.orig/policy/modules/contrib/hadoop.te
-+++ refpolicy/policy/modules/contrib/hadoop.te
-@@ -68,8 +68,8 @@ type zookeeper_server_t;
- type zookeeper_server_exec_t;
- init_daemon_domain(zookeeper_server_t, zookeeper_server_exec_t)
- 
--type zookeeper_server_initrc_exec_t, hadoop_init_script_file;
--init_script_file(zookeeper_server_initrc_exec_t)
-+type zookeeper_server_unit_t, hadoop_init_script_file;
-+init_unit_file(zookeeper_server_unit_t)
- 
- type zookeeper_server_tmp_t, hadoop_tmp_file;
- files_tmp_file(zookeeper_server_tmp_t)
 Index: refpolicy/policy/modules/contrib/hddtemp.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/hddtemp.fc
@@ -10544,55 +10445,6 @@ Index: refpolicy/policy/modules/system/init.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.if
 +++ refpolicy/policy/modules/system/init.if
-@@ -2,48 +2,6 @@
- 
- ########################################
- ## <summary>
--##	Create a file type used for init scripts.
--## </summary>
--## <desc>
--##	<p>
--##	Create a file type used for init scripts.  It can not be
--##	used in conjunction with init_script_domain(). These
--##	script files are typically stored in the /etc/init.d directory.
--##	</p>
--##	<p>
--##	Typically this is used to constrain what services an
--##	admin can start/stop.  For example, a policy writer may want
--##	to constrain a web administrator to only being able to
--##	restart the web server, not other services.  This special type
--##	will help address that goal.
--##	</p>
--##	<p>
--##	This also makes the type usable for files; thus an
--##	explicit call to files_type() is redundant.
--##	</p>
--## </desc>
--## <param name="script_file">
--##	<summary>
--##	Type to be used for a script file.
--##	</summary>
--## </param>
--## <infoflow type="none"/>
--#
--interface(`init_script_file',`
--	gen_require(`
--		type initrc_t;
--		attribute init_script_file_type, init_run_all_scripts_domain;
--	')
--
--	typeattribute $1 init_script_file_type;
--
--	domain_entry_file(initrc_t, $1)
--
--	domtrans_pattern(init_run_all_scripts_domain, $1, initrc_t)
--')
--
--########################################
--## <summary>
- ##   Make the specified type usable for
- ##   systemd unit files.
- ## </summary>
 @@ -56,10 +14,12 @@ interface(`init_script_file',`
  interface(`init_unit_file',`
  	gen_require(`
@@ -10918,3 +10770,12 @@ Index: refpolicy/policy/modules/system/init.te
  init_named_socket_activation(initrc_t, init_var_run_t)
  role system_r types initrc_t;
  # should be part of the true block
+@@ -192,6 +193,8 @@ miscfiles_read_localization(init_t)
+ 
+ ifdef(`init_systemd',`
+ 	init_stop_all_units(init_t)
++	init_reload_all_units(init_t)
++	init_start_all_units(init_t)
+ 
+ 	# handle instances where an old labeled init script is encountered.
+ 	typeattribute init_t init_run_all_scripts_domain;

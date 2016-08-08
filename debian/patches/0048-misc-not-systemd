@@ -1306,7 +1306,7 @@ Index: refpolicy/policy/modules/system/init.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.te
 +++ refpolicy/policy/modules/system/init.te
-@@ -297,10 +297,6 @@ ifdef(`init_systemd',`
+@@ -299,10 +299,6 @@ ifdef(`init_systemd',`
  ',`
  	tunable_policy(`init_upstart',`
  		corecmd_shell_domtrans(init_t, initrc_t)
@@ -1317,7 +1317,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  ')
  
-@@ -554,8 +550,10 @@ miscfiles_read_localization(initrc_t)
+@@ -556,8 +552,10 @@ miscfiles_read_localization(initrc_t)
  # slapd needs to read cert files from its initscript
  miscfiles_read_generic_certs(initrc_t)
  
