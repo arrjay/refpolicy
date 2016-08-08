@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-COMMON_OPTIONS = DISTRO=debian DIRECT_INITRC=y MONOLITHIC=n
+COMMON_OPTIONS = DISTRO=debian DIRECT_INITRC=y MONOLITHIC=n SYSTEMD=y
 FLAVOURS = default mls
 TYPE_default = mcs
 UBAC_default = n

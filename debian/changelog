@@ -17,6 +17,7 @@ refpolicy (2:2.20151208-1.1) unstable; urgency=medium
     relabel man cache, create lock dirs, create xdm and xfs tmp files
   * Labeling dpkg-statoverride as setfiles_exec_t was a bad idea, reverting
   * Changed labelling for Postfix 3.x
+  * Set SYSTEMD=y in the build options
 
  -- Russell Coker <russell@coker.com.au>  Wed, 03 Aug 2016 12:34:23 +1000
 
