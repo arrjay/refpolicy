@@ -64,7 +64,7 @@ Index: refpolicy/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/logging.te
 +++ refpolicy/policy/modules/system/logging.te
-@@ -116,7 +116,9 @@ term_use_all_terms(auditctl_t)
+@@ -123,7 +123,9 @@ term_use_all_terms(auditctl_t)
  
  init_dontaudit_use_fds(auditctl_t)
  
@@ -75,7 +75,7 @@ Index: refpolicy/policy/modules/system/logging.te
  
  logging_set_audit_parameters(auditctl_t)
  logging_send_syslog_msg(auditctl_t)
-@@ -364,7 +366,7 @@ optional_policy(`
+@@ -371,7 +373,7 @@ optional_policy(`
  # sys_admin for the integrated klog of syslog-ng and metalog
  # sys_nice for rsyslog
  # cjp: why net_admin!
@@ -84,7 +84,7 @@ Index: refpolicy/policy/modules/system/logging.te
  dontaudit syslogd_t self:capability sys_tty_config;
  # setpgid for metalog
  # setrlimit for syslog-ng
-@@ -551,6 +553,8 @@ optional_policy(`
+@@ -559,6 +561,8 @@ optional_policy(`
  
  optional_policy(`
  	udev_read_db(syslogd_t)
@@ -202,7 +202,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -2853,6 +2853,35 @@ interface(`userdom_use_user_ptys',`
+@@ -3123,6 +3123,35 @@ interface(`userdom_use_user_ptys',`
  
  ########################################
  ## <summary>
@@ -238,7 +238,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
  ##	Read and write a user TTYs and PTYs.
  ## </summary>
  ## <desc>
-@@ -3403,6 +3432,42 @@ interface(`userdom_signal_all_users',`
+@@ -3673,6 +3702,42 @@ interface(`userdom_signal_all_users',`
  	allow $1 userdomain:process signal;
  ')
  
@@ -281,7 +281,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
  ########################################
  ## <summary>
  ##	Send a SIGCHLD signal to all user domains.
-@@ -3457,3 +3522,41 @@ interface(`userdom_dbus_send_all_users',
+@@ -3727,3 +3792,41 @@ interface(`userdom_dbus_send_all_users',
  
  	allow $1 userdomain:dbus send_msg;
  ')
@@ -1192,7 +1192,7 @@ Index: refpolicy/policy/flask/access_vectors
  
  #
  # Define a common prefix for ipc access vectors.
-@@ -244,7 +244,7 @@ inherits socket
+@@ -298,7 +298,7 @@ inherits socket
  	node_bind
  }
  
@@ -1201,7 +1201,7 @@ Index: refpolicy/policy/flask/access_vectors
  {
  	tcp_recv
  	tcp_send
-@@ -362,7 +362,7 @@ inherits ipc
+@@ -416,7 +416,7 @@ inherits ipc
  
  
  #
@@ -1210,68 +1210,7 @@ Index: refpolicy/policy/flask/access_vectors
  #
  
  class security
-@@ -417,33 +417,33 @@ class capability
- 	# Care should be taken to ensure that these are consistent with
- 	# those definitions. (Order matters)
- 
--	chown           
--	dac_override    
--	dac_read_search 
--	fowner          
--	fsetid          
--	kill            
--	setgid           
--	setuid           
--	setpcap          
--	linux_immutable  
--	net_bind_service 
--	net_broadcast    
--	net_admin        
--	net_raw          
--	ipc_lock         
--	ipc_owner        
--	sys_module       
--	sys_rawio        
--	sys_chroot       
--	sys_ptrace       
--	sys_pacct        
--	sys_admin        
--	sys_boot         
--	sys_nice         
--	sys_resource     
--	sys_time         
--	sys_tty_config  
-+	chown
-+	dac_override
-+	dac_read_search
-+	fowner
-+	fsetid
-+	kill
-+	setgid
-+	setuid
-+	setpcap
-+	linux_immutable
-+	net_bind_service
-+	net_broadcast
-+	net_admin
-+	net_raw
-+	ipc_lock
-+	ipc_owner
-+	sys_module
-+	sys_rawio
-+	sys_chroot
-+	sys_ptrace
-+	sys_pacct
-+	sys_admin
-+	sys_boot
-+	sys_nice
-+	sys_resource
-+	sys_time
-+	sys_tty_config
- 	mknod
- 	lease
- 	audit_write
-@@ -846,7 +846,7 @@ class x_application_data
+@@ -856,7 +856,7 @@ class x_application_data
  class kernel_service
  {
  	use_as_override
@@ -1334,9 +1273,9 @@ Index: refpolicy/policy/modules/system/init.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.if
 +++ refpolicy/policy/modules/system/init.if
-@@ -2483,3 +2483,24 @@ interface(`init_manage_all_units',`
+@@ -2504,3 +2504,24 @@ interface(`init_reload_all_units',`
  
- 	allow $1 systemdunit:service all_service_perms;
+ 	allow $1 systemdunit:service reload;
  ')
 +
 +########################################
@@ -1396,7 +1335,7 @@ Index: refpolicy/policy/modules/services/xserver.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.fc
 +++ refpolicy/policy/modules/services/xserver.fc
-@@ -113,6 +113,7 @@ ifndef(`distro_debian',`
+@@ -117,6 +117,7 @@ ifndef(`distro_debian',`
  /var/run/gdm(3)?(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/gdm(3)?\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/xdm\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)

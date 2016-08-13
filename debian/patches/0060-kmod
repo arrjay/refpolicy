@@ -228,7 +228,7 @@ Index: refpolicy/policy/modules/kernel/kernel.te
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/kernel.te
 +++ refpolicy/policy/modules/kernel/kernel.te
-@@ -274,6 +274,9 @@ selinux_load_policy(kernel_t)
+@@ -278,6 +278,9 @@ selinux_load_policy(kernel_t)
  
  term_use_console(kernel_t)
  
@@ -242,7 +242,7 @@ Index: refpolicy/policy/modules/kernel/terminal.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/terminal.if
 +++ refpolicy/policy/modules/kernel/terminal.if
-@@ -1104,6 +1104,26 @@ interface(`term_getattr_unallocated_ttys
+@@ -1121,6 +1121,26 @@ interface(`term_getattr_unallocated_ttys
  
  ########################################
  ## <summary>

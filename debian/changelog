@@ -1,3 +1,13 @@
+refpolicy (2:2.20160808-0.1) experimental; urgency=medium
+
+  * Rebase to git repository from 20160808, this removes some patches that have
+    already been accepted upstream.
+  * Allow systemd_logind_t to get init status and read /dev/urandom
+  * Allow initrc_t to reload init_t and request reboot
+  * Allow systemd_tmpfiles_t to manage /etc/mtab
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 08 Aug 2016 20:54:09 +1000
+
 refpolicy (2:2.20151208-1.1) unstable; urgency=medium
 
   * Rename the patches that are included upstream to 9xxx for easier tracking
