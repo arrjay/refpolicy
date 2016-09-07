@@ -5,6 +5,7 @@ refpolicy (2:2.20160808-0.1) experimental; urgency=medium
   * Allow systemd_logind_t to get init status and read /dev/urandom
   * Allow initrc_t to reload init_t and request reboot
   * Allow systemd_tmpfiles_t to manage /etc/mtab
+  * Allow mon_test_t to read sysfs.
 
  -- Russell Coker <russell@coker.com.au>  Mon, 08 Aug 2016 20:54:09 +1000
 

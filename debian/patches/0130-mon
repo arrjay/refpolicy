@@ -26,7 +26,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.te
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,136 @@
 +policy_module(mon, 1.12.0)
 +
 +########################################
@@ -146,6 +146,8 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +kernel_dontaudit_getattr_core_if(mon_test_t)
 +domain_read_all_domains_state(mon_test_t)
 +corecmd_exec_shell(mon_test_t)
++dev_read_sysfs(mon_test_t)
++dev_getattr_sysfs(mon_test_t)
 +kernel_getattr_proc(mon_test_t)
 +kernel_read_system_state(mon_test_t)
 +kernel_read_software_raid_state(mon_test_t)
