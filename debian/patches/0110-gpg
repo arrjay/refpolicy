@@ -23,7 +23,7 @@ Index: refpolicy/policy/modules/roles/staff.te
 ===================================================================
 --- refpolicy.orig/policy/modules/roles/staff.te
 +++ refpolicy/policy/modules/roles/staff.te
-@@ -105,10 +105,6 @@ ifndef(`distro_redhat',`
+@@ -109,10 +109,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -62,10 +62,10 @@ Index: refpolicy/policy/modules/contrib/gpg.if
 +	allow gpg_agent_t $2:process signull;
 +	allow $2 gpg_agent_t:fd use;
 +
+ 	allow $2 self:process setrlimit;
  	allow $2 { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t }:process { ptrace signal_perms };
  	ps_process_pattern($2, { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t })
- 
-@@ -45,6 +50,9 @@ interface(`gpg_role',`
+@@ -46,6 +51,9 @@ interface(`gpg_role',`
  	filetrans_pattern($2, gpg_secret_t, gpg_agent_tmp_t, sock_file, "log-socket")
  	userdom_user_home_dir_filetrans($2, gpg_secret_t, dir, ".gnupg")
  
@@ -75,7 +75,7 @@ Index: refpolicy/policy/modules/contrib/gpg.if
  	optional_policy(`
  		gpg_pinentry_dbus_chat($2)
  	')
-@@ -173,6 +181,28 @@ interface(`gpg_signal',`
+@@ -174,6 +182,28 @@ interface(`gpg_signal',`
  	allow $1 gpg_t:process signal;
  ')
  
@@ -123,7 +123,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -1959,6 +1959,24 @@ interface(`userdom_dontaudit_append_user
+@@ -1993,6 +1993,24 @@ interface(`userdom_dontaudit_append_user
  
  ########################################
  ## <summary>

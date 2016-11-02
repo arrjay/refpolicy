@@ -445,7 +445,7 @@ Index: refpolicy/policy/modules/system/init.te
  # Early devtmpfs
  dev_rw_generic_chr_files(init_t)
  
-@@ -1327,6 +1328,7 @@ ifdef(`init_systemd',`
+@@ -1328,6 +1329,7 @@ ifdef(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -453,7 +453,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1407,6 +1409,7 @@ ifdef(`init_systemd',`
+@@ -1408,6 +1410,7 @@ ifdef(`init_systemd',`
  
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
@@ -728,7 +728,7 @@ Index: refpolicy/policy/modules/contrib/gpg.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/gpg.te
 +++ refpolicy/policy/modules/contrib/gpg.te
-@@ -219,6 +219,11 @@ manage_sock_files_pattern(gpg_agent_t, g
+@@ -223,6 +223,11 @@ manage_sock_files_pattern(gpg_agent_t, g
  manage_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
  manage_lnk_files_pattern(gpg_agent_t, gpg_secret_t, gpg_secret_t)
  
@@ -744,7 +744,7 @@ Index: refpolicy/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.if
 +++ refpolicy/policy/modules/services/xserver.if
-@@ -1364,3 +1364,21 @@ interface(`xserver_unconfined',`
+@@ -1385,3 +1385,21 @@ interface(`xserver_unconfined',`
  	typeattribute $1 x_domain;
  	typeattribute $1 xserver_unconfined_type;
  ')
@@ -885,7 +885,7 @@ Index: refpolicy/policy/modules/contrib/gnome.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/gnome.te
 +++ refpolicy/policy/modules/contrib/gnome.te
-@@ -91,6 +91,12 @@ userdom_manage_user_tmp_dirs(gconfd_t)
+@@ -94,6 +94,12 @@ userdom_manage_user_tmp_dirs(gconfd_t)
  userdom_tmp_filetrans_user_tmp(gconfd_t, dir)
  userdom_user_runtime_filetrans_user_tmp(gconfd_t, dir)
  
@@ -1956,57 +1956,13 @@ Index: refpolicy/policy/modules/system/authlogin.te
  
  domain_dontaudit_use_interactive_fds(chkpwd_t)
  
-Index: refpolicy/policy/modules/contrib/logrotate.te
-===================================================================
---- refpolicy.orig/policy/modules/contrib/logrotate.te
-+++ refpolicy/policy/modules/contrib/logrotate.te
-@@ -245,6 +245,11 @@ optional_policy(`
- 	varnishd_manage_log(logrotate_t)
- ')
- 
-+optional_policy(`
-+	webalizer_usage_manage(logrotate_t)
-+	webalizer_run(logrotate_t, system_r)
-+')
-+
- #######################################
- #
- # Mail local policy
-Index: refpolicy/policy/modules/contrib/webalizer.if
-===================================================================
---- refpolicy.orig/policy/modules/contrib/webalizer.if
-+++ refpolicy/policy/modules/contrib/webalizer.if
-@@ -45,3 +45,23 @@ interface(`webalizer_run',`
- 	webalizer_domtrans($1)
- 	roleattribute $2 webalizer_roles;
- ')
-+
-+########################################
-+## <summary>
-+##	Manage webalizer usage files
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed to manage webalizer usage files
-+##	</summary>
-+## </param>
-+## <rolecap/>
-+#
-+interface(`webalizer_usage_manage',`
-+	gen_require(`
-+		type webalizer_usage_t;
-+	')
-+
-+	allow $1 webalizer_usage_t:dir manage_dir_perms;
-+	allow $1 webalizer_usage_t:file manage_file_perms;
-+')
 Index: refpolicy/policy/modules/contrib/webalizer.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/webalizer.te
 +++ refpolicy/policy/modules/contrib/webalizer.te
-@@ -28,6 +28,9 @@ files_type(webalizer_var_lib_t)
- type webalizer_write_t;
- files_type(webalizer_write_t)
+@@ -22,6 +22,9 @@ files_tmp_file(webalizer_tmp_t)
+ type webalizer_var_lib_t;
+ files_type(webalizer_var_lib_t)
  
 +type webalizer_log_t;
 +logging_log_file(webalizer_log_t)
@@ -2014,12 +1970,8 @@ Index: refpolicy/policy/modules/contrib/webalizer.te
  ########################################
  #
  # Local policy
-@@ -40,13 +43,19 @@ allow webalizer_t self:fifo_file rw_fifo
- allow webalizer_t self:unix_dgram_socket sendto;
- allow webalizer_t self:unix_stream_socket { accept connectto listen };
+@@ -36,11 +39,15 @@ allow webalizer_t self:unix_stream_socke
  allow webalizer_t self:tcp_socket { accept listen };
-+allow webalizer_t webalizer_usage_t:dir manage_dir_perms;
-+allow webalizer_t webalizer_usage_t:file manage_file_perms;
  
  allow webalizer_t webalizer_etc_t:file read_file_perms;
 +files_read_usr_files(webalizer_t)
@@ -2034,14 +1986,6 @@ Index: refpolicy/policy/modules/contrib/webalizer.te
  manage_files_pattern(webalizer_t, webalizer_var_lib_t, webalizer_var_lib_t)
  files_var_lib_filetrans(webalizer_t, webalizer_var_lib_t, file)
  
-@@ -56,6 +65,7 @@ kernel_read_kernel_sysctls(webalizer_t)
- kernel_read_system_state(webalizer_t)
- 
- files_read_etc_runtime_files(webalizer_t)
-+miscfiles_read_fonts(webalizer_t)
- 
- fs_search_auto_mountpoints(webalizer_t)
- fs_getattr_xattr_fs(webalizer_t)
 Index: refpolicy/policy/modules/system/logging.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/logging.if
@@ -2359,7 +2303,7 @@ Index: refpolicy/policy/modules/contrib/alsa.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/alsa.fc
 +++ refpolicy/policy/modules/contrib/alsa.fc
-@@ -31,3 +31,4 @@ ifdef(`distro_debian',`
+@@ -28,3 +28,4 @@ ifdef(`distro_debian',`
  /var/lib/alsa(/.*)?	gen_context(system_u:object_r:alsa_var_lib_t,s0)
  
  /var/lock/asound\.state\.lock	--	gen_context(system_u:object_r:alsa_var_lock_t,s0)
@@ -2368,18 +2312,16 @@ Index: refpolicy/policy/modules/contrib/alsa.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/alsa.te
 +++ refpolicy/policy/modules/contrib/alsa.te
-@@ -46,8 +46,11 @@ allow alsa_t self:unix_stream_socket { a
+@@ -46,6 +46,9 @@ allow alsa_t self:unix_stream_socket { a
  
  allow alsa_t alsa_home_t:file read_file_perms;
  
 +files_pid_filetrans(alsa_t, alsa_var_lock_t, dir, "alsa")
- manage_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
- manage_lnk_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
 +manage_lnk_files_pattern(alsa_t, alsa_var_lock_t, alsa_var_lock_t)
 +manage_dirs_pattern(alsa_t, alsa_var_lock_t, alsa_var_lock_t)
- files_etc_filetrans(alsa_t, alsa_etc_rw_t, file)
- 
- can_exec(alsa_t, alsa_exec_t)
+ list_dirs_pattern(alsa_t, alsa_etc_t, alsa_etc_t)
+ read_files_pattern(alsa_t, alsa_etc_t, alsa_etc_t)
+ read_lnk_files_pattern(alsa_t, alsa_etc_t, alsa_etc_t)
 Index: refpolicy/policy/modules/contrib/postfix.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postfix.fc

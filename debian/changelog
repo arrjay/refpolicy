@@ -1,3 +1,9 @@
+refpolicy (2:2.20161023-1) unstable; urgency=medium
+
+  * Rebase to new release
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 02 Nov 2016 15:15:07 +1100
+
 refpolicy (2:2.20160808-0.1) experimental; urgency=medium
 
   * Rebase to git repository from 20160808, this removes some patches that have

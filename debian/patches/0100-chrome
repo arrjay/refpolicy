@@ -257,7 +257,7 @@ Index: refpolicy/policy/modules/roles/staff.te
 ===================================================================
 --- refpolicy.orig/policy/modules/roles/staff.te
 +++ refpolicy/policy/modules/roles/staff.te
-@@ -125,7 +125,7 @@ ifndef(`distro_redhat',`
+@@ -129,7 +129,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
