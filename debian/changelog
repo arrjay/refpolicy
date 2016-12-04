@@ -1,3 +1,15 @@
+refpolicy (2:2.20161023.1-1) unstable; urgency=medium
+
+  * New upstream to remove unwanted files from the archive.
+  * Type mon_test_exec_t for /usr/lib/mon/helper/*
+  * Give init_t and udev_t capability2:wake_alarm for systemd and systemd-udevd
+  * logging_manage_generic_logs(systemd_tmpfiles_t) for /var/log/?tmp
+  * Make bin_t an entrypoint for mon_test_t for scripts run from sudo.
+  * Allow postfix_master_t to getsched for sort and other programs from startup
+    shell scripts
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 04 Dec 2016 22:41:31 +1100
+
 refpolicy (2:2.20161023-1) unstable; urgency=medium
 
   * Rebase to new release

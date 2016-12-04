@@ -15,7 +15,15 @@ Index: refpolicy/policy/modules/contrib/mozilla.fc
  HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
  HOME_DIR/\.netscape(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.phoenix(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-@@ -38,3 +41,9 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
+@@ -13,6 +16,7 @@ HOME_DIR/\.spicec(/.*)?	gen_context(syst
+ HOME_DIR/\.ICAClient(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
+ HOME_DIR/zimbrauserdata(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
+ 
++/usr/bin/chromium	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
+ /usr/bin/epiphany	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
+ /usr/bin/epiphany-bin	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
+ /usr/bin/mozilla	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
+@@ -38,3 +42,9 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
  /usr/lib/nspluginwrapper/npviewer.bin	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
  /usr/lib/nspluginwrapper/plugin-config	--	gen_context(system_u:object_r:mozilla_plugin_config_exec_t,s0)
  /usr/lib/xulrunner[^/]*/plugin-container	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)

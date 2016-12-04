@@ -1176,7 +1176,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  # Use capabilities. old rule:
  allow init_t self:capability ~sys_module;
-+allow init_t self:capability2 block_suspend;
++allow init_t self:capability2 { wake_alarm block_suspend };
  # is ~sys_module really needed? observed:
  # sys_boot
  # sys_tty_config
@@ -1965,6 +1965,15 @@ Index: refpolicy/policy/modules/system/udev.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.te
 +++ refpolicy/policy/modules/system/udev.te
+@@ -40,7 +40,7 @@ ifdef(`enable_mcs',`
+ 
+ allow udev_t self:capability { chown dac_override dac_read_search fowner fsetid sys_admin mknod net_raw net_admin sys_nice sys_rawio sys_resource setuid setgid sys_nice sys_ptrace };
+ dontaudit udev_t self:capability sys_tty_config;
+-allow udev_t self:capability2 block_suspend;
++allow udev_t self:capability2 { wake_alarm block_suspend };
+ allow udev_t self:process ~{ setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+ allow udev_t self:process { execmem setfscreate };
+ allow udev_t self:fd use;
 @@ -82,8 +82,16 @@ files_pid_filetrans(udev_t, udev_var_run
  
  kernel_read_system_state(udev_t)
@@ -2098,7 +2107,7 @@ Index: refpolicy/policy/modules/services/xserver.if
  ##	Read and write the X windows console named pipe.
  ## </summary>
  ## <param name="domain">
-@@ -1098,6 +1134,42 @@ interface(`xserver_dontaudit_getattr_xdm
+@@ -1119,6 +1155,42 @@ interface(`xserver_dontaudit_getattr_xdm
  ')
  
  ########################################
@@ -2185,7 +2194,7 @@ Index: refpolicy/policy/modules/system/lvm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/lvm.te
 +++ refpolicy/policy/modules/system/lvm.te
-@@ -297,6 +297,11 @@ init_dontaudit_getattr_initctl(lvm_t)
+@@ -301,6 +301,11 @@ init_dontaudit_getattr_initctl(lvm_t)
  init_use_script_ptys(lvm_t)
  init_read_script_state(lvm_t)
  
@@ -2501,7 +2510,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -1061,6 +1061,10 @@ template(`userdom_unpriv_user_template',
+@@ -1102,6 +1102,10 @@ template(`userdom_unpriv_user_template',
  	optional_policy(`
  		setroubleshoot_stream_connect($1_t)
  	')
@@ -2516,7 +2525,7 @@ Index: refpolicy/policy/modules/contrib/policykit.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/policykit.te
 +++ refpolicy/policy/modules/contrib/policykit.te
-@@ -99,6 +99,14 @@ auth_use_nsswitch(policykit_t)
+@@ -100,6 +100,14 @@ auth_use_nsswitch(policykit_t)
  userdom_getattr_all_users(policykit_t)
  userdom_read_all_users_state(policykit_t)
  
@@ -2531,7 +2540,7 @@ Index: refpolicy/policy/modules/contrib/policykit.te
  optional_policy(`
  	dbus_system_domain(policykit_t, policykit_exec_t)
  
-@@ -112,6 +120,10 @@ optional_policy(`
+@@ -113,6 +121,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -2644,7 +2653,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create objects in /home.
  ## </summary>
  ## <param name="domain">
-@@ -5576,6 +5594,30 @@ interface(`files_search_var_lib',`
+@@ -5595,6 +5613,30 @@ interface(`files_search_var_lib',`
  
  ########################################
  ## <summary>
@@ -2675,7 +2684,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Do not audit attempts to search the
  ##	contents of /var/lib.
  ## </summary>
-@@ -6396,6 +6438,27 @@ interface(`files_dontaudit_ioctl_all_pid
+@@ -6415,6 +6457,27 @@ interface(`files_dontaudit_ioctl_all_pid
  
  ########################################
  ## <summary>
@@ -2703,7 +2712,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##     manage all pidfile directories
  ##     in the /var/run directory.
  ## </summary>
-@@ -6970,3 +7033,22 @@ interface(`files_delete_all_non_security
+@@ -6989,3 +7052,22 @@ interface(`files_delete_all_non_security
  
          allow $1 non_security_file_type:file_class_set unlink;
  ')
@@ -3503,7 +3512,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  allow systemd_tmpfiles_t self:process { setfscreate getcap };
  
  kernel_read_kernel_sysctls(systemd_tmpfiles_t)
-@@ -305,11 +381,40 @@ kernel_read_kernel_sysctls(systemd_tmpfi
+@@ -305,11 +381,42 @@ kernel_read_kernel_sysctls(systemd_tmpfi
  dev_relabel_all_sysfs(systemd_tmpfiles_t)
  dev_read_urand(systemd_tmpfiles_t)
  dev_manage_all_dev_nodes(systemd_tmpfiles_t)
@@ -3517,6 +3526,8 @@ Index: refpolicy/policy/modules/system/systemd.te
 +files_relabelfrom_home(systemd_tmpfiles_t)
 +miscfiles_relabel_man_cache(systemd_tmpfiles_t)
 +files_create_lock_dirs(systemd_tmpfiles_t)
++
++logging_manage_generic_logs(systemd_tmpfiles_t)
 +
 +optional_policy(`
 +	xserver_create_xdm_tmp_dir(systemd_tmpfiles_t)
@@ -3544,7 +3555,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +433,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +435,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')

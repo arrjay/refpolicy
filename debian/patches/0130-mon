@@ -6,10 +6,11 @@ Index: refpolicy/policy/modules/contrib/mon.fc
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.fc
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
 +
 +/usr/sbin/mon		--	gen_context(system_u:object_r:mon_exec_t,s0)
 +/usr/lib/mon/mon.d/.*	--	gen_context(system_u:object_r:mon_test_exec_t,s0)
++/usr/lib/mon/helper/.*	--	gen_context(system_u:object_r:mon_test_exec_t,s0)
 +/usr/lib/mon-contrib/mon.d/.* -- gen_context(system_u:object_r:mon_test_exec_t,s0)
 +
 +/var/run/mon(/.*)?		gen_context(system_u:object_r:mon_var_run_t,s0)
@@ -155,13 +156,13 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +fs_search_nfs(mon_test_t)
 +fs_getattr_nfs(mon_test_t)
 +
-+
 +optional_policy(`
 +	bind_read_zone(mon_test_t)
 +')
 +
 +optional_policy(`
 +	sudo_role_template(system, system_r, mon_test_t)
++	corecmd_bin_entry_type(mon_test_t)
 +')
 Index: refpolicy/policy/modules/kernel/corenetwork.te.in
 ===================================================================

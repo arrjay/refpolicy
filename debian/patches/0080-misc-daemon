@@ -587,7 +587,15 @@ Index: refpolicy/policy/modules/contrib/postfix.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postfix.te
 +++ refpolicy/policy/modules/contrib/postfix.te
-@@ -234,6 +234,8 @@ manage_files_pattern(postfix_master_t, p
+@@ -172,6 +172,7 @@ optional_policy(`
+ #
+ 
+ allow postfix_server_domain self:capability { setuid setgid dac_override };
++allow postfix_master_t self:process getsched;
+ 
+ allow postfix_server_domain postfix_master_t:unix_stream_socket { connectto rw_stream_socket_perms };
+ 
+@@ -234,6 +235,8 @@ manage_files_pattern(postfix_master_t, p
  manage_lnk_files_pattern(postfix_master_t, postfix_spool_flush_t, postfix_spool_flush_t)
  filetrans_pattern(postfix_master_t, postfix_spool_t, postfix_spool_flush_t, dir, "flush")
  
@@ -596,7 +604,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  create_dirs_pattern(postfix_master_t, postfix_spool_t, postfix_private_t)
  manage_fifo_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
  manage_sock_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
-@@ -326,6 +328,7 @@ optional_policy(`
+@@ -326,6 +329,7 @@ optional_policy(`
  
  optional_policy(`
  	mailman_manage_data_files(postfix_master_t)
@@ -604,7 +612,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ')
  
  optional_policy(`
-@@ -371,6 +374,7 @@ allow postfix_cleanup_t self:process set
+@@ -371,6 +375,7 @@ allow postfix_cleanup_t self:process set
  
  allow postfix_cleanup_t postfix_smtpd_t:tcp_socket rw_stream_socket_perms;
  allow postfix_cleanup_t postfix_smtpd_t:unix_stream_socket rw_socket_perms;
@@ -612,7 +620,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  
  allow postfix_cleanup_t postfix_spool_maildrop_t:dir list_dir_perms;
  allow postfix_cleanup_t postfix_spool_maildrop_t:file read_file_perms;
-@@ -400,6 +404,10 @@ optional_policy(`
+@@ -400,6 +405,10 @@ optional_policy(`
  	mailman_read_data_files(postfix_cleanup_t)
  ')
  
@@ -623,7 +631,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ########################################
  #
  # Local local policy
-@@ -432,6 +440,7 @@ tunable_policy(`postfix_local_write_mail
+@@ -432,6 +441,7 @@ tunable_policy(`postfix_local_write_mail
  optional_policy(`
  	clamav_search_lib(postfix_local_t)
  	clamav_exec_clamscan(postfix_local_t)
@@ -631,7 +639,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ')
  
  optional_policy(`
-@@ -557,6 +566,10 @@ domtrans_pattern(postfix_pipe_t, postfix
+@@ -557,6 +567,10 @@ domtrans_pattern(postfix_pipe_t, postfix
  
  corecmd_exec_bin(postfix_pipe_t)
  
@@ -642,7 +650,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  optional_policy(`
  	dovecot_domtrans_deliver(postfix_pipe_t)
  ')
-@@ -567,6 +580,7 @@ optional_policy(`
+@@ -567,6 +581,7 @@ optional_policy(`
  
  optional_policy(`
  	mailman_domtrans_queue(postfix_pipe_t)
@@ -650,7 +658,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ')
  
  optional_policy(`
-@@ -654,6 +668,10 @@ optional_policy(`
+@@ -654,6 +669,10 @@ optional_policy(`
  	ppp_sigchld(postfix_postqueue_t)
  ')
  
