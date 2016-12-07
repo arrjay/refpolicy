@@ -9,9 +9,9 @@ Index: refpolicy/policy/modules/contrib/mon.fc
 @@ -0,0 +1,10 @@
 +
 +/usr/sbin/mon		--	gen_context(system_u:object_r:mon_exec_t,s0)
-+/usr/lib/mon/mon.d/.*	--	gen_context(system_u:object_r:mon_test_exec_t,s0)
-+/usr/lib/mon/helper/.*	--	gen_context(system_u:object_r:mon_test_exec_t,s0)
-+/usr/lib/mon-contrib/mon.d/.* -- gen_context(system_u:object_r:mon_test_exec_t,s0)
++/usr/lib/mon/mon.d/.*	--	gen_context(system_u:object_r:mon_net_test_exec_t,s0)
++/usr/lib/mon/mon-local.d/.*	--	gen_context(system_u:object_r:mon_local_test_exec_t,s0)
++/usr/lib/mon-contrib/mon.d/.* -- gen_context(system_u:object_r:mon_net_test_exec_t,s0)
 +
 +/var/run/mon(/.*)?		gen_context(system_u:object_r:mon_var_run_t,s0)
 +
@@ -27,7 +27,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.te
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,183 @@
 +policy_module(mon, 1.12.0)
 +
 +########################################
@@ -39,13 +39,23 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +type mon_exec_t;
 +init_daemon_domain(mon_t, mon_exec_t)
 +
-+type mon_test_t;
-+type mon_test_exec_t;
++type mon_net_test_t;
++typealias mon_net_test_t alias mon_test_t;
++type mon_net_test_exec_t;
++typealias mon_net_test_exec_t alias mon_test_exec_t;
 +
-+domain_type(mon_test_t)
-+domain_entry_file(mon_test_t, mon_test_exec_t)
-+role system_r types mon_test_t;
-+domtrans_pattern(mon_t, mon_test_exec_t, mon_test_t)
++domain_type(mon_net_test_t)
++domain_entry_file(mon_net_test_t, mon_net_test_exec_t)
++role system_r types mon_net_test_t;
++domtrans_pattern(mon_t, mon_net_test_exec_t, mon_net_test_t)
++
++type mon_local_test_t;
++type mon_local_test_exec_t;
++
++domain_type(mon_local_test_t)
++domain_entry_file(mon_local_test_t, mon_local_test_exec_t)
++role system_r types mon_local_test_t;
++domtrans_pattern(mon_t, mon_local_test_exec_t, mon_local_test_t)
 +
 +type mon_var_run_t;
 +files_pid_file(mon_var_run_t)
@@ -129,40 +139,77 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +########################################
 +#
 +# Local policy
-+# mon_test_t is for actually running the tests
++# mon_net_test_t is for running tests that need network access
 +#
 +
-+can_exec(mon_test_t, mon_test_exec_t)
-+manage_files_pattern(mon_test_t, mon_var_lib_t, mon_var_lib_t)
-+allow mon_test_t self:fifo_file rw_file_perms;
-+corecmd_exec_bin(mon_test_t)
-+miscfiles_read_localization(mon_test_t)
-+files_read_usr_files(mon_test_t)
-+fs_getattr_xattr_fs(mon_test_t)
-+sysnet_read_config(mon_test_t)
-+auth_use_nsswitch(mon_test_t)
-+dev_read_urand(mon_test_t)
-+corenet_tcp_connect_all_ports(mon_test_t)
-+dev_dontaudit_getattr_all_chr_files(mon_test_t)
-+kernel_dontaudit_getattr_core_if(mon_test_t)
-+domain_read_all_domains_state(mon_test_t)
-+corecmd_exec_shell(mon_test_t)
-+dev_read_sysfs(mon_test_t)
-+dev_getattr_sysfs(mon_test_t)
-+kernel_getattr_proc(mon_test_t)
-+kernel_read_system_state(mon_test_t)
-+kernel_read_software_raid_state(mon_test_t)
-+netutils_domtrans_ping(mon_test_t)
-+fs_search_nfs(mon_test_t)
-+fs_getattr_nfs(mon_test_t)
++can_exec(mon_net_test_t, mon_net_test_exec_t)
++manage_files_pattern(mon_net_test_t, mon_var_lib_t, mon_var_lib_t)
++allow mon_net_test_t self:fifo_file rw_file_perms;
++corecmd_exec_bin(mon_net_test_t)
++miscfiles_read_localization(mon_net_test_t)
++files_read_usr_files(mon_net_test_t)
++fs_getattr_xattr_fs(mon_net_test_t)
++sysnet_read_config(mon_net_test_t)
++auth_use_nsswitch(mon_net_test_t)
++dev_read_urand(mon_net_test_t)
++corenet_tcp_connect_all_ports(mon_net_test_t)
++dev_dontaudit_getattr_all_chr_files(mon_net_test_t)
++kernel_dontaudit_getattr_core_if(mon_net_test_t)
++corecmd_exec_shell(mon_net_test_t)
++dev_read_sysfs(mon_net_test_t)
++dev_getattr_sysfs(mon_net_test_t)
++kernel_getattr_proc(mon_net_test_t)
++kernel_read_system_state(mon_net_test_t)
++netutils_domtrans_ping(mon_net_test_t)
 +
 +optional_policy(`
-+	bind_read_zone(mon_test_t)
++	bind_read_zone(mon_net_test_t)
 +')
 +
++########################################
++#
++# Local policy
++# mon_local_test_t is for running tests that don't need network access
++# this domain has much more access to the local system!
++#
++# try not to use dontaudit rules for this
++#
++
++allow mon_local_test_t self:capability sys_admin;
++
++can_exec(mon_local_test_t, mon_local_test_exec_t)
++manage_files_pattern(mon_local_test_t, mon_var_lib_t, mon_var_lib_t)
++allow mon_local_test_t self:fifo_file rw_file_perms;
++corecmd_exec_bin(mon_local_test_t)
++miscfiles_read_localization(mon_local_test_t)
++files_read_usr_files(mon_local_test_t)
++fs_getattr_xattr_fs(mon_local_test_t)
++sysnet_read_config(mon_local_test_t)
++auth_use_nsswitch(mon_local_test_t)
++dev_read_urand(mon_local_test_t)
++dev_dontaudit_getattr_all_chr_files(mon_local_test_t)
++kernel_dontaudit_getattr_core_if(mon_local_test_t)
++domain_read_all_domains_state(mon_local_test_t)
++corecmd_exec_shell(mon_local_test_t)
++dev_read_sysfs(mon_local_test_t)
++dev_getattr_sysfs(mon_local_test_t)
++kernel_getattr_proc(mon_local_test_t)
++kernel_read_system_state(mon_local_test_t)
++kernel_read_software_raid_state(mon_local_test_t)
++fs_search_nfs(mon_local_test_t)
++fs_getattr_nfs(mon_local_test_t)
++storage_getattr_fixed_disk_dev(mon_local_test_t)
++storage_getattr_removable_dev(mon_local_test_t)
++fs_list_hugetlbfs(mon_local_test_t)
++term_list_ptys(mon_local_test_t)
++term_getattr_generic_ptys(mon_local_test_t)
++fs_list_tmpfs(mon_local_test_t)
++logging_send_syslog_msg(mon_local_test_t)
++getattr_init_fifo(mon_local_test_t)
++
 +optional_policy(`
-+	sudo_role_template(system, system_r, mon_test_t)
-+	corecmd_bin_entry_type(mon_test_t)
++	sudo_role_template(system, system_r, mon_local_test_t)
++	corecmd_bin_entry_type(mon_local_test_t)
 +')
 Index: refpolicy/policy/modules/kernel/corenetwork.te.in
 ===================================================================
@@ -176,3 +223,30 @@ Index: refpolicy/policy/modules/kernel/corenetwork.te.in
  network_port(monopd, tcp,1234,s0)
  network_port(mountd, tcp,20048,s0, udp,20048,s0)
  network_port(movaz_ssc, tcp,5252,s0, udp,5252,s0)
+Index: refpolicy/policy/modules/system/init.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/init.if
++++ refpolicy/policy/modules/system/init.if
+@@ -3203,3 +3203,22 @@ interface(`rename_unlink_init_var_run',`
+ 
+ 	allow $1 init_var_run_t:file { rename getattr unlink };
+ ')
++
++########################################
++## <summary>
++##      stat /run/systemd/initctl/fifo
++## </summary>
++## <param name="domain">
++##      <summary>
++##      domain
++##      </summary>
++## </param>
++#
++interface(`getattr_init_fifo',`
++	gen_require(`
++		type init_var_run_t;
++	')
++
++	allow $1 init_var_run_t:fifo_file getattr;
++	allow $1 init_var_run_t:dir list_dir_perms;
++')

@@ -2381,3 +2381,28 @@ Index: refpolicy/policy/modules/system/libraries.fc
  /usr/lib/altivec/libavcodec\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/cedega/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /usr/lib/dovecot/(.*/)?lib.*\.so.*      --      gen_context(system_u:object_r:lib_t,s0)
+Index: refpolicy/policy/modules/contrib/networkmanager.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/networkmanager.fc
++++ refpolicy/policy/modules/contrib/networkmanager.fc
+@@ -3,7 +3,7 @@
+ /etc/NetworkManager(/.*)?	gen_context(system_u:object_r:NetworkManager_etc_t,s0)
+ /etc/NetworkManager/NetworkManager\.conf	gen_context(system_u:object_r:NetworkManager_etc_rw_t,s0)
+ /etc/NetworkManager/system-connections(/.*)?	gen_context(system_u:object_r:NetworkManager_etc_rw_t,s0)
+-/etc/NetworkManager/dispatcher\.d(/.*)?	gen_context(system_u:object_r:NetworkManager_initrc_exec_t,s0)
++/etc/NetworkManager/dispatcher\.d(/.*)?	--	gen_context(system_u:object_r:NetworkManager_initrc_exec_t,s0)
+ 
+ /etc/dhcp/manager-settings\.conf	--	gen_context(system_u:object_r:NetworkManager_etc_rw_t, s0)
+ /etc/dhcp/wireless-settings\.conf	--	gen_context(system_u:object_r:NetworkManager_etc_rw_t, s0)
+Index: refpolicy/policy/modules/contrib/inetd.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/inetd.te
++++ refpolicy/policy/modules/contrib/inetd.te
+@@ -61,6 +61,7 @@ kernel_read_system_state(inetd_t)
+ kernel_tcp_recvfrom_unlabeled(inetd_t)
+ 
+ corecmd_bin_domtrans(inetd_t, inetd_child_t)
++corecmd_bin_entry_type(inetd_child_t)
+ 
+ corenet_all_recvfrom_unlabeled(inetd_t)
+ corenet_all_recvfrom_netlabel(inetd_t)

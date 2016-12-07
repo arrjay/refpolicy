@@ -1,3 +1,25 @@
+refpolicy (2:2.20161023.1-2) UNRELEASED; urgency=medium
+
+  * Only label files as NetworkManager_initrc_exec_t
+  * Use separate domains mon_net_test_t and mon_local_test_t for network and
+    local tests
+  * Allow boinc to read xdm tmp dirs
+  * Allow unconfined_t to request init to reload it's config
+  * Make bin_t an entrypoint for inetd_child_t
+  * Allow systemd_tmpfiles_t to read selinuxfs and selinux_config_t to find
+    correct context Closes: #834228
+  * Allow systemd_cgroups_t to read selinux_config_t
+  * Allow systemd_sessions_t to get contexts for sessions and default contexts
+    for files for correct labeling
+  * Allow systemd_logind_t to read cgroup files and getattr cgroupfs
+  * Allow systemd_tmpfiles_t to read kmod_var_run_t for
+    /run/tmpfiles.d/kmod.conf
+  * Allow syslogd_t to read SE Linux config
+  * Allow dpkg_script_t to reload systemd configuration and to restart
+    initrc_exec_t units.
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 05 Dec 2016 22:13:59 +1100
+
 refpolicy (2:2.20161023.1-1) unstable; urgency=medium
 
   * New upstream to remove unwanted files from the archive.
