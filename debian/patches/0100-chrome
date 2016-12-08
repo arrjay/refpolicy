@@ -278,7 +278,7 @@ Index: refpolicy/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/roles/sysadm.te
 +++ refpolicy/policy/modules/roles/sysadm.te
-@@ -638,7 +638,7 @@ optional_policy(`
+@@ -639,7 +639,7 @@ optional_policy(`
  ')
  
  optional_policy(`

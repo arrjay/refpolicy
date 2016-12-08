@@ -396,7 +396,50 @@ Index: refpolicy/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -983,21 +1096,6 @@ interface(`init_dbus_chat',`
+@@ -809,6 +922,42 @@ interface(`init_udp_send',`
+ 
+ ########################################
+ ## <summary>
++##	start service (systemd).
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_system_start',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:system start;
++')
++
++########################################
++## <summary>
++##	stop service (systemd).
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_system_stop',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:system stop;
++')
++
++########################################
++## <summary>
+ ##	Get all service status (systemd).
+ ## </summary>
+ ## <param name="domain">
+@@ -983,21 +1132,6 @@ interface(`init_dbus_chat',`
  ##	Domain allowed access.
  ##	</summary>
  ## </param>
@@ -418,7 +461,7 @@ Index: refpolicy/policy/modules/system/init.if
  #
  interface(`init_manage_var_lib_files',`
  	gen_require(`
-@@ -1010,6 +1108,24 @@ interface(`init_manage_var_lib_files',`
+@@ -1010,6 +1144,24 @@ interface(`init_manage_var_lib_files',`
  
  ########################################
  ## <summary>
@@ -443,7 +486,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	Create files in /var/lib/systemd
  ##	with an automatic type transition.
  ## </summary>
-@@ -1149,19 +1265,25 @@ interface(`init_telinit',`
+@@ -1149,19 +1301,25 @@ interface(`init_telinit',`
  		type initctl_t;
  	')
  
@@ -470,7 +513,7 @@ Index: refpolicy/policy/modules/system/init.if
  	')
  ')
  
-@@ -1171,7 +1293,7 @@ interface(`init_telinit',`
+@@ -1171,7 +1329,7 @@ interface(`init_telinit',`
  ## </summary>
  ## <param name="domain">
  ##	<summary>
@@ -479,7 +522,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	</summary>
  ## </param>
  #
-@@ -1269,23 +1391,45 @@ interface(`init_spec_domtrans_script',`
+@@ -1269,19 +1427,41 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -502,11 +545,11 @@ Index: refpolicy/policy/modules/system/init.if
  	ifdef(`enable_mls',`
 -		range_transition $1 initrc_exec_t:process s0 - mls_systemhigh;
 +		range_transition $1 init_script_file_type:process s0 - mls_systemhigh;
- 	')
- ')
- 
- ########################################
- ## <summary>
++	')
++')
++
++########################################
++## <summary>
 +##	Execute a file in a bin directory
 +##	in the initrc_t domain
 +## </summary>
@@ -519,17 +562,13 @@ Index: refpolicy/policy/modules/system/init.if
 +interface(`init_bin_domtrans_spec',`
 +	gen_require(`
 +		type initrc_t;
-+	')
+ 	')
 +
 +	corecmd_bin_domtrans($1, initrc_t)
-+')
-+
-+########################################
-+## <summary>
- ##	Execute a init script in a specified domain.
- ## </summary>
- ## <desc>
-@@ -1337,9 +1481,14 @@ interface(`init_script_file_domtrans',`
+ ')
+ 
+ ########################################
+@@ -1337,9 +1517,14 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
  		type initrc_t;
@@ -544,7 +583,7 @@ Index: refpolicy/policy/modules/system/init.if
  	files_search_etc($1)
  ')
  
-@@ -1494,7 +1643,9 @@ interface(`init_ptrace',`
+@@ -1494,7 +1679,9 @@ interface(`init_ptrace',`
  		type init_t;
  	')
  
@@ -555,7 +594,7 @@ Index: refpolicy/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1612,6 +1763,24 @@ interface(`init_read_all_script_files',`
+@@ -1612,6 +1799,24 @@ interface(`init_read_all_script_files',`
  
  #######################################
  ## <summary>
@@ -580,7 +619,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	Dontaudit read all init script files.
  ## </summary>
  ## <param name="domain">
-@@ -1663,12 +1832,7 @@ interface(`init_read_script_state',`
+@@ -1663,12 +1868,7 @@ interface(`init_read_script_state',`
  	')
  
  	kernel_search_proc($1)
@@ -594,7 +633,7 @@ Index: refpolicy/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -1868,6 +2032,60 @@ interface(`init_rw_script_stream_sockets
+@@ -1868,6 +2068,60 @@ interface(`init_rw_script_stream_sockets
  	allow $1 initrc_t:unix_stream_socket rw_socket_perms;
  ')
  
@@ -655,7 +694,7 @@ Index: refpolicy/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##	Dont audit the specified domain connecting to
-@@ -2015,6 +2233,25 @@ interface(`init_getattr_script_status_fi
+@@ -2015,6 +2269,25 @@ interface(`init_getattr_script_status_fi
  
  ########################################
  ## <summary>
@@ -681,7 +720,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	Do not audit attempts to read init script
  ##	status files.
  ## </summary>
-@@ -2092,6 +2329,24 @@ interface(`init_rw_script_tmp_files',`
+@@ -2092,6 +2365,24 @@ interface(`init_rw_script_tmp_files',`
  
  ########################################
  ## <summary>
@@ -706,7 +745,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	Create files in a init script
  ##	temporary data directory.
  ## </summary>
-@@ -2164,6 +2419,24 @@ interface(`init_read_utmp',`
+@@ -2164,6 +2455,24 @@ interface(`init_read_utmp',`
  
  ########################################
  ## <summary>
@@ -731,7 +770,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	Do not audit attempts to write utmp.
  ## </summary>
  ## <param name="domain">
-@@ -2252,7 +2525,7 @@ interface(`init_dontaudit_rw_utmp',`
+@@ -2252,7 +2561,7 @@ interface(`init_dontaudit_rw_utmp',`
  		type initrc_var_run_t;
  	')
  
@@ -740,7 +779,7 @@ Index: refpolicy/policy/modules/system/init.if
  ')
  
  ########################################
-@@ -2276,6 +2549,24 @@ interface(`init_manage_utmp',`
+@@ -2276,6 +2585,24 @@ interface(`init_manage_utmp',`
  
  ########################################
  ## <summary>
@@ -765,7 +804,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	Create files in /var/run with the
  ##	utmp file type.
  ## </summary>
-@@ -2293,6 +2584,116 @@ interface(`init_pid_filetrans_utmp',`
+@@ -2293,6 +2620,116 @@ interface(`init_pid_filetrans_utmp',`
  	files_pid_filetrans($1, initrc_var_run_t, file, "utmp")
  ')
  
@@ -826,7 +865,7 @@ Index: refpolicy/policy/modules/system/init.if
 +
 +#######################################
 +## <summary>
-+##  Start a service file under /run/systemd/system
++##  Start and stop a service file under /run/systemd/system
 +##  Should we have a different type for this?
 +## </summary>
 +## <param name="domain">
@@ -835,12 +874,12 @@ Index: refpolicy/policy/modules/system/init.if
 +##  </summary>
 +## </param>
 +#
-+interface(`start_init_var_run_service',`
++interface(`start_stop_init_var_run_service',`
 +    gen_require(`
 +        type init_var_run_t;
 +    ')
 +
-+    allow $1 init_var_run_t:service { start status };
++    allow $1 init_var_run_t:service { start status stop };
 +')
 +
 +#######################################
@@ -882,7 +921,7 @@ Index: refpolicy/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##	Allow the specified domain to connect to daemon with a tcp socket
-@@ -2505,6 +2906,250 @@ interface(`init_reload_all_units',`
+@@ -2505,6 +2942,250 @@ interface(`init_reload_all_units',`
  	allow $1 systemdunit:service reload;
  ')
  
@@ -1133,7 +1172,7 @@ Index: refpolicy/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##      Init will execute a shell in the specified domain.
-@@ -2525,3 +3170,57 @@ interface(`init_shell_domtrans',`
+@@ -2525,3 +3206,57 @@ interface(`init_shell_domtrans',`
  	allow $1 init_t:fifo_file rw_file_perms;
  	allow $1 init_t:process sigchld;
  ')
@@ -3517,7 +3556,22 @@ Index: refpolicy/policy/modules/system/systemd.te
  #
  # Unit file types
  #
-@@ -145,6 +161,17 @@ logging_send_syslog_msg(systemd_log_pars
+@@ -140,11 +156,32 @@ logging_send_syslog_msg(systemd_log_pars
+ 
+ ######################################
+ #
++# backlight local policy
++#
++
++kernel_read_system_state(systemd_backlight_t)
++allow systemd_backlight_t self:unix_dgram_socket connected_socket_perms;
++dev_write_kmsg(systemd_backlight_t)
++
++
++######################################
++#
+ # Cgroups local policy
+ #
  
  kernel_domtrans_to(systemd_cgroups_t, systemd_cgroups_exec_t)
  kernel_dgram_send(systemd_cgroups_t)
@@ -3535,7 +3589,15 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  init_stream_connect(systemd_cgroups_t)
  
-@@ -192,7 +219,7 @@ optional_policy(`
+@@ -180,6 +217,7 @@ files_read_etc_files(systemd_hostnamed_t
+ seutil_read_file_contexts(systemd_hostnamed_t)
+ 
+ systemd_log_parse_environment(systemd_hostnamed_t)
++dev_read_sysfs(systemd_hostnamed_t)
+ 
+ optional_policy(`
+ 	dbus_system_bus_client(systemd_hostnamed_t)
+@@ -192,7 +230,7 @@ optional_policy(`
  #
  
  allow systemd_logind_t self:capability { fowner sys_tty_config chown dac_override };
@@ -3544,7 +3606,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
  allow systemd_logind_t self:fifo_file rw_fifo_file_perms;
-@@ -200,6 +227,15 @@ allow systemd_logind_t self:fifo_file rw
+@@ -200,6 +238,15 @@ allow systemd_logind_t self:fifo_file rw
  allow systemd_logind_t systemd_logind_var_lib_t:dir manage_dir_perms;
  init_var_lib_filetrans(systemd_logind_t, systemd_logind_var_lib_t, dir)
  
@@ -3560,7 +3622,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  manage_fifo_files_pattern(systemd_logind_t, systemd_logind_var_run_t, systemd_logind_var_run_t)
  manage_files_pattern(systemd_logind_t, systemd_logind_var_run_t, systemd_logind_var_run_t)
  files_search_pids(systemd_logind_t)
-@@ -214,6 +250,7 @@ dev_getattr_dri_dev(systemd_logind_t)
+@@ -214,6 +261,7 @@ dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
  dev_getattr_sound_dev(systemd_logind_t)
  dev_setattr_sound_dev(systemd_logind_t)
@@ -3568,15 +3630,18 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  files_read_etc_files(systemd_logind_t)
  
-@@ -233,6 +270,7 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +281,10 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
 +init_get_system_status(systemd_logind_t)
++init_system_start(systemd_logind_t)
++init_system_stop(systemd_logind_t)
++start_stop_init_var_run_service(systemd_logind_t)
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -249,6 +287,56 @@ optional_policy(`
+@@ -249,6 +301,74 @@ optional_policy(`
  	dbus_connect_system_bus(systemd_logind_t)
  ')
  
@@ -3630,10 +3695,28 @@ Index: refpolicy/policy/modules/system/systemd.te
 +        plymouthd_stream_connect(systemd_passwd_agent_t)
 +')
 +
++#########################################
++#
++# machined local policy
++#
++
++allow systemd_machined_t self:capability sys_ptrace;
++allow systemd_machined_t self:process setfscreate;
++allow systemd_machined_t self:unix_dgram_socket { connected_socket_perms connect };
++kernel_read_kernel_sysctls(systemd_machined_t)
++logging_send_syslog_msg(systemd_machined_t)
++kernel_read_system_state(systemd_machined_t)
++init_read_state(systemd_machined_t)
++init_service_start(systemd_machined_t)
++init_service_status(systemd_machined_t)
++optional_policy(`
++	dbus_system_bus_client(systemd_machined_t)
++')
++
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +378,13 @@ optional_policy(`
+@@ -290,6 +410,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -3647,7 +3730,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +392,66 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +424,66 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -3684,7 +3767,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_manage_utmp(systemd_tmpfiles_t)
 +init_relabel_utmp(systemd_tmpfiles_t)
 +init_manage_var_lib_files(systemd_tmpfiles_t)
-+init_relabel_var_lib_files(systemd_tmpfiles_t)
++init_relabel_var_lib_dirs(systemd_tmpfiles_t)
 +
 +logging_manage_generic_logs(systemd_tmpfiles_t)
 +logging_set_perms_syslogd_tmp(systemd_tmpfiles_t)
@@ -3715,7 +3798,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +470,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +502,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')

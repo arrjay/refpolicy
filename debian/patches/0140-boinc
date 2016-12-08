@@ -2,12 +2,21 @@ Index: refpolicy/policy/modules/contrib/boinc.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/boinc.te
 +++ refpolicy/policy/modules/contrib/boinc.te
-@@ -143,6 +143,9 @@ logging_send_syslog_msg(boinc_t)
+@@ -85,6 +85,7 @@ domtrans_pattern(boinc_t, boinc_project_
+ 
+ kernel_read_system_state(boinc_t)
+ kernel_search_vm_sysctl(boinc_t)
++kernel_read_crypto_sysctls(boinc_t)
+ 
+ corenet_all_recvfrom_unlabeled(boinc_t)
+ corenet_all_recvfrom_netlabel(boinc_t)
+@@ -143,6 +144,10 @@ logging_send_syslog_msg(boinc_t)
  miscfiles_read_fonts(boinc_t)
  miscfiles_read_localization(boinc_t)
  
 +xserver_list_xdm_tmp(boinc_t)
 +corenet_tcp_connect_xserver_port(boinc_t)
++xserver_non_drawing_client(boinc_t)
 +
  tunable_policy(`boinc_execmem',`
  	allow boinc_t self:process { execstack execmem };

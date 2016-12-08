@@ -109,7 +109,7 @@ Index: refpolicy/policy/modules/system/lvm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/lvm.te
 +++ refpolicy/policy/modules/system/lvm.te
-@@ -297,6 +297,9 @@ init_dontaudit_getattr_initctl(lvm_t)
+@@ -301,6 +301,9 @@ init_dontaudit_getattr_initctl(lvm_t)
  init_use_script_ptys(lvm_t)
  init_read_script_state(lvm_t)
  
@@ -202,7 +202,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -3123,6 +3123,35 @@ interface(`userdom_use_user_ptys',`
+@@ -3222,6 +3222,35 @@ interface(`userdom_use_user_ptys',`
  
  ########################################
  ## <summary>
@@ -238,7 +238,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
  ##	Read and write a user TTYs and PTYs.
  ## </summary>
  ## <desc>
-@@ -3673,6 +3702,42 @@ interface(`userdom_signal_all_users',`
+@@ -3772,6 +3801,42 @@ interface(`userdom_signal_all_users',`
  	allow $1 userdomain:process signal;
  ')
  
@@ -281,7 +281,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
  ########################################
  ## <summary>
  ##	Send a SIGCHLD signal to all user domains.
-@@ -3727,3 +3792,41 @@ interface(`userdom_dbus_send_all_users',
+@@ -3826,3 +3891,41 @@ interface(`userdom_dbus_send_all_users',
  
  	allow $1 userdomain:dbus send_msg;
  ')
@@ -327,7 +327,7 @@ Index: refpolicy/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/files.if
 +++ refpolicy/policy/modules/kernel/files.if
-@@ -4506,6 +4506,42 @@ interface(`files_mounton_tmp',`
+@@ -4525,6 +4525,42 @@ interface(`files_mounton_tmp',`
  
  ########################################
  ## <summary>
@@ -370,7 +370,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Set the attributes of all tmp directories.
  ## </summary>
  ## <param name="domain">
-@@ -6360,6 +6396,25 @@ interface(`files_dontaudit_ioctl_all_pid
+@@ -6379,6 +6415,25 @@ interface(`files_dontaudit_ioctl_all_pid
  
  ########################################
  ## <summary>
@@ -396,7 +396,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Read all process ID files.
  ## </summary>
  ## <param name="domain">
-@@ -6382,6 +6437,42 @@ interface(`files_read_all_pids',`
+@@ -6401,6 +6456,42 @@ interface(`files_read_all_pids',`
  
  ########################################
  ## <summary>
@@ -439,7 +439,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Delete all process IDs.
  ## </summary>
  ## <param name="domain">
-@@ -6729,3 +6820,153 @@ interface(`files_unconfined',`
+@@ -6748,3 +6839,153 @@ interface(`files_unconfined',`
  
  	typeattribute $1 files_unconfined_type;
  ')
@@ -1157,7 +1157,7 @@ Index: refpolicy/policy/modules/system/sysnetwork.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/sysnetwork.te
 +++ refpolicy/policy/modules/system/sysnetwork.te
-@@ -143,7 +143,9 @@ logging_send_syslog_msg(dhcpc_t)
+@@ -145,7 +145,9 @@ logging_send_syslog_msg(dhcpc_t)
  
  miscfiles_read_localization(dhcpc_t)
  
@@ -1168,7 +1168,7 @@ Index: refpolicy/policy/modules/system/sysnetwork.te
  
  sysnet_run_ifconfig(dhcpc_t, dhcpc_roles)
  
-@@ -327,7 +329,9 @@ logging_send_syslog_msg(ifconfig_t)
+@@ -329,7 +331,9 @@ logging_send_syslog_msg(ifconfig_t)
  
  miscfiles_read_localization(ifconfig_t)
  
@@ -1210,7 +1210,7 @@ Index: refpolicy/policy/flask/access_vectors
  #
  
  class security
-@@ -856,7 +856,7 @@ class x_application_data
+@@ -857,7 +857,7 @@ class x_application_data
  class kernel_service
  {
  	use_as_override
@@ -1335,7 +1335,7 @@ Index: refpolicy/policy/modules/services/xserver.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.fc
 +++ refpolicy/policy/modules/services/xserver.fc
-@@ -117,6 +117,7 @@ ifndef(`distro_debian',`
+@@ -118,6 +118,7 @@ ifndef(`distro_debian',`
  /var/run/gdm(3)?(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/gdm(3)?\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/xdm\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
@@ -1372,7 +1372,7 @@ Index: refpolicy/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.if
 +++ refpolicy/policy/modules/services/xserver.if
-@@ -811,7 +811,7 @@ interface(`xserver_setattr_xdm_tmp_dirs'
+@@ -832,7 +832,7 @@ interface(`xserver_setattr_xdm_tmp_dirs'
  
  ########################################
  ## <summary>
@@ -1381,7 +1381,7 @@ Index: refpolicy/policy/modules/services/xserver.if
  ##	temporary directory.
  ## </summary>
  ## <param name="domain">
-@@ -828,6 +828,7 @@ interface(`xserver_create_xdm_tmp_socket
+@@ -849,6 +849,7 @@ interface(`xserver_create_xdm_tmp_socket
  	files_search_tmp($1)
  	allow $1 xdm_tmp_t:dir list_dir_perms;
  	create_sock_files_pattern($1, xdm_tmp_t, xdm_tmp_t)

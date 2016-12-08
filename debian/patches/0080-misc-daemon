@@ -48,6 +48,14 @@ Index: refpolicy/policy/modules/contrib/tor.te
  allow tor_t self:process signal;
  allow tor_t self:fifo_file rw_fifo_file_perms;
  allow tor_t self:unix_stream_socket { accept listen };
+@@ -62,6 +62,7 @@ create_files_pattern(tor_t, tor_var_log_
+ setattr_files_pattern(tor_t, tor_var_log_t, tor_var_log_t)
+ manage_sock_files_pattern(tor_t, tor_var_log_t, tor_var_log_t)
+ logging_log_filetrans(tor_t, tor_var_log_t, { sock_file file dir })
++fs_search_tmpfs(tor_t)
+ 
+ manage_dirs_pattern(tor_t, tor_var_run_t, tor_var_run_t)
+ manage_files_pattern(tor_t, tor_var_run_t, tor_var_run_t)
 Index: refpolicy/policy/modules/contrib/cron.if
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.if
@@ -380,11 +388,13 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
-@@ -474,6 +486,7 @@ allow system_cronjob_t cron_spool_t:dir
+@@ -473,7 +485,8 @@ allow system_cronjob_t crond_t:process s
+ allow system_cronjob_t cron_spool_t:dir list_dir_perms;
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
- allow system_cronjob_t crond_tmp_t:file { read write };
-+allow cronjob_t crond_tmp_t:file { read write };
+-allow system_cronjob_t crond_tmp_t:file { read write };
++allow system_cronjob_t crond_tmp_t:file rw_inherited_file_perms;
++allow cronjob_t crond_tmp_t:file rw_inherited_file_perms;
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
@@ -445,6 +455,15 @@ Index: refpolicy/policy/modules/system/init.te
  # Early devtmpfs
  dev_rw_generic_chr_files(init_t)
  
+@@ -389,7 +390,7 @@ optional_policy(`
+ 
+ allow initrc_t self:process { getpgid setsched setpgid setrlimit getsched };
+ allow initrc_t self:capability ~{ sys_admin sys_module };
+-allow initrc_t self:capability2 block_suspend;
++allow initrc_t self:capability2 { wake_alarm block_suspend };
+ dontaudit initrc_t self:capability sys_module; # sysctl is triggering this
+ allow initrc_t self:passwd rootok;
+ allow initrc_t self:key manage_key_perms;
 @@ -1328,6 +1329,7 @@ ifdef(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
@@ -850,6 +869,16 @@ Index: refpolicy/policy/modules/system/locallogin.te
  allow local_login_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow local_login_t self:process { setrlimit setexec };
  allow local_login_t self:fd use;
+@@ -240,6 +240,9 @@ fs_rw_tmpfs_chr_files(sulogin_t)
+ files_read_etc_files(sulogin_t)
+ 
+ auth_read_shadow(sulogin_t)
++auth_login_pgm_domain(sulogin_t)
++kernel_read_crypto_sysctls(sulogin_t)
++selinux_set_generic_booleans(sulogin_t)
+ 
+ init_getpgid_script(sulogin_t)
+ 
 Index: refpolicy/policy/modules/system/sysnetwork.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/sysnetwork.fc
@@ -1322,7 +1351,12 @@ Index: refpolicy/policy/modules/contrib/mta.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mta.te
 +++ refpolicy/policy/modules/contrib/mta.te
-@@ -203,6 +203,10 @@ init_use_script_ptys(system_mail_t)
+@@ -199,10 +199,15 @@ selinux_getattr_fs(system_mail_t)
+ term_dontaudit_use_unallocated_ttys(system_mail_t)
+ 
+ init_use_script_ptys(system_mail_t)
++init_use_fds(system_mail_t)
+ 
  userdom_use_user_terminals(system_mail_t)
  
  optional_policy(`
@@ -1333,7 +1367,7 @@ Index: refpolicy/policy/modules/contrib/mta.te
  	apache_read_squirrelmail_data(system_mail_t)
  	apache_append_squirrelmail_data(system_mail_t)
  	apache_dontaudit_append_log(system_mail_t)
-@@ -233,6 +237,7 @@ optional_policy(`
+@@ -233,6 +238,7 @@ optional_policy(`
  	cron_read_system_job_tmp_files(system_mail_t)
  	cron_dontaudit_write_pipes(system_mail_t)
  	cron_rw_system_job_stream_sockets(system_mail_t)
@@ -2299,7 +2333,7 @@ Index: refpolicy/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/roles/sysadm.te
 +++ refpolicy/policy/modules/roles/sysadm.te
-@@ -353,6 +353,7 @@ optional_policy(`
+@@ -354,6 +354,7 @@ optional_policy(`
  
  optional_policy(`
  	dmesg_exec(sysadm_t)
@@ -2406,3 +2440,27 @@ Index: refpolicy/policy/modules/contrib/inetd.te
  
  corenet_all_recvfrom_unlabeled(inetd_t)
  corenet_all_recvfrom_netlabel(inetd_t)
+Index: refpolicy/policy/modules/contrib/devicekit.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/devicekit.te
++++ refpolicy/policy/modules/contrib/devicekit.te
+@@ -198,6 +198,7 @@ optional_policy(`
+ #
+ 
+ allow devicekit_power_t self:capability { dac_override net_admin sys_admin sys_tty_config sys_nice sys_ptrace };
++allow devicekit_power_t self:capability2 wake_alarm;
+ allow devicekit_power_t self:process { getsched signal_perms };
+ allow devicekit_power_t self:fifo_file rw_fifo_file_perms;
+ allow devicekit_power_t self:unix_dgram_socket create_socket_perms;
+Index: refpolicy/policy/modules/services/xserver.te
+===================================================================
+--- refpolicy.orig/policy/modules/services/xserver.te
++++ refpolicy/policy/modules/services/xserver.te
+@@ -618,6 +618,7 @@ allow xserver_t input_xevent_t:x_event s
+ 
+ allow xserver_t self:capability { dac_override fowner fsetid setgid setuid ipc_owner sys_rawio sys_admin sys_nice sys_tty_config mknod net_bind_service };
+ dontaudit xserver_t self:capability chown;
++allow xserver_t self:capability2 wake_alarm;
+ allow xserver_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+ allow xserver_t self:fd use;
+ allow xserver_t self:fifo_file rw_fifo_file_perms;

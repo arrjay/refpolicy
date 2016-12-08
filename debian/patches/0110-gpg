@@ -38,7 +38,7 @@ Index: refpolicy/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/roles/sysadm.te
 +++ refpolicy/policy/modules/roles/sysadm.te
-@@ -1262,10 +1262,6 @@ ifndef(`distro_redhat',`
+@@ -1263,10 +1263,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
