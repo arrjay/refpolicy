@@ -1,3 +1,31 @@
+refpolicy (2:2.20161023.1-3) unstable; urgency=medium
+
+  * Allow ntpd_t to create sockets.
+  * Allow systemd_hostnamed_t and systemd_logind_t to talk to NetworkManager_t
+    via dbus.
+  * Allow systemd_backlight_t to send syslog messages, read sysfs, read etc_t
+    files, read init state, read udev_var_run_t files (udev data).
+  * Allow systemd_machined_t to send messages to init_t and initrc_t via dbus,
+    connect to the system dbus, read etc_t files, and start and stop init_var_run_t services and init_t system
+  * Allow systemd_logind_t to talk to devicekit_power_t and unconfined_t over
+    dbus
+  * Allow systemd_tmpfiles_t to read proc_net_t
+  * Use /sbin/ldconfig instead of /sbin/ldconfig.real
+  * Give devicekit_disk_t wake_alarm capability
+  * Write policy for systemd_coredump_t
+  * Allow systemd_logind_t to read xdm_t files for XDM state and talk to xdm
+    via dbus.
+  * Change /lib/systemd/systemd-cryptsetup to
+    /usr/lib/systemd/systemd-cryptsetup so file_contexts.subs_dist doesn't
+    cause the wrong name to match. Allow lvm_t to load modules for
+    systemd-cryptsetup
+  * Allow mon_local_test_t to stat gpmctl_t socket. Generally allow the local
+    tests to access most things that can't do any harm.
+  * Allow systemd_passwd_agent_t to use getty_t fds and read init state.
+  * Allow unconfined domains to start and stop etc_t units
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 15 Dec 2016 19:09:45 +1100
+
 refpolicy (2:2.20161023.1-2) unstable; urgency=medium
 
   * Only label files as NetworkManager_initrc_exec_t

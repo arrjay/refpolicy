@@ -28,7 +28,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.te
-@@ -0,0 +1,183 @@
+@@ -0,0 +1,187 @@
 +policy_module(mon, 1.12.0)
 +
 +########################################
@@ -211,6 +211,10 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +optional_policy(`
 +	sudo_role_template(system, system_r, mon_local_test_t)
 +	corecmd_bin_entry_type(mon_local_test_t)
++')
++
++optional_policy(`
++	gpm_getattr_gpmctl(mon_local_test_t)
 +')
 Index: refpolicy/policy/modules/kernel/corenetwork.te.in
 ===================================================================

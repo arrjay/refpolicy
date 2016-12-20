@@ -308,9 +308,9 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.te
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -430,6 +430,9 @@ userdom_relabel_user_runtime_root_dirs(s
- 
+@@ -461,6 +461,9 @@ userdom_relabel_user_runtime_root_dirs(s
  kernel_read_kernel_sysctls(systemd_tmpfiles_t)
+ kernel_read_network_state(systemd_tmpfiles_t)
  
 +# for /run/tmpfiles.d/kmod.conf
 +modutils_var_run_files(systemd_tmpfiles_t)

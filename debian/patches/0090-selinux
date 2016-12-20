@@ -630,22 +630,6 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
  
-Index: refpolicy/policy/modules/system/libraries.fc
-===================================================================
---- refpolicy.orig/policy/modules/system/libraries.fc
-+++ refpolicy/policy/modules/system/libraries.fc
-@@ -91,7 +91,11 @@ ifdef(`distro_redhat',`
- #
- # /sbin
- #
-+ifdef(`distro_debian',`
-+/sbin/ldconfig.real				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
-+',`
- /sbin/ldconfig				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
-+')
- 
- #
- # /usr
 Index: refpolicy/policy/modules/contrib/apt.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apt.te
@@ -816,7 +800,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.te
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -460,6 +460,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
+@@ -520,6 +520,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
  auth_relabel_login_records(systemd_tmpfiles_t)
  auth_setattr_login_records(systemd_tmpfiles_t)

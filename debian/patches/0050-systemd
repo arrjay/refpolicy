@@ -2307,7 +2307,15 @@ Index: refpolicy/policy/modules/system/lvm.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/lvm.te
 +++ refpolicy/policy/modules/system/lvm.te
-@@ -301,6 +301,11 @@ init_dontaudit_getattr_initctl(lvm_t)
+@@ -219,6 +219,7 @@ filetrans_pattern(lvm_t, lvm_etc_t, lvm_
+ files_etc_filetrans(lvm_t, lvm_metadata_t, file)
+ files_search_mnt(lvm_t)
+ 
++kernel_request_load_module(lvm_t)
+ kernel_get_sysvipc_info(lvm_t)
+ kernel_read_system_state(lvm_t)
+ # Read system variables in /proc/sys
+@@ -301,6 +302,11 @@ init_dontaudit_getattr_initctl(lvm_t)
  init_use_script_ptys(lvm_t)
  init_read_script_state(lvm_t)
  
@@ -2769,7 +2777,50 @@ Index: refpolicy/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/files.if
 +++ refpolicy/policy/modules/kernel/files.if
-@@ -3680,6 +3680,24 @@ interface(`files_relabelto_home',`
+@@ -2908,6 +2908,42 @@ interface(`files_get_etc_unit_status',`
+ 	allow $1 etc_t:service status;
+ ')
+ 
++########################################
++## <summary>
++##	start etc_t service
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_etc_unit_start',`
++	gen_require(`
++		type etc_t;
++	')
++
++	allow $1 etc_t:service start;
++')
++
++########################################
++## <summary>
++##	stop etc_t service
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_etc_unit_stop',`
++	gen_require(`
++		type etc_t;
++	')
++
++	allow $1 etc_t:service stop;
++')
++
+ #######################################
+ ## <summary>
+ ##	Relabel from and to generic files in /etc.
+@@ -3680,6 +3716,24 @@ interface(`files_relabelto_home',`
  
  ########################################
  ## <summary>
@@ -2794,7 +2845,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create objects in /home.
  ## </summary>
  ## <param name="domain">
-@@ -5595,6 +5613,30 @@ interface(`files_search_var_lib',`
+@@ -5595,6 +5649,30 @@ interface(`files_search_var_lib',`
  
  ########################################
  ## <summary>
@@ -2825,7 +2876,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Do not audit attempts to search the
  ##	contents of /var/lib.
  ## </summary>
-@@ -6415,6 +6457,27 @@ interface(`files_dontaudit_ioctl_all_pid
+@@ -6415,6 +6493,27 @@ interface(`files_dontaudit_ioctl_all_pid
  
  ########################################
  ## <summary>
@@ -2853,38 +2904,30 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##     manage all pidfile directories
  ##     in the /var/run directory.
  ## </summary>
-@@ -6989,3 +7052,22 @@ interface(`files_delete_all_non_security
+@@ -6989,3 +7088,4 @@ interface(`files_delete_all_non_security
  
          allow $1 non_security_file_type:file_class_set unlink;
  ')
 +
-+########################################
-+## <summary>
-+##     Allow a domain to get service status for etc_t (/etc/fstab)
-+## </summary>
-+## <param name="domain">
-+##     <summary>
-+##     Domain to get status of etc_t service
-+##     </summary>
-+## </param>
-+#
-+interface(`get_etc_service_status',`
-+        gen_require(`
-+                type etc_t;
-+		class service status;
-+        ')
-+
-+        allow $1 etc_t:service status;
-+')
 Index: refpolicy/policy/modules/system/unconfined.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/unconfined.if
 +++ refpolicy/policy/modules/system/unconfined.if
-@@ -44,6 +44,7 @@ interface(`unconfined_domain_noaudit',`
+@@ -16,6 +16,7 @@ interface(`unconfined_domain_noaudit',`
+ 		class dbus all_dbus_perms;
+ 		class nscd all_nscd_perms;
+ 		class passwd all_passwd_perms;
++		class service all_service_perms;
+ 	')
+ 
+ 	# Use most Linux capabilities
+@@ -44,6 +45,9 @@ interface(`unconfined_domain_noaudit',`
  	files_unconfined($1)
  	fs_unconfined($1)
  	selinux_unconfined($1)
-+	get_etc_service_status($1)
++	files_get_etc_unit_status($1)
++	files_etc_unit_start($1)
++	files_etc_unit_stop($1)
  
  	tunable_policy(`allow_execheap',`
  		# Allow making the stack executable via mprotect.
@@ -3556,7 +3599,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #
  # Unit file types
  #
-@@ -140,11 +156,32 @@ logging_send_syslog_msg(systemd_log_pars
+@@ -140,11 +156,40 @@ logging_send_syslog_msg(systemd_log_pars
  
  ######################################
  #
@@ -3566,7 +3609,15 @@ Index: refpolicy/policy/modules/system/systemd.te
 +kernel_read_system_state(systemd_backlight_t)
 +allow systemd_backlight_t self:unix_dgram_socket connected_socket_perms;
 +dev_write_kmsg(systemd_backlight_t)
++logging_send_syslog_msg(systemd_backlight_t)
++dev_read_sysfs(systemd_backlight_t)
++allow systemd_backlight_t self:unix_dgram_socket connect;
++init_read_state(systemd_backlight_t)
++# for /run/udev/data/+backlight*
++udev_read_pid_files(systemd_backlight_t)
 +
++# for udev.conf
++files_read_etc_files(systemd_backlight_t)
 +
 +######################################
 +#
@@ -3589,7 +3640,25 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  init_stream_connect(systemd_cgroups_t)
  
-@@ -180,6 +217,7 @@ files_read_etc_files(systemd_hostnamed_t
+@@ -170,6 +215,17 @@ optional_policy(`
+ 
+ #######################################
+ #
++# coredump policy
++#
++
++files_read_etc_files(systemd_coredump_t)
++kernel_use_fds(systemd_coredump_t)
++dev_write_kmsg(systemd_coredump_t)
++kernel_read_system_state(systemd_coredump_t)
++allow systemd_coredump_t self:unix_dgram_socket create;
++
++#######################################
++#
+ # Hostnamed policy
+ #
+ 
+@@ -180,19 +236,24 @@ files_read_etc_files(systemd_hostnamed_t
  seutil_read_file_contexts(systemd_hostnamed_t)
  
  systemd_log_parse_environment(systemd_hostnamed_t)
@@ -3597,7 +3666,16 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  optional_policy(`
  	dbus_system_bus_client(systemd_hostnamed_t)
-@@ -192,7 +230,7 @@ optional_policy(`
+ 	dbus_connect_system_bus(systemd_hostnamed_t)
+ ')
+ 
++optional_policy(`
++	networkmanager_dbus_chat(systemd_hostnamed_t)
++')
++
+ #########################################
+ #
+ # Logind local policy
  #
  
  allow systemd_logind_t self:capability { fowner sys_tty_config chown dac_override };
@@ -3606,7 +3684,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
  allow systemd_logind_t self:fifo_file rw_fifo_file_perms;
-@@ -200,6 +238,15 @@ allow systemd_logind_t self:fifo_file rw
+@@ -200,6 +261,15 @@ allow systemd_logind_t self:fifo_file rw
  allow systemd_logind_t systemd_logind_var_lib_t:dir manage_dir_perms;
  init_var_lib_filetrans(systemd_logind_t, systemd_logind_var_lib_t, dir)
  
@@ -3622,7 +3700,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  manage_fifo_files_pattern(systemd_logind_t, systemd_logind_var_run_t, systemd_logind_var_run_t)
  manage_files_pattern(systemd_logind_t, systemd_logind_var_run_t, systemd_logind_var_run_t)
  files_search_pids(systemd_logind_t)
-@@ -214,6 +261,7 @@ dev_getattr_dri_dev(systemd_logind_t)
+@@ -214,6 +284,7 @@ dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
  dev_getattr_sound_dev(systemd_logind_t)
  dev_setattr_sound_dev(systemd_logind_t)
@@ -3630,7 +3708,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  files_read_etc_files(systemd_logind_t)
  
-@@ -233,6 +281,10 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +304,10 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3641,10 +3719,27 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -249,6 +301,74 @@ optional_policy(`
+@@ -249,6 +324,109 @@ optional_policy(`
  	dbus_connect_system_bus(systemd_logind_t)
  ')
  
++optional_policy(`
++	networkmanager_dbus_chat(systemd_logind_t)
++')
++
++optional_policy(`
++	devicekit_dbus_chat_power(systemd_logind_t)
++')
++
++optional_policy(`
++	xserver_read_xdm_state(systemd_logind_t)
++	xserver_dbus_chat_xdm(systemd_logind_t)
++')
++
++optional_policy(`
++	unconfined_dbus_send(systemd_logind_t)
++')
++
 +#######################################
 +#
 +# systemd_passwd_agent_t local policy
@@ -3663,6 +3758,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +fs_getattr_xattr_fs(systemd_passwd_agent_t)
 +kernel_read_system_state(systemd_passwd_agent_t)
 +kernel_stream_connect(systemd_passwd_agent_t)
++init_read_state(systemd_passwd_agent_t)
 +
 +selinux_get_enforce_mode(systemd_passwd_agent_t)
 +
@@ -3695,6 +3791,10 @@ Index: refpolicy/policy/modules/system/systemd.te
 +        plymouthd_stream_connect(systemd_passwd_agent_t)
 +')
 +
++optional_policy(`
++	getty_use_fds(systemd_passwd_agent_t)
++')
++
 +#########################################
 +#
 +# machined local policy
@@ -3709,14 +3809,27 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_read_state(systemd_machined_t)
 +init_service_start(systemd_machined_t)
 +init_service_status(systemd_machined_t)
++
++init_get_system_status(systemd_machined_t)
++start_stop_init_var_run_service(systemd_machined_t)
++
++files_read_etc_files(systemd_machined_t)
++init_system_start(systemd_machined_t)
++init_system_stop(systemd_machined_t)
++
 +optional_policy(`
 +	dbus_system_bus_client(systemd_machined_t)
++	dbus_connect_system_bus(systemd_machined_t)
++')
++optional_policy(`
++	init_dbus_chat(systemd_machined_t)
++	init_dbus_send_script(systemd_machined_t)
 +')
 +
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +410,13 @@ optional_policy(`
+@@ -290,6 +468,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -3730,7 +3843,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +424,66 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +482,67 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -3743,6 +3856,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +userdom_relabel_user_runtime_root_dirs(systemd_tmpfiles_t)
 +
  kernel_read_kernel_sysctls(systemd_tmpfiles_t)
++kernel_read_network_state(systemd_tmpfiles_t)
  
  dev_relabel_all_sysfs(systemd_tmpfiles_t)
  dev_read_urand(systemd_tmpfiles_t)
@@ -3798,7 +3912,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +502,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +561,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
@@ -3869,3 +3983,23 @@ Index: refpolicy/policy/modules/roles/sysadm.te
  
  # Add/remove user home directories
  userdom_manage_user_home_dirs(sysadm_t)
+Index: refpolicy/policy/modules/system/lvm.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/lvm.fc
++++ refpolicy/policy/modules/system/lvm.fc
+@@ -28,7 +28,6 @@ ifdef(`distro_gentoo',`
+ #
+ /lib/lvm-10/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ /lib/lvm-200/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+-/lib/systemd/systemd-cryptsetup -- gen_context(system_u:object_r:lvm_exec_t,s0)
+ /lib/udev/udisks-lvm-pv-export	--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ 
+ #
+@@ -91,6 +90,7 @@ ifdef(`distro_gentoo',`
+ # /usr
+ #
+ 
++/usr/lib/systemd/systemd-cryptsetup -- gen_context(system_u:object_r:lvm_exec_t,s0)
+ /usr/lib/systemd/system/blk-availability.* -- gen_context(system_u:object_r:lvm_unit_t,s0)
+ /usr/lib/systemd/system/dm-event.* -- gen_context(system_u:object_r:lvm_unit_t,s0)
+ /usr/lib/systemd/system/lvm2-.*	-- gen_context(system_u:object_r:lvm_unit_t,s0)

@@ -1474,7 +1474,15 @@ Index: refpolicy/policy/modules/contrib/ntp.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/ntp.te
 +++ refpolicy/policy/modules/contrib/ntp.te
-@@ -64,9 +64,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
+@@ -53,6 +53,7 @@ allow ntpd_t self:process { signal_perms
+ allow ntpd_t self:fifo_file rw_fifo_file_perms;
+ allow ntpd_t self:shm create_shm_perms;
+ allow ntpd_t self:tcp_socket { accept listen };
++allow ntpd_t self:socket create;
+ 
+ manage_dirs_pattern(ntpd_t, ntp_drift_t, ntp_drift_t)
+ manage_files_pattern(ntpd_t, ntp_drift_t, ntp_drift_t)
+@@ -64,9 +65,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
  read_lnk_files_pattern(ntpd_t, ntpd_key_t, ntpd_key_t)
  
  allow ntpd_t ntpd_log_t:dir setattr_dir_perms;
@@ -2444,7 +2452,16 @@ Index: refpolicy/policy/modules/contrib/devicekit.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/devicekit.te
 +++ refpolicy/policy/modules/contrib/devicekit.te
-@@ -198,6 +198,7 @@ optional_policy(`
+@@ -65,6 +65,8 @@ optional_policy(`
+ #
+ 
+ allow devicekit_disk_t self:capability { chown setuid setgid dac_override fowner fsetid net_admin sys_admin sys_nice sys_ptrace sys_rawio };
++allow devicekit_disk_t self:capability2 wake_alarm;
++
+ allow devicekit_disk_t self:process { getsched signal_perms };
+ allow devicekit_disk_t self:fifo_file rw_fifo_file_perms;
+ allow devicekit_disk_t self:netlink_kobject_uevent_socket create_socket_perms;
+@@ -198,6 +200,7 @@ optional_policy(`
  #
  
  allow devicekit_power_t self:capability { dac_override net_admin sys_admin sys_tty_config sys_nice sys_ptrace };
