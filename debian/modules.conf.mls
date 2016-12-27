@@ -1385,6 +1385,13 @@ mojomojo = module
 mon = module
 
 # Layer: contrib
+# Module: monit
+#
+# monit monitoring daemon that restarts services
+# 
+monit = module
+
+# Layer: contrib
 # Module: mongodb
 #
 # Scalable, high-performance, open source NoSQL database.

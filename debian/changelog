@@ -1,3 +1,18 @@
+refpolicy (2:2.20161023.1-4) unstable; urgency=medium
+
+  * Allow mon_t to read sysfs.
+  * Made gpm_getattr_gpmctl also allow getattr on the fifo_file
+  * Allow mount_t to getattr tmpfs_t and rpc_pipefs_t filesystems
+  * Allow systemd_logind_t to change identities of files
+  * Allow systemd_logind_t to read the cgroups files of all login processes
+  * Added monit policy from cgzones <cgzones@googlemail.com>. Closes: #691283
+  * Allow udev_t to transition to initrc_t for hotplug scripts, and label
+    /etc/network/ip-ip.d/* etc as initrc_exec_t. Policy taken from Wheezy at
+    the recommendation of Devin Carraway <devin@debian.org>
+    Closes: #739590
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 28 Dec 2016 00:36:11 +1100
+
 refpolicy (2:2.20161023.1-3) unstable; urgency=medium
 
   * Allow ntpd_t to create sockets.

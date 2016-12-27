@@ -654,7 +654,7 @@ Index: refpolicy/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/files.if
 +++ refpolicy/policy/modules/kernel/files.if
-@@ -3194,6 +3194,26 @@ interface(`files_manage_etc_runtime_file
+@@ -3230,6 +3230,26 @@ interface(`files_manage_etc_runtime_file
  
  ########################################
  ## <summary>
@@ -681,7 +681,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create, etc runtime objects with an automatic
  ##	type transition.
  ## </summary>
-@@ -6192,6 +6212,24 @@ interface(`files_setattr_pid_dirs',`
+@@ -6228,6 +6248,24 @@ interface(`files_setattr_pid_dirs',`
  ')
  
  ########################################
@@ -800,7 +800,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.te
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -520,6 +520,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
+@@ -552,6 +552,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
  auth_relabel_login_records(systemd_tmpfiles_t)
  auth_setattr_login_records(systemd_tmpfiles_t)

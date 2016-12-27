@@ -2719,7 +2719,18 @@ Index: refpolicy/policy/modules/system/authlogin.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/authlogin.if
 +++ refpolicy/policy/modules/system/authlogin.if
-@@ -961,6 +961,23 @@ interface(`auth_rw_var_auth',`
+@@ -158,6 +158,10 @@ interface(`auth_login_pgm_domain',`
+ 	tunable_policy(`allow_polyinstantiation',`
+ 		files_polyinstantiate_all($1)
+ 	')
++
++	optional_policy(`
++		systemd_logind_read_process_state($1)
++	')
+ ')
+ 
+ ########################################
+@@ -961,6 +965,23 @@ interface(`auth_rw_var_auth',`
      rw_files_pattern($1, var_auth_t, var_auth_t)
  ')
  
@@ -2935,7 +2946,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -190,3 +190,622 @@ interface(`systemd_start_power_units',`
+@@ -190,3 +190,641 @@ interface(`systemd_start_power_units',`
  
  	allow $1 power_unit_t:service start;
  ')
@@ -3558,6 +3569,25 @@ Index: refpolicy/policy/modules/system/systemd.if
 +	manage_files_pattern($1, systemd_journal_log_t, systemd_journal_log_t)
 +')
 +
++########################################
++## <summary>
++##	Allow systemd_logind_t to read process state for cgroup file
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain systemd_logind_t may access.
++##	</summary>
++## </param>
++#
++interface(`systemd_logind_read_process_state',`
++	gen_require(`
++		type systemd_logind_t;
++	')
++
++	allow systemd_logind_t $1:dir list_dir_perms;
++	allow systemd_logind_t $1:file read_file_perms;
++')
++
 Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.te
@@ -3684,10 +3714,11 @@ Index: refpolicy/policy/modules/system/systemd.te
  allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
  allow systemd_logind_t self:fifo_file rw_fifo_file_perms;
-@@ -200,6 +261,15 @@ allow systemd_logind_t self:fifo_file rw
+@@ -200,6 +261,16 @@ allow systemd_logind_t self:fifo_file rw
  allow systemd_logind_t systemd_logind_var_lib_t:dir manage_dir_perms;
  init_var_lib_filetrans(systemd_logind_t, systemd_logind_var_lib_t, dir)
  
++domain_obj_id_change_exemption(systemd_logind_t)
 +selinux_get_fs_mount(systemd_logind_t)
 +selinux_get_enforce_mode(systemd_logind_t)
 +seutil_read_config(systemd_logind_t)
@@ -3700,7 +3731,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  manage_fifo_files_pattern(systemd_logind_t, systemd_logind_var_run_t, systemd_logind_var_run_t)
  manage_files_pattern(systemd_logind_t, systemd_logind_var_run_t, systemd_logind_var_run_t)
  files_search_pids(systemd_logind_t)
-@@ -214,6 +284,7 @@ dev_getattr_dri_dev(systemd_logind_t)
+@@ -214,6 +285,7 @@ dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
  dev_getattr_sound_dev(systemd_logind_t)
  dev_setattr_sound_dev(systemd_logind_t)
@@ -3708,7 +3739,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  files_read_etc_files(systemd_logind_t)
  
-@@ -233,6 +304,10 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +305,10 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3719,7 +3750,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -249,6 +324,109 @@ optional_policy(`
+@@ -249,6 +325,109 @@ optional_policy(`
  	dbus_connect_system_bus(systemd_logind_t)
  ')
  
@@ -3829,7 +3860,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +468,13 @@ optional_policy(`
+@@ -290,6 +469,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -3843,7 +3874,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +482,67 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +483,67 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -3912,7 +3943,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +561,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +562,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')

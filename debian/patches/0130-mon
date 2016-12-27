@@ -12,7 +12,7 @@ Index: refpolicy/policy/modules/contrib/mon.fc
 +/usr/lib/mon/mon.d/.*	--	gen_context(system_u:object_r:mon_net_test_exec_t,s0)
 +/usr/lib/mon/mon-local.d/.*	--	gen_context(system_u:object_r:mon_local_test_exec_t,s0)
 +/usr/lib/mon-contrib/mon.d/.* -- gen_context(system_u:object_r:mon_net_test_exec_t,s0)
-+/usr/lib/mon-contrib/mon-local.d/.* -- gen_context(system_u:object_r:mon_net_test_exec_t,s0)
++/usr/lib/mon-contrib/mon-local.d/.* -- gen_context(system_u:object_r:mon_local_test_exec_t,s0)
 +
 +/var/run/mon(/.*)?		gen_context(system_u:object_r:mon_var_run_t,s0)
 +
@@ -28,7 +28,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.te
-@@ -0,0 +1,187 @@
+@@ -0,0 +1,188 @@
 +policy_module(mon, 1.12.0)
 +
 +########################################
@@ -103,6 +103,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +
 +corecmd_exec_bin(mon_t)
 +dev_read_urand(mon_t)
++dev_read_sysfs(mon_t)
 +logging_search_logs(mon_t)
 +manage_files_pattern(mon_t, mon_var_log_t, mon_var_log_t)
 +
@@ -255,3 +256,15 @@ Index: refpolicy/policy/modules/system/init.if
 +	allow $1 init_var_run_t:fifo_file getattr;
 +	allow $1 init_var_run_t:dir list_dir_perms;
 +')
+Index: refpolicy/policy/modules/contrib/gpm.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/gpm.if
++++ refpolicy/policy/modules/contrib/gpm.if
+@@ -38,6 +38,7 @@ interface(`gpm_getattr_gpmctl',`
+ 
+ 	dev_list_all_dev_nodes($1)
+ 	allow $1 gpmctl_t:sock_file getattr_sock_file_perms;
++	allow $1 gpmctl_t:fifo_file getattr_fifo_file_perms;
+ ')
+ 
+ ########################################

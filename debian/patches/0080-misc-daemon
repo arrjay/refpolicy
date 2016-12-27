@@ -242,7 +242,16 @@ Index: refpolicy/policy/modules/system/udev.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.te
 +++ refpolicy/policy/modules/system/udev.te
-@@ -58,6 +58,9 @@ allow udev_t self:netlink_generic_socket
+@@ -15,6 +15,8 @@ domain_interactive_fd(udev_t)
+ init_daemon_domain(udev_t, udev_exec_t)
+ init_named_socket_activation(udev_t, udev_var_run_t)
+ 
++init_domtrans_script(udev_t)
++
+ type udev_etc_t alias etc_udev_t;
+ files_config_file(udev_etc_t)
+ 
+@@ -58,6 +60,9 @@ allow udev_t self:netlink_generic_socket
  allow udev_t self:rawip_socket create_socket_perms;
  fs_read_cgroup_files(udev_t)
  
@@ -252,7 +261,7 @@ Index: refpolicy/policy/modules/system/udev.te
  allow udev_t udev_exec_t:file write;
  can_exec(udev_t, udev_exec_t)
  
-@@ -185,6 +188,7 @@ sysnet_delete_dhcpc_pid(udev_t)
+@@ -185,6 +190,7 @@ sysnet_delete_dhcpc_pid(udev_t)
  sysnet_signal_dhcpc(udev_t)
  sysnet_manage_config(udev_t)
  sysnet_etc_filetrans_config(udev_t)
@@ -260,7 +269,7 @@ Index: refpolicy/policy/modules/system/udev.te
  
  systemd_login_read_pid_files(udev_t)
  init_start_all_units(udev_t)
-@@ -208,6 +212,11 @@ ifdef(`distro_debian',`
+@@ -208,6 +214,11 @@ ifdef(`distro_debian',`
  	')
  ')
  
@@ -272,7 +281,7 @@ Index: refpolicy/policy/modules/system/udev.te
  ifdef(`distro_gentoo',`
  	# during boot, init scripts use /dev/.rcsysinit
  	# existence to determine if we are in early booting
-@@ -347,6 +356,7 @@ optional_policy(`
+@@ -347,6 +358,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
@@ -484,8 +493,8 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -809,3 +809,20 @@ interface(`manage_systemd_journal_files'
- 	manage_files_pattern($1, systemd_journal_log_t, systemd_journal_log_t)
+@@ -828,3 +828,20 @@ interface(`systemd_logind_read_process_s
+ 	allow systemd_logind_t $1:file read_file_perms;
  ')
  
 +######################################
@@ -1407,7 +1416,7 @@ Index: refpolicy/policy/modules/system/unconfined.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/unconfined.if
 +++ refpolicy/policy/modules/system/unconfined.if
-@@ -320,6 +320,23 @@ interface(`unconfined_run_to',`
+@@ -323,6 +323,23 @@ interface(`unconfined_run_to',`
  
  ########################################
  ## <summary>
@@ -2481,3 +2490,31 @@ Index: refpolicy/policy/modules/services/xserver.te
  allow xserver_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow xserver_t self:fd use;
  allow xserver_t self:fifo_file rw_fifo_file_perms;
+Index: refpolicy/policy/modules/system/mount.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/mount.te
++++ refpolicy/policy/modules/system/mount.te
+@@ -103,6 +103,8 @@ files_dontaudit_write_all_mountpoints(mo
+ files_dontaudit_setattr_all_mountpoints(mount_t)
+ 
+ fs_getattr_xattr_fs(mount_t)
++fs_getattr_tmpfs(mount_t)
++fs_getattr_rpc_pipefs(mount_t)
+ fs_getattr_cifs(mount_t)
+ fs_mount_all_fs(mount_t)
+ fs_unmount_all_fs(mount_t)
+Index: refpolicy/policy/modules/system/init.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/init.fc
++++ refpolicy/policy/modules/system/init.fc
+@@ -85,6 +85,10 @@ ifdef(`distro_gentoo', `
+ ifdef(`distro_debian',`
+ /var/run/hotkey-setup	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
+ /var/run/kdm/.*		--	gen_context(system_u:object_r:initrc_var_run_t,s0)
++/etc/network/if-pre-up.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
++/etc/network/if-up.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
++/etc/network/if-down.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
++/etc/network/if-post-down.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
+ ')
+ 
+ ifdef(`distro_gentoo', `
