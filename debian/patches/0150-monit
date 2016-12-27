@@ -1,0 +1,104 @@
+Description: Policy for monit host monitoring daemon
+Bug-Debian: https://bugs.debian.org/691283
+
+Origin: cgzones <cgzones@googlemail.com>
+Reviewed-By: Russell Coker <russell@coker.com.au>
+Last-Update: 2016-12-27
+
+Index: refpolicy/policy/modules/contrib/monit.fc
+===================================================================
+--- /dev/null
++++ refpolicy/policy/modules/contrib/monit.fc
+@@ -0,0 +1,7 @@
++/etc/monit(/.*)?                gen_context(system_u:object_r:monit_etc_t,s0)
++/usr/sbin/monit                 gen_context(system_u:object_r:monit_exec_t,s0)
++/usr/bin/monit                  gen_context(system_u:object_r:monit_exec_t,s0)
++
++/var/lib/monit(/.*)?            gen_context(system_u:object_r:monit_lib_t,s0)
++/var/log/monit(/.*)?            gen_context(system_u:object_r:monit_log_t,s0)
++/var/log/monit.*          --    gen_context(system_u:object_r:monit_log_t,s0)
+Index: refpolicy/policy/modules/contrib/monit.if
+===================================================================
+--- /dev/null
++++ refpolicy/policy/modules/contrib/monit.if
+@@ -0,0 +1 @@
++## <summary></summary>
+Index: refpolicy/policy/modules/contrib/monit.te
+===================================================================
+--- /dev/null
++++ refpolicy/policy/modules/contrib/monit.te
+@@ -0,0 +1,74 @@
++policy_module(monit,1.0.0)
++
++#### file/domain-types
++type monit_t;
++domain_type(monit_t)
++
++type monit_exec_t;
++files_type(monit_exec_t)
++
++type monit_etc_t;
++files_type(monit_etc_t)
++
++type monit_lib_t;
++files_type(monit_lib_t)
++
++type monit_port_t;
++corenet_port(monit_port_t)
++
++type monit_log_t;
++logging_log_file(monit_log_t)
++logging_log_filetrans(monit_t, monit_log_t, {file dir})
++
++type monit_run_t;
++files_pid_file(monit_run_t)
++files_pid_filetrans(monit_t, monit_run_t, {file dir})
++
++#### monit_t
++init_daemon_domain(monit_t, monit_exec_t)
++init_domtrans_script(monit_t)
++
++allow monit_t self:netlink_route_socket { write getattr read bind create nlmsg_read };
++allow monit_t self:tcp_socket { write read connect shutdown getopt create bind setopt listen accept };
++allow monit_t self:udp_socket { write read connect shutdown getopt create ioctl getattr };
++allow monit_t self:sem { read write unix_write };
++allow monit_t self:capability { net_raw sys_ptrace dac_read_search dac_override };
++allow monit_t self:rawip_socket { write read create setopt shutdown };
++allow monit_t self:process { signal getpgid };
++allow monit_t self:fifo_file { ioctl getattr };
++allow monit_t monit_etc_t:dir list_dir_perms;
++allow monit_t monit_etc_t:file read_file_perms;
++allow monit_t monit_etc_t:lnk_file read_lnk_file_perms;
++allow monit_t monit_lib_t:dir manage_dir_perms;
++allow monit_t monit_lib_t:file manage_file_perms;
++allow monit_t monit_log_t:file manage_file_perms;
++allow monit_t monit_run_t:file manage_file_perms;
++
++allow monit_t monit_port_t:tcp_socket name_bind;
++corenet_tcp_bind_generic_node(monit_t)
++
++corenet_tcp_connect_all_ports(monit_t)
++
++corecmd_exec_bin(monit_t)
++corecmd_exec_shell(monit_t)
++
++miscfiles_read_localization(monit_t)
++dev_read_urand(monit_t)
++userdom_dontaudit_search_user_home_dirs(monit_t)
++files_read_etc_files(monit_t)
++files_read_all_pids(monit_t)
++sysnet_read_config(monit_t)
++files_search_var_lib(monit_t)
++files_read_etc_runtime_files(monit_t)
++
++dev_list_sysfs(monit_t)
++kernel_read_system_state(monit_t)
++storage_getattr_fixed_disk_dev(monit_t)
++fs_getattr_xattr_fs(monit_t)
++
++domain_read_all_domains_state(monit_t)
++domain_getpgid_all_domains(monit_t)
++
++## running monit from root console
++domain_use_interactive_fds(monit_t)
++userdom_use_user_ptys(monit_t)
