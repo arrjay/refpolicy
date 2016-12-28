@@ -29,7 +29,7 @@ interface(`myapp_domtrans',`
 		type myapp_t, myapp_exec_t;
 	')
 
-	domain_auto_trans($1,myapp_exec_t,myapp_t)
+	domain_auto_transition_pattern($1,myapp_exec_t,myapp_t)
 
 	allow $1 myapp_t:fd use;
 	allow myapp_t $1:fd use;

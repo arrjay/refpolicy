@@ -23,7 +23,7 @@ endif
 override_dh_auto_configure: $(patsubst %, conf-%-policy, $(FLAVOURS)) conf-docs conf-src
 
 override_dh_install:
-	dh_install --list-missing
+	dh_install --fail-missing
 
 override_dh_fixperms:
 	dh_fixperms
@@ -122,6 +122,7 @@ install-%-policy: build-%-policy
 	mkdir -p $(CURDIR)/debian/tmp/var/lib/selinux/$*
 # Create a list with the modules we are shipping
 	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; LC_ALL=C ls -1 | cut -d. -f1 > .modules)
+	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; grep -P '^[a-z0-9_]+\s*=\s*base$$' $(CURDIR)/debian/build-$*/policy/modules.conf | cut -d= -f1 | awk '{$$1=$$1};1' | LC_ALL=C sort > .basemodules)
 	touch $@
 
 # The headers are based on the default policy

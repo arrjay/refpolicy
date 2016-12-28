@@ -110,7 +110,7 @@ Index: refpolicy/policy/modules/contrib/mozilla.te
 +application_domain(mozilla_t, chrome_browser_exec_t)
 +userdom_user_application_domain(mozilla_t, chrome_browser_exec_t )
 +role mozilla_plugin_roles types chrome_sandbox_t;
-+domain_auto_trans(chrome_sandbox_t, chrome_browser_exec_t, mozilla_t)
++domain_auto_transition_pattern(chrome_sandbox_t, chrome_browser_exec_t, mozilla_t)
 +allow mozilla_t chrome_sandbox_t:process sigchld;
 +application_domain(chrome_sandbox_t, chrome_sandbox_exec_t)
 +ubac_constrained(chrome_sandbox_t)
@@ -152,7 +152,7 @@ Index: refpolicy/policy/modules/contrib/mozilla.te
  
 +dontaudit chrome_sandbox_t domain:dir getattr;
 +application_domain(chrome_sandbox_t, chrome_sandbox_exec_t)
-+domain_auto_trans(mozilla_t, chrome_sandbox_exec_t, chrome_sandbox_t)
++domain_auto_transition_pattern(mozilla_t, chrome_sandbox_exec_t, chrome_sandbox_t)
 +allow mozilla_t mozilla_home_t:sock_file manage_sock_file_perms;
 +allow chrome_sandbox_t self:fifo_file rw_file_perms;
 +allow chrome_sandbox_t mozilla_t:unix_dgram_socket { read write };

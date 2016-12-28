@@ -42,7 +42,7 @@ interface(`TEMPLATETYPE_domtrans',`
 		type TEMPLATETYPE_t, TEMPLATETYPE_exec_t;
 	')
 
-	domain_auto_trans($1,TEMPLATETYPE_exec_t,TEMPLATETYPE_t)
+	domain_auto_transition_pattern($1,TEMPLATETYPE_exec_t,TEMPLATETYPE_t)
 
 	allow $1 TEMPLATETYPE_t:fd use;
 	allow TEMPLATETYPE_t $1:fd use;

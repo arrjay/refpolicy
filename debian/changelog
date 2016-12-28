@@ -1,3 +1,39 @@
+refpolicy (2:2.20161023.1-6) unstable; urgency=medium
+
+  * Label /var/lib/unbound as named_cache_t, closes: #740657
+  * Merge patch for gbp.conf from cgzones <cgzones@googlemail.com>
+    closes: #849459
+  * Merge patch from cgzones <cgzones@googlemail.com> to add new .basemodules
+    file. Closes: #849460
+  * Make the package build fail when a file is missing.  Closes: #849461
+  * Replaced domain_auto_trans with domain_auto_transition_pattern.
+    Closes: #849463
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 29 Dec 2016 03:01:10 +1100
+
+refpolicy (2:2.20161023.1-5) unstable; urgency=medium
+
+  * Allowed system_munin_plugin_t to read usr_t files and have capability
+    net_admin for mii-tool.  Thanks joerg <js@joergschneider.com>
+    Closes: #619855
+  * Allow rsync_t to stat all sock_files and fifo_files when
+    rsync_export_all_ro is set.  Thanks joerg <js@joergschneider.com>
+    Closes: #619979
+  * Allow bitlbee_t to read FIPS state.  Closes: #697814
+  * Allow mono_t to be in role unconfined_r.  Closes: #734192
+  * Allow dpkg_script_t to manage null_device_t services for service scripts
+    linked to /dev/null.  Closes: #757994
+  * Give systemd_tmpfiles_t sys_admin capability for adjusting quotas.
+  * Included initrc_t as a source domain in init_ranged_domain() so that old
+    XDM packages that lack a systemd service file will work.
+  * Use xserver_role() for unconfined_t so the xdm can start the session.
+  * Allow user domains to talk to devicekit_disk_t and devicekit_power_t via
+    dbus
+  * Label /run/lvm as lvm_var_run_t
+  * Allow dhcpc_t to manage samba config
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 29 Dec 2016 01:08:24 +1100
+
 refpolicy (2:2.20161023.1-4) unstable; urgency=medium
 
   * Allow mon_t to read sysfs.
