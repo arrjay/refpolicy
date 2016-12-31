@@ -535,7 +535,7 @@ Index: refpolicy/policy/modules/system/init.if
  ##	</summary>
  ## </param>
  #
-@@ -1269,19 +1429,41 @@ interface(`init_spec_domtrans_script',`
+@@ -1269,23 +1429,45 @@ interface(`init_spec_domtrans_script',`
  #
  interface(`init_domtrans_script',`
  	gen_require(`
@@ -558,11 +558,11 @@ Index: refpolicy/policy/modules/system/init.if
  	ifdef(`enable_mls',`
 -		range_transition $1 initrc_exec_t:process s0 - mls_systemhigh;
 +		range_transition $1 init_script_file_type:process s0 - mls_systemhigh;
-+	')
-+')
-+
-+########################################
-+## <summary>
+ 	')
+ ')
+ 
+ ########################################
+ ## <summary>
 +##	Execute a file in a bin directory
 +##	in the initrc_t domain
 +## </summary>
@@ -575,12 +575,16 @@ Index: refpolicy/policy/modules/system/init.if
 +interface(`init_bin_domtrans_spec',`
 +	gen_require(`
 +		type initrc_t;
- 	')
++	')
 +
 +	corecmd_bin_domtrans($1, initrc_t)
- ')
- 
- ########################################
++')
++
++########################################
++## <summary>
+ ##	Execute a init script in a specified domain.
+ ## </summary>
+ ## <desc>
 @@ -1337,9 +1519,14 @@ interface(`init_script_file_domtrans',`
  interface(`init_labeled_script_domtrans',`
  	gen_require(`
@@ -1185,7 +1189,7 @@ Index: refpolicy/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##      Init will execute a shell in the specified domain.
-@@ -2525,3 +3208,57 @@ interface(`init_shell_domtrans',`
+@@ -2525,3 +3208,76 @@ interface(`init_shell_domtrans',`
  	allow $1 init_t:fifo_file rw_file_perms;
  	allow $1 init_t:process sigchld;
  ')
@@ -1242,6 +1246,25 @@ Index: refpolicy/policy/modules/system/init.if
 +	')
 +
 +	allow $1 init_var_run_t:file { rename getattr unlink };
++')
++
++########################################
++## <summary>
++##      Read initrc_t files for /proc/pid/cgroup etc
++## </summary>
++## <param name="domain">
++##      <summary>
++##      domain
++##      </summary>
++## </param>
++#
++interface(`read_initrc_files',`
++	gen_require(`
++		type initrc_t;
++	')
++
++	allow $1 initrc_t:dir search;
++	allow $1 initrc_t:file read_file_perms;
 +')
 Index: refpolicy/policy/modules/system/init.te
 ===================================================================
@@ -2242,11 +2265,10 @@ Index: refpolicy/policy/modules/services/xserver.if
  ##	Read and write the X windows console named pipe.
  ## </summary>
  ## <param name="domain">
-@@ -1119,6 +1155,42 @@ interface(`xserver_dontaudit_getattr_xdm
- ')
+@@ -1120,6 +1156,42 @@ interface(`xserver_dontaudit_getattr_xdm
  
  ########################################
-+## <summary>
+ ## <summary>
 +##	Search xdm_tmp_t directories
 +## </summary>
 +## <param name="domain">
@@ -2282,9 +2304,33 @@ Index: refpolicy/policy/modules/services/xserver.if
 +')
 +
 +########################################
- ## <summary>
++## <summary>
  ##	Execute the X server in the X server domain.
  ## </summary>
+ ## <param name="domain">
+@@ -1313,3 +1385,22 @@ interface(`xserver_unconfined',`
+ 	typeattribute $1 x_domain;
+ 	typeattribute $1 xserver_unconfined_type;
+ ')
++
++########################################
++## <summary>
++##	Allow reading xserver_t files to get cgroup and sessionid
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`read_xserver_files',`
++	gen_require(`
++		type xserver_t;
++	')
++
++	allow $1 xserver_t:dir search;
++	allow $1 xserver_t:file read_file_perms;
++')
 Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.if
@@ -3805,7 +3851,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  # Hostnamed policy
  #
  
-@@ -180,28 +240,49 @@ files_read_etc_files(systemd_hostnamed_t
+@@ -180,28 +240,51 @@ files_read_etc_files(systemd_hostnamed_t
  seutil_read_file_contexts(systemd_hostnamed_t)
  
  systemd_log_parse_environment(systemd_hostnamed_t)
@@ -3841,6 +3887,8 @@ Index: refpolicy/policy/modules/system/systemd.te
  init_var_lib_filetrans(systemd_logind_t, systemd_logind_var_lib_t, dir)
 +init_pid_filetrans(systemd_logind_t, systemd_logind_var_run_t, dir, "inhibit")
 +
++read_initrc_files(systemd_logind_t)
++
 +domain_obj_id_change_exemption(systemd_logind_t)
 +selinux_get_fs_mount(systemd_logind_t)
 +selinux_get_enforce_mode(systemd_logind_t)
@@ -3857,7 +3905,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  files_search_pids(systemd_logind_t)
  
  kernel_read_kernel_sysctls(systemd_logind_t)
-@@ -214,12 +295,17 @@ dev_getattr_dri_dev(systemd_logind_t)
+@@ -214,12 +297,17 @@ dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
  dev_getattr_sound_dev(systemd_logind_t)
  dev_setattr_sound_dev(systemd_logind_t)
@@ -3875,7 +3923,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  storage_getattr_removable_dev(systemd_logind_t)
  storage_setattr_removable_dev(systemd_logind_t)
-@@ -233,6 +319,10 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +321,10 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3886,7 +3934,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -241,14 +331,128 @@ systemd_start_power_units(systemd_logind
+@@ -241,14 +333,131 @@ systemd_start_power_units(systemd_logind
  
  udev_read_db(systemd_logind_t)
  udev_read_pid_files(systemd_logind_t)
@@ -3914,6 +3962,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +optional_policy(`
 +	xserver_read_xdm_state(systemd_logind_t)
 +	xserver_dbus_chat_xdm(systemd_logind_t)
++	read_xserver_files(systemd_logind_t)
 +')
 +
 +optional_policy(`
@@ -3990,6 +4039,8 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_service_start(systemd_machined_t)
 +init_service_status(systemd_machined_t)
 +
++read_initrc_files(systemd_machined_t)
++
 +fs_getattr_tmpfs(systemd_machined_t)
 +fs_getattr_cgroup(systemd_machined_t)
 +
@@ -4015,7 +4066,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +494,13 @@ optional_policy(`
+@@ -290,6 +499,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -4029,7 +4080,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +508,67 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +513,67 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4098,7 +4149,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +587,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +592,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')

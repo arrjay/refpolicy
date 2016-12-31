@@ -233,9 +233,9 @@ Index: refpolicy/policy/modules/system/init.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.if
 +++ refpolicy/policy/modules/system/init.if
-@@ -3262,3 +3262,22 @@ interface(`rename_unlink_init_var_run',`
- 
- 	allow $1 init_var_run_t:file { rename getattr unlink };
+@@ -3281,3 +3281,22 @@ interface(`read_initrc_files',`
+ 	allow $1 initrc_t:dir search;
+ 	allow $1 initrc_t:file read_file_perms;
  ')
 +
 +########################################

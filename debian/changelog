@@ -26,6 +26,9 @@ refpolicy (2:2.20161023.1-6) unstable; urgency=medium
   * Allow policykit_t to stat tmpfs_t and cgroup_t filesystems and to read
     urandom
   * Change auth_login_pgm_domain() to include writing to sessions fifo.
+  * Allow systemd_logind_t and systemd_machined_t to read initrc_t files to
+    get cgroup and sessionid
+  * Allow systemd_logind_t to read xserver_t files to get cgroup and sessionid
 
  -- Russell Coker <russell@coker.com.au>  Thu, 29 Dec 2016 03:01:10 +1100
 
