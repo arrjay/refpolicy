@@ -275,7 +275,7 @@ Index: refpolicy/policy/modules/system/udev.te
  sysnet_etc_filetrans_config(udev_t)
 +sysnet_var_run_dirtrans_config(udev_t, "network")
  
- systemd_read_logind_pids(udev_t)
+ systemd_read_logind_sessions_files(udev_t)
  init_start_all_units(udev_t)
 @@ -208,6 +215,11 @@ ifdef(`distro_debian',`
  	')

@@ -808,27 +808,3 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  seutil_read_file_contexts(systemd_tmpfiles_t)
  
-Index: refpolicy/config/appconfig-mcs/seusers
-===================================================================
---- refpolicy.orig/config/appconfig-mcs/seusers
-+++ refpolicy/config/appconfig-mcs/seusers
-@@ -1,3 +1,2 @@
--system_u:system_u:s0-mcs_systemhigh
- root:unconfined_u:s0-mcs_systemhigh
- __default__:unconfined_u:s0-mcs_systemhigh
-Index: refpolicy/config/appconfig-mls/seusers
-===================================================================
---- refpolicy.orig/config/appconfig-mls/seusers
-+++ refpolicy/config/appconfig-mls/seusers
-@@ -1,3 +1,2 @@
--system_u:system_u:s0-mls_systemhigh
- root:root:s0-mls_systemhigh
- __default__:user_u:s0
-Index: refpolicy/config/appconfig-standard/seusers
-===================================================================
---- refpolicy.orig/config/appconfig-standard/seusers
-+++ refpolicy/config/appconfig-standard/seusers
-@@ -1,3 +1,2 @@
--system_u:system_u
- root:root
- __default__:user_u

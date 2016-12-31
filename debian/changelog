@@ -16,8 +16,6 @@ refpolicy (2:2.20161023.1-6) unstable; urgency=medium
     /run/udev/tags/power-switch.
   * Label /run/console-setup as udev_var_run_t
   * Label lvmetad as lvm_exec_t
-  * Remove system_u from the list of default logins to stop an error on policy
-    update.
   * Made it conflict with mcstrans because we currently can't get mcstrans,
     dbus, and systemd to work together.
   * Allow systemd_logind_t to create /run/systemd/inhibit and to manage
