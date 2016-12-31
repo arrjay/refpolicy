@@ -8,6 +8,26 @@ refpolicy (2:2.20161023.1-6) unstable; urgency=medium
   * Make the package build fail when a file is missing.  Closes: #849461
   * Replaced domain_auto_trans with domain_auto_transition_pattern.
     Closes: #849463
+  * New type systemd_machined_var_run_t for /run/systemd/machines
+  * Allow initrc_t to get the status of null device service files (for
+    symlinks) and to reload systemd_unit_t services.
+  * Allow systemd_logind_t to manage user_runtime_t directories.
+    allow it sys_admin capability.  Allow it to list udev_var_run_t dirs for
+    /run/udev/tags/power-switch.
+  * Label /run/console-setup as udev_var_run_t
+  * Label lvmetad as lvm_exec_t
+  * Remove system_u from the list of default logins to stop an error on policy
+    update.
+  * Made it conflict with mcstrans because we currently can't get mcstrans,
+    dbus, and systemd to work together.
+  * Allow systemd_logind_t to create /run/systemd/inhibit and to manage
+    systemd_logind_var_run_t dirs and mount/umount,relabelfrom tmpfs_t
+  * Allow systemd_machined_t to manage symlinks in it's pid dir
+  * Allow systemd_machined_t to stat tmpfs_t and cgroup_t filesystems
+  * Updated monit patch from cgzones.
+  * Allow policykit_t to stat tmpfs_t and cgroup_t filesystems and to read
+    urandom
+  * Change auth_login_pgm_domain() to include writing to sessions fifo.
 
  -- Russell Coker <russell@coker.com.au>  Thu, 29 Dec 2016 03:01:10 +1100
 

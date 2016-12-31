@@ -128,7 +128,7 @@ Index: refpolicy/policy/modules/kernel/filesystem.if
  ##	Write cgroup files.
  ## </summary>
  ## <param name="domain">
-@@ -4392,6 +4447,24 @@ interface(`fs_read_tmpfs_symlinks',`
+@@ -4410,6 +4465,24 @@ interface(`fs_read_tmpfs_symlinks',`
  ')
  
  ########################################
@@ -273,7 +273,7 @@ Index: refpolicy/policy/modules/system/init.te
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
  dev_dontaudit_read_kmsg(initrc_t)
-@@ -1321,15 +1359,19 @@ optional_policy(`
+@@ -1323,15 +1361,19 @@ optional_policy(`
  	mta_read_aliases(init_t)
  ')
  
@@ -294,7 +294,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1345,6 +1387,7 @@ ifdef(`init_systemd',`
+@@ -1347,6 +1389,7 @@ ifdef(`init_systemd',`
  	kernel_read_software_raid_state(init_t)
  	kernel_unmount_debugfs(init_t)
  	kernel_setsched(init_t)
@@ -302,7 +302,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	dev_write_kmsg(init_t)
  	dev_write_urand(init_t)
-@@ -1362,6 +1405,7 @@ ifdef(`init_systemd',`
+@@ -1364,6 +1407,7 @@ ifdef(`init_systemd',`
  	# systemd writes to /dev/watchdog on shutdown
  	dev_write_watchdog(init_t)
  
@@ -310,7 +310,7 @@ Index: refpolicy/policy/modules/system/init.te
  	files_search_all(init_t)
  	files_mounton_all_mountpoints(init_t)
  	files_unmount_all_file_type_fs(init_t)
-@@ -1385,6 +1429,7 @@ ifdef(`init_systemd',`
+@@ -1387,6 +1431,7 @@ ifdef(`init_systemd',`
  	fs_getattr_all_fs(init_t)
  	fs_manage_cgroup_dirs(init_t)
  	fs_manage_cgroup_files(init_t)
@@ -318,7 +318,7 @@ Index: refpolicy/policy/modules/system/init.te
  	fs_manage_hugetlbfs_dirs(init_t)
  	fs_manage_tmpfs_dirs(init_t)
  	fs_mount_all_fs(init_t)
-@@ -1411,13 +1456,16 @@ ifdef(`init_systemd',`
+@@ -1413,13 +1458,16 @@ ifdef(`init_systemd',`
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
  	systemd_manage_lnk_file_passwd_run(init_t)
@@ -452,7 +452,7 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  
  corecmd_exec_all_executables(dpkg_script_t)
  
-@@ -273,13 +283,13 @@ selinux_compute_access_vector(dpkg_scrip
+@@ -274,13 +284,13 @@ selinux_compute_access_vector(dpkg_scrip
  selinux_compute_create_context(dpkg_script_t)
  selinux_compute_relabel_context(dpkg_script_t)
  selinux_compute_user_contexts(dpkg_script_t)
@@ -800,7 +800,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.te
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -552,6 +552,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
+@@ -576,6 +576,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
  auth_relabel_login_records(systemd_tmpfiles_t)
  auth_setattr_login_records(systemd_tmpfiles_t)
@@ -808,3 +808,27 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  seutil_read_file_contexts(systemd_tmpfiles_t)
  
+Index: refpolicy/config/appconfig-mcs/seusers
+===================================================================
+--- refpolicy.orig/config/appconfig-mcs/seusers
++++ refpolicy/config/appconfig-mcs/seusers
+@@ -1,3 +1,2 @@
+-system_u:system_u:s0-mcs_systemhigh
+ root:unconfined_u:s0-mcs_systemhigh
+ __default__:unconfined_u:s0-mcs_systemhigh
+Index: refpolicy/config/appconfig-mls/seusers
+===================================================================
+--- refpolicy.orig/config/appconfig-mls/seusers
++++ refpolicy/config/appconfig-mls/seusers
+@@ -1,3 +1,2 @@
+-system_u:system_u:s0-mls_systemhigh
+ root:root:s0-mls_systemhigh
+ __default__:user_u:s0
+Index: refpolicy/config/appconfig-standard/seusers
+===================================================================
+--- refpolicy.orig/config/appconfig-standard/seusers
++++ refpolicy/config/appconfig-standard/seusers
+@@ -1,3 +1,2 @@
+-system_u:system_u
+ root:root
+ __default__:user_u

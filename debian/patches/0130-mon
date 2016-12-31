@@ -233,7 +233,7 @@ Index: refpolicy/policy/modules/system/init.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.if
 +++ refpolicy/policy/modules/system/init.if
-@@ -3260,3 +3260,22 @@ interface(`rename_unlink_init_var_run',`
+@@ -3262,3 +3262,22 @@ interface(`rename_unlink_init_var_run',`
  
  	allow $1 init_var_run_t:file { rename getattr unlink };
  ')

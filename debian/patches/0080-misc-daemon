@@ -251,7 +251,15 @@ Index: refpolicy/policy/modules/system/udev.te
  type udev_etc_t alias etc_udev_t;
  files_config_file(udev_etc_t)
  
-@@ -58,6 +60,9 @@ allow udev_t self:netlink_generic_socket
+@@ -27,6 +29,7 @@ files_type(udev_rules_t)
+ type udev_var_run_t;
+ files_pid_file(udev_var_run_t)
+ init_daemon_pid_file(udev_var_run_t, dir, "udev")
++files_pid_filetrans(udev_t, udev_var_run_t, dir, "console-setup")
+ 
+ ifdef(`enable_mcs',`
+ 	kernel_ranged_domtrans_to(udev_t, udev_exec_t, s0 - mcs_systemhigh)
+@@ -58,6 +61,9 @@ allow udev_t self:netlink_generic_socket
  allow udev_t self:rawip_socket create_socket_perms;
  fs_read_cgroup_files(udev_t)
  
@@ -261,15 +269,15 @@ Index: refpolicy/policy/modules/system/udev.te
  allow udev_t udev_exec_t:file write;
  can_exec(udev_t, udev_exec_t)
  
-@@ -185,6 +190,7 @@ sysnet_delete_dhcpc_pid(udev_t)
+@@ -185,6 +191,7 @@ sysnet_delete_dhcpc_pid(udev_t)
  sysnet_signal_dhcpc(udev_t)
  sysnet_manage_config(udev_t)
  sysnet_etc_filetrans_config(udev_t)
 +sysnet_var_run_dirtrans_config(udev_t, "network")
  
- systemd_login_read_pid_files(udev_t)
+ systemd_read_logind_pids(udev_t)
  init_start_all_units(udev_t)
-@@ -208,6 +214,11 @@ ifdef(`distro_debian',`
+@@ -208,6 +215,11 @@ ifdef(`distro_debian',`
  	')
  ')
  
@@ -281,7 +289,7 @@ Index: refpolicy/policy/modules/system/udev.te
  ifdef(`distro_gentoo',`
  	# during boot, init scripts use /dev/.rcsysinit
  	# existence to determine if we are in early booting
-@@ -347,6 +358,7 @@ optional_policy(`
+@@ -347,6 +359,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
@@ -318,7 +326,7 @@ Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/udev.if
 +++ refpolicy/policy/modules/system/udev.if
-@@ -280,6 +280,24 @@ interface(`udev_search_pids',`
+@@ -299,6 +299,24 @@ interface(`udev_list_pids',`
  
  ########################################
  ## <summary>
@@ -473,7 +481,7 @@ Index: refpolicy/policy/modules/system/init.te
  dontaudit initrc_t self:capability sys_module; # sysctl is triggering this
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
-@@ -1328,6 +1329,7 @@ ifdef(`init_systemd',`
+@@ -1330,6 +1331,7 @@ ifdef(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -481,7 +489,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1408,6 +1410,7 @@ ifdef(`init_systemd',`
+@@ -1410,6 +1412,7 @@ ifdef(`init_systemd',`
  
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
@@ -493,8 +501,8 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -828,3 +828,20 @@ interface(`systemd_logind_read_process_s
- 	allow systemd_logind_t $1:file read_file_perms;
+@@ -827,3 +827,20 @@ interface(`systemd_read_machines',`
+ 	read_files_pattern($1, systemd_machined_var_run_t, systemd_machined_var_run_t)
  ')
  
 +######################################
@@ -2603,7 +2611,15 @@ Index: refpolicy/policy/modules/system/lvm.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/lvm.fc
 +++ refpolicy/policy/modules/system/lvm.fc
-@@ -107,3 +107,4 @@ ifdef(`distro_gentoo',`
+@@ -98,6 +98,7 @@ ifdef(`distro_gentoo',`
+ 
+ /usr/sbin/clvmd		--	gen_context(system_u:object_r:clvmd_exec_t,s0)
+ /usr/sbin/lvm		--	gen_context(system_u:object_r:lvm_exec_t,s0)
++/usr/sbin/lvmetad	--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ 
+ #
+ # /var
+@@ -107,3 +108,4 @@ ifdef(`distro_gentoo',`
  /var/lock/lvm(/.*)?		gen_context(system_u:object_r:lvm_lock_t,s0)
  /var/run/multipathd\.sock -s	gen_context(system_u:object_r:lvm_var_run_t,s0)
  /var/run/dmevent.*		gen_context(system_u:object_r:lvm_var_run_t,s0)
@@ -2623,3 +2639,41 @@ Index: refpolicy/policy/modules/system/sysnetwork.te
  	seutil_sigchld_newrole(dhcpc_t)
  	seutil_dontaudit_search_config(dhcpc_t)
  ')
+Index: refpolicy/policy/modules/system/udev.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/udev.fc
++++ refpolicy/policy/modules/system/udev.fc
+@@ -38,4 +38,5 @@ ifdef(`distro_redhat',`
+ ifdef(`distro_debian',`
+ /lib/systemd/systemd-udevd	--	gen_context(system_u:object_r:udev_exec_t,s0)
+ /var/run/xen-hotplug -d	gen_context(system_u:object_r:udev_var_run_t,s0)
++/var/run/console-setup(/.*)?	gen_context(system_u:object_r:udev_var_run_t,s0)
+ ')
+Index: refpolicy/policy/modules/contrib/dbus.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/dbus.te
++++ refpolicy/policy/modules/contrib/dbus.te
+@@ -147,6 +147,9 @@ optional_policy(`
+ 	# for /run/systemd/users/*
+ 	systemd_read_logind_pids(system_dbusd_t)
+ 	systemd_use_logind_fds(system_dbusd_t)
++')
++
++optional_policy(`
+ 	systemd_write_inherited_logind_sessions_pipes(system_dbusd_t)
+ 	systemd_login_write_pid_pipe(system_dbusd_t)
+ ')
+Index: refpolicy/policy/modules/contrib/policykit.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/policykit.te
++++ refpolicy/policy/modules/contrib/policykit.te
+@@ -87,6 +87,9 @@ domtrans_pattern(policykit_t, policykit_
+ 
+ kernel_read_kernel_sysctls(policykit_t)
+ kernel_read_system_state(policykit_t)
++fs_getattr_tmpfs(policykit_t)
++fs_getattr_cgroup(policykit_t)
++dev_read_urand(policykit_t)
+ 
+ domain_read_all_domains_state(policykit_t)
+ 

@@ -123,7 +123,7 @@ Index: refpolicy/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/userdomain.if
 +++ refpolicy/policy/modules/system/userdomain.if
-@@ -1993,6 +1993,24 @@ interface(`userdom_dontaudit_append_user
+@@ -1998,6 +1998,24 @@ interface(`userdom_dontaudit_append_user
  
  ########################################
  ## <summary>
