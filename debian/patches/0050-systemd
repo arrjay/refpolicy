@@ -21,16 +21,18 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -304,6 +304,8 @@ selinux_compute_user_contexts(crond_t)
+@@ -304,6 +304,10 @@ selinux_compute_user_contexts(crond_t)
  init_read_state(crond_t)
  init_rw_utmp(crond_t)
  init_spec_domtrans_script(crond_t)
 +init_stop_all_units(system_cronjob_t)
 +init_start_all_units(system_cronjob_t)
++init_get_generic_units_status(system_cronjob_t)
++init_status(system_cronjob_t)
  
  auth_domtrans_chk_passwd(crond_t)
  auth_manage_var_auth(crond_t)
-@@ -417,6 +419,17 @@ optional_policy(`
+@@ -417,6 +421,17 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -2308,7 +2310,7 @@ Index: refpolicy/policy/modules/services/xserver.if
  ##	Execute the X server in the X server domain.
  ## </summary>
  ## <param name="domain">
-@@ -1313,3 +1385,22 @@ interface(`xserver_unconfined',`
+@@ -1313,3 +1385,41 @@ interface(`xserver_unconfined',`
  	typeattribute $1 x_domain;
  	typeattribute $1 xserver_unconfined_type;
  ')
@@ -2330,6 +2332,25 @@ Index: refpolicy/policy/modules/services/xserver.if
 +
 +	allow $1 xserver_t:dir search;
 +	allow $1 xserver_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##	talk to xserver_t by dbus
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`xserver_dbus_chat',`
++	gen_require(`
++		type xserver_t;
++	')
++
++	allow $1 xserver_t:dbus send_msg;
++	allow xserver_t $1:dbus send_msg;
 +')
 Index: refpolicy/policy/modules/system/udev.if
 ===================================================================
@@ -2387,7 +2408,16 @@ Index: refpolicy/policy/modules/contrib/logrotate.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/logrotate.te
 +++ refpolicy/policy/modules/contrib/logrotate.te
-@@ -126,6 +126,9 @@ ifdef(`distro_debian',`
+@@ -102,6 +102,8 @@ auth_manage_login_records(logrotate_t)
+ auth_use_nsswitch(logrotate_t)
+ 
+ init_all_labeled_script_domtrans(logrotate_t)
++dbus_system_bus_client(logrotate_t)
++init_write_pid_socket(logrotate_t)
+ 
+ logging_manage_all_logs(logrotate_t)
+ logging_send_syslog_msg(logrotate_t)
+@@ -126,6 +128,9 @@ ifdef(`distro_debian',`
  	logging_read_syslog_config(logrotate_t)
  ')
  
@@ -2861,7 +2891,12 @@ Index: refpolicy/policy/modules/system/authlogin.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/authlogin.if
 +++ refpolicy/policy/modules/system/authlogin.if
-@@ -158,6 +158,11 @@ interface(`auth_login_pgm_domain',`
+@@ -155,9 +155,16 @@ interface(`auth_login_pgm_domain',`
+ 	seutil_read_config($1)
+ 	seutil_read_default_contexts($1)
+ 
++	userdom_search_user_runtime($1)
++
  	tunable_policy(`allow_polyinstantiation',`
  		files_polyinstantiate_all($1)
  	')
@@ -2873,7 +2908,7 @@ Index: refpolicy/policy/modules/system/authlogin.if
  ')
  
  ########################################
-@@ -961,6 +966,23 @@ interface(`auth_rw_var_auth',`
+@@ -961,6 +968,23 @@ interface(`auth_rw_var_auth',`
      rw_files_pattern($1, var_auth_t, var_auth_t)
  ')
  
@@ -3923,7 +3958,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  storage_getattr_removable_dev(systemd_logind_t)
  storage_setattr_removable_dev(systemd_logind_t)
-@@ -233,6 +321,10 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +321,11 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3931,10 +3966,11 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_system_start(systemd_logind_t)
 +init_system_stop(systemd_logind_t)
 +start_stop_init_var_run_service(systemd_logind_t)
++init_dbus_send_script(systemd_logind_t)
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -241,14 +333,131 @@ systemd_start_power_units(systemd_logind
+@@ -241,14 +334,137 @@ systemd_start_power_units(systemd_logind
  
  udev_read_db(systemd_logind_t)
  udev_read_pid_files(systemd_logind_t)
@@ -3945,6 +3981,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +userdom_manage_user_runtime_dirs(systemd_logind_t)
 +userdom_mounton_user_runtime_dirs(systemd_logind_t)
 +userdom_relabelfrom_user_runtime_dirs(systemd_logind_t)
++userdom_read_all_users_state(systemd_logind_t)
  
  optional_policy(`
  	dbus_system_bus_client(systemd_logind_t)
@@ -3960,7 +3997,12 @@ Index: refpolicy/policy/modules/system/systemd.te
 +')
 +
 +optional_policy(`
++	policykit_dbus_chat(systemd_logind_t)
++')
++
++optional_policy(`
 +	xserver_read_xdm_state(systemd_logind_t)
++	xserver_dbus_chat(systemd_logind_t)
 +	xserver_dbus_chat_xdm(systemd_logind_t)
 +	read_xserver_files(systemd_logind_t)
 +')
@@ -4066,7 +4108,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +499,13 @@ optional_policy(`
+@@ -290,6 +506,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -4080,7 +4122,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +513,67 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +520,67 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4149,7 +4191,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +592,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +599,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
@@ -4248,3 +4290,28 @@ Index: refpolicy/policy/modules/system/lvm.fc
  /usr/lib/systemd/system/blk-availability.* -- gen_context(system_u:object_r:lvm_unit_t,s0)
  /usr/lib/systemd/system/dm-event.* -- gen_context(system_u:object_r:lvm_unit_t,s0)
  /usr/lib/systemd/system/lvm2-.*	-- gen_context(system_u:object_r:lvm_unit_t,s0)
+Index: refpolicy/policy/modules/contrib/mta.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mta.te
++++ refpolicy/policy/modules/contrib/mta.te
+@@ -199,6 +199,7 @@ selinux_getattr_fs(system_mail_t)
+ term_dontaudit_use_unallocated_ttys(system_mail_t)
+ 
+ init_use_script_ptys(system_mail_t)
++init_rw_stream_sockets(system_mail_t)
+ 
+ userdom_use_user_terminals(system_mail_t)
+ 
+Index: refpolicy/policy/modules/kernel/terminal.te
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/terminal.te
++++ refpolicy/policy/modules/kernel/terminal.te
+@@ -19,6 +19,8 @@ dev_node(bsdpty_device_t)
+ #
+ type console_device_t;
+ dev_node(console_device_t)
++# for /dev/pts/0
++allow console_device_t devpts_t:filesystem associate;
+ 
+ #
+ # devpts_t is the type of the devpts file system and

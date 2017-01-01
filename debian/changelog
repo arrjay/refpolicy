@@ -26,11 +26,24 @@ refpolicy (2:2.20161023.1-6) unstable; urgency=medium
   * Allow policykit_t to stat tmpfs_t and cgroup_t filesystems and to read
     urandom
   * Change auth_login_pgm_domain() to include writing to sessions fifo.
+    and searching user_runtime_t
   * Allow systemd_logind_t and systemd_machined_t to read initrc_t files to
     get cgroup and sessionid
   * Allow systemd_logind_t to read xserver_t files to get cgroup and sessionid
+  * Allow system_mail_t to access unix_stream_sockets inherited from init
+    for error messages on startup
+  * Allow system_cronjob_t to get systemd unit status
+  * Allow logrotate to talk to dbus and talk to the private systemd socket for
+    systemctl
+  * Allow console_device_t to associate with devpts_t:filesystem for /dev/pts/0
+  * Allow systemd_logind_t to read all users state for cgroup and sessionid
+    files
+  * Label /var/run/sddm and /usr/bin/sddm
+  * Allow systemd_logind_t to talk to policykit_t and xserver_t by dbus
+  * Allow systemd_logind_t to send messages to initrc_t by dbus
+  * Allow policykit_t to send dbus messages to all userdomains
 
- -- Russell Coker <russell@coker.com.au>  Thu, 29 Dec 2016 03:01:10 +1100
+ -- Russell Coker <russell@coker.com.au>  Sun, 01 Jan 2017 15:33:26 +1100
 
 refpolicy (2:2.20161023.1-5) unstable; urgency=medium
 

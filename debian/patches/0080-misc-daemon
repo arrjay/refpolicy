@@ -386,7 +386,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -338,6 +338,18 @@ ifdef(`distro_debian',`
+@@ -340,6 +340,18 @@ ifdef(`distro_debian',`
  	optional_policy(`
  		logwatch_search_cache_dir(crond_t)
  	')
@@ -405,7 +405,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
-@@ -473,7 +485,8 @@ allow system_cronjob_t crond_t:process s
+@@ -475,7 +487,8 @@ allow system_cronjob_t crond_t:process s
  allow system_cronjob_t cron_spool_t:dir list_dir_perms;
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
@@ -415,7 +415,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
-@@ -565,6 +578,10 @@ optional_policy(`
+@@ -567,6 +580,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -426,7 +426,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  	cyrus_manage_data(system_cronjob_t)
  ')
  
-@@ -741,3 +758,5 @@ tunable_policy(`cron_userdomain_transiti
+@@ -743,3 +760,5 @@ tunable_policy(`cron_userdomain_transiti
  optional_policy(`
  	unconfined_domain(unconfined_cronjob_t)
  ')
@@ -788,9 +788,9 @@ Index: refpolicy/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.if
 +++ refpolicy/policy/modules/services/xserver.if
-@@ -1404,3 +1404,21 @@ interface(`read_xserver_files',`
- 	allow $1 xserver_t:dir search;
- 	allow $1 xserver_t:file read_file_perms;
+@@ -1423,3 +1423,21 @@ interface(`xserver_dbus_chat',`
+ 	allow $1 xserver_t:dbus send_msg;
+ 	allow xserver_t $1:dbus send_msg;
  ')
 +
 +########################################
@@ -1373,10 +1373,10 @@ Index: refpolicy/policy/modules/contrib/mta.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mta.te
 +++ refpolicy/policy/modules/contrib/mta.te
-@@ -199,10 +199,15 @@ selinux_getattr_fs(system_mail_t)
- term_dontaudit_use_unallocated_ttys(system_mail_t)
+@@ -200,10 +200,15 @@ term_dontaudit_use_unallocated_ttys(syst
  
  init_use_script_ptys(system_mail_t)
+ init_rw_stream_sockets(system_mail_t)
 +init_use_fds(system_mail_t)
  
  userdom_use_user_terminals(system_mail_t)
@@ -1389,7 +1389,7 @@ Index: refpolicy/policy/modules/contrib/mta.te
  	apache_read_squirrelmail_data(system_mail_t)
  	apache_append_squirrelmail_data(system_mail_t)
  	apache_dontaudit_append_log(system_mail_t)
-@@ -233,6 +238,7 @@ optional_policy(`
+@@ -234,6 +239,7 @@ optional_policy(`
  	cron_read_system_job_tmp_files(system_mail_t)
  	cron_dontaudit_write_pipes(system_mail_t)
  	cron_rw_system_job_stream_sockets(system_mail_t)
@@ -2677,3 +2677,31 @@ Index: refpolicy/policy/modules/contrib/policykit.te
  
  domain_read_all_domains_state(policykit_t)
  
+@@ -99,6 +102,7 @@ auth_use_nsswitch(policykit_t)
+ 
+ userdom_getattr_all_users(policykit_t)
+ userdom_read_all_users_state(policykit_t)
++userdom_dbus_send_all_users(policykit_t)
+ 
+ # for /run/systemd/machines
+ systemd_read_machines(policykit_t)
+Index: refpolicy/policy/modules/services/xserver.fc
+===================================================================
+--- refpolicy.orig/policy/modules/services/xserver.fc
++++ refpolicy/policy/modules/services/xserver.fc
+@@ -62,6 +62,7 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
+ /usr/s?bin/gdm-binary	--	gen_context(system_u:object_r:xdm_exec_t,s0)
+ /usr/s?bin/lxdm(-binary)? --	gen_context(system_u:object_r:xdm_exec_t,s0)
+ /usr/s?bin/[xkw]dm	--	gen_context(system_u:object_r:xdm_exec_t,s0)
++/usr/bin/sddm		--	gen_context(system_u:object_r:xdm_exec_t,s0)
+ /usr/bin/gpe-dm		--	gen_context(system_u:object_r:xdm_exec_t,s0)
+ /usr/bin/iceauth	--	gen_context(system_u:object_r:iceauth_exec_t,s0)
+ /usr/bin/slim		--	gen_context(system_u:object_r:xdm_exec_t,s0)
+@@ -115,6 +116,7 @@ ifndef(`distro_debian',`
+ /var/log/XFree86.*	--	gen_context(system_u:object_r:xserver_log_t,s0)
+ /var/log/Xorg.*		--	gen_context(system_u:object_r:xserver_log_t,s0)
+ 
++/var/run/sddm(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
+ /var/run/gdm(3)?(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
+ /var/run/gdm(3)?\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
+ /var/run/xdm\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
