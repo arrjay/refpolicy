@@ -1,3 +1,10 @@
+refpolicy (2:2.20161023.1-7) UNRELEASED; urgency=medium
+
+  * Sort the files in the files in the selinux-policy-src.tar.gz tarball by
+    name, this should fix the last issue for reproducible build
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 03 Jan 2017 13:05:37 +0100
+
 refpolicy (2:2.20161023.1-6) unstable; urgency=medium
 
   * Label /var/lib/unbound as named_cache_t, closes: #740657
