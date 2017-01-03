@@ -15,7 +15,10 @@ Build-Depends-Indep: bzip2,
                      m4,
                      policycoreutils (>= 2.5),
                      policycoreutils-python-utils (>= 2.5),
-                     python
+                     python,
+# Needed for the --sort=name option, can probably be removed when this version
+# hits stable.
+                     tar (>= 1.28)
 
 Package: selinux-policy-default
 Architecture: all
