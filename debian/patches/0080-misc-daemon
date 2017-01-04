@@ -386,6 +386,17 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
+@@ -215,8 +215,8 @@ tunable_policy(`fcron_crond',`
+ # Daemon local policy
+ #
+ 
+-allow crond_t self:capability { dac_override chown fowner setgid setuid sys_nice dac_read_search };
+-dontaudit crond_t self:capability { sys_resource sys_tty_config };
++allow crond_t self:capability { chown dac_override dac_read_search fowner setgid setuid sys_nice sys_resource };
++dontaudit crond_t self:capability { sys_tty_config };
+ allow crond_t self:process ~{ ptrace setcurrent setexec setfscreate execmem execstack execheap };
+ allow crond_t self:process { setexec setfscreate };
+ allow crond_t self:fd use;
 @@ -340,6 +340,18 @@ ifdef(`distro_debian',`
  	optional_policy(`
  		logwatch_search_cache_dir(crond_t)
@@ -2482,7 +2493,18 @@ Index: refpolicy/policy/modules/contrib/devicekit.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/devicekit.te
 +++ refpolicy/policy/modules/contrib/devicekit.te
-@@ -65,6 +65,8 @@ optional_policy(`
+@@ -56,6 +56,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	xserver_dbus_chat_xdm(devicekit_power_t)
++')
++
++optional_policy(`
+ 	udev_read_db(devicekit_t)
+ ')
+ 
+@@ -65,6 +69,8 @@ optional_policy(`
  #
  
  allow devicekit_disk_t self:capability { chown setuid setgid dac_override fowner fsetid net_admin sys_admin sys_nice sys_ptrace sys_rawio };
@@ -2491,7 +2513,7 @@ Index: refpolicy/policy/modules/contrib/devicekit.te
  allow devicekit_disk_t self:process { getsched signal_perms };
  allow devicekit_disk_t self:fifo_file rw_fifo_file_perms;
  allow devicekit_disk_t self:netlink_kobject_uevent_socket create_socket_perms;
-@@ -198,6 +200,7 @@ optional_policy(`
+@@ -198,6 +204,7 @@ optional_policy(`
  #
  
  allow devicekit_power_t self:capability { dac_override net_admin sys_admin sys_tty_config sys_nice sys_ptrace };
@@ -2503,7 +2525,7 @@ Index: refpolicy/policy/modules/services/xserver.te
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.te
 +++ refpolicy/policy/modules/services/xserver.te
-@@ -618,6 +618,7 @@ allow xserver_t input_xevent_t:x_event s
+@@ -622,6 +622,7 @@ allow xserver_t input_xevent_t:x_event s
  
  allow xserver_t self:capability { dac_override fowner fsetid setgid setuid ipc_owner sys_rawio sys_admin sys_nice sys_tty_config mknod net_bind_service };
  dontaudit xserver_t self:capability chown;
@@ -2596,12 +2618,13 @@ Index: refpolicy/policy/modules/system/unconfined.te
  ')
  
  optional_policy(`
-@@ -217,6 +218,10 @@ optional_policy(`
+@@ -217,6 +218,11 @@ optional_policy(`
  	wine_domtrans(unconfined_t)
  ')
  
 +optional_policy(`
 +	xserver_role(unconfined_r, unconfined_t)
++	xserver_dbus_chat_xdm(unconfined_t)
 +')
 +
  ########################################
@@ -2689,7 +2712,23 @@ Index: refpolicy/policy/modules/services/xserver.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.fc
 +++ refpolicy/policy/modules/services/xserver.fc
-@@ -62,6 +62,7 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
+@@ -9,6 +9,7 @@ HOME_DIR/\.ICEauthority.* --	gen_context
+ HOME_DIR/\.serverauth.*	--	gen_context(system_u:object_r:xauth_home_t,s0)
+ HOME_DIR/\.xauth.*	--	gen_context(system_u:object_r:xauth_home_t,s0)
+ HOME_DIR/\.Xauthority.*	--	gen_context(system_u:object_r:xauth_home_t,s0)
++HOME_DIR/\.xsession-errors --	gen_context(system_u:object_r:xauth_home_t,s0)
+ 
+ #
+ # /dev
+@@ -30,6 +31,7 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
+ /etc/kde[34]?/kdm/backgroundrc	gen_context(system_u:object_r:xdm_var_run_t,s0)
+ 
+ /etc/rc\.d/init\.d/x11-common -- gen_context(system_u:object_r:xdm_exec_t,s0)
++/etc/sddm/Xsession	--	gen_context(system_u:object_r:xsession_exec_t,s0)
+ 
+ /etc/X11/[wx]dm/Xreset.* --	gen_context(system_u:object_r:xsession_exec_t,s0)
+ /etc/X11/[wxg]dm/Xsession --	gen_context(system_u:object_r:xsession_exec_t,s0)
+@@ -62,6 +64,7 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
  /usr/s?bin/gdm-binary	--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/s?bin/lxdm(-binary)? --	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/s?bin/[xkw]dm	--	gen_context(system_u:object_r:xdm_exec_t,s0)
@@ -2697,7 +2736,7 @@ Index: refpolicy/policy/modules/services/xserver.fc
  /usr/bin/gpe-dm		--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/bin/iceauth	--	gen_context(system_u:object_r:iceauth_exec_t,s0)
  /usr/bin/slim		--	gen_context(system_u:object_r:xdm_exec_t,s0)
-@@ -115,6 +116,7 @@ ifndef(`distro_debian',`
+@@ -115,6 +118,7 @@ ifndef(`distro_debian',`
  /var/log/XFree86.*	--	gen_context(system_u:object_r:xserver_log_t,s0)
  /var/log/Xorg.*		--	gen_context(system_u:object_r:xserver_log_t,s0)
  
@@ -2705,3 +2744,29 @@ Index: refpolicy/policy/modules/services/xserver.fc
  /var/run/gdm(3)?(/.*)?		gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/gdm(3)?\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
  /var/run/xdm\.pid	--	gen_context(system_u:object_r:xdm_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/loadkeys.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/loadkeys.te
++++ refpolicy/policy/modules/contrib/loadkeys.te
+@@ -39,6 +39,7 @@ init_dontaudit_use_script_ptys(loadkeys_
+ locallogin_use_fds(loadkeys_t)
+ 
+ miscfiles_read_localization(loadkeys_t)
++init_read_script_tmp_files(loadkeys_t)
+ 
+ userdom_use_user_ttys(loadkeys_t)
+ userdom_list_user_home_content(loadkeys_t)
+Index: refpolicy/policy/modules/contrib/rtkit.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/rtkit.te
++++ refpolicy/policy/modules/contrib/rtkit.te
+@@ -36,6 +36,9 @@ logging_send_syslog_msg(rtkit_daemon_t)
+ 
+ miscfiles_read_localization(rtkit_daemon_t)
+ 
++selinux_getattr_fs(rtkit_daemon_t)
++seutil_search_default_contexts(rtkit_daemon_t)
++
+ optional_policy(`
+ 	dbus_system_domain(rtkit_daemon_t, rtkit_daemon_exec_t)
+ 

@@ -3940,8 +3940,12 @@ Index: refpolicy/policy/modules/system/systemd.te
  files_search_pids(systemd_logind_t)
  
  kernel_read_kernel_sysctls(systemd_logind_t)
-@@ -214,12 +297,17 @@ dev_getattr_dri_dev(systemd_logind_t)
+@@ -212,14 +295,22 @@ dev_rw_sysfs(systemd_logind_t)
+ dev_rw_input_dev(systemd_logind_t)
+ dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
++dev_getattr_kvm_dev(systemd_logind_t)
++dev_setattr_kvm_dev(systemd_logind_t)
  dev_getattr_sound_dev(systemd_logind_t)
  dev_setattr_sound_dev(systemd_logind_t)
 +dev_read_urand(systemd_logind_t)
@@ -3954,11 +3958,12 @@ Index: refpolicy/policy/modules/system/systemd.te
 +fs_mount_tmpfs(systemd_logind_t)
 +fs_unmount_tmpfs(systemd_logind_t)
 +fs_getattr_tmpfs_dirs(systemd_logind_t)
++fs_list_tmpfs(systemd_logind_t)
 +fs_relabelfrom_tmpfs_dir(systemd_logind_t)
  
  storage_getattr_removable_dev(systemd_logind_t)
  storage_setattr_removable_dev(systemd_logind_t)
-@@ -233,6 +321,11 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +324,11 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3970,7 +3975,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -241,14 +334,137 @@ systemd_start_power_units(systemd_logind
+@@ -241,14 +337,140 @@ systemd_start_power_units(systemd_logind
  
  udev_read_db(systemd_logind_t)
  udev_read_pid_files(systemd_logind_t)
@@ -3981,7 +3986,10 @@ Index: refpolicy/policy/modules/system/systemd.te
 +userdom_manage_user_runtime_dirs(systemd_logind_t)
 +userdom_mounton_user_runtime_dirs(systemd_logind_t)
 +userdom_relabelfrom_user_runtime_dirs(systemd_logind_t)
++userdom_relabelto_user_runtime_dirs(systemd_logind_t)
 +userdom_read_all_users_state(systemd_logind_t)
++userdom_manage_tmp_role(system_r, systemd_logind_t)
++userdom_manage_tmpfs_role(system_r, systemd_logind_t)
  
  optional_policy(`
  	dbus_system_bus_client(systemd_logind_t)
@@ -4108,7 +4116,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +506,13 @@ optional_policy(`
+@@ -290,6 +512,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -4122,7 +4130,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +520,67 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +526,72 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4161,9 +4169,14 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_relabel_utmp(systemd_tmpfiles_t)
 +init_manage_var_lib_files(systemd_tmpfiles_t)
 +init_relabel_var_lib_dirs(systemd_tmpfiles_t)
++files_delete_usr_files(systemd_tmpfiles_t)
 +
 +logging_manage_generic_logs(systemd_tmpfiles_t)
 +logging_set_perms_syslogd_tmp(systemd_tmpfiles_t)
++
++optional_policy(`
++	dbus_read_lib_files(systemd_tmpfiles_t)
++')
 +
 +optional_policy(`
 +	xserver_create_xdm_tmp_dir(systemd_tmpfiles_t)
@@ -4191,7 +4204,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +599,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +610,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
@@ -4315,3 +4328,18 @@ Index: refpolicy/policy/modules/kernel/terminal.te
  
  #
  # devpts_t is the type of the devpts file system and
+Index: refpolicy/policy/modules/services/xserver.te
+===================================================================
+--- refpolicy.orig/policy/modules/services/xserver.te
++++ refpolicy/policy/modules/services/xserver.te
+@@ -271,6 +271,10 @@ files_search_pids(xauth_t)
+ fs_getattr_xattr_fs(xauth_t)
+ fs_search_auto_mountpoints(xauth_t)
+ 
++allow xauth_t xdm_t:fd use;
++allow xauth_t xdm_t:fifo_file { getattr read };
++allow xauth_t xdm_t:unix_stream_socket { read write };
++
+ # cjp: why?
+ term_use_ptmx(xauth_t)
+ 
