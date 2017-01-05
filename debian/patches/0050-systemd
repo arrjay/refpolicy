@@ -4243,7 +4243,7 @@ Index: refpolicy/policy/modules/system/systemd.fc
  /bin/systemd-stdio-bridge	--	gen_context(system_u:object_r:systemd_stdio_bridge_exec_t,s0)
  /bin/systemd-tmpfiles		--	gen_context(system_u:object_r:systemd_tmpfiles_exec_t,s0)
  /bin/systemd-tty-ask-password-agent		--			gen_context(system_u:object_r:systemd_passwd_agent_exec_t,s0)
-+/bin/systemd-notify		--	gen_context(system_u:object_r:systemd_notify_exec_t,s0)
++/usr/bin/systemd-notify		--	gen_context(system_u:object_r:systemd_notify_exec_t,s0)
  
  /usr/lib/systemd/systemd-activate	--	gen_context(system_u:object_r:systemd_activate_exec_t,s0)
  /usr/lib/systemd/systemd-backlight	--	gen_context(system_u:object_r:systemd_backlight_exec_t,s0)
@@ -4291,14 +4291,6 @@ Index: refpolicy/policy/modules/system/lvm.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/lvm.fc
 +++ refpolicy/policy/modules/system/lvm.fc
-@@ -28,7 +28,6 @@ ifdef(`distro_gentoo',`
- #
- /lib/lvm-10/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
- /lib/lvm-200/.*		--	gen_context(system_u:object_r:lvm_exec_t,s0)
--/lib/systemd/systemd-cryptsetup -- gen_context(system_u:object_r:lvm_exec_t,s0)
- /lib/udev/udisks-lvm-pv-export	--	gen_context(system_u:object_r:lvm_exec_t,s0)
- 
- #
 @@ -91,6 +90,7 @@ ifdef(`distro_gentoo',`
  # /usr
  #
