@@ -3940,7 +3940,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  files_search_pids(systemd_logind_t)
  
  kernel_read_kernel_sysctls(systemd_logind_t)
-@@ -212,14 +295,22 @@ dev_rw_sysfs(systemd_logind_t)
+@@ -212,14 +295,23 @@ dev_rw_sysfs(systemd_logind_t)
  dev_rw_input_dev(systemd_logind_t)
  dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
@@ -3949,6 +3949,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  dev_getattr_sound_dev(systemd_logind_t)
  dev_setattr_sound_dev(systemd_logind_t)
 +dev_read_urand(systemd_logind_t)
++dev_rw_dri(systemd_logind_t)
  
  files_read_etc_files(systemd_logind_t)
  
@@ -3963,7 +3964,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  storage_getattr_removable_dev(systemd_logind_t)
  storage_setattr_removable_dev(systemd_logind_t)
-@@ -233,6 +324,11 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +325,11 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3975,13 +3976,14 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -241,14 +337,140 @@ systemd_start_power_units(systemd_logind
+@@ -241,14 +338,143 @@ systemd_start_power_units(systemd_logind
  
  udev_read_db(systemd_logind_t)
  udev_read_pid_files(systemd_logind_t)
 +udev_list_pids(systemd_logind_t)
  
  userdom_use_user_ttys(systemd_logind_t)
++userdom_setattr_user_ttys(systemd_logind_t)
 +userdom_manage_user_runtime_root_dirs(systemd_logind_t)
 +userdom_manage_user_runtime_dirs(systemd_logind_t)
 +userdom_mounton_user_runtime_dirs(systemd_logind_t)
@@ -4040,6 +4042,8 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_read_state(systemd_passwd_agent_t)
 +
 +selinux_get_enforce_mode(systemd_passwd_agent_t)
++selinux_getattr_fs(systemd_passwd_agent_t)
++seutil_search_default_contexts(systemd_passwd_agent_t)
 +
 +files_read_etc_files(systemd_passwd_agent_t)
 +
@@ -4116,7 +4120,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +512,13 @@ optional_policy(`
+@@ -290,6 +516,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -4130,7 +4134,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +526,72 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +530,72 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4204,7 +4208,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +610,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +614,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
