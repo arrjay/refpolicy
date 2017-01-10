@@ -1,3 +1,4 @@
+0001-Use-genfscon-to-label-sys-devices-system-cpu-online-.patch
 0003-Make-default-and-root-mcs-seusers-unconfined.patch
 0048-misc-not-systemd
 0050-systemd

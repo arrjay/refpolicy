@@ -1,0 +1,30 @@
+From 6866d45e5130461cca090cc9be903336ea037f7b Mon Sep 17 00:00:00 2001
+From: Laurent Bigonville <bigon@bigon.be>
+Date: Fri, 6 Jan 2017 14:18:24 +0100
+Subject: [PATCH] Use genfscon to label /sys/devices/system/cpu/online as
+ cpu_online_t
+
+Since 8e01472078763ebc1eaea089a1adab75dd982ccd, it's possible to use
+genfscon for sysfs.
+
+This patch should help to deprecate distribution specific call to
+restorecon or tmpfiles to restore /sys/devices/system/cpu/online during
+boot.
+
+Thanks to Dominick for the tip.
+---
+ policy/modules/kernel/devices.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+Index: refpolicy/policy/modules/kernel/devices.te
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/devices.te
++++ refpolicy/policy/modules/kernel/devices.te
+@@ -66,6 +66,7 @@ dev_node(cpu_device_t)
+ type cpu_online_t, sysfs_types;
+ files_type(cpu_online_t)
+ dev_associate_sysfs(cpu_online_t)
++genfscon sysfs /devices/system/cpu/online gen_context(system_u:object_r:cpu_online_t,s0)
+ 
+ #
+ # Type for /dev/crash

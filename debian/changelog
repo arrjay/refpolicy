@@ -1,8 +1,9 @@
 refpolicy (2:2.20161023.1-7) UNRELEASED; urgency=medium
     
   [ Laurent Bigonville and cgzones ]
-  * Sort the files in the files in the selinux-policy-src.tar.gz tarball by
-    name, this should fix the last issue for reproducible build
+   * Sort the files in the files in the selinux-policy-src.tar.gz tarball by
+     name, this should fix the last issue for reproducible build
+   * Add genfscon for cpu/online. Closes: #849637
   [ Russell Coker ]
    * Make the boinc patch like the one upstream accepted and make it last in
      the list.
@@ -13,16 +14,28 @@ refpolicy (2:2.20161023.1-7) UNRELEASED; urgency=medium
    * Allow loadkeys_t to read tmp files created by init scripts
    * Allow systemd_tmpfiles_t to delete usr_t files for a file copied to /tmp
      and to read dbus lib files for /var/lib/dbus
-   * Allow systemd_logind_t to list tmpfs_t dirs and relabelto user runtime
+   * Allow systemd_logind_t to list tmpfs_t dirs, relabelto user runtime
+     and dev_rw_wireless()
    * Allow xauth_t to inherit file handles from xdm_t, read an inherited fifo
      and read/write an inherited socket.
    * Allow xdm_t to send dbus messages to unconfined_t
    * Give crond_t sys_resource so it can set hard ulimit for jobs
    * Allow systemd_logind_t to setattr on the kvm device and user ttys, to
      manage user_tmp_t and user_tmpfs_t files, to read/write the dri device
-   * sddm is now working (gdm3 SEGVs, not a policy bug), closes: #781779
    * Allow systemd_passwd_agent_t to stat the selinuxfs and search the
      contexts dir
+   * Make systemd_read_machines() also allow listing directory
+   * Make auth_login_pgm_domain() include userdom_read_user_tmpfs_files()
+   * Allow setfiles_t to inherit apt_t file handles
+   * Allow system_mail_t to use ptys from apt_t and unconfined_t
+   * Label /run/agetty.reload as getty_var_run_t
+   * Allow systemd_tmpfiles_t to relabel directories to etc_t
+   * Made sysnet_create_config() include { relabelfrom relabelto
+     manage_file_perms }, allow systemd_tmpfiles_t to create config, and set
+     file contexts entries for /var/run/resolvconf.  Makes policy work with
+     resolvconf (but requires resolvconf changes) Closes: #740685
+  [ Important ]
+   * sddm is now working (gdm3 SEGVs, not a policy bug), closes: #781779
    * Support usrmerge, lots of fc changes and subst_dist changes
      Closes: #850032
 

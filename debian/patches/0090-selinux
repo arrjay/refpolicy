@@ -594,13 +594,14 @@ Index: refpolicy/policy/modules/system/selinuxutil.te
  
  dev_read_urand(setfiles_t)
  dev_relabel_all_dev_nodes(setfiles_t)
-@@ -609,6 +615,11 @@ ifdef(`distro_debian',`
+@@ -609,6 +615,12 @@ ifdef(`distro_debian',`
  	fs_rw_tmpfs_chr_files(setfiles_t)
  ')
  
 +# for dpkg-statoverride running as setfiles_t
 +optional_policy(`
 +	dpkg_read_db(setfiles_t)
++	apt_use_fds(setfiles_t)
 +')
 +
  ifdef(`distro_redhat', `
@@ -622,7 +623,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -742,6 +742,7 @@ optional_policy(`
+@@ -744,6 +744,7 @@ optional_policy(`
  type unconfined_cronjob_t;
  domain_type(unconfined_cronjob_t)
  domain_cron_exemption_target(unconfined_cronjob_t)
@@ -800,7 +801,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.te
 +++ refpolicy/policy/modules/system/systemd.te
-@@ -576,6 +576,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
+@@ -605,6 +605,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
  auth_relabel_login_records(systemd_tmpfiles_t)
  auth_setattr_login_records(systemd_tmpfiles_t)
@@ -808,3 +809,19 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  seutil_read_file_contexts(systemd_tmpfiles_t)
  
+Index: refpolicy/policy/modules/contrib/mta.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mta.te
++++ refpolicy/policy/modules/contrib/mta.te
+@@ -209,6 +209,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	apt_use_fds(system_mail_t)
++	apt_use_ptys(system_mail_t)
++')
++
++optional_policy(`
+ 	apache_read_squirrelmail_data(system_mail_t)
+ 	apache_append_squirrelmail_data(system_mail_t)
+ 	apache_dontaudit_append_log(system_mail_t)

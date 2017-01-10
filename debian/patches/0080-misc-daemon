@@ -512,8 +512,8 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -828,3 +828,20 @@ interface(`systemd_read_machines',`
- 	read_files_pattern($1, systemd_machined_var_run_t, systemd_machined_var_run_t)
+@@ -829,3 +829,20 @@ interface(`systemd_read_machines',`
+ 	allow $1 systemd_machined_var_run_t:file read_file_perms;
  ')
  
 +######################################
@@ -938,6 +938,13 @@ Index: refpolicy/policy/modules/system/sysnetwork.fc
  
  ifdef(`distro_gentoo',`
  /var/lib/dhcpc(/.*)?		gen_context(system_u:object_r:dhcpc_state_t,s0)
+@@ -78,5 +81,6 @@ ifdef(`distro_gentoo',`
+ 
+ ifdef(`distro_debian',`
+ /var/run/network(/.*)?	gen_context(system_u:object_r:net_conf_t,s0)
++/var/run/resolvconf/.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ ')
+ 
 Index: refpolicy/policy/modules/system/getty.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/getty.te
@@ -1384,7 +1391,7 @@ Index: refpolicy/policy/modules/contrib/mta.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mta.te
 +++ refpolicy/policy/modules/contrib/mta.te
-@@ -200,10 +200,15 @@ term_dontaudit_use_unallocated_ttys(syst
+@@ -200,10 +200,16 @@ term_dontaudit_use_unallocated_ttys(syst
  
  init_use_script_ptys(system_mail_t)
  init_rw_stream_sockets(system_mail_t)
@@ -1394,13 +1401,14 @@ Index: refpolicy/policy/modules/contrib/mta.te
  
  optional_policy(`
 +	permit_in_unconfined_r(system_mail_t)
++	unconfined_use_fds(system_mail_t)
 +')
 +
 +optional_policy(`
  	apache_read_squirrelmail_data(system_mail_t)
  	apache_append_squirrelmail_data(system_mail_t)
  	apache_dontaudit_append_log(system_mail_t)
-@@ -234,6 +239,7 @@ optional_policy(`
+@@ -234,6 +240,7 @@ optional_policy(`
  	cron_read_system_job_tmp_files(system_mail_t)
  	cron_dontaudit_write_pipes(system_mail_t)
  	cron_rw_system_job_stream_sockets(system_mail_t)
@@ -2770,3 +2778,27 @@ Index: refpolicy/policy/modules/contrib/rtkit.te
  optional_policy(`
  	dbus_system_domain(rtkit_daemon_t, rtkit_daemon_exec_t)
  
+Index: refpolicy/policy/modules/system/getty.fc
+===================================================================
+--- refpolicy.orig/policy/modules/system/getty.fc
++++ refpolicy/policy/modules/system/getty.fc
+@@ -7,6 +7,7 @@
+ /var/log/vgetty\.log\..* --	gen_context(system_u:object_r:getty_log_t,s0)
+ 
+ /var/run/mgetty\.pid.*	--	gen_context(system_u:object_r:getty_var_run_t,s0)
++/var/run/agetty\.reload	--	gen_context(system_u:object_r:getty_var_run_t,s0)
+ 
+ /var/spool/fax(/.*)?		gen_context(system_u:object_r:getty_var_run_t,s0)
+ /var/spool/voice(/.*)?		gen_context(system_u:object_r:getty_var_run_t,s0)
+Index: refpolicy/policy/modules/kernel/files.fc
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/files.fc
++++ refpolicy/policy/modules/kernel/files.fc
+@@ -112,6 +112,7 @@ ifdef(`distro_debian',`
+ # on Debian /lib/init/rw is a tmpfs used like /var/run but
+ # before /var is mounted
+ /lib/init/rw(/.*)?		gen_context(system_u:object_r:var_run_t,s0-mls_systemhigh)
++/var/run/resolvconf(/.*)? -d	gen_context(system_u:object_r:etc_t,s0)
+ ')
+ 
+ #

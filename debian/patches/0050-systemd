@@ -2891,11 +2891,12 @@ Index: refpolicy/policy/modules/system/authlogin.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/authlogin.if
 +++ refpolicy/policy/modules/system/authlogin.if
-@@ -155,9 +155,16 @@ interface(`auth_login_pgm_domain',`
+@@ -155,9 +155,17 @@ interface(`auth_login_pgm_domain',`
  	seutil_read_config($1)
  	seutil_read_default_contexts($1)
  
 +	userdom_search_user_runtime($1)
++	userdom_read_user_tmpfs_files($1)
 +
  	tunable_policy(`allow_polyinstantiation',`
  		files_polyinstantiate_all($1)
@@ -2908,7 +2909,7 @@ Index: refpolicy/policy/modules/system/authlogin.if
  ')
  
  ########################################
-@@ -961,6 +968,23 @@ interface(`auth_rw_var_auth',`
+@@ -961,6 +969,23 @@ interface(`auth_rw_var_auth',`
      rw_files_pattern($1, var_auth_t, var_auth_t)
  ')
  
@@ -2966,7 +2967,32 @@ Index: refpolicy/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/files.if
 +++ refpolicy/policy/modules/kernel/files.if
-@@ -2908,6 +2908,42 @@ interface(`files_get_etc_unit_status',`
+@@ -2667,6 +2667,24 @@ interface(`files_setattr_etc_dirs',`
+ 
+ ########################################
+ ## <summary>
++##	relabel directories to etc_t
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_relabelto_etc_dirs',`
++	gen_require(`
++		type etc_t;
++	')
++
++	allow $1 etc_t:dir relabelto;
++')
++
++########################################
++## <summary>
+ ##	List the contents of /etc directories.
+ ## </summary>
+ ## <param name="domain">
+@@ -2908,6 +2926,42 @@ interface(`files_get_etc_unit_status',`
  	allow $1 etc_t:service status;
  ')
  
@@ -3009,7 +3035,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  #######################################
  ## <summary>
  ##	Relabel from and to generic files in /etc.
-@@ -3680,6 +3716,24 @@ interface(`files_relabelto_home',`
+@@ -3680,6 +3734,24 @@ interface(`files_relabelto_home',`
  
  ########################################
  ## <summary>
@@ -3034,7 +3060,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create objects in /home.
  ## </summary>
  ## <param name="domain">
-@@ -5595,6 +5649,30 @@ interface(`files_search_var_lib',`
+@@ -5595,6 +5667,30 @@ interface(`files_search_var_lib',`
  
  ########################################
  ## <summary>
@@ -3065,7 +3091,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Do not audit attempts to search the
  ##	contents of /var/lib.
  ## </summary>
-@@ -6415,6 +6493,27 @@ interface(`files_dontaudit_ioctl_all_pid
+@@ -6415,6 +6511,27 @@ interface(`files_dontaudit_ioctl_all_pid
  
  ########################################
  ## <summary>
@@ -3093,7 +3119,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##     manage all pidfile directories
  ##     in the /var/run directory.
  ## </summary>
-@@ -6989,3 +7088,4 @@ interface(`files_delete_all_non_security
+@@ -6989,3 +7106,4 @@ interface(`files_delete_all_non_security
  
          allow $1 non_security_file_type:file_class_set unlink;
  ')
@@ -3134,7 +3160,7 @@ Index: refpolicy/policy/modules/system/systemd.if
  ')
  
  ######################################
-@@ -190,3 +191,640 @@ interface(`systemd_start_power_units',`
+@@ -190,3 +191,641 @@ interface(`systemd_start_power_units',`
  
  	allow $1 power_unit_t:service start;
  ')
@@ -3772,7 +3798,8 @@ Index: refpolicy/policy/modules/system/systemd.if
 +		type systemd_machined_var_run_t;
 +	')
 +
-+	read_files_pattern($1, systemd_machined_var_run_t, systemd_machined_var_run_t)
++	allow $1 systemd_machined_var_run_t:dir list_dir_perms;
++	allow $1 systemd_machined_var_run_t:file read_file_perms;
 +')
 +
 Index: refpolicy/policy/modules/system/systemd.te
@@ -3940,7 +3967,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  files_search_pids(systemd_logind_t)
  
  kernel_read_kernel_sysctls(systemd_logind_t)
-@@ -212,14 +295,23 @@ dev_rw_sysfs(systemd_logind_t)
+@@ -212,14 +295,24 @@ dev_rw_sysfs(systemd_logind_t)
  dev_rw_input_dev(systemd_logind_t)
  dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
@@ -3950,6 +3977,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  dev_setattr_sound_dev(systemd_logind_t)
 +dev_read_urand(systemd_logind_t)
 +dev_rw_dri(systemd_logind_t)
++dev_rw_wireless(systemd_logind_t)
  
  files_read_etc_files(systemd_logind_t)
  
@@ -3964,7 +3992,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  storage_getattr_removable_dev(systemd_logind_t)
  storage_setattr_removable_dev(systemd_logind_t)
-@@ -233,6 +325,11 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +326,11 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -3976,7 +4004,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -241,14 +338,143 @@ systemd_start_power_units(systemd_logind
+@@ -241,14 +339,143 @@ systemd_start_power_units(systemd_logind
  
  udev_read_db(systemd_logind_t)
  udev_read_pid_files(systemd_logind_t)
@@ -4120,7 +4148,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +516,13 @@ optional_policy(`
+@@ -290,6 +517,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -4134,7 +4162,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,19 +530,72 @@ systemd_log_parse_environment(systemd_se
+@@ -297,19 +531,75 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4154,6 +4182,8 @@ Index: refpolicy/policy/modules/system/systemd.te
  dev_manage_all_dev_nodes(systemd_tmpfiles_t)
 +files_create_manage_all_pid_dirs(systemd_tmpfiles_t)
 +files_manage_generic_tmp_dirs(systemd_tmpfiles_t)
++
++sysnet_create_config(systemd_tmpfiles_t)
 +
 +fs_getattr_xattr_fs(systemd_tmpfiles_t)
 +create_relabel_var_lib_log(systemd_tmpfiles_t)
@@ -4200,6 +4230,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +kernel_read_kernel_sysctls(systemd_tmpfiles_t)
  
  files_read_etc_files(systemd_tmpfiles_t)
++files_relabelto_etc_dirs(systemd_tmpfiles_t)
  files_relabel_all_lock_dirs(systemd_tmpfiles_t)
  files_relabel_all_pid_dirs(systemd_tmpfiles_t)
  files_relabel_all_tmp_dirs(systemd_tmpfiles_t)
@@ -4208,7 +4239,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  auth_manage_var_auth(systemd_tmpfiles_t)
  auth_manage_login_records(systemd_tmpfiles_t)
-@@ -328,3 +614,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +618,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
@@ -4291,7 +4322,7 @@ Index: refpolicy/policy/modules/system/lvm.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/lvm.fc
 +++ refpolicy/policy/modules/system/lvm.fc
-@@ -91,6 +90,7 @@ ifdef(`distro_gentoo',`
+@@ -90,6 +90,7 @@ ifdef(`distro_gentoo',`
  # /usr
  #
  
@@ -4339,3 +4370,16 @@ Index: refpolicy/policy/modules/services/xserver.te
  # cjp: why?
  term_use_ptmx(xauth_t)
  
+Index: refpolicy/policy/modules/system/sysnetwork.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/sysnetwork.if
++++ refpolicy/policy/modules/system/sysnetwork.if
+@@ -413,7 +413,7 @@ interface(`sysnet_create_config',`
+ 	')
+ 
+ 	files_search_etc($1)
+-	allow $1 net_conf_t:file create_file_perms;
++	allow $1 net_conf_t:file { relabelfrom relabelto manage_file_perms };
+ ')
+ 
+ #######################################

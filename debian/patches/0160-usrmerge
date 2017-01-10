@@ -1444,9 +1444,9 @@ Index: refpolicy/policy/modules/kernel/files.fc
  # before /var is mounted
 -/lib/init/rw(/.*)?		gen_context(system_u:object_r:var_run_t,s0-mls_systemhigh)
 +/usr/lib/init/rw(/.*)?		gen_context(system_u:object_r:var_run_t,s0-mls_systemhigh)
+ /var/run/resolvconf(/.*)? -d	gen_context(system_u:object_r:etc_t,s0)
  ')
  
- #
 Index: refpolicy/policy/modules/kernel/filesystem.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/filesystem.fc
