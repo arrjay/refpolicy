@@ -1,6 +1,20 @@
 refpolicy (2:2.20161023.1-7.1) UNRELEASED; urgency=medium
 
   * Fixed mistake in previous changelog (attributed a -7 change to -6)
+  * Label /usr/sbin/apache2ctl as well
+  * Allow clamd_t to read the overcommit sysctl
+  * Allow postfix_postdrop_t to write to postfix_public_t socket, allow
+    postfix_master_t to bind to udp generic nodes
+  * Allow dovecot_auth_t to write to dovecot_var_run_t fifos
+  * Allow mon local tests to search /var/spool and read nfs content
+  * Allow mount_t to getattr nfs filesystems and manage mount_var_run_t dirs
+    and files
+  * Allow setfiles_t to getattr nfs filesystems.
+  * Allow postgrey_t to exec bin_t files
+  * Allow login programs to share fds with systemd_passwd_agent_t
+  * Allow postfix_master_t to stat the spamass_milter_data_t dir
+  * Allow dpkg_script_t to tell init_t to stop services
+  * Make port 8953 be rndc type for unbound.
 
  -- Russell Coker <russell@coker.com.au>  Thu, 12 Jan 2017 18:14:13 +1100
 

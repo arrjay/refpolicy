@@ -520,7 +520,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -829,3 +829,20 @@ interface(`systemd_read_machines',`
+@@ -847,3 +847,20 @@ interface(`systemd_read_machines',`
  	allow $1 systemd_machined_var_run_t:file read_file_perms;
  ')
  
@@ -554,16 +554,17 @@ Index: refpolicy/policy/modules/contrib/clamav.te
  dontaudit clamd_t self:capability sys_tty_config;
  allow clamd_t self:process signal;
  allow clamd_t self:fifo_file rw_fifo_file_perms;
-@@ -107,6 +107,8 @@ kernel_dontaudit_list_proc(clamd_t)
+@@ -107,6 +107,9 @@ kernel_dontaudit_list_proc(clamd_t)
  kernel_read_sysctl(clamd_t)
  kernel_read_kernel_sysctls(clamd_t)
  kernel_read_system_state(clamd_t)
 +kernel_read_vm_sysctls(clamd_t)
++kernel_read_vm_overcommit_sysctl(clamd_t)
 +dev_read_sysfs(clamd_t)
  
  corecmd_exec_shell(clamd_t)
  
-@@ -215,6 +217,10 @@ corenet_sendrecv_http_client_packets(fre
+@@ -215,6 +218,10 @@ corenet_sendrecv_http_client_packets(fre
  corenet_tcp_connect_http_port(freshclam_t)
  corenet_tcp_sendrecv_http_port(freshclam_t)
  
@@ -659,15 +660,27 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  create_dirs_pattern(postfix_master_t, postfix_spool_t, postfix_private_t)
  manage_fifo_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
  manage_sock_files_pattern(postfix_master_t, postfix_private_t, postfix_private_t)
-@@ -326,6 +329,7 @@ optional_policy(`
+@@ -272,6 +275,7 @@ corenet_udp_sendrecv_generic_node(postfi
+ corenet_tcp_sendrecv_all_ports(postfix_master_t)
+ corenet_udp_sendrecv_all_ports(postfix_master_t)
+ corenet_tcp_bind_generic_node(postfix_master_t)
++corenet_udp_bind_generic_node(postfix_master_t)
+ 
+ corenet_sendrecv_amavisd_send_server_packets(postfix_master_t)
+ corenet_tcp_bind_amavisd_send_port(postfix_master_t)
+@@ -326,6 +330,11 @@ optional_policy(`
  
  optional_policy(`
  	mailman_manage_data_files(postfix_master_t)
 +	mailman_search_data(postfix_pipe_t)
++')
++
++optional_policy(`
++	milter_getattr_data_dir(postfix_master_t)
  ')
  
  optional_policy(`
-@@ -371,6 +375,7 @@ allow postfix_cleanup_t self:process set
+@@ -371,6 +380,7 @@ allow postfix_cleanup_t self:process set
  
  allow postfix_cleanup_t postfix_smtpd_t:tcp_socket rw_stream_socket_perms;
  allow postfix_cleanup_t postfix_smtpd_t:unix_stream_socket rw_socket_perms;
@@ -675,7 +688,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  
  allow postfix_cleanup_t postfix_spool_maildrop_t:dir list_dir_perms;
  allow postfix_cleanup_t postfix_spool_maildrop_t:file read_file_perms;
-@@ -400,6 +405,10 @@ optional_policy(`
+@@ -400,6 +410,10 @@ optional_policy(`
  	mailman_read_data_files(postfix_cleanup_t)
  ')
  
@@ -686,7 +699,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ########################################
  #
  # Local local policy
-@@ -432,6 +441,7 @@ tunable_policy(`postfix_local_write_mail
+@@ -432,6 +446,7 @@ tunable_policy(`postfix_local_write_mail
  optional_policy(`
  	clamav_search_lib(postfix_local_t)
  	clamav_exec_clamscan(postfix_local_t)
@@ -694,7 +707,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ')
  
  optional_policy(`
-@@ -557,6 +567,10 @@ domtrans_pattern(postfix_pipe_t, postfix
+@@ -557,6 +572,10 @@ domtrans_pattern(postfix_pipe_t, postfix
  
  corecmd_exec_bin(postfix_pipe_t)
  
@@ -705,7 +718,7 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  optional_policy(`
  	dovecot_domtrans_deliver(postfix_pipe_t)
  ')
-@@ -567,6 +581,7 @@ optional_policy(`
+@@ -567,6 +586,7 @@ optional_policy(`
  
  optional_policy(`
  	mailman_domtrans_queue(postfix_pipe_t)
@@ -713,7 +726,18 @@ Index: refpolicy/policy/modules/contrib/postfix.te
  ')
  
  optional_policy(`
-@@ -654,6 +669,10 @@ optional_policy(`
+@@ -596,6 +616,10 @@ manage_files_pattern(postfix_postdrop_t,
+ 
+ allow postfix_postdrop_t postfix_local_t:unix_stream_socket { read write };
+ 
++# for /var/spool/postfix/public/pickup
++allow postfix_postdrop_t postfix_public_t:sock_file { getattr write };
++allow postfix_postdrop_t postfix_master_t:unix_stream_socket connectto;
++
+ mcs_file_read_all(postfix_postdrop_t)
+ mcs_file_write_all(postfix_postdrop_t)
+ 
+@@ -654,6 +678,10 @@ optional_policy(`
  	ppp_sigchld(postfix_postqueue_t)
  ')
  
@@ -1041,11 +1065,12 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  corenet_all_recvfrom_unlabeled(dovecot_t)
  corenet_all_recvfrom_netlabel(dovecot_t)
  corenet_tcp_sendrecv_generic_if(dovecot_t)
-@@ -242,9 +245,13 @@ files_tmp_filetrans(dovecot_auth_t, dove
+@@ -242,9 +245,14 @@ files_tmp_filetrans(dovecot_auth_t, dove
  
  allow dovecot_auth_t dovecot_var_run_t:dir list_dir_perms;
  manage_sock_files_pattern(dovecot_auth_t, dovecot_var_run_t, dovecot_var_run_t)
 +allow dovecot_auth_t dovecot_var_run_t:file manage_file_perms;
++allow dovecot_auth_t dovecot_var_run_t:fifo_file write_fifo_file_perms;
  
  allow dovecot_auth_t dovecot_t:unix_stream_socket { connectto rw_stream_socket_perms };
  
@@ -1529,7 +1554,7 @@ Index: refpolicy/policy/modules/contrib/apache.fc
  /usr/libexec/httpd-ssl-pass-dialog	--	gen_context(system_u:object_r:httpd_passwd_exec_t,s0)
  
  /usr/sbin/apache(2)?	--	gen_context(system_u:object_r:httpd_exec_t,s0)
-+/usr/sbin/apachectl	--	gen_context(system_u:object_r:httpd_exec_t,s0)
++/usr/sbin/apache(2)?ctl	--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/apache-ssl(2)?	--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/cgi-wrapper	--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/cherokee	--	gen_context(system_u:object_r:httpd_exec_t,s0)
@@ -2267,12 +2292,13 @@ Index: refpolicy/policy/modules/contrib/postgrey.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postgrey.te
 +++ refpolicy/policy/modules/contrib/postgrey.te
-@@ -55,7 +55,7 @@ files_pid_filetrans(postgrey_t, postgrey
+@@ -55,7 +55,8 @@ files_pid_filetrans(postgrey_t, postgrey
  kernel_read_system_state(postgrey_t)
  kernel_read_kernel_sysctls(postgrey_t)
  
 -corecmd_search_bin(postgrey_t)
 +corecmd_read_bin_files(postgrey_t)
++corecmd_exec_bin(postgrey_t)
  
  corenet_all_recvfrom_unlabeled(postgrey_t)
  corenet_all_recvfrom_netlabel(postgrey_t)
@@ -2344,6 +2370,14 @@ Index: refpolicy/policy/modules/kernel/corenetwork.te.in
  network_port(pptp, tcp,1723,s0, udp,1723,s0)
  network_port(prelude, tcp,4690,s0, udp,4690,s0)
  network_port(presence, tcp,5298-5299,s0, udp,5298-5299,s0)
+@@ -231,6 +231,7 @@ network_port(ricci, tcp,11111,s0, udp,11
+ network_port(ricci_modcluster, tcp,16851,s0, udp,16851,s0)
+ network_port(rlogind, tcp,513,s0)
+ network_port(rndc, tcp,953,s0, udp,953,s0)
++network_port(rndc, tcp,8953,s0, udp,8953,s0)
+ network_port(router, udp,520,s0, udp,521,s0, tcp,521,s0)
+ network_port(rsh, tcp,514,s0)
+ network_port(rsync, tcp,873,s0, udp,873,s0)
 Index: refpolicy/policy/modules/admin/netutils.te
 ===================================================================
 --- refpolicy.orig/policy/modules/admin/netutils.te
@@ -2584,15 +2618,28 @@ Index: refpolicy/policy/modules/system/mount.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/mount.te
 +++ refpolicy/policy/modules/system/mount.te
-@@ -103,6 +103,8 @@ files_dontaudit_write_all_mountpoints(mo
+@@ -52,8 +52,8 @@ can_exec(mount_t, mount_exec_t)
+ 
+ files_tmp_filetrans(mount_t, mount_tmp_t, { file dir })
+ 
+-create_dirs_pattern(mount_t, mount_var_run_t, mount_var_run_t)
+-create_files_pattern(mount_t, mount_var_run_t, mount_var_run_t)
++manage_dirs_pattern(mount_t, mount_var_run_t, mount_var_run_t)
++manage_files_pattern(mount_t, mount_var_run_t, mount_var_run_t)
+ rw_files_pattern(mount_t, mount_var_run_t, mount_var_run_t)
+ files_pid_filetrans(mount_t, mount_var_run_t, dir, "mount")
+ 
+@@ -103,7 +103,10 @@ files_dontaudit_write_all_mountpoints(mo
  files_dontaudit_setattr_all_mountpoints(mount_t)
  
  fs_getattr_xattr_fs(mount_t)
 +fs_getattr_tmpfs(mount_t)
 +fs_getattr_rpc_pipefs(mount_t)
  fs_getattr_cifs(mount_t)
++fs_getattr_nfs(mount_t)
  fs_mount_all_fs(mount_t)
  fs_unmount_all_fs(mount_t)
+ fs_remount_all_fs(mount_t)
 Index: refpolicy/policy/modules/system/init.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.fc
@@ -2862,3 +2909,29 @@ Index: refpolicy/policy/modules/contrib/backup.te
  allow backup_t self:process signal;
  allow backup_t self:fifo_file rw_fifo_file_perms;
  allow backup_t self:tcp_socket create_socket_perms;
+Index: refpolicy/policy/modules/contrib/milter.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/milter.if
++++ refpolicy/policy/modules/contrib/milter.if
+@@ -97,3 +97,21 @@ interface(`milter_manage_spamass_state',
+ 	manage_dirs_pattern($1, spamass_milter_state_t, spamass_milter_state_t)
+ 	manage_lnk_files_pattern($1, spamass_milter_state_t, spamass_milter_state_t)
+ ')
++
++########################################
++## <summary>
++##	stat spamassissin milter data dir
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`milter_getattr_data_dir',`
++	gen_require(`
++		type spamass_milter_data_t;
++	')
++
++	allow $1 spamass_milter_data_t:dir getattr;
++')

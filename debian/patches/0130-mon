@@ -28,7 +28,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.te
-@@ -0,0 +1,190 @@
+@@ -0,0 +1,192 @@
 +policy_module(mon, 1.12.0)
 +
 +########################################
@@ -187,6 +187,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +miscfiles_read_localization(mon_local_test_t)
 +application_exec_all(mon_local_test_t)
 +files_read_usr_files(mon_local_test_t)
++files_search_spool(mon_local_test_t)
 +fs_getattr_xattr_fs(mon_local_test_t)
 +sysnet_read_config(mon_local_test_t)
 +auth_use_nsswitch(mon_local_test_t)
@@ -210,6 +211,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +fs_list_tmpfs(mon_local_test_t)
 +logging_send_syslog_msg(mon_local_test_t)
 +getattr_init_fifo(mon_local_test_t)
++rpc_read_nfs_content(mon_local_test_t)
 +
 +optional_policy(`
 +	sudo_role_template(system, system_r, mon_local_test_t)

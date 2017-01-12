@@ -2593,19 +2593,20 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  dev_list_sysfs(dpkg_script_t)
  # Use named file transition to fix this
  # dev_manage_generic_blk_files(dpkg_script_t)
-@@ -281,6 +282,11 @@ files_manage_non_auth_files(dpkg_script_
+@@ -281,6 +282,12 @@ files_manage_non_auth_files(dpkg_script_
  
  init_all_labeled_script_domtrans(dpkg_script_t)
  init_use_script_fds(dpkg_script_t)
 +init_status(dpkg_script_t)
 +init_reload(dpkg_script_t)
++init_system_stop(dpkg_script_t)
 +init_telinit(dpkg_script_t)
 +initrc_manage_service(dpkg_script_t)
 +init_script_service_restart(dpkg_script_t)
  
  libs_exec_ld_so(dpkg_script_t)
  libs_exec_lib_files(dpkg_script_t)
-@@ -295,6 +301,12 @@ modutils_run_depmod(dpkg_script_t, dpkg_
+@@ -295,6 +302,12 @@ modutils_run_depmod(dpkg_script_t, dpkg_
  modutils_run_insmod(dpkg_script_t, dpkg_roles)
  ')
  
@@ -2988,7 +2989,7 @@ Index: refpolicy/policy/modules/system/authlogin.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/authlogin.if
 +++ refpolicy/policy/modules/system/authlogin.if
-@@ -155,9 +155,17 @@ interface(`auth_login_pgm_domain',`
+@@ -155,9 +155,18 @@ interface(`auth_login_pgm_domain',`
  	seutil_read_config($1)
  	seutil_read_default_contexts($1)
  
@@ -3002,11 +3003,12 @@ Index: refpolicy/policy/modules/system/authlogin.if
 +	optional_policy(`
 +		systemd_logind_read_process_state($1)
 +		systemd_write_inherited_logind_sessions_pipes($1)
++		systemd_passwd_agent_inherits_fd($1)
 +	')
  ')
  
  ########################################
-@@ -961,6 +969,23 @@ interface(`auth_rw_var_auth',`
+@@ -961,6 +970,23 @@ interface(`auth_rw_var_auth',`
      rw_files_pattern($1, var_auth_t, var_auth_t)
  ')
  
@@ -3257,7 +3259,7 @@ Index: refpolicy/policy/modules/system/systemd.if
  ')
  
  ######################################
-@@ -190,3 +191,641 @@ interface(`systemd_start_power_units',`
+@@ -190,3 +191,659 @@ interface(`systemd_start_power_units',`
  
  	allow $1 power_unit_t:service start;
  ')
@@ -3621,6 +3623,24 @@ Index: refpolicy/policy/modules/system/systemd.if
 +	')
 +
 +	allow $1 systemd_passwd_agent_t:process signal;
++')
++
++########################################
++## <summary>
++##	allow systemd_passwd_agent to inherit fds
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain that owns the fds
++##	</summary>
++## </param>
++#
++interface(`systemd_passwd_agent_inherits_fd',`
++	gen_require(`
++              type systemd_passwd_agent_t;
++	')
++
++	allow systemd_passwd_agent_t $1:fd use;
 +')
 +
 +######################################
