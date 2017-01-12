@@ -623,13 +623,13 @@ Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te
 +++ refpolicy/policy/modules/contrib/cron.te
-@@ -744,6 +744,7 @@ optional_policy(`
- type unconfined_cronjob_t;
- domain_type(unconfined_cronjob_t)
- domain_cron_exemption_target(unconfined_cronjob_t)
+@@ -59,6 +59,7 @@ typealias cronjob_t alias { user_crond_t
+ typealias cronjob_t alias { auditadm_crond_t secadm_crond_t };
+ domain_type(cronjob_t)
+ domain_cron_exemption_target(cronjob_t)
 +role system_r types unconfined_cronjob_t;
- 
- dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
+ corecmd_shell_entry_type(cronjob_t)
+ ubac_constrained(cronjob_t)
  
 Index: refpolicy/policy/modules/contrib/apt.te
 ===================================================================
@@ -655,7 +655,7 @@ Index: refpolicy/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/files.if
 +++ refpolicy/policy/modules/kernel/files.if
-@@ -3230,6 +3230,26 @@ interface(`files_manage_etc_runtime_file
+@@ -3248,6 +3248,26 @@ interface(`files_manage_etc_runtime_file
  
  ########################################
  ## <summary>
@@ -682,7 +682,7 @@ Index: refpolicy/policy/modules/kernel/files.if
  ##	Create, etc runtime objects with an automatic
  ##	type transition.
  ## </summary>
-@@ -6228,6 +6248,24 @@ interface(`files_setattr_pid_dirs',`
+@@ -6246,6 +6266,24 @@ interface(`files_setattr_pid_dirs',`
  ')
  
  ########################################
@@ -775,7 +775,7 @@ Index: refpolicy/policy/modules/kernel/devices.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/devices.if
 +++ refpolicy/policy/modules/kernel/devices.if
-@@ -5262,3 +5262,21 @@ interface(`create_devices_for_systemd_tm
+@@ -5280,3 +5280,21 @@ interface(`create_devices_for_systemd_tm
  	allow $1 vhost_device_t:chr_file { getattr setattr relabelfrom relabelto create };
  	allow $1 sound_device_t:chr_file { getattr setattr relabelfrom relabelto create };
  ')
@@ -797,23 +797,11 @@ Index: refpolicy/policy/modules/kernel/devices.if
 +       allow $1 device_t:dir { add_entry_dir_perms create };
 +       allow $1 device_t:dir search_dir_perms;
 +')
-Index: refpolicy/policy/modules/system/systemd.te
-===================================================================
---- refpolicy.orig/policy/modules/system/systemd.te
-+++ refpolicy/policy/modules/system/systemd.te
-@@ -605,6 +605,7 @@ auth_manage_var_auth(systemd_tmpfiles_t)
- auth_manage_login_records(systemd_tmpfiles_t)
- auth_relabel_login_records(systemd_tmpfiles_t)
- auth_setattr_login_records(systemd_tmpfiles_t)
-+auth_manage_faillog(systemd_tmpfiles_t)
- 
- seutil_read_file_contexts(systemd_tmpfiles_t)
- 
 Index: refpolicy/policy/modules/contrib/mta.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mta.te
 +++ refpolicy/policy/modules/contrib/mta.te
-@@ -209,6 +209,11 @@ optional_policy(`
+@@ -210,6 +210,11 @@ optional_policy(`
  ')
  
  optional_policy(`

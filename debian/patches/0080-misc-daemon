@@ -437,7 +437,15 @@ Index: refpolicy/policy/modules/contrib/cron.te
  	cyrus_manage_data(system_cronjob_t)
  ')
  
-@@ -743,3 +760,5 @@ tunable_policy(`cron_userdomain_transiti
+@@ -727,6 +744,7 @@ optional_policy(`
+ type unconfined_cronjob_t;
+ domain_type(unconfined_cronjob_t)
+ domain_cron_exemption_target(unconfined_cronjob_t)
++corecmd_shell_entry_type(unconfined_cronjob_t)
+ 
+ dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
+ 
+@@ -743,3 +761,5 @@ tunable_policy(`cron_userdomain_transiti
  optional_policy(`
  	unconfined_domain(unconfined_cronjob_t)
  ')
@@ -720,7 +728,16 @@ Index: refpolicy/policy/modules/contrib/bind.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/bind.te
 +++ refpolicy/policy/modules/contrib/bind.te
-@@ -219,6 +219,7 @@ optional_policy(`
+@@ -112,6 +112,8 @@ allow named_t named_zone_t:dir list_dir_
+ read_files_pattern(named_t, named_zone_t, named_zone_t)
+ read_lnk_files_pattern(named_t, named_zone_t, named_zone_t)
+ 
++files_read_usr_files(named_t)
++kernel_read_net_sysctls(named_t)
+ kernel_read_kernel_sysctls(named_t)
+ kernel_read_vm_overcommit_sysctl(named_t)
+ kernel_read_system_state(named_t)
+@@ -219,6 +221,7 @@ optional_policy(`
  #
  
  allow ndc_t self:capability { dac_override net_admin };
@@ -1113,9 +1130,14 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  type httpd_initrc_exec_t;
  init_script_file(httpd_initrc_exec_t)
-@@ -405,11 +406,8 @@ allow httpd_t httpd_keytab_t:file read_f
+@@ -402,14 +403,12 @@ read_lnk_files_pattern(httpd_t, httpd_co
+ 
+ allow httpd_t httpd_keytab_t:file read_file_perms;
+ 
++allow httpd_t httpd_lock_t:dir manage_dir_perms;
  allow httpd_t httpd_lock_t:file manage_file_perms;
- files_lock_filetrans(httpd_t, httpd_lock_t, file)
+-files_lock_filetrans(httpd_t, httpd_lock_t, file)
++files_lock_filetrans(httpd_t, httpd_lock_t, { file dir })
  
 -allow httpd_t httpd_log_t:dir setattr_dir_perms;
 -create_dirs_pattern(httpd_t, httpd_log_t, httpd_log_t)
@@ -1127,7 +1149,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  read_lnk_files_pattern(httpd_t, httpd_log_t, httpd_log_t)
  logging_log_filetrans(httpd_t, httpd_log_t, file)
  
-@@ -427,6 +425,8 @@ manage_lnk_files_pattern(httpd_t, httpd_
+@@ -427,6 +426,8 @@ manage_lnk_files_pattern(httpd_t, httpd_
  allow httpd_t httpd_suexec_exec_t:file read_file_perms;
  
  allow httpd_t httpd_sys_script_t:unix_stream_socket connectto;
@@ -1136,7 +1158,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
  manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
-@@ -464,6 +464,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+@@ -464,6 +465,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
  
  kernel_read_kernel_sysctls(httpd_t)
@@ -1144,7 +1166,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  kernel_read_network_state(httpd_t)
  kernel_read_system_state(httpd_t)
  kernel_search_network_sysctl(httpd_t)
-@@ -594,6 +595,7 @@ tunable_policy(`httpd_builtin_scripting'
+@@ -594,6 +596,7 @@ tunable_policy(`httpd_builtin_scripting'
  tunable_policy(`httpd_enable_cgi',`
  	allow httpd_t httpd_script_domains:process { signal sigkill sigstop };
  	allow httpd_t httpd_script_exec_type:dir list_dir_perms;
@@ -1152,7 +1174,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_enable_cgi && httpd_use_nfs',`
-@@ -1219,6 +1221,7 @@ optional_policy(`
+@@ -1219,6 +1222,7 @@ optional_policy(`
  allow httpd_sys_script_t self:tcp_socket { accept listen };
  
  allow httpd_sys_script_t httpd_t:tcp_socket { read write };
@@ -1160,7 +1182,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  dontaudit httpd_sys_script_t httpd_config_t:dir search;
  
-@@ -1229,6 +1232,7 @@ allow httpd_sys_script_t squirrelmail_sp
+@@ -1229,6 +1233,7 @@ allow httpd_sys_script_t squirrelmail_sp
  allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
@@ -1503,7 +1525,15 @@ Index: refpolicy/policy/modules/contrib/apache.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apache.fc
 +++ refpolicy/policy/modules/contrib/apache.fc
-@@ -111,6 +111,7 @@ ifdef(`distro_suse',`
+@@ -56,6 +56,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
+ /usr/libexec/httpd-ssl-pass-dialog	--	gen_context(system_u:object_r:httpd_passwd_exec_t,s0)
+ 
+ /usr/sbin/apache(2)?	--	gen_context(system_u:object_r:httpd_exec_t,s0)
++/usr/sbin/apachectl	--	gen_context(system_u:object_r:httpd_exec_t,s0)
+ /usr/sbin/apache-ssl(2)?	--	gen_context(system_u:object_r:httpd_exec_t,s0)
+ /usr/sbin/cgi-wrapper	--	gen_context(system_u:object_r:httpd_exec_t,s0)
+ /usr/sbin/cherokee	--	gen_context(system_u:object_r:httpd_exec_t,s0)
+@@ -111,6 +112,7 @@ ifdef(`distro_suse',`
  /var/lib/cherokee(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
  /var/lib/dav(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
  /var/lib/php(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
@@ -1511,19 +1541,28 @@ Index: refpolicy/policy/modules/contrib/apache.fc
  /var/lib/dokuwiki(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/drupal.*	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/glpi(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
+@@ -125,6 +127,7 @@ ifdef(`distro_suse',`
+ /var/lib/stickshift/.httpd.d(/.*)?	gen_context(system_u:object_r:httpd_config_t,s0)
+ /var/lib/svn(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ /var/lib/trac(/.*)?	gen_context(system_u:object_r:httpd_sys_content_t,s0)
++/var/lib/wordpress(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
+ /var/lib/z-push(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ 
+ /var/log/apache(2)?(/.*)?	gen_context(system_u:object_r:httpd_log_t,s0)
 Index: refpolicy/policy/modules/contrib/ntp.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/ntp.te
 +++ refpolicy/policy/modules/contrib/ntp.te
-@@ -53,6 +53,7 @@ allow ntpd_t self:process { signal_perms
+@@ -53,6 +53,8 @@ allow ntpd_t self:process { signal_perms
  allow ntpd_t self:fifo_file rw_fifo_file_perms;
  allow ntpd_t self:shm create_shm_perms;
  allow ntpd_t self:tcp_socket { accept listen };
 +allow ntpd_t self:socket create;
++allow ntpd_t self:unix_dgram_socket sendto;
  
  manage_dirs_pattern(ntpd_t, ntp_drift_t, ntp_drift_t)
  manage_files_pattern(ntpd_t, ntp_drift_t, ntp_drift_t)
-@@ -64,9 +65,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
+@@ -64,9 +66,8 @@ read_files_pattern(ntpd_t, ntpd_key_t, n
  read_lnk_files_pattern(ntpd_t, ntpd_key_t, ntpd_key_t)
  
  allow ntpd_t ntpd_log_t:dir setattr_dir_perms;
@@ -2558,7 +2597,15 @@ Index: refpolicy/policy/modules/system/init.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.fc
 +++ refpolicy/policy/modules/system/init.fc
-@@ -85,6 +85,10 @@ ifdef(`distro_gentoo', `
+@@ -61,7 +61,6 @@ ifdef(`distro_gentoo', `
+ /usr/libexec/dcc/start-.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
+ /usr/libexec/dcc/stop-.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
+ 
+-/usr/sbin/apachectl	-- 	gen_context(system_u:object_r:initrc_exec_t,s0)
+ /usr/sbin/open_init_pty	--	gen_context(system_u:object_r:initrc_exec_t,s0)
+ /usr/sbin/startx	-- 	gen_context(system_u:object_r:initrc_exec_t,s0)
+ /usr/bin/systemd	--	gen_context(system_u:object_r:init_exec_t,s0)
+@@ -85,6 +84,10 @@ ifdef(`distro_gentoo', `
  ifdef(`distro_debian',`
  /var/run/hotkey-setup	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
  /var/run/kdm/.*		--	gen_context(system_u:object_r:initrc_var_run_t,s0)
@@ -2802,3 +2849,16 @@ Index: refpolicy/policy/modules/kernel/files.fc
  ')
  
  #
+Index: refpolicy/policy/modules/contrib/backup.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/backup.te
++++ refpolicy/policy/modules/contrib/backup.te
+@@ -21,7 +21,7 @@ files_type(backup_store_t)
+ # Local policy
+ #
+ 
+-allow backup_t self:capability dac_override;
++allow backup_t self:capability { chown dac_override fsetid };
+ allow backup_t self:process signal;
+ allow backup_t self:fifo_file rw_fifo_file_perms;
+ allow backup_t self:tcp_socket create_socket_perms;

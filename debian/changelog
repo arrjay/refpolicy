@@ -1,4 +1,4 @@
-refpolicy (2:2.20161023.1-7) UNRELEASED; urgency=medium
+refpolicy (2:2.20161023.1-7) unstable; urgency=medium
     
   [ Laurent Bigonville and cgzones ]
    * Sort the files in the files in the selinux-policy-src.tar.gz tarball by
@@ -14,8 +14,8 @@ refpolicy (2:2.20161023.1-7) UNRELEASED; urgency=medium
    * Allow loadkeys_t to read tmp files created by init scripts
    * Allow systemd_tmpfiles_t to delete usr_t files for a file copied to /tmp
      and to read dbus lib files for /var/lib/dbus
-   * Allow systemd_logind_t to list tmpfs_t dirs, relabelto user runtime
-     and dev_rw_wireless()
+   * Allow systemd_logind_t to list tmpfs_t dirs, relabelto user runtime,
+     relabel to/from user_tmpfs_t, and manage wireless_device_t
    * Allow xauth_t to inherit file handles from xdm_t, read an inherited fifo
      and read/write an inherited socket.
    * Allow xdm_t to send dbus messages to unconfined_t
@@ -34,12 +34,31 @@ refpolicy (2:2.20161023.1-7) UNRELEASED; urgency=medium
      manage_file_perms }, allow systemd_tmpfiles_t to create config, and set
      file contexts entries for /var/run/resolvconf.  Makes policy work with
      resolvconf (but requires resolvconf changes) Closes: #740685
-  [ Important ]
+   * Allow dpkg_script_t to restart init services
+   * Allow shell_exec_t to be an entrypoint for unconfined_cronjob_t
+   * Allow named to read network sysctls and usr files
+   * Label /lib/systemd/systemd-timedated and /lib/systemd/systemd-timesyncd as
+     ntpd_exec_t and allow ntpd_t to talk to dbus and talk to sysadm_t and
+     unconfined_t over dbus. Allow ntpd_t capabilities fowner and setpcap when
+     building with systemd support, also allow listing init pid dirs. Label
+     /var/lib/systemd/clock as ntp_drift_t
+   * Allow systemd_nspawn_t to read system state, search init pid dirs (for
+     /run/systemd) and capability net_admin
+   * Allow backup_t capabilities chown and fsetid to cp files and preserve
+     ownership
+   * Allow logrotate_t to talk to dbus and connect to init streams for
+     systemctl, also allow setrlimit for systemctl
+   * Allow mon_net_test_t to bind to generic UDP nodes. Allow mon_local_test_t
+     to execute all applications (for ps to getattr mostly)
+   * Label /var/lib/wordpress as httpd_var_lib_t
+   * Label apachectl as httpd_exec_t so it correctly creates pid dirs etc and
+     allow it to manage dirs of type httpd_lock_t
+  [ Russell Coker Important ]
    * sddm is now working (gdm3 SEGVs, not a policy bug), closes: #781779
    * Support usrmerge, lots of fc changes and subst_dist changes
      Closes: #850032
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 03 Jan 2017 13:05:37 +0100
+ -- Russell Coker <russell@coker.com.au>  Thu, 12 Jan 2017 18:01:40 +1100
 
 refpolicy (2:2.20161023.1-6) unstable; urgency=medium
 
@@ -76,8 +95,8 @@ refpolicy (2:2.20161023.1-6) unstable; urgency=medium
   * Allow system_mail_t to access unix_stream_sockets inherited from init
     for error messages on startup
   * Allow system_cronjob_t to get systemd unit status
-  * Allow logrotate to talk to dbus and talk to the private systemd socket for
-    systemctl
+  * Allow logrotate to talk to dbus, talk to the private systemd socket for
+    systemctl, and get service status of all unit files
   * Allow console_device_t to associate with devpts_t:filesystem for /dev/pts/0
   * Allow systemd_logind_t to read all users state for cgroup and sessionid
     files
