@@ -1,3 +1,9 @@
+refpolicy (2:2.20161023.1-7.1) UNRELEASED; urgency=medium
+
+  * Fixed mistake in previous changelog (attributed a -7 change to -6)
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 12 Jan 2017 18:14:13 +1100
+
 refpolicy (2:2.20161023.1-7) unstable; urgency=medium
     
   [ Laurent Bigonville and cgzones ]
@@ -47,7 +53,8 @@ refpolicy (2:2.20161023.1-7) unstable; urgency=medium
    * Allow backup_t capabilities chown and fsetid to cp files and preserve
      ownership
    * Allow logrotate_t to talk to dbus and connect to init streams for
-     systemctl, also allow setrlimit for systemctl
+     systemctl, also allow setrlimit for systemctl and get service status of
+     all unit files
    * Allow mon_net_test_t to bind to generic UDP nodes. Allow mon_local_test_t
      to execute all applications (for ps to getattr mostly)
    * Label /var/lib/wordpress as httpd_var_lib_t
@@ -95,8 +102,8 @@ refpolicy (2:2.20161023.1-6) unstable; urgency=medium
   * Allow system_mail_t to access unix_stream_sockets inherited from init
     for error messages on startup
   * Allow system_cronjob_t to get systemd unit status
-  * Allow logrotate to talk to dbus, talk to the private systemd socket for
-    systemctl, and get service status of all unit files
+  * Allow logrotate to talk to dbus and talk to the private systemd socket for
+    systemctl
   * Allow console_device_t to associate with devpts_t:filesystem for /dev/pts/0
   * Allow systemd_logind_t to read all users state for cgroup and sessionid
     files
