@@ -273,7 +273,7 @@ Index: refpolicy/policy/modules/system/init.te
  dev_read_rand(initrc_t)
  dev_read_urand(initrc_t)
  dev_dontaudit_read_kmsg(initrc_t)
-@@ -1323,15 +1361,19 @@ optional_policy(`
+@@ -1324,15 +1362,19 @@ optional_policy(`
  	mta_read_aliases(init_t)
  ')
  
@@ -294,7 +294,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1347,6 +1389,7 @@ ifdef(`init_systemd',`
+@@ -1348,6 +1390,7 @@ ifdef(`init_systemd',`
  	kernel_read_software_raid_state(init_t)
  	kernel_unmount_debugfs(init_t)
  	kernel_setsched(init_t)
@@ -302,7 +302,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	dev_write_kmsg(init_t)
  	dev_write_urand(init_t)
-@@ -1364,6 +1407,7 @@ ifdef(`init_systemd',`
+@@ -1365,6 +1408,7 @@ ifdef(`init_systemd',`
  	# systemd writes to /dev/watchdog on shutdown
  	dev_write_watchdog(init_t)
  
@@ -310,7 +310,7 @@ Index: refpolicy/policy/modules/system/init.te
  	files_search_all(init_t)
  	files_mounton_all_mountpoints(init_t)
  	files_unmount_all_file_type_fs(init_t)
-@@ -1387,6 +1431,7 @@ ifdef(`init_systemd',`
+@@ -1388,6 +1432,7 @@ ifdef(`init_systemd',`
  	fs_getattr_all_fs(init_t)
  	fs_manage_cgroup_dirs(init_t)
  	fs_manage_cgroup_files(init_t)
@@ -318,7 +318,7 @@ Index: refpolicy/policy/modules/system/init.te
  	fs_manage_hugetlbfs_dirs(init_t)
  	fs_manage_tmpfs_dirs(init_t)
  	fs_mount_all_fs(init_t)
-@@ -1413,13 +1458,16 @@ ifdef(`init_systemd',`
+@@ -1414,13 +1459,16 @@ ifdef(`init_systemd',`
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
  	systemd_manage_lnk_file_passwd_run(init_t)
@@ -620,14 +620,16 @@ Index: refpolicy/policy/modules/services/xserver.te
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.te
 +++ refpolicy/policy/modules/services/xserver.te
-@@ -260,6 +260,7 @@ files_tmp_filetrans(xauth_t, xauth_tmp_t
+@@ -259,7 +259,8 @@ manage_files_pattern(xauth_t, xauth_tmp_
+ files_tmp_filetrans(xauth_t, xauth_tmp_t, { file dir })
  
  allow xdm_t xauth_home_t:file manage_file_perms;
- userdom_user_home_dir_filetrans(xdm_t, xauth_home_t, file)
+-userdom_user_home_dir_filetrans(xdm_t, xauth_home_t, file)
++userdom_user_home_dir_filetrans(xdm_t, xauth_home_t, file, ".Xauthority")
 +userdom_user_home_dir_filetrans(xdm_t, user_home_t, file, ".xsession-errors")
+ allow xauth_t xdm_t:process sigchld;
  
  kernel_request_load_module(xauth_t)
- 
 Index: refpolicy/policy/modules/contrib/cron.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/cron.te

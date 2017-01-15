@@ -35,6 +35,36 @@ Index: refpolicy/policy/modules/contrib/mysql.te
  kernel_read_network_state(mysqld_t)
  kernel_read_system_state(mysqld_t)
  
+@@ -165,7 +166,7 @@ allow mysqld_safe_t self:capability { ch
+ allow mysqld_safe_t self:process { setsched getsched setrlimit };
+ allow mysqld_safe_t self:fifo_file rw_fifo_file_perms;
+ 
+-allow mysqld_safe_t mysqld_t:process signull;
++allow mysqld_safe_t mysqld_t:process { signull sigkill };
+ 
+ read_lnk_files_pattern(mysqld_safe_t, mysqld_db_t, mysqld_db_t)
+ manage_files_pattern(mysqld_safe_t, mysqld_db_t, mysqld_db_t)
+@@ -190,7 +191,8 @@ kernel_read_kernel_sysctls(mysqld_safe_t
+ corecmd_exec_bin(mysqld_safe_t)
+ corecmd_exec_shell(mysqld_safe_t)
+ 
+-dev_list_sysfs(mysqld_safe_t)
++dev_read_sysfs(mysqld_safe_t)
++
+ 
+ domain_read_all_domains_state(mysqld_safe_t)
+ 
+@@ -207,6 +209,10 @@ miscfiles_read_localization(mysqld_safe_
+ userdom_search_user_home_dirs(mysqld_safe_t)
+ 
+ optional_policy(`
++	dpkg_read_db(mysqld_safe_t)
++')
++
++optional_policy(`
+ 	hostname_exec(mysqld_safe_t)
+ ')
+ 
 Index: refpolicy/policy/modules/contrib/tor.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/tor.te
@@ -416,6 +446,15 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
+@@ -440,7 +452,7 @@ optional_policy(`
+ # System local policy
+ #
+ 
+-allow system_cronjob_t self:capability { dac_override dac_read_search chown setgid setuid fowner net_bind_service fsetid sys_nice };
++allow system_cronjob_t self:capability { chown dac_override dac_read_search fowner fsetid net_admin net_bind_service setgid setuid sys_nice };
+ allow system_cronjob_t self:process { signal_perms getsched setsched };
+ allow system_cronjob_t self:fd use;
+ allow system_cronjob_t self:fifo_file rw_fifo_file_perms;
 @@ -475,7 +487,8 @@ allow system_cronjob_t crond_t:process s
  allow system_cronjob_t cron_spool_t:dir list_dir_perms;
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
@@ -500,7 +539,7 @@ Index: refpolicy/policy/modules/system/init.te
  dontaudit initrc_t self:capability sys_module; # sysctl is triggering this
  allow initrc_t self:passwd rootok;
  allow initrc_t self:key manage_key_perms;
-@@ -1330,6 +1331,7 @@ ifdef(`init_systemd',`
+@@ -1331,6 +1332,7 @@ ifdef(`init_systemd',`
  	allow init_t self:process { getcap setcap };
  	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
@@ -508,7 +547,7 @@ Index: refpolicy/policy/modules/system/init.te
  	# Until systemd is fixed
  	allow daemon init_t:socket_class_set { getopt read getattr ioctl setopt write };
  	allow init_t self:udp_socket create_socket_perms;
-@@ -1410,6 +1412,7 @@ ifdef(`init_systemd',`
+@@ -1411,6 +1413,7 @@ ifdef(`init_systemd',`
  
  	systemd_manage_unit_dirs(init_t)
  	systemd_manage_all_unit_files(init_t)
@@ -520,7 +559,7 @@ Index: refpolicy/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/systemd.if
 +++ refpolicy/policy/modules/system/systemd.if
-@@ -847,3 +847,20 @@ interface(`systemd_read_machines',`
+@@ -828,3 +828,20 @@ interface(`systemd_read_machines',`
  	allow $1 systemd_machined_var_run_t:file read_file_perms;
  ')
  
@@ -752,16 +791,17 @@ Index: refpolicy/policy/modules/contrib/bind.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/bind.te
 +++ refpolicy/policy/modules/contrib/bind.te
-@@ -112,6 +112,8 @@ allow named_t named_zone_t:dir list_dir_
+@@ -112,6 +112,9 @@ allow named_t named_zone_t:dir list_dir_
  read_files_pattern(named_t, named_zone_t, named_zone_t)
  read_lnk_files_pattern(named_t, named_zone_t, named_zone_t)
  
 +files_read_usr_files(named_t)
 +kernel_read_net_sysctls(named_t)
++kernel_read_vm_sysctls(named_t)
  kernel_read_kernel_sysctls(named_t)
  kernel_read_vm_overcommit_sysctl(named_t)
  kernel_read_system_state(named_t)
-@@ -219,6 +221,7 @@ optional_policy(`
+@@ -219,6 +222,7 @@ optional_policy(`
  #
  
  allow ndc_t self:capability { dac_override net_admin };
@@ -1084,7 +1124,7 @@ Index: refpolicy/policy/modules/contrib/dkim.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.te
 +++ refpolicy/policy/modules/contrib/dkim.te
-@@ -20,16 +20,23 @@ init_daemon_pid_file(dkim_milter_data_t,
+@@ -20,16 +20,24 @@ init_daemon_pid_file(dkim_milter_data_t,
  # Local policy
  #
  
@@ -1098,6 +1138,7 @@ Index: refpolicy/policy/modules/contrib/dkim.te
  
  kernel_read_kernel_sysctls(dkim_milter_t)
 +kernel_read_vm_sysctls(dkim_milter_t)
++kernel_read_vm_overcommit_sysctl(dkim_milter_t)
 +
 +# for cpu/online
 +dev_read_sysfs(dkim_milter_t)
@@ -1183,7 +1224,15 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
  manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
-@@ -464,6 +465,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+@@ -444,6 +445,7 @@ fs_tmpfs_filetrans(httpd_t, httpd_tmpfs_
+ 
+ manage_dirs_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
+ manage_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
++manage_lnk_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
+ files_var_lib_filetrans(httpd_t, httpd_var_lib_t, { dir file })
+ 
+ setattr_dirs_pattern(httpd_t, httpd_var_run_t, httpd_var_run_t)
+@@ -464,6 +466,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
  
  kernel_read_kernel_sysctls(httpd_t)
@@ -1191,7 +1240,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  kernel_read_network_state(httpd_t)
  kernel_read_system_state(httpd_t)
  kernel_search_network_sysctl(httpd_t)
-@@ -594,6 +596,7 @@ tunable_policy(`httpd_builtin_scripting'
+@@ -594,6 +597,7 @@ tunable_policy(`httpd_builtin_scripting'
  tunable_policy(`httpd_enable_cgi',`
  	allow httpd_t httpd_script_domains:process { signal sigkill sigstop };
  	allow httpd_t httpd_script_exec_type:dir list_dir_perms;
@@ -1199,7 +1248,31 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_enable_cgi && httpd_use_nfs',`
-@@ -1219,6 +1222,7 @@ optional_policy(`
+@@ -741,9 +745,8 @@ tunable_policy(`httpd_use_fusefs && http
+ 
+ tunable_policy(`httpd_use_nfs',`
+ 	fs_list_auto_mountpoints(httpd_t)
+-	fs_manage_nfs_dirs(httpd_t)
+-	fs_manage_nfs_files(httpd_t)
+-	fs_manage_nfs_symlinks(httpd_t)
++	rpc_manage_nfs_rw_content(httpd_t)
++	rpc_read_nfs_content(httpd_t)
+ ')
+ 
+ tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
+@@ -1067,9 +1070,8 @@ tunable_policy(`httpd_use_fusefs && http
+ 
+ tunable_policy(`httpd_use_nfs',`
+ 	fs_list_auto_mountpoints(httpd_suexec_t)
+-	fs_manage_nfs_dirs(httpd_suexec_t)
+-	fs_manage_nfs_files(httpd_suexec_t)
+-	fs_manage_nfs_symlinks(httpd_suexec_t)
++	rpc_manage_nfs_rw_content(httpd_t)
++	rpc_read_nfs_content(httpd_t)
+ ')
+ 
+ tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
+@@ -1219,6 +1221,7 @@ optional_policy(`
  allow httpd_sys_script_t self:tcp_socket { accept listen };
  
  allow httpd_sys_script_t httpd_t:tcp_socket { read write };
@@ -1207,7 +1280,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  dontaudit httpd_sys_script_t httpd_config_t:dir search;
  
-@@ -1229,6 +1233,7 @@ allow httpd_sys_script_t squirrelmail_sp
+@@ -1229,6 +1232,7 @@ allow httpd_sys_script_t squirrelmail_sp
  allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
@@ -1215,6 +1288,18 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  fs_search_auto_mountpoints(httpd_sys_script_t)
  
+@@ -1294,9 +1298,8 @@ tunable_policy(`httpd_use_fusefs && http
+ 
+ tunable_policy(`httpd_use_nfs',`
+ 	fs_list_auto_mountpoints(httpd_sys_script_t)
+-	fs_manage_nfs_dirs(httpd_sys_script_t)
+-	fs_manage_nfs_files(httpd_sys_script_t)
+-	fs_manage_nfs_symlinks(httpd_sys_script_t)
++	rpc_manage_nfs_rw_content(httpd_t)
++	rpc_read_nfs_content(httpd_t)
+ ')
+ 
+ tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
 Index: refpolicy/policy/modules/contrib/dkim.if
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.if
@@ -1912,6 +1997,17 @@ Index: refpolicy/policy/modules/contrib/mandb.te
  
  corecmd_exec_bin(mandb_t)
  corecmd_exec_shell(mandb_t)
+@@ -42,6 +43,10 @@ miscfiles_manage_man_cache(mandb_t)
+ miscfiles_read_man_pages(mandb_t)
+ miscfiles_read_localization(mandb_t)
+ 
++ifdef(`init_systemd',`
++	init_search_pid_dirs(mandb_t)
++')
++
+ ifdef(`distro_debian',`
+ 	optional_policy(`
+ 		apt_exec(mandb_t)
 Index: refpolicy/policy/modules/contrib/mailman.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/mailman.te
@@ -2111,11 +2207,12 @@ Index: refpolicy/policy/modules/system/authlogin.te
 ===================================================================
 --- refpolicy.orig/policy/modules/system/authlogin.te
 +++ refpolicy/policy/modules/system/authlogin.te
-@@ -107,6 +107,7 @@ files_list_etc(chkpwd_t)
+@@ -107,6 +107,8 @@ files_list_etc(chkpwd_t)
  kernel_read_crypto_sysctls(chkpwd_t)
  # is_selinux_enabled
  kernel_read_system_state(chkpwd_t)
 +selinux_get_enforce_mode(chkpwd_t)
++selinux_getattr_fs(chkpwd_t)
  
  domain_dontaudit_use_interactive_fds(chkpwd_t)
  
@@ -2370,11 +2467,12 @@ Index: refpolicy/policy/modules/kernel/corenetwork.te.in
  network_port(pptp, tcp,1723,s0, udp,1723,s0)
  network_port(prelude, tcp,4690,s0, udp,4690,s0)
  network_port(presence, tcp,5298-5299,s0, udp,5298-5299,s0)
-@@ -231,6 +231,7 @@ network_port(ricci, tcp,11111,s0, udp,11
+@@ -230,7 +230,7 @@ network_port(repository, tcp, 6363, s0)
+ network_port(ricci, tcp,11111,s0, udp,11111,s0)
  network_port(ricci_modcluster, tcp,16851,s0, udp,16851,s0)
  network_port(rlogind, tcp,513,s0)
- network_port(rndc, tcp,953,s0, udp,953,s0)
-+network_port(rndc, tcp,8953,s0, udp,8953,s0)
+-network_port(rndc, tcp,953,s0, udp,953,s0)
++network_port(rndc, tcp,953,s0, udp,953,s0, tcp,8953,s0, udp,8953,s0)
  network_port(router, udp,520,s0, udp,521,s0, tcp,521,s0)
  network_port(rsh, tcp,514,s0)
  network_port(rsync, tcp,873,s0, udp,873,s0)
@@ -2606,7 +2704,15 @@ Index: refpolicy/policy/modules/services/xserver.te
 ===================================================================
 --- refpolicy.orig/policy/modules/services/xserver.te
 +++ refpolicy/policy/modules/services/xserver.te
-@@ -622,6 +622,7 @@ allow xserver_t input_xevent_t:x_event s
+@@ -260,6 +260,7 @@ files_tmp_filetrans(xauth_t, xauth_tmp_t
+ 
+ allow xdm_t xauth_home_t:file manage_file_perms;
+ userdom_user_home_dir_filetrans(xdm_t, xauth_home_t, file)
++allow xauth_t xdm_t:process sigchld;
+ 
+ kernel_request_load_module(xauth_t)
+ 
+@@ -622,6 +623,7 @@ allow xserver_t input_xevent_t:x_event s
  
  allow xserver_t self:capability { dac_override fowner fsetid setgid setuid ipc_owner sys_rawio sys_admin sys_nice sys_tty_config mknod net_bind_service };
  dontaudit xserver_t self:capability chown;
@@ -2935,3 +3041,231 @@ Index: refpolicy/policy/modules/contrib/milter.if
 +
 +	allow $1 spamass_milter_data_t:dir getattr;
 +')
+Index: refpolicy/policy/modules/contrib/samba.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/samba.te
++++ refpolicy/policy/modules/contrib/samba.te
+@@ -104,8 +104,9 @@ type nmbd_t;
+ type nmbd_exec_t;
+ init_daemon_domain(nmbd_t, nmbd_exec_t)
+ 
+-type nmbd_var_run_t;
+-files_pid_file(nmbd_var_run_t)
++type samba_var_run_t;
++typealias samba_var_run_t alias { nmbd_var_run_t smbd_var_run_t };
++files_pid_file(samba_var_run_t)
+ 
+ type samba_etc_t;
+ files_config_file(samba_etc_t)
+@@ -151,9 +152,6 @@ files_type(smbd_keytab_t)
+ type smbd_tmp_t;
+ files_tmp_file(smbd_tmp_t)
+ 
+-type smbd_var_run_t;
+-files_pid_file(smbd_var_run_t)
+-
+ type smbmount_t;
+ type smbmount_exec_t;
+ application_domain(smbmount_t, smbmount_exec_t)
+@@ -305,16 +303,15 @@ manage_dirs_pattern(smbd_t, smbd_tmp_t,
+ manage_files_pattern(smbd_t, smbd_tmp_t, smbd_tmp_t)
+ files_tmp_filetrans(smbd_t, smbd_tmp_t, { file dir })
+ 
+-manage_dirs_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
+-manage_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
+-manage_sock_files_pattern(smbd_t, smbd_var_run_t, smbd_var_run_t)
+-files_pid_filetrans(smbd_t, smbd_var_run_t, { dir file })
++manage_dirs_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
++manage_files_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
++manage_sock_files_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
++files_pid_filetrans(smbd_t, samba_var_run_t, { dir file })
+ 
+ allow smbd_t winbind_var_run_t:sock_file read_sock_file_perms;
+ stream_connect_pattern(smbd_t, winbind_var_run_t, winbind_var_run_t, winbind_t)
+ 
+-allow smbd_t nmbd_var_run_t:file read_file_perms;
+-stream_connect_pattern(smbd_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
++stream_connect_pattern(smbd_t, samba_var_run_t, samba_var_run_t, nmbd_t)
+ 
+ kernel_getattr_core_if(smbd_t)
+ kernel_getattr_message_if(smbd_t)
+@@ -519,11 +516,10 @@ allow nmbd_t self:tcp_socket { accept li
+ allow nmbd_t self:unix_dgram_socket sendto;
+ allow nmbd_t self:unix_stream_socket { accept connectto listen };
+ 
+-manage_dirs_pattern(nmbd_t, { smbd_var_run_t nmbd_var_run_t }, nmbd_var_run_t)
+-manage_files_pattern(nmbd_t, nmbd_var_run_t, nmbd_var_run_t)
+-manage_sock_files_pattern(nmbd_t, nmbd_var_run_t, nmbd_var_run_t)
+-files_pid_filetrans(nmbd_t, nmbd_var_run_t, { dir file sock_file })
+-filetrans_pattern(nmbd_t, smbd_var_run_t, nmbd_var_run_t, dir)
++manage_dirs_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
++manage_files_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
++manage_sock_files_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
++files_pid_filetrans(nmbd_t, samba_var_run_t, { dir file sock_file })
+ 
+ read_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
+ read_lnk_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
+@@ -542,7 +538,7 @@ files_var_filetrans(nmbd_t, samba_var_t,
+ 
+ allow nmbd_t { swat_t smbcontrol_t }:process signal;
+ 
+-allow nmbd_t smbd_var_run_t:dir rw_dir_perms;
++allow nmbd_t samba_var_run_t:dir rw_dir_perms;
+ 
+ kernel_getattr_core_if(nmbd_t)
+ kernel_getattr_message_if(nmbd_t)
+@@ -567,6 +563,8 @@ corenet_sendrecv_smbd_client_packets(nmb
+ corenet_tcp_connect_smbd_port(nmbd_t)
+ corenet_tcp_sendrecv_smbd_port(nmbd_t)
+ 
++corecmd_search_bin(nmbd_t)
++dev_read_urand(nmbd_t)
+ dev_read_sysfs(nmbd_t)
+ dev_getattr_mtrr_dev(nmbd_t)
+ 
+@@ -618,7 +616,7 @@ allow smbcontrol_t self:unix_stream_sock
+ allow smbcontrol_t self:process { signal signull };
+ 
+ allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
+-read_files_pattern(smbcontrol_t, { nmbd_var_run_t smbd_var_run_t }, { nmbd_var_run_t smbd_var_run_t })
++read_files_pattern(smbcontrol_t, samba_var_run_t, samba_var_run_t)
+ 
+ manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
+ 
+@@ -733,8 +731,8 @@ allow swat_t self:unix_stream_socket con
+ 
+ allow swat_t { nmbd_t smbd_t }:process { signal signull };
+ 
+-allow swat_t smbd_var_run_t:file read_file_perms;
+-allow swat_t smbd_var_run_t:file { lock delete_file_perms };
++allow swat_t samba_var_run_t:file read_file_perms;
++allow swat_t samba_var_run_t:file { lock delete_file_perms };
+ 
+ rw_files_pattern(swat_t, samba_etc_t, samba_etc_t)
+ read_lnk_files_pattern(swat_t, samba_etc_t, samba_etc_t)
+@@ -766,8 +764,8 @@ read_files_pattern(swat_t, winbind_var_r
+ allow swat_t winbind_var_run_t:dir { add_entry_dir_perms del_entry_dir_perms };
+ allow swat_t winbind_var_run_t:sock_file { create_sock_file_perms delete_sock_file_perms };
+ 
+-read_files_pattern(swat_t, nmbd_var_run_t, nmbd_var_run_t)
+-stream_connect_pattern(swat_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
++read_files_pattern(swat_t, samba_var_run_t, samba_var_run_t)
++stream_connect_pattern(swat_t, samba_var_run_t, samba_var_run_t, nmbd_t)
+ 
+ samba_domtrans_smbd(swat_t)
+ samba_domtrans_nmbd(swat_t)
+@@ -852,8 +850,8 @@ allow winbind_t self:tcp_socket { accept
+ 
+ allow winbind_t nmbd_t:process { signal signull };
+ 
+-allow winbind_t nmbd_var_run_t:file read_file_perms;
+-stream_connect_pattern(winbind_t, nmbd_var_run_t, nmbd_var_run_t, nmbd_t)
++allow winbind_t samba_var_run_t:file read_file_perms;
++stream_connect_pattern(winbind_t, samba_var_run_t, samba_var_run_t, nmbd_t)
+ 
+ allow winbind_t samba_etc_t:dir list_dir_perms;
+ read_files_pattern(winbind_t, samba_etc_t, samba_etc_t)
+@@ -885,15 +883,15 @@ manage_files_pattern(winbind_t, winbind_
+ manage_sock_files_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
+ files_tmp_filetrans(winbind_t, winbind_tmp_t, { file dir })
+ 
+-manage_dirs_pattern(winbind_t, { smbd_var_run_t winbind_var_run_t }, winbind_var_run_t)
++manage_dirs_pattern(winbind_t, { samba_var_run_t winbind_var_run_t }, winbind_var_run_t)
+ manage_files_pattern(winbind_t, winbind_var_run_t, winbind_var_run_t)
+ manage_sock_files_pattern(winbind_t, winbind_var_run_t, winbind_var_run_t)
+ files_pid_filetrans(winbind_t, winbind_var_run_t, { sock_file file dir })
+-filetrans_pattern(winbind_t, smbd_var_run_t, winbind_var_run_t, dir)
++filetrans_pattern(winbind_t, samba_var_run_t, winbind_var_run_t, dir)
+ 
+-manage_dirs_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
+-manage_files_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
+-manage_sock_files_pattern(winbind_t, smbd_var_run_t, smbd_var_run_t)
++manage_dirs_pattern(winbind_t, samba_var_run_t, samba_var_run_t)
++manage_files_pattern(winbind_t, samba_var_run_t, samba_var_run_t)
++manage_sock_files_pattern(winbind_t, samba_var_run_t, samba_var_run_t)
+ 
+ kernel_read_network_state(winbind_t)
+ kernel_read_kernel_sysctls(winbind_t)
+Index: refpolicy/policy/modules/contrib/samba.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/samba.fc
++++ refpolicy/policy/modules/contrib/samba.fc
+@@ -31,21 +31,21 @@
+ 
+ /var/nmbd(/.*)?	gen_context(system_u:object_r:samba_var_t,s0)
+ 
+-/var/run/nmbd(/.*)?	gen_context(system_u:object_r:nmbd_var_run_t,s0)
+-/var/run/samba/nmbd(/.*)?	gen_context(system_u:object_r:nmbd_var_run_t,s0)
++/var/run/nmbd(/.*)?	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/nmbd(/.*)?	gen_context(system_u:object_r:samba_var_run_t,s0)
+ 
+-/var/run/samba(/.*)?	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/brlock\.tdb	--	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/connections\.tdb	--	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/gencache\.tdb	--	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/locking\.tdb --	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/messages\.tdb	--	gen_context(system_u:object_r:nmbd_var_run_t,s0)
+-/var/run/samba/namelist\.debug	--	gen_context(system_u:object_r:nmbd_var_run_t,s0)
+-/var/run/samba/nmbd\.pid	--	gen_context(system_u:object_r:nmbd_var_run_t,s0)
+-/var/run/samba/sessionid\.tdb	--	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/share_info\.tdb	--	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/smbd\.pid	--	gen_context(system_u:object_r:smbd_var_run_t,s0)
+-/var/run/samba/unexpected\.tdb	--	gen_context(system_u:object_r:nmbd_var_run_t,s0)
++/var/run/samba(/.*)?	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/brlock\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/connections\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/gencache\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/locking\.tdb --	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/messages\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/namelist\.debug	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/nmbd\.pid	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/sessionid\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/share_info\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/smbd\.pid	--	gen_context(system_u:object_r:samba_var_run_t,s0)
++/var/run/samba/unexpected\.tdb	--	gen_context(system_u:object_r:samba_var_run_t,s0)
+ 
+ /var/run/winbindd(/.*)?	gen_context(system_u:object_r:winbind_var_run_t,s0)
+ /var/run/samba/winbindd(/.*)?	gen_context(system_u:object_r:winbind_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/rpc.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/rpc.te
++++ refpolicy/policy/modules/contrib/rpc.te
+@@ -162,6 +162,9 @@ kernel_rw_fs_sysctls(rpcd_t)
+ kernel_dontaudit_getattr_core_if(rpcd_t)
+ kernel_signal(rpcd_t)
+ 
++# for /proc/fs/lockd/nlm_end_grace
++kernel_write_proc_files(rpcd_t)
++
+ corecmd_exec_bin(rpcd_t)
+ 
+ files_manage_mounttab(rpcd_t)
+Index: refpolicy/policy/modules/contrib/logrotate.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/logrotate.te
++++ refpolicy/policy/modules/contrib/logrotate.te
+@@ -36,7 +36,7 @@ role system_r types logrotate_mail_t;
+ # Local policy
+ #
+ 
+-allow logrotate_t self:capability { chown dac_override dac_read_search kill fsetid fowner setuid setgid sys_resource sys_nice };
++allow logrotate_t self:capability { chown dac_override dac_read_search kill fsetid fowner net_admin setuid setgid sys_resource sys_nice };
+ allow logrotate_t self:process ~{ ptrace setcurrent setexec execmem execstack execheap };
+ allow logrotate_t self:fd use;
+ allow logrotate_t self:key manage_key_perms;
+@@ -89,6 +89,7 @@ files_dontaudit_list_mnt(logrotate_t)
+ fs_search_auto_mountpoints(logrotate_t)
+ fs_getattr_xattr_fs(logrotate_t)
+ fs_list_inotifyfs(logrotate_t)
++fs_getattr_tmpfs(logrotate_t)
+ 
+ mls_file_read_all_levels(logrotate_t)
+ mls_file_write_all_levels(logrotate_t)
+@@ -104,6 +105,7 @@ auth_use_nsswitch(logrotate_t)
+ init_all_labeled_script_domtrans(logrotate_t)
+ init_get_generic_units_status(logrotate_t)
+ init_get_all_units_status(logrotate_t)
++init_get_system_status(logrotate_t)
+ init_dbus_chat(logrotate_t)
+ init_stream_connect(logrotate_t)
+ 

@@ -36,7 +36,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  optional_policy(`
-+	systemd_use_fds_logind(crond_t)
++	systemd_use_logind_fds(crond_t)
 +	systemd_write_inherited_logind_sessions_pipes(crond_t)
 +')
 +optional_policy(`
@@ -54,10 +54,11 @@ Index: refpolicy/policy/modules/contrib/networkmanager.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/networkmanager.te
 +++ refpolicy/policy/modules/contrib/networkmanager.te
-@@ -327,6 +327,10 @@ optional_policy(`
+@@ -327,6 +327,11 @@ optional_policy(`
  ')
  
  optional_policy(`
++	systemd_use_logind_fds(NetworkManager_t)
 +	systemd_read_logind_sessions_files(NetworkManager_t)
 +')
 +
@@ -952,7 +953,7 @@ Index: refpolicy/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##	Allow the specified domain to connect to daemon with a tcp socket
-@@ -2505,6 +2962,268 @@ interface(`init_reload_all_units',`
+@@ -2505,6 +2962,269 @@ interface(`init_reload_all_units',`
  	allow $1 systemdunit:service reload;
  ')
  
@@ -973,6 +974,7 @@ Index: refpolicy/policy/modules/system/init.if
 +	')
 +
 +	allow $1 systemdunit:service all_service_perms;
++	allow $1 systemdunit:file getattr;
 +')
 +
 +########################################
@@ -1221,7 +1223,7 @@ Index: refpolicy/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##      Init will execute a shell in the specified domain.
-@@ -2525,3 +3244,76 @@ interface(`init_shell_domtrans',`
+@@ -2525,3 +3245,76 @@ interface(`init_shell_domtrans',`
  	allow $1 init_t:fifo_file rw_file_perms;
  	allow $1 init_t:process sigchld;
  ')
@@ -1634,7 +1636,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  ')
  
-@@ -738,6 +841,7 @@ ifdef(`init_systemd',`
+@@ -738,9 +841,11 @@ ifdef(`init_systemd',`
  	files_pid_filetrans(initrc_t, initrc_var_run_t, dir_file_class_set)
  
  	create_dirs_pattern(initrc_t, systemd_unit_t, systemd_unit_t)
@@ -1642,7 +1644,11 @@ Index: refpolicy/policy/modules/system/init.te
  
  	manage_files_pattern(initrc_t, systemdunit, systemdunit)
  	manage_lnk_files_pattern(initrc_t, systemdunit, systemdunit)
-@@ -773,6 +877,8 @@ ifdef(`init_systemd',`
++	allow initrc_t systemdunit:service reload;
+ 
+ 	kernel_dgram_send(initrc_t)
+ 
+@@ -773,6 +878,8 @@ ifdef(`init_systemd',`
  	seutil_read_file_contexts(initrc_t)
  
  	systemd_start_power_units(initrc_t)
@@ -1651,7 +1657,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	optional_policy(`
  		# create /var/lock/lvm/
-@@ -780,6 +886,32 @@ ifdef(`init_systemd',`
+@@ -780,6 +887,32 @@ ifdef(`init_systemd',`
  	')
  ')
  
@@ -1684,7 +1690,7 @@ Index: refpolicy/policy/modules/system/init.te
  optional_policy(`
  	amavis_search_lib(initrc_t)
  	amavis_setattr_pid_files(initrc_t)
-@@ -792,6 +924,8 @@ optional_policy(`
+@@ -792,6 +925,8 @@ optional_policy(`
  optional_policy(`
  	apache_read_config(initrc_t)
  	apache_list_modules(initrc_t)
@@ -1693,7 +1699,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -813,6 +947,7 @@ optional_policy(`
+@@ -813,6 +948,7 @@ optional_policy(`
  
  optional_policy(`
  	cgroup_stream_connect_cgred(initrc_t)
@@ -1701,7 +1707,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -829,6 +964,12 @@ optional_policy(`
+@@ -829,6 +965,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1714,7 +1720,7 @@ Index: refpolicy/policy/modules/system/init.te
  	dev_getattr_printer_dev(initrc_t)
  
  	cups_read_log(initrc_t)
-@@ -845,9 +986,13 @@ optional_policy(`
+@@ -845,9 +987,13 @@ optional_policy(`
  	dbus_connect_system_bus(initrc_t)
  	dbus_system_bus_client(initrc_t)
  	dbus_read_config(initrc_t)
@@ -1728,7 +1734,7 @@ Index: refpolicy/policy/modules/system/init.te
  	')
  
  	optional_policy(`
-@@ -889,6 +1034,11 @@ optional_policy(`
+@@ -889,6 +1035,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1740,7 +1746,7 @@ Index: refpolicy/policy/modules/system/init.te
  	inn_exec_config(initrc_t)
  ')
  
-@@ -929,6 +1079,7 @@ optional_policy(`
+@@ -929,6 +1080,7 @@ optional_policy(`
  	lpd_list_spool(initrc_t)
  
  	lpd_read_config(initrc_t)
@@ -1748,7 +1754,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -947,6 +1098,7 @@ optional_policy(`
+@@ -947,6 +1099,7 @@ optional_policy(`
  
  optional_policy(`
  	mta_read_config(initrc_t)
@@ -1756,7 +1762,7 @@ Index: refpolicy/policy/modules/system/init.te
  	mta_dontaudit_read_spool_symlinks(initrc_t)
  ')
  
-@@ -969,6 +1121,10 @@ optional_policy(`
+@@ -969,6 +1122,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1767,7 +1773,7 @@ Index: refpolicy/policy/modules/system/init.te
  	postgresql_manage_db(initrc_t)
  	postgresql_read_config(initrc_t)
  ')
-@@ -981,6 +1137,7 @@ optional_policy(`
+@@ -981,6 +1138,7 @@ optional_policy(`
  	puppet_rw_tmp(initrc_t)
  ')
  
@@ -1775,7 +1781,7 @@ Index: refpolicy/policy/modules/system/init.te
  optional_policy(`
  	quota_manage_flags(initrc_t)
  ')
-@@ -1011,8 +1168,6 @@ optional_policy(`
+@@ -1011,8 +1169,6 @@ optional_policy(`
  	# bash tries ioctl for some reason
  	files_dontaudit_ioctl_all_pids(initrc_t)
  
@@ -1784,7 +1790,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -1030,10 +1185,12 @@ optional_policy(`
+@@ -1030,10 +1186,12 @@ optional_policy(`
  	squid_manage_logs(initrc_t)
  ')
  
@@ -1797,7 +1803,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  optional_policy(`
  	ssh_dontaudit_read_server_keys(initrc_t)
-@@ -1049,7 +1206,6 @@ optional_policy(`
+@@ -1049,7 +1207,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1805,7 +1811,7 @@ Index: refpolicy/policy/modules/system/init.te
  	udev_manage_pid_files(initrc_t)
  	udev_manage_pid_dirs(initrc_t)
  	udev_manage_rules_files(initrc_t)
-@@ -1066,6 +1222,10 @@ optional_policy(`
+@@ -1066,6 +1223,10 @@ optional_policy(`
  
  optional_policy(`
  	unconfined_domain(initrc_t)
@@ -1816,7 +1822,7 @@ Index: refpolicy/policy/modules/system/init.te
  
  	ifdef(`distro_redhat',`
  		# system-config-services causes avc messages that should be dontaudited
-@@ -1075,6 +1235,15 @@ optional_policy(`
+@@ -1075,6 +1236,15 @@ optional_policy(`
  	optional_policy(`
  		mono_domtrans(initrc_t)
  	')
@@ -1832,7 +1838,7 @@ Index: refpolicy/policy/modules/system/init.te
  ')
  
  optional_policy(`
-@@ -1100,3 +1269,267 @@ optional_policy(`
+@@ -1100,3 +1270,267 @@ optional_policy(`
  optional_policy(`
  	zebra_read_config(initrc_t)
  ')
@@ -2461,12 +2467,11 @@ Index: refpolicy/policy/modules/contrib/logrotate.te
  
  logging_manage_all_logs(logrotate_t)
  logging_send_syslog_msg(logrotate_t)
-@@ -126,6 +133,9 @@ ifdef(`distro_debian',`
+@@ -126,6 +133,8 @@ ifdef(`distro_debian',`
  	logging_read_syslog_config(logrotate_t)
  ')
  
-+init_start_all_units(logrotate_t)
-+init_stop_all_units(logrotate_t)
++init_manage_all_units(logrotate_t)
 +
  optional_policy(`
  	abrt_manage_cache(logrotate_t)
@@ -3259,7 +3264,7 @@ Index: refpolicy/policy/modules/system/systemd.if
  ')
  
  ######################################
-@@ -190,3 +191,659 @@ interface(`systemd_start_power_units',`
+@@ -190,3 +191,640 @@ interface(`systemd_start_power_units',`
  
  	allow $1 power_unit_t:service start;
  ')
@@ -3398,25 +3403,6 @@ Index: refpolicy/policy/modules/system/systemd.if
 +	init_search_pid_dirs($1)
 +	files_search_pids($1)
 +	allow $1 systemd_logind_var_run_t:fifo_file { getattr write };
-+')
-+
-+######################################
-+## <summary>
-+##	Use and and inherited systemd
-+##	logind file descriptors.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`systemd_use_fds_logind',`
-+	gen_require(`
-+		type systemd_logind_t;
-+	')
-+
-+	allow $1 systemd_logind_t:fd use;
 +')
 +
 +######################################
@@ -3937,7 +3923,17 @@ Index: refpolicy/policy/modules/system/systemd.te
  type systemd_cgroups_var_run_t;
  files_pid_file(systemd_cgroups_var_run_t)
  init_daemon_pid_file(systemd_cgroups_var_run_t, dir, "systemd_cgroups")
-@@ -76,6 +83,10 @@ type systemd_machined_t;
+@@ -48,6 +55,9 @@ type systemd_coredump_t;
+ type systemd_coredump_exec_t;
+ init_system_domain(systemd_coredump_t, systemd_coredump_exec_t)
+ 
++type systemd_coredump_var_lib_t;
++files_type(systemd_coredump_var_lib_t)
++
+ type systemd_detect_virt_t;
+ type systemd_detect_virt_exec_t;
+ init_daemon_domain(systemd_detect_virt_t, systemd_detect_virt_exec_t)
+@@ -76,10 +86,18 @@ type systemd_machined_t;
  type systemd_machined_exec_t;
  init_daemon_domain(systemd_machined_t, systemd_machined_exec_t)
  
@@ -3948,7 +3944,15 @@ Index: refpolicy/policy/modules/system/systemd.te
  type systemd_nspawn_t;
  type systemd_nspawn_exec_t;
  init_system_domain(systemd_nspawn_t, systemd_nspawn_exec_t)
-@@ -99,6 +110,9 @@ type systemd_passwd_agent_t;
+ 
++type systemd_nspawn_var_run_t;
++files_pid_file(systemd_nspawn_var_run_t)
++init_pid_filetrans(systemd_nspawn_t, systemd_nspawn_var_run_t, dir)
++
+ type systemd_resolved_t;
+ type systemd_resolved_exec_t;
+ init_system_domain(systemd_resolved_t, systemd_resolved_exec_t)
+@@ -99,6 +117,9 @@ type systemd_passwd_agent_t;
  type systemd_passwd_agent_exec_t;
  init_system_domain(systemd_passwd_agent_t, systemd_passwd_agent_exec_t)
  
@@ -3958,7 +3962,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  type systemd_sessions_t;
  type systemd_sessions_exec_t;
  init_system_domain(systemd_sessions_t, systemd_sessions_exec_t)
-@@ -113,6 +127,12 @@ type systemd_kmod_conf_t;
+@@ -113,6 +134,12 @@ type systemd_kmod_conf_t;
  files_config_file(systemd_kmod_conf_t)
  init_daemon_domain(systemd_tmpfiles_t, systemd_tmpfiles_exec_t)
  
@@ -3971,7 +3975,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  #
  # Unit file types
  #
-@@ -140,11 +160,40 @@ logging_send_syslog_msg(systemd_log_pars
+@@ -140,11 +167,40 @@ logging_send_syslog_msg(systemd_log_pars
  
  ######################################
  #
@@ -4012,7 +4016,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  init_stream_connect(systemd_cgroups_t)
  
-@@ -170,6 +219,17 @@ optional_policy(`
+@@ -170,6 +226,36 @@ optional_policy(`
  
  #######################################
  #
@@ -4020,17 +4024,36 @@ Index: refpolicy/policy/modules/system/systemd.te
 +#
 +
 +files_read_etc_files(systemd_coredump_t)
++files_search_var_lib(systemd_coredump_t)
++
 +kernel_use_fds(systemd_coredump_t)
 +dev_write_kmsg(systemd_coredump_t)
 +kernel_read_system_state(systemd_coredump_t)
-+allow systemd_coredump_t self:unix_dgram_socket create;
++allow systemd_coredump_t self:unix_dgram_socket { create write connect getopt setopt };
++allow systemd_coredump_t self:capability { setgid setuid setpcap };
++allow systemd_coredump_t self:process { getcap setcap setfscreate };
++
++init_search_pid_dirs(systemd_coredump_t)
++init_read_state(systemd_coredump_t)
++init_list_var_lib_dirs(systemd_coredump_t)
++init_write_pid_socket(systemd_coredump_t)
++logging_send_syslog_msg(systemd_coredump_t)
++kernel_read_kernel_sysctls(systemd_coredump_t)
++kernel_rw_pipes(systemd_coredump_t)
++fs_getattr_xattr_fs(systemd_coredump_t)
++
++selinux_getattr_fs(systemd_coredump_t)
++seutil_search_default_contexts(systemd_coredump_t)
++manage_files_pattern(systemd_coredump_t, systemd_coredump_var_lib_t, systemd_coredump_var_lib_t)
++corecmd_exec_bin(systemd_coredump_t)
++corecmd_read_all_executables(systemd_coredump_t)
 +
 +#######################################
 +#
  # Hostnamed policy
  #
  
-@@ -180,28 +240,51 @@ files_read_etc_files(systemd_hostnamed_t
+@@ -180,28 +266,51 @@ files_read_etc_files(systemd_hostnamed_t
  seutil_read_file_contexts(systemd_hostnamed_t)
  
  systemd_log_parse_environment(systemd_hostnamed_t)
@@ -4084,7 +4107,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  files_search_pids(systemd_logind_t)
  
  kernel_read_kernel_sysctls(systemd_logind_t)
-@@ -212,14 +295,24 @@ dev_rw_sysfs(systemd_logind_t)
+@@ -212,14 +321,24 @@ dev_rw_sysfs(systemd_logind_t)
  dev_rw_input_dev(systemd_logind_t)
  dev_getattr_dri_dev(systemd_logind_t)
  dev_setattr_dri_dev(systemd_logind_t)
@@ -4109,7 +4132,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  storage_getattr_removable_dev(systemd_logind_t)
  storage_setattr_removable_dev(systemd_logind_t)
-@@ -233,6 +326,11 @@ init_start_all_units(systemd_logind_t)
+@@ -233,6 +352,11 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_service_status(systemd_logind_t)
  init_service_start(systemd_logind_t)
@@ -4121,7 +4144,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  locallogin_read_state(systemd_logind_t)
  
-@@ -241,14 +339,157 @@ systemd_start_power_units(systemd_logind
+@@ -241,14 +365,204 @@ systemd_start_power_units(systemd_logind
  
  udev_read_db(systemd_logind_t)
  udev_read_pid_files(systemd_logind_t)
@@ -4250,6 +4273,9 @@ Index: refpolicy/policy/modules/system/systemd.te
 +init_get_system_status(systemd_machined_t)
 +start_stop_init_var_run_service(systemd_machined_t)
 +
++selinux_getattr_fs(systemd_machined_t)
++seutil_search_default_contexts(systemd_machined_t)
++
 +files_read_etc_files(systemd_machined_t)
 +init_system_start(systemd_machined_t)
 +init_system_stop(systemd_machined_t)
@@ -4269,17 +4295,61 @@ Index: refpolicy/policy/modules/system/systemd.te
 +#
 +
 +allow systemd_nspawn_t self:unix_dgram_socket connected_socket_perms;
++allow systemd_nspawn_t systemd_nspawn_var_run_t:dir manage_dir_perms;
++allow systemd_nspawn_t systemd_nspawn_var_run_t:file manage_file_perms;
++
++allow systemd_nspawn_t systemd_machined_t:dbus send_msg;
++allow systemd_machined_t systemd_nspawn_t:dbus send_msg;
++
++# for /run/systemd/nspawn/incoming in chroot
++allow systemd_nspawn_t systemd_nspawn_var_run_t:dir mounton;
++
++allow systemd_nspawn_t self:process { getcap setcap setfscreate sigkill };
 +
 +kernel_read_system_state(systemd_nspawn_t)
-+allow systemd_nspawn_t self:capability net_admin;
++kernel_read_kernel_sysctls(systemd_nspawn_t)
++
++allow systemd_nspawn_t self:capability { dac_override fsetid mknod net_admin setgid setuid setpcap sys_admin sys_chroot };
++allow systemd_nspawn_t self:capability2 wake_alarm;
++
++init_domtrans_script(systemd_nspawn_t)
 +init_search_pid_dirs(systemd_nspawn_t)
 +init_read_state(systemd_nspawn_t)
 +init_write_pid_socket(systemd_nspawn_t)
++dev_getattr_fs(systemd_nspawn_t)
++term_getattr_pty_fs(systemd_nspawn_t)
++term_search_ptys(systemd_nspawn_t)
++fs_getattr_tmpfs(systemd_nspawn_t)
++corecmd_search_bin(systemd_nspawn_t)
++corecmd_exec_shell(systemd_nspawn_t)
++userdom_manage_user_home_dirs(systemd_nspawn_t)
++dev_manage_sysfs_dirs(systemd_nspawn_t)
++files_manage_mnt_dirs(systemd_nspawn_t)
++files_mounton_mnt(systemd_nspawn_t)
++files_mounton_tmp(systemd_nspawn_t)
++fs_mount_tmpfs(systemd_nspawn_t)
++fs_remount_tmpfs(systemd_nspawn_t)
++dev_read_rand(systemd_nspawn_t)
++dev_read_urand(systemd_nspawn_t)
++corenet_rw_tun_tap_dev(systemd_nspawn_t)
++files_read_etc_files(systemd_nspawn_t)
++files_read_etc_symlinks(systemd_nspawn_t)
++
++# for writing inside chroot
++sysnet_manage_config(systemd_nspawn_t)
++
++selinux_getattr_fs(systemd_nspawn_t)
++selinux_search_fs(systemd_nspawn_t)
++seutil_search_default_contexts(systemd_nspawn_t)
++
++optional_policy(`
++	dbus_system_bus_client(systemd_nspawn_t)
++')
 +
  #########################################
  #
  # Resolved local policy
-@@ -290,6 +531,13 @@ optional_policy(`
+@@ -290,6 +604,13 @@ optional_policy(`
  allow systemd_sessions_t systemd_sessions_var_run_t:file manage_file_perms;
  files_pid_filetrans(systemd_sessions_t, systemd_sessions_var_run_t, file)
  
@@ -4293,7 +4363,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,24 +545,81 @@ systemd_log_parse_environment(systemd_se
+@@ -297,24 +618,81 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4376,7 +4446,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  seutil_read_file_contexts(systemd_tmpfiles_t)
  
-@@ -328,3 +633,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +706,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
@@ -4415,7 +4485,14 @@ Index: refpolicy/policy/modules/system/systemd.fc
  
  /usr/lib/systemd/systemd-activate	--	gen_context(system_u:object_r:systemd_activate_exec_t,s0)
  /usr/lib/systemd/systemd-backlight	--	gen_context(system_u:object_r:systemd_backlight_exec_t,s0)
-@@ -35,8 +36,12 @@
+@@ -29,14 +30,19 @@
+ /usr/lib/systemd/system/[^/]*sleep.*	--	gen_context(system_u:object_r:power_unit_t,s0)
+ /usr/lib/systemd/system/[^/]*suspend.*	--	gen_context(system_u:object_r:power_unit_t,s0)
+ 
++/var/lib/systemd/coredump(/.*)?	gen_context(system_u:object_r:systemd_coredump_var_lib_t,s0)
+ /var/lib/systemd/linger(/.*)?	gen_context(system_u:object_r:systemd_logind_var_lib_t,s0)
+ 
+ /var/run/\.nologin[^/]*	--	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
  /var/run/nologin	--	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
  
  /var/run/systemd/resolve(/.*)?  gen_context(system_u:object_r:systemd_resolved_var_run_t,s0)
@@ -4604,3 +4681,44 @@ Index: refpolicy/policy/modules/roles/sysadm.if
 +	allow sysadm_t $1:dbus send_msg;
 +	allow $1 sysadm_t:dbus send_msg;
 +')
+Index: refpolicy/policy/modules/contrib/devicekit.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/devicekit.te
++++ refpolicy/policy/modules/contrib/devicekit.te
+@@ -260,6 +260,7 @@ auth_use_nsswitch(devicekit_power_t)
+ 
+ init_all_labeled_script_domtrans(devicekit_power_t)
+ init_read_utmp(devicekit_power_t)
++init_search_pid_dirs(devicekit_power_t)
+ 
+ miscfiles_read_localization(devicekit_power_t)
+ 
+Index: refpolicy/policy/modules/system/application.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/application.if
++++ refpolicy/policy/modules/system/application.if
+@@ -63,6 +63,24 @@ interface(`application_exec',`
+ 
+ ########################################
+ ## <summary>
++## read application executables
++## </summary>
++## <param name="type">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`application_read',`
++	gen_require(`
++		attribute application_exec_type;
++	')
++
++	allow $1 application_exec_type:file read_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Execute all executable files.
+ ## </summary>
+ ## <param name="domain">

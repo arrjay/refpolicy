@@ -28,7 +28,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 ===================================================================
 --- /dev/null
 +++ refpolicy/policy/modules/contrib/mon.te
-@@ -0,0 +1,192 @@
+@@ -0,0 +1,203 @@
 +policy_module(mon, 1.12.0)
 +
 +########################################
@@ -149,6 +149,7 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +allow mon_net_test_t self:fifo_file rw_file_perms;
 +corecmd_exec_bin(mon_net_test_t)
 +miscfiles_read_localization(mon_net_test_t)
++miscfiles_read_certs(mon_net_test_t)
 +files_read_usr_files(mon_net_test_t)
 +fs_getattr_xattr_fs(mon_net_test_t)
 +sysnet_read_config(mon_net_test_t)
@@ -188,7 +189,9 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +application_exec_all(mon_local_test_t)
 +files_read_usr_files(mon_local_test_t)
 +files_search_spool(mon_local_test_t)
++files_search_mnt(mon_local_test_t)
 +fs_getattr_xattr_fs(mon_local_test_t)
++fs_search_auto_mountpoints(mon_local_test_t)
 +sysnet_read_config(mon_local_test_t)
 +auth_use_nsswitch(mon_local_test_t)
 +dev_read_urand(mon_local_test_t)
@@ -221,6 +224,14 @@ Index: refpolicy/policy/modules/contrib/mon.te
 +optional_policy(`
 +	gpm_getattr_gpmctl(mon_local_test_t)
 +')
++
++optional_policy(`
++	postfix_search_spool(mon_local_test_t)
++')
++
++optional_policy(`
++	xserver_rw_console(mon_local_test_t)
++')
 Index: refpolicy/policy/modules/kernel/corenetwork.te.in
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/corenetwork.te.in
@@ -237,7 +248,7 @@ Index: refpolicy/policy/modules/system/init.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/init.if
 +++ refpolicy/policy/modules/system/init.if
-@@ -3317,3 +3317,22 @@ interface(`read_initrc_files',`
+@@ -3318,3 +3318,22 @@ interface(`read_initrc_files',`
  	allow $1 initrc_t:dir search;
  	allow $1 initrc_t:file read_file_perms;
  ')
