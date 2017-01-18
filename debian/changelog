@@ -32,12 +32,19 @@ refpolicy (2:2.20161023.1-7.1) UNRELEASED; urgency=medium
   * Allow named to read vm sysctls
   * Allow mysqld_safe_t to read dpkg db, it inherits cwd from dpkg_script_t
     alow is to read sysfs and kill mysqld_t
+    Make mysql_signal interface include signull permission and grant that to
+    logrotate
   * Allow rpcd_t to write /proc/fs/lockd/nlm_end_grace
   * Make apache use the new interfaces for nfs access and to read
     httpd_var_lib_t symlinks
   * Allow auth to send sigchild to xdm
   * Allow chkpwd_t to getattr the selinuxfs
   * Allow system_cronjob_t net_admin capability,
+  * Allow crontab domains fsetid capability. Use a separate $2_crontab_t domain
+    for each role's crontab program. Give ntp_admin access to system_cronjob_t
+  * Label /var/lib/sddm as xdm_var_lib_t
+  * Don't label acct cron job scripts as acct_exec_t
+  * Allow systemd-tmpfiles to create /dev/xconsole
 
  -- Russell Coker <russell@coker.com.au>  Thu, 12 Jan 2017 18:14:13 +1100
 

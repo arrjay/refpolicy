@@ -4363,7 +4363,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sessions_t)
  
  #########################################
-@@ -297,24 +618,81 @@ systemd_log_parse_environment(systemd_se
+@@ -297,24 +618,85 @@ systemd_log_parse_environment(systemd_se
  # Tmpfiles local policy
  #
  
@@ -4372,6 +4372,9 @@ Index: refpolicy/policy/modules/system/systemd.te
  allow systemd_tmpfiles_t self:process { setfscreate getcap };
  
 +allow systemd_tmpfiles_t systemd_sessions_var_run_t:file { relabelfrom relabelto manage_file_perms };
++allow systemd_tmpfiles_t systemd_coredump_var_lib_t:dir { relabelfrom manage_dir_perms };
++allow systemd_tmpfiles_t systemd_coredump_var_lib_t:file manage_file_perms;
++
 +userdom_manage_user_runtime_root_dirs(systemd_tmpfiles_t)
 +userdom_relabel_user_runtime_root_dirs(systemd_tmpfiles_t)
 +
@@ -4415,6 +4418,7 @@ Index: refpolicy/policy/modules/system/systemd.te
 +
 +optional_policy(`
 +	xserver_create_xdm_tmp_dir(systemd_tmpfiles_t)
++	xserver_create_console_pipes(systemd_tmpfiles_t)
 +')
 +
 +optional_policy(`
@@ -4446,7 +4450,7 @@ Index: refpolicy/policy/modules/system/systemd.te
  
  seutil_read_file_contexts(systemd_tmpfiles_t)
  
-@@ -328,3 +706,26 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -328,3 +710,26 @@ tunable_policy(`systemd_tmpfiles_manage_
  	files_relabel_non_security_dirs(systemd_tmpfiles_t)
  	files_relabel_non_security_files(systemd_tmpfiles_t)
  ')
@@ -4485,7 +4489,7 @@ Index: refpolicy/policy/modules/system/systemd.fc
  
  /usr/lib/systemd/systemd-activate	--	gen_context(system_u:object_r:systemd_activate_exec_t,s0)
  /usr/lib/systemd/systemd-backlight	--	gen_context(system_u:object_r:systemd_backlight_exec_t,s0)
-@@ -29,14 +30,19 @@
+@@ -29,14 +30,20 @@
  /usr/lib/systemd/system/[^/]*sleep.*	--	gen_context(system_u:object_r:power_unit_t,s0)
  /usr/lib/systemd/system/[^/]*suspend.*	--	gen_context(system_u:object_r:power_unit_t,s0)
  
@@ -4502,6 +4506,7 @@ Index: refpolicy/policy/modules/system/systemd.fc
 +/var/run/systemd/sessions(/.*)?	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
  /var/run/systemd/users(/.*)?	gen_context(system_u:object_r:systemd_logind_var_run_t,s0)
  /var/run/systemd/inhibit(/.*)?	gen_context(system_u:object_r:systemd_logind_var_run_t,s0)
++/var/run/systemd/nspawn(/.*)?	gen_context(system_u:object_r:systemd_nspawn_var_run_t,s0)
 +/var/run/systemd/machines(/.*)?	gen_context(system_u:object_r:systemd_machined_var_run_t,s0)
  /var/run/tmpfiles\.d/kmod.conf	gen_context(system_u:object_r:systemd_kmod_conf_t,s0)
 +

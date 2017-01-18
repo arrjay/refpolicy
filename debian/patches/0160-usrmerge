@@ -213,8 +213,7 @@ Index: refpolicy/policy/modules/contrib/acct.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/acct.fc
 +++ refpolicy/policy/modules/contrib/acct.fc
-@@ -2,8 +2,6 @@
- 
+@@ -1,7 +1,5 @@
  /etc/rc\.d/init\.d/psacct	--	gen_context(system_u:object_r:acct_initrc_exec_t,s0)
  
 -/sbin/accton	--	gen_context(system_u:object_r:acct_exec_t,s0)
