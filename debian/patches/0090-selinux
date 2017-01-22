@@ -281,7 +281,7 @@ Index: refpolicy/policy/modules/system/init.te
 +kernel_load_module(init_t)
 +
  ifdef(`init_systemd',`
- 	allow init_t self:system { status reboot halt };
+ 	allow init_t self:system { status reboot halt reload };
  
  	allow init_t self:unix_dgram_socket { create_socket_perms sendto };
  	allow init_t self:process { setsockcreate setfscreate setrlimit };

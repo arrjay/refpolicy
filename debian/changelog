@@ -1,21 +1,26 @@
-refpolicy (2:2.20161023.1-7.1) UNRELEASED; urgency=medium
+refpolicy (2:2.20161023.1-8) unstable; urgency=medium
 
   * Fixed mistake in previous changelog (attributed a -7 change to -6)
-  * Label /usr/sbin/apache2ctl as well
+  * Label /usr/sbin/apache2ctl as well. Allow apache to read overcommit sysctl
   * Allow clamd_t to read the overcommit sysctl
   * Allow postfix_postdrop_t to write to postfix_public_t socket, allow
     postfix_master_t to bind to udp generic nodes
-  * Allow dovecot_auth_t to write to dovecot_var_run_t fifos
+  * Allow dovecot_auth_t to write to dovecot_var_run_t fifos and read selinux
+    config (needed for pop/imap login)
   * Allow mon local tests to search /var/spool/postfix and autofs mountpoints,
-    and to read nfs content
-  * Allow mon net tests to read certs
+    and to read nfs content. Allow mon net tests to read certs. dontaudit when
+    mon local tests try to stat tmpfs files. Allow mon local tests to access
+    /dev/xconsole and search mnt_t and boot_t
   * Allow mount_t to getattr nfs filesystems and manage mount_var_run_t dirs
     and files
   * Allow setfiles_t to getattr nfs filesystems.
-  * Allow postgrey_t to exec bin_t files
+  * Allow postgrey_t to exec bin_t files, to read netlink_route_sockets,
+    and to access udp sockets
   * Allow login programs to share fds with systemd_passwd_agent_t
   * Allow postfix_master_t to stat the spamass_milter_data_t dir
   * Allow dpkg_script_t to tell init_t to stop services
+  * Allow initrc_t to tell init_t to halt and get system status - allows
+    poweroff!!!
   * Make port 8953 be rndc type for unbound.
   * Lots of policy for systemd_nspawn_t
   * More policy for systemd_coredump_t to do what it wants
@@ -28,7 +33,6 @@ refpolicy (2:2.20161023.1-7.1) UNRELEASED; urgency=medium
     that systemctl wants
   * Allow network manager to inherit logind pids
   * Allow devicekit_power_t to search init pid dirs
-  * Allow mon local tests to access /dev/xconsole and search mnt_t
   * Allow named to read vm sysctls
   * Allow mysqld_safe_t to read dpkg db, it inherits cwd from dpkg_script_t
     alow is to read sysfs and kill mysqld_t
@@ -36,17 +40,30 @@ refpolicy (2:2.20161023.1-7.1) UNRELEASED; urgency=medium
     logrotate
   * Allow rpcd_t to write /proc/fs/lockd/nlm_end_grace
   * Make apache use the new interfaces for nfs access and to read
-    httpd_var_lib_t symlinks
+    httpd_var_lib_t symlinks. Allow httpd_sys_script_t to search init pid
+    dirs
   * Allow auth to send sigchild to xdm
   * Allow chkpwd_t to getattr the selinuxfs
-  * Allow system_cronjob_t net_admin capability,
+  * Allow system_cronjob_t net_admin capability, manage acct data, and manage
+    initrc services
   * Allow crontab domains fsetid capability. Use a separate $2_crontab_t domain
     for each role's crontab program. Give ntp_admin access to system_cronjob_t
+    and allow it to manage var_log_t and cron log files
   * Label /var/lib/sddm as xdm_var_lib_t
   * Don't label acct cron job scripts as acct_exec_t
   * Allow systemd-tmpfiles to create /dev/xconsole
+  * Create new type for /var/run/iodine
+  * Allow logrotate to restart services
+  * Made init_script_service_restart() include reload access
+  * Dontaudit systemd_logind_t statting files under /dev/shm
+    Allow it to setattr unallocated terminals and unlink user_runtime_t files
+  * Added boolean allow_smbd_read_shadow for the obvious purpose
+    Allow smbd_t to read cupsd_var_run_t socket as well as write to it
+  * Allow NetworkManager_t to send dbus messages to unconfined_t
+  * Grant access to dri and input_dev devices to system_dbusd_t, gdm3 makes it
+    want this
 
- -- Russell Coker <russell@coker.com.au>  Thu, 12 Jan 2017 18:14:13 +1100
+ -- Russell Coker <russell@coker.com.au>  Mon, 23 Jan 2017 01:55:57 +1100
 
 refpolicy (2:2.20161023.1-7) unstable; urgency=medium
     

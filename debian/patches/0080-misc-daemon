@@ -723,7 +723,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  allow crond_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
  logging_log_filetrans(crond_t, cron_log_t, file)
  
-@@ -340,6 +334,18 @@ ifdef(`distro_debian',`
+@@ -340,6 +334,22 @@ ifdef(`distro_debian',`
  	optional_policy(`
  		logwatch_search_cache_dir(crond_t)
  	')
@@ -731,6 +731,10 @@ Index: refpolicy/policy/modules/contrib/cron.te
 +		apt_manage_cache(system_cronjob_t)
 +		apt_read_db(system_cronjob_t)
 +	')
++')
++
++optional_policy(`
++	acct_manage_data(system_cronjob_t)
 +')
 +
 +optional_policy(`
@@ -742,7 +746,15 @@ Index: refpolicy/policy/modules/contrib/cron.te
  ')
  
  ifdef(`distro_redhat',`
-@@ -440,7 +446,7 @@ optional_policy(`
+@@ -429,6 +439,7 @@ optional_policy(`
+ 	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
+ 	# so cron jobs can restart daemons
+ 	init_stream_connect(system_cronjob_t)
++	initrc_manage_service(system_cronjob_t)
+ ')
+ 
+ optional_policy(`
+@@ -440,14 +451,15 @@ optional_policy(`
  # System local policy
  #
  
@@ -751,7 +763,16 @@ Index: refpolicy/policy/modules/contrib/cron.te
  allow system_cronjob_t self:process { signal_perms getsched setsched };
  allow system_cronjob_t self:fd use;
  allow system_cronjob_t self:fifo_file rw_fifo_file_perms;
-@@ -475,7 +481,8 @@ allow system_cronjob_t crond_t:process s
+ allow system_cronjob_t self:passwd rootok;
+ 
+-allow system_cronjob_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
++allow system_cronjob_t cron_log_t:file manage_file_perms;
+ logging_log_filetrans(system_cronjob_t, cron_log_t, file)
++logging_manage_generic_logs(system_cronjob_t)
+ 
+ allow system_cronjob_t cron_var_lib_t:file { manage_file_perms relabel_file_perms };
+ files_var_lib_filetrans(system_cronjob_t, cron_var_lib_t, file)
+@@ -475,7 +487,8 @@ allow system_cronjob_t crond_t:process s
  allow system_cronjob_t cron_spool_t:dir list_dir_perms;
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
  
@@ -761,7 +782,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  kernel_read_kernel_sysctls(system_cronjob_t)
  kernel_read_network_state(system_cronjob_t)
-@@ -567,6 +574,10 @@ optional_policy(`
+@@ -567,6 +580,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -772,7 +793,7 @@ Index: refpolicy/policy/modules/contrib/cron.te
  	cyrus_manage_data(system_cronjob_t)
  ')
  
-@@ -719,27 +730,3 @@ optional_policy(`
+@@ -719,27 +736,3 @@ optional_policy(`
  	nis_use_ypbind(cronjob_t)
  ')
  
@@ -1439,6 +1460,15 @@ Index: refpolicy/policy/modules/contrib/dovecot.te
  files_search_pids(dovecot_auth_t)
  files_read_usr_files(dovecot_auth_t)
  files_read_var_lib_files(dovecot_auth_t)
+@@ -256,7 +264,7 @@ init_rw_utmp(dovecot_auth_t)
+ 
+ logging_send_audit_msgs(dovecot_auth_t)
+ 
+-seutil_dontaudit_search_config(dovecot_auth_t)
++seutil_search_default_contexts(dovecot_auth_t)
+ 
+ sysnet_use_ldap(dovecot_auth_t)
+ 
 Index: refpolicy/policy/modules/contrib/dkim.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.te
@@ -1551,15 +1581,16 @@ Index: refpolicy/policy/modules/contrib/apache.te
  files_var_lib_filetrans(httpd_t, httpd_var_lib_t, { dir file })
  
  setattr_dirs_pattern(httpd_t, httpd_var_run_t, httpd_var_run_t)
-@@ -464,6 +466,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+@@ -464,6 +466,8 @@ domtrans_pattern(httpd_t, httpd_rotatelo
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
  
  kernel_read_kernel_sysctls(httpd_t)
 +kernel_read_vm_sysctls(httpd_t)
++kernel_read_vm_overcommit_sysctl(httpd_t)
  kernel_read_network_state(httpd_t)
  kernel_read_system_state(httpd_t)
  kernel_search_network_sysctl(httpd_t)
-@@ -594,6 +597,7 @@ tunable_policy(`httpd_builtin_scripting'
+@@ -594,6 +598,7 @@ tunable_policy(`httpd_builtin_scripting'
  tunable_policy(`httpd_enable_cgi',`
  	allow httpd_t httpd_script_domains:process { signal sigkill sigstop };
  	allow httpd_t httpd_script_exec_type:dir list_dir_perms;
@@ -1567,7 +1598,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_enable_cgi && httpd_use_nfs',`
-@@ -741,9 +745,8 @@ tunable_policy(`httpd_use_fusefs && http
+@@ -741,9 +746,8 @@ tunable_policy(`httpd_use_fusefs && http
  
  tunable_policy(`httpd_use_nfs',`
  	fs_list_auto_mountpoints(httpd_t)
@@ -1579,7 +1610,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
-@@ -1067,9 +1070,8 @@ tunable_policy(`httpd_use_fusefs && http
+@@ -1067,9 +1071,8 @@ tunable_policy(`httpd_use_fusefs && http
  
  tunable_policy(`httpd_use_nfs',`
  	fs_list_auto_mountpoints(httpd_suexec_t)
@@ -1591,7 +1622,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
-@@ -1219,6 +1221,7 @@ optional_policy(`
+@@ -1219,6 +1222,7 @@ optional_policy(`
  allow httpd_sys_script_t self:tcp_socket { accept listen };
  
  allow httpd_sys_script_t httpd_t:tcp_socket { read write };
@@ -1599,7 +1630,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  dontaudit httpd_sys_script_t httpd_config_t:dir search;
  
-@@ -1229,6 +1232,7 @@ allow httpd_sys_script_t squirrelmail_sp
+@@ -1229,6 +1233,7 @@ allow httpd_sys_script_t squirrelmail_sp
  allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
@@ -1607,7 +1638,18 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  fs_search_auto_mountpoints(httpd_sys_script_t)
  
-@@ -1294,9 +1298,8 @@ tunable_policy(`httpd_use_fusefs && http
+@@ -1240,6 +1245,10 @@ apache_domtrans_rotatelogs(httpd_sys_scr
+ 
+ auth_use_nsswitch(httpd_sys_script_t)
+ 
++ifdef(`init_systemd', `
++	init_search_pid_dirs(httpd_sys_script_t)
++')
++
+ tunable_policy(`httpd_can_sendmail',`
+ 	corenet_sendrecv_smtp_client_packets(httpd_sys_script_t)
+ 	corenet_tcp_connect_smtp_port(httpd_sys_script_t)
+@@ -1294,9 +1303,8 @@ tunable_policy(`httpd_use_fusefs && http
  
  tunable_policy(`httpd_use_nfs',`
  	fs_list_auto_mountpoints(httpd_sys_script_t)
@@ -2284,11 +2326,24 @@ Index: refpolicy/policy/modules/contrib/iodine.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/iodine.te
 +++ refpolicy/policy/modules/contrib/iodine.te
-@@ -21,6 +21,7 @@ allow iodined_t self:capability { net_ad
+@@ -12,6 +12,9 @@ init_daemon_domain(iodined_t, iodined_ex
+ type iodined_initrc_exec_t;
+ init_script_file(iodined_initrc_exec_t)
+ 
++type iodined_var_run_t;
++files_pid_file(iodined_var_run_t)
++
+ ########################################
+ #
+ # Local policy
+@@ -21,6 +24,10 @@ allow iodined_t self:capability { net_ad
  allow iodined_t self:rawip_socket create_socket_perms;
  allow iodined_t self:tun_socket create_socket_perms;
  allow iodined_t self:udp_socket connected_socket_perms;
 +allow iodined_t self:netlink_route_socket rw_netlink_socket_perms;
++
++manage_dirs_pattern(iodined_t, iodined_var_run_t, iodined_var_run_t)
++manage_files_pattern(iodined_t, iodined_var_run_t, iodined_var_run_t)
  
  kernel_read_net_sysctls(iodined_t)
  kernel_read_network_state(iodined_t)
@@ -2708,7 +2763,16 @@ Index: refpolicy/policy/modules/contrib/postgrey.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postgrey.te
 +++ refpolicy/policy/modules/contrib/postgrey.te
-@@ -55,7 +55,8 @@ files_pid_filetrans(postgrey_t, postgrey
+@@ -34,6 +34,8 @@ dontaudit postgrey_t self:capability sys
+ allow postgrey_t self:process signal_perms;
+ allow postgrey_t self:fifo_file create_fifo_file_perms;
+ allow postgrey_t self:tcp_socket create_stream_socket_perms;
++allow postgrey_t self:netlink_route_socket r_netlink_socket_perms;
++allow postgrey_t self:udp_socket { connect connected_socket_perms };
+ 
+ allow postgrey_t postgrey_etc_t:dir list_dir_perms;
+ allow postgrey_t postgrey_etc_t:file read_file_perms;
+@@ -55,7 +57,8 @@ files_pid_filetrans(postgrey_t, postgrey
  kernel_read_system_state(postgrey_t)
  kernel_read_kernel_sysctls(postgrey_t)
  
@@ -3212,7 +3276,18 @@ Index: refpolicy/policy/modules/contrib/dbus.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dbus.te
 +++ refpolicy/policy/modules/contrib/dbus.te
-@@ -147,6 +147,9 @@ optional_policy(`
+@@ -96,6 +96,10 @@ corecmd_exec_shell(system_dbusd_t)
+ dev_read_urand(system_dbusd_t)
+ dev_read_sysfs(system_dbusd_t)
+ 
++# gdm3 causes system_dbusd_t to want this access
++dev_rw_dri(system_dbusd_t)
++dev_rw_input_dev(system_dbusd_t)
++
+ domain_use_interactive_fds(system_dbusd_t)
+ domain_read_all_domains_state(system_dbusd_t)
+ 
+@@ -147,6 +151,9 @@ optional_policy(`
  	# for /run/systemd/users/*
  	systemd_read_logind_pids(system_dbusd_t)
  	systemd_use_logind_fds(system_dbusd_t)
@@ -3381,7 +3456,22 @@ Index: refpolicy/policy/modules/contrib/samba.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/samba.te
 +++ refpolicy/policy/modules/contrib/samba.te
-@@ -104,8 +104,9 @@ type nmbd_t;
+@@ -6,6 +6,14 @@ policy_module(samba, 1.19.0)
+ #
+ 
+ ## <desc>
++##      <p>
++##      Determine whether smbd_t can
++##      read shadow files.
++##      </p>
++## </desc>
++gen_tunable(allow_smbd_read_shadow, false)
++
++## <desc>
+ ##	<p>
+ ##	Determine whether samba can modify
+ ##	public files used for public file
+@@ -104,8 +112,9 @@ type nmbd_t;
  type nmbd_exec_t;
  init_daemon_domain(nmbd_t, nmbd_exec_t)
  
@@ -3393,7 +3483,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  type samba_etc_t;
  files_config_file(samba_etc_t)
-@@ -151,9 +152,6 @@ files_type(smbd_keytab_t)
+@@ -151,9 +160,6 @@ files_type(smbd_keytab_t)
  type smbd_tmp_t;
  files_tmp_file(smbd_tmp_t)
  
@@ -3403,7 +3493,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  type smbmount_t;
  type smbmount_exec_t;
  application_domain(smbmount_t, smbmount_exec_t)
-@@ -305,16 +303,15 @@ manage_dirs_pattern(smbd_t, smbd_tmp_t,
+@@ -305,16 +311,15 @@ manage_dirs_pattern(smbd_t, smbd_tmp_t,
  manage_files_pattern(smbd_t, smbd_tmp_t, smbd_tmp_t)
  files_tmp_filetrans(smbd_t, smbd_tmp_t, { file dir })
  
@@ -3425,7 +3515,19 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  kernel_getattr_core_if(smbd_t)
  kernel_getattr_message_if(smbd_t)
-@@ -519,11 +516,10 @@ allow nmbd_t self:tcp_socket { accept li
+@@ -377,6 +382,11 @@ auth_domtrans_upd_passwd(smbd_t)
+ auth_manage_cache(smbd_t)
+ auth_write_login_records(smbd_t)
+ 
++auth_can_read_shadow_passwords(smbd_t)
++tunable_policy(`allow_smbd_read_shadow',`
++	auth_tunable_read_shadow(smbd_t)
++')
++
+ init_rw_utmp(smbd_t)
+ 
+ logging_search_logs(smbd_t)
+@@ -519,11 +529,10 @@ allow nmbd_t self:tcp_socket { accept li
  allow nmbd_t self:unix_dgram_socket sendto;
  allow nmbd_t self:unix_stream_socket { accept connectto listen };
  
@@ -3441,7 +3543,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  read_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
  read_lnk_files_pattern(nmbd_t, samba_etc_t, samba_etc_t)
-@@ -542,7 +538,7 @@ files_var_filetrans(nmbd_t, samba_var_t,
+@@ -542,7 +551,7 @@ files_var_filetrans(nmbd_t, samba_var_t,
  
  allow nmbd_t { swat_t smbcontrol_t }:process signal;
  
@@ -3450,7 +3552,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  kernel_getattr_core_if(nmbd_t)
  kernel_getattr_message_if(nmbd_t)
-@@ -567,6 +563,8 @@ corenet_sendrecv_smbd_client_packets(nmb
+@@ -567,6 +576,8 @@ corenet_sendrecv_smbd_client_packets(nmb
  corenet_tcp_connect_smbd_port(nmbd_t)
  corenet_tcp_sendrecv_smbd_port(nmbd_t)
  
@@ -3459,7 +3561,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  dev_read_sysfs(nmbd_t)
  dev_getattr_mtrr_dev(nmbd_t)
  
-@@ -618,7 +616,7 @@ allow smbcontrol_t self:unix_stream_sock
+@@ -618,7 +629,7 @@ allow smbcontrol_t self:unix_stream_sock
  allow smbcontrol_t self:process { signal signull };
  
  allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
@@ -3468,7 +3570,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
  
-@@ -733,8 +731,8 @@ allow swat_t self:unix_stream_socket con
+@@ -733,8 +744,8 @@ allow swat_t self:unix_stream_socket con
  
  allow swat_t { nmbd_t smbd_t }:process { signal signull };
  
@@ -3479,7 +3581,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  rw_files_pattern(swat_t, samba_etc_t, samba_etc_t)
  read_lnk_files_pattern(swat_t, samba_etc_t, samba_etc_t)
-@@ -766,8 +764,8 @@ read_files_pattern(swat_t, winbind_var_r
+@@ -766,8 +777,8 @@ read_files_pattern(swat_t, winbind_var_r
  allow swat_t winbind_var_run_t:dir { add_entry_dir_perms del_entry_dir_perms };
  allow swat_t winbind_var_run_t:sock_file { create_sock_file_perms delete_sock_file_perms };
  
@@ -3490,7 +3592,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  samba_domtrans_smbd(swat_t)
  samba_domtrans_nmbd(swat_t)
-@@ -852,8 +850,8 @@ allow winbind_t self:tcp_socket { accept
+@@ -852,8 +863,8 @@ allow winbind_t self:tcp_socket { accept
  
  allow winbind_t nmbd_t:process { signal signull };
  
@@ -3501,7 +3603,7 @@ Index: refpolicy/policy/modules/contrib/samba.te
  
  allow winbind_t samba_etc_t:dir list_dir_perms;
  read_files_pattern(winbind_t, samba_etc_t, samba_etc_t)
-@@ -885,15 +883,15 @@ manage_files_pattern(winbind_t, winbind_
+@@ -885,15 +896,15 @@ manage_files_pattern(winbind_t, winbind_
  manage_sock_files_pattern(winbind_t, winbind_tmp_t, winbind_tmp_t)
  files_tmp_filetrans(winbind_t, winbind_tmp_t, { file dir })
  
@@ -3597,15 +3699,18 @@ Index: refpolicy/policy/modules/contrib/logrotate.te
  
  mls_file_read_all_levels(logrotate_t)
  mls_file_write_all_levels(logrotate_t)
-@@ -104,6 +105,7 @@ auth_use_nsswitch(logrotate_t)
+@@ -102,8 +103,10 @@ auth_manage_login_records(logrotate_t)
+ auth_use_nsswitch(logrotate_t)
+ 
  init_all_labeled_script_domtrans(logrotate_t)
++init_script_service_restart(logrotate_t)
  init_get_generic_units_status(logrotate_t)
  init_get_all_units_status(logrotate_t)
 +init_get_system_status(logrotate_t)
  init_dbus_chat(logrotate_t)
  init_stream_connect(logrotate_t)
  
-@@ -212,6 +214,7 @@ optional_policy(`
+@@ -212,6 +215,7 @@ optional_policy(`
  optional_policy(`
  	mysql_read_config(logrotate_t)
  	mysql_stream_connect(logrotate_t)
@@ -3662,3 +3767,123 @@ Index: refpolicy/policy/modules/roles/unprivuser.te
  	')
  
  	optional_policy(`
+Index: refpolicy/policy/modules/contrib/iodine.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/iodine.fc
++++ refpolicy/policy/modules/contrib/iodine.fc
+@@ -1,3 +1,4 @@
+ /etc/rc\.d/init\.d/((iodined)|(iodine-server))	--	gen_context(system_u:object_r:iodined_initrc_exec_t,s0)
+ 
+ /usr/sbin/iodined	--	gen_context(system_u:object_r:iodined_exec_t,s0)
++/var/run/iodine(/.*)?		gen_context(system_u:object_r:iodined_var_run_t,s0)
+Index: refpolicy/policy/modules/contrib/squid.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/squid.if
++++ refpolicy/policy/modules/contrib/squid.if
+@@ -236,3 +236,22 @@ interface(`squid_admin',`
+ 	files_list_tmp($1)
+ 	admin_pattern($1, squid_tmp_t)
+ ')
++
++########################################
++## <summary>
++##	dontaudit statting tmpfs files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not be audited
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`squid_dontaudit_tmpfs',`
++	gen_require(`
++		type squid_tmpfs_t;
++	')
++
++	dontaudit $1 squid_tmpfs_t:file getattr;
++')
+Index: refpolicy/policy/modules/system/init.if
+===================================================================
+--- refpolicy.orig/policy/modules/system/init.if
++++ refpolicy/policy/modules/system/init.if
+@@ -3043,7 +3043,7 @@ interface(`init_script_service_restart',
+ 		attribute init_script_file_type;
+ 	')
+ 
+-	allow $1 init_script_file_type:service { start status stop };
++	allow $1 init_script_file_type:service { start status stop reload };
+ ')
+ 
+ ########################################
+Index: refpolicy/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy.orig/policy/modules/kernel/files.if
++++ refpolicy/policy/modules/kernel/files.if
+@@ -433,6 +433,24 @@ interface(`files_tmpfs_file',`
+ 
+ ########################################
+ ## <summary>
++##	Do not audit getattr of /dev/shm files
++## </summary>
++## <param name="type">
++##	<summary>
++##	Domain to not audit
++##	</summary>
++## </param>
++#
++interface(`files_dontaudit_getattr_tmpfs_file',`
++	gen_require(`
++		attribute tmpfsfile;
++	')
++
++	dontaudit $1 tmpfsfile:file getattr;
++')
++
++########################################
++## <summary>
+ ##	Get the attributes of all directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy.orig/policy/modules/system/systemd.te
++++ refpolicy/policy/modules/system/systemd.te
+@@ -331,6 +331,7 @@ dev_rw_dri(systemd_logind_t)
+ dev_manage_wireless(systemd_logind_t)
+ 
+ files_read_etc_files(systemd_logind_t)
++files_dontaudit_getattr_tmpfs_file(systemd_logind_t)
+ 
+ fs_read_efivarfs_files(systemd_logind_t)
+ 
+Index: refpolicy/policy/modules/contrib/networkmanager.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/networkmanager.te
++++ refpolicy/policy/modules/contrib/networkmanager.te
+@@ -227,6 +227,10 @@ optional_policy(`
+ 	optional_policy(`
+ 		policykit_dbus_chat(NetworkManager_t)
+ 	')
++
++	optional_policy(`
++		unconfined_dbus_send(NetworkManager_t)
++	')
+ ')
+ 
+ optional_policy(`
+Index: refpolicy/policy/modules/contrib/cups.if
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/cups.if
++++ refpolicy/policy/modules/contrib/cups.if
+@@ -69,7 +69,9 @@ interface(`cups_stream_connect',`
+ 	')
+ 
+ 	files_search_pids($1)
+-	stream_connect_pattern($1, cupsd_var_run_t, cupsd_var_run_t, cupsd_t)
++        allow $1 cupsd_var_run_t:dir search_dir_perms;
++	allow $1 cupsd_var_run_t:sock_file  { read write_sock_file_perms };
++	allow $1 cupsd_t:unix_stream_socket connectto;
+ ')
+ 
+ ########################################
