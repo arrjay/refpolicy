@@ -1,3 +1,23 @@
+refpolicy (2:2.20161023.1-9) unstable; urgency=medium
+
+  * Dontaudit dkim_milter_t binding to labeled udp ports
+  * Allow passwd_t to inherit fd from unconfined_t for package scripts
+  * Allow httpd_sys_script_t to talk to itself via unix datagrams and send
+    syslog messages
+  * Allow logwatch_mail_t to rw system_cronjob_t pipes
+    Allow logwatch_t to run mdadm
+  * Label /etc/postfixadmin as httpd_config_t
+  * Allow system_cronjob_t to create directories under /tmp
+  * Allow spamass_milter_t to read the overcommit sysctl
+  * Allow unconfined domains the capability2:wake_alarm.
+  * Added ~/DovecotMail to the list of mail_home_rw_t directories
+  * Allow systemd_logind_t to get dpkg_script_t process state and talk to it
+    via dbus
+  * For https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=851933 allow udev_t
+    to read default_t.  Still need that udev bug fixed!
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 26 Jan 2017 00:52:00 +1100
+
 refpolicy (2:2.20161023.1-8) unstable; urgency=medium
 
   * Fixed mistake in previous changelog (attributed a -7 change to -6)

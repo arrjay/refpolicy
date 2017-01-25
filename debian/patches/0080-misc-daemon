@@ -536,7 +536,17 @@ Index: refpolicy/policy/modules/system/udev.te
  
  systemd_read_logind_sessions_files(udev_t)
  init_start_all_units(udev_t)
-@@ -208,6 +215,11 @@ ifdef(`distro_debian',`
+@@ -193,6 +200,9 @@ init_stop_all_units(udev_t)
+ userdom_dontaudit_search_user_home_content(udev_t)
+ 
+ ifdef(`distro_debian',`
++	# for https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=851933
++	files_read_default_files(udev_t)
++
+ 	files_pid_filetrans(udev_t, udev_var_run_t, dir, "xen-hotplug")
+ 
+ 	optional_policy(`
+@@ -208,6 +218,11 @@ ifdef(`distro_debian',`
  	')
  ')
  
@@ -548,7 +558,7 @@ Index: refpolicy/policy/modules/system/udev.te
  ifdef(`distro_gentoo',`
  	# during boot, init scripts use /dev/.rcsysinit
  	# existence to determine if we are in early booting
-@@ -347,6 +359,7 @@ optional_policy(`
+@@ -347,6 +362,7 @@ optional_policy(`
  	kernel_read_xen_state(udev_t)
  	xen_manage_log(udev_t)
  	xen_read_image_files(udev_t)
@@ -772,6 +782,15 @@ Index: refpolicy/policy/modules/contrib/cron.te
  
  allow system_cronjob_t cron_var_lib_t:file { manage_file_perms relabel_file_perms };
  files_var_lib_filetrans(system_cronjob_t, cron_var_lib_t, file)
+@@ -464,7 +476,7 @@ files_lock_filetrans(system_cronjob_t, s
+ manage_files_pattern(system_cronjob_t, crond_tmp_t, system_cronjob_tmp_t)
+ manage_lnk_files_pattern(system_cronjob_t, crond_tmp_t, system_cronjob_tmp_t)
+ filetrans_pattern(system_cronjob_t, crond_tmp_t, system_cronjob_tmp_t, { file lnk_file })
+-files_tmp_filetrans(system_cronjob_t, system_cronjob_tmp_t, file)
++files_tmp_filetrans(system_cronjob_t, system_cronjob_tmp_t, { file dir })
+ 
+ manage_files_pattern(system_cronjob_t, system_cronjob_var_lib_t, system_cronjob_var_lib_t)
+ 
 @@ -475,7 +487,8 @@ allow system_cronjob_t crond_t:process s
  allow system_cronjob_t cron_spool_t:dir list_dir_perms;
  allow system_cronjob_t cron_spool_t:file rw_file_perms;
@@ -968,6 +987,18 @@ Index: refpolicy/policy/modules/contrib/dpkg.te
  allow dpkg_script_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
  allow dpkg_script_t self:fd use;
  allow dpkg_script_t self:fifo_file rw_fifo_file_perms;
+@@ -335,6 +338,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_logind_read_process_state(dpkg_script_t)
++	systemd_dbus_chat_logind(dpkg_script_t)
++')
++
++optional_policy(`
+ 	unconfined_domain(dpkg_script_t)
+ ')
+ 
 Index: refpolicy/policy/modules/kernel/devices.if
 ===================================================================
 --- refpolicy.orig/policy/modules/kernel/devices.if
@@ -1473,7 +1504,7 @@ Index: refpolicy/policy/modules/contrib/dkim.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/dkim.te
 +++ refpolicy/policy/modules/contrib/dkim.te
-@@ -20,16 +20,24 @@ init_daemon_pid_file(dkim_milter_data_t,
+@@ -20,16 +20,25 @@ init_daemon_pid_file(dkim_milter_data_t,
  # Local policy
  #
  
@@ -1500,6 +1531,7 @@ Index: refpolicy/policy/modules/contrib/dkim.te
 +
 +corenet_udp_bind_generic_node(dkim_milter_t)
 +corenet_udp_bind_all_unreserved_ports(dkim_milter_t)
++corenet_dontaudit_udp_bind_all_ports(dkim_milter_t)
 Index: refpolicy/policy/modules/contrib/perdition.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/perdition.fc
@@ -1622,15 +1654,19 @@ Index: refpolicy/policy/modules/contrib/apache.te
  ')
  
  tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
-@@ -1219,6 +1222,7 @@ optional_policy(`
+@@ -1217,8 +1220,11 @@ optional_policy(`
+ #
+ 
  allow httpd_sys_script_t self:tcp_socket { accept listen };
++allow httpd_sys_script_t self:unix_dgram_socket { create connect connected_socket_perms };
++
  
  allow httpd_sys_script_t httpd_t:tcp_socket { read write };
 +allow httpd_sys_script_t httpd_t:unix_stream_socket { read write ioctl };
  
  dontaudit httpd_sys_script_t httpd_config_t:dir search;
  
-@@ -1229,6 +1233,7 @@ allow httpd_sys_script_t squirrelmail_sp
+@@ -1229,6 +1235,7 @@ allow httpd_sys_script_t squirrelmail_sp
  allow httpd_sys_script_t squirrelmail_spool_t:lnk_file read_lnk_file_perms;
  
  kernel_read_kernel_sysctls(httpd_sys_script_t)
@@ -1638,10 +1674,12 @@ Index: refpolicy/policy/modules/contrib/apache.te
  
  fs_search_auto_mountpoints(httpd_sys_script_t)
  
-@@ -1240,6 +1245,10 @@ apache_domtrans_rotatelogs(httpd_sys_scr
+@@ -1240,6 +1247,12 @@ apache_domtrans_rotatelogs(httpd_sys_scr
  
  auth_use_nsswitch(httpd_sys_script_t)
  
++logging_send_syslog_msg(httpd_sys_script_t)
++
 +ifdef(`init_systemd', `
 +	init_search_pid_dirs(httpd_sys_script_t)
 +')
@@ -1649,7 +1687,7 @@ Index: refpolicy/policy/modules/contrib/apache.te
  tunable_policy(`httpd_can_sendmail',`
  	corenet_sendrecv_smtp_client_packets(httpd_sys_script_t)
  	corenet_tcp_connect_smtp_port(httpd_sys_script_t)
-@@ -1294,9 +1303,8 @@ tunable_policy(`httpd_use_fusefs && http
+@@ -1294,9 +1307,8 @@ tunable_policy(`httpd_use_fusefs && http
  
  tunable_policy(`httpd_use_nfs',`
  	fs_list_auto_mountpoints(httpd_sys_script_t)
@@ -1806,18 +1844,19 @@ Index: refpolicy/policy/modules/contrib/milter.te
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/milter.te
 +++ refpolicy/policy/modules/contrib/milter.te
-@@ -94,8 +94,10 @@ mta_read_config(regex_milter_t)
+@@ -94,8 +94,11 @@ mta_read_config(regex_milter_t)
  #
  
  allow spamass_milter_t spamass_milter_state_t:dir search_dir_perms;
 +allow spamass_milter_t self:process sigkill;
  
  kernel_read_system_state(spamass_milter_t)
++kernel_read_vm_overcommit_sysctl(spamass_milter_t)
 +dev_read_sysfs(spamass_milter_t)
  
  corecmd_exec_shell(spamass_milter_t)
  
-@@ -106,3 +108,7 @@ mta_send_mail(spamass_milter_t)
+@@ -106,3 +109,7 @@ mta_send_mail(spamass_milter_t)
  optional_policy(`
  	spamassassin_domtrans_client(spamass_milter_t)
  ')
@@ -1941,10 +1980,20 @@ Index: refpolicy/policy/modules/system/unconfined.if
 ===================================================================
 --- refpolicy.orig/policy/modules/system/unconfined.if
 +++ refpolicy/policy/modules/system/unconfined.if
-@@ -323,6 +323,23 @@ interface(`unconfined_run_to',`
+@@ -21,7 +21,7 @@ interface(`unconfined_domain_noaudit',`
+ 
+ 	# Use most Linux capabilities
+ 	allow $1 self:capability ~sys_module;
+-	allow $1 self:capability2 syslog;
++	allow $1 self:capability2 { syslog wake_alarm };
+ 	allow $1 self:fifo_file manage_fifo_file_perms;
+ 
+ 	# Transition to myself, to make get_ordered_context_list happy.
+@@ -322,6 +322,23 @@ interface(`unconfined_run_to',`
+ ')
  
  ########################################
- ## <summary>
++## <summary>
 +##	Allow the specified domain to be in the unconfined role
 +## </summary>
 +## <param name="domain">
@@ -1961,10 +2010,9 @@ Index: refpolicy/policy/modules/system/unconfined.if
 +')
 +
 +########################################
-+## <summary>
+ ## <summary>
  ##	Inherit file descriptors from the unconfined domain.
  ## </summary>
- ## <param name="domain">
 Index: refpolicy/policy/modules/contrib/xen.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/xen.fc
@@ -1996,7 +2044,15 @@ Index: refpolicy/policy/modules/contrib/apache.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/apache.fc
 +++ refpolicy/policy/modules/contrib/apache.fc
-@@ -56,6 +56,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
+@@ -17,6 +17,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
+ /etc/httpd/modules	gen_context(system_u:object_r:httpd_modules_t,s0)
+ /etc/lighttpd(/.*)?	gen_context(system_u:object_r:httpd_config_t,s0)
+ /etc/mock/koji(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
++/etc/postfixadmin(/.*)?	gen_context(system_u:object_r:httpd_config_t,s0)
+ /etc/z-push(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ 
+ /etc/rc\.d/init\.d/cherokee	--	gen_context(system_u:object_r:httpd_initrc_exec_t,s0)
+@@ -56,6 +57,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
  /usr/libexec/httpd-ssl-pass-dialog	--	gen_context(system_u:object_r:httpd_passwd_exec_t,s0)
  
  /usr/sbin/apache(2)?	--	gen_context(system_u:object_r:httpd_exec_t,s0)
@@ -2004,7 +2060,7 @@ Index: refpolicy/policy/modules/contrib/apache.fc
  /usr/sbin/apache-ssl(2)?	--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/cgi-wrapper	--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/cherokee	--	gen_context(system_u:object_r:httpd_exec_t,s0)
-@@ -111,6 +112,7 @@ ifdef(`distro_suse',`
+@@ -111,6 +113,7 @@ ifdef(`distro_suse',`
  /var/lib/cherokee(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
  /var/lib/dav(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
  /var/lib/php(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
@@ -2012,7 +2068,7 @@ Index: refpolicy/policy/modules/contrib/apache.fc
  /var/lib/dokuwiki(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/drupal.*	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/glpi(/.*)?	gen_context(system_u:object_r:httpd_var_lib_t,s0)
-@@ -125,6 +127,7 @@ ifdef(`distro_suse',`
+@@ -125,6 +128,7 @@ ifdef(`distro_suse',`
  /var/lib/stickshift/.httpd.d(/.*)?	gen_context(system_u:object_r:httpd_config_t,s0)
  /var/lib/svn(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/trac(/.*)?	gen_context(system_u:object_r:httpd_sys_content_t,s0)
@@ -2825,13 +2881,14 @@ Index: refpolicy/policy/modules/admin/usermanage.te
 ===================================================================
 --- refpolicy.orig/policy/modules/admin/usermanage.te
 +++ refpolicy/policy/modules/admin/usermanage.te
-@@ -360,6 +360,11 @@ optional_policy(`
+@@ -360,6 +360,12 @@ optional_policy(`
  	nscd_run(passwd_t, passwd_roles)
  ')
  
 +optional_policy(`
 +	# for dpkg to create users
 +	permit_in_unconfined_r(passwd_t)
++	unconfined_use_fds(passwd_t)
 +')
 +
  ########################################
@@ -2979,7 +3036,11 @@ Index: refpolicy/policy/modules/contrib/postfix.fc
 ===================================================================
 --- refpolicy.orig/policy/modules/contrib/postfix.fc
 +++ refpolicy/policy/modules/contrib/postfix.fc
-@@ -4,20 +4,20 @@
+@@ -1,23 +1,23 @@
+-/etc/postfix.*	gen_context(system_u:object_r:postfix_etc_t,s0)
++/etc/postfix(/.*)?			gen_context(system_u:object_r:postfix_etc_t,s0)
+ /etc/postfix/postfix-script.*	--	gen_context(system_u:object_r:postfix_exec_t,s0)
+ /etc/postfix/prng_exch	--	gen_context(system_u:object_r:postfix_prng_t,s0)
  
  /etc/rc\.d/init\.d/postfix	--	gen_context(system_u:object_r:postfix_initrc_exec_t,s0)
  
@@ -3887,3 +3948,36 @@ Index: refpolicy/policy/modules/contrib/cups.if
  ')
  
  ########################################
+Index: refpolicy/policy/modules/contrib/logwatch.te
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/logwatch.te
++++ refpolicy/policy/modules/contrib/logwatch.te
+@@ -160,6 +160,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	raid_domtrans_mdadm(logwatch_t)
++')
++
++optional_policy(`
+ 	rpc_search_nfs_state_data(logwatch_t)
+ ')
+ 
+@@ -189,4 +193,5 @@ logging_read_all_logs(logwatch_mail_t)
+ 
+ optional_policy(`
+ 	cron_use_system_job_fds(logwatch_mail_t)
++	cron_rw_system_job_pipes(logwatch_mail_t)
+ ')
+Index: refpolicy/policy/modules/contrib/mta.fc
+===================================================================
+--- refpolicy.orig/policy/modules/contrib/mta.fc
++++ refpolicy/policy/modules/contrib/mta.fc
+@@ -3,6 +3,7 @@ HOME_DIR/\.forward[^/]*	--	gen_context(s
+ HOME_DIR/dead\.letter	--	gen_context(system_u:object_r:mail_home_t,s0)
+ HOME_DIR/\.mailrc	--	gen_context(system_u:object_r:mail_home_t,s0)
+ HOME_DIR/Maildir(/.*)?	gen_context(system_u:object_r:mail_home_rw_t,s0)
++HOME_DIR/DovecotMail(/.*)?	gen_context(system_u:object_r:mail_home_rw_t,s0)
+ HOME_DIR/\.maildir(/.*)?	gen_context(system_u:object_r:mail_home_rw_t,s0)
+ 
+ /bin/mail(x)?	--	gen_context(system_u:object_r:sendmail_exec_t,s0)
