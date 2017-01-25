@@ -1,0 +1,86 @@
+# Derived from Nicolas Iooss: https://github.com/fishilico/selinux-refpolicy-patched/blob/travis-upstream/.travis.yml
+
+language: generic
+
+env:
+  - TYPE=standard DISTRO=redhat MONOLITHIC=y SYSTEMD=y
+  - TYPE=standard DISTRO=redhat MONOLITHIC=n SYSTEMD=y
+  - TYPE=standard DISTRO=debian MONOLITHIC=y SYSTEMD=y
+  - TYPE=standard DISTRO=debian MONOLITHIC=n SYSTEMD=y
+  - TYPE=standard DISTRO=gentoo MONOLITHIC=y SYSTEMD=n
+  - TYPE=standard DISTRO=gentoo MONOLITHIC=n SYSTEMD=n
+  - TYPE=mcs DISTRO=redhat MONOLITHIC=y SYSTEMD=y
+  - TYPE=mcs DISTRO=redhat MONOLITHIC=n SYSTEMD=y
+  - TYPE=mcs DISTRO=debian MONOLITHIC=y SYSTEMD=y
+  - TYPE=mcs DISTRO=debian MONOLITHIC=n SYSTEMD=y
+  - TYPE=mcs DISTRO=gentoo MONOLITHIC=y SYSTEMD=n
+  - TYPE=mcs DISTRO=gentoo MONOLITHIC=n SYSTEMD=n
+  - TYPE=mls DISTRO=redhat MONOLITHIC=y SYSTEMD=y
+  - TYPE=mls DISTRO=redhat MONOLITHIC=n SYSTEMD=y
+  - TYPE=mls DISTRO=debian MONOLITHIC=y SYSTEMD=y
+  - TYPE=mls DISTRO=debian MONOLITHIC=n SYSTEMD=y
+  - TYPE=mls DISTRO=gentoo MONOLITHIC=y SYSTEMD=n
+  - TYPE=mls DISTRO=gentoo MONOLITHIC=n SYSTEMD=n
+
+# Uncomment to use Travis-CI container infrastructure (https://docs.travis-ci.com/user/ci-environment/)
+#sudo: false
+
+# Uncomment these two lines to use Travis-CI Trusty Beta environment
+#sudo: required
+#dist: trusty
+
+addons:
+  apt:
+    packages:
+    # Install SELinux userspace utilities dependencies
+    - bison
+    - flex
+    - gettext
+    - libaudit-dev
+    - libbz2-dev
+    - libustr-dev
+    - libpcre3-dev
+    - swig
+
+install:
+  - lsb_release -a
+  - bison -V
+  - flex -V
+
+  # Download current SELinux userspace tools and libraries
+  - curl -sS -L https://github.com/SELinuxProject/selinux/archive/20160223.tar.gz | tar xz
+  - mv selinux-20160223 selinux-src
+
+  # Ubuntu 12.04 coreutils is too old to provide "ln --relative" :(
+  - sed 's/ln -sf --relative /ln -sf /' -i selinux-src/libsepol/src/Makefile
+  - sed 's/ln -sf --relative /ln -sf /' -i selinux-src/libselinux/src/Makefile
+
+  # Drop secilc to break xmlto dependence (secilc isn't used here anyway)
+  - sed -i -e 's/secilc//' selinux-src/Makefile
+
+  # Drop sepolicy to break setools dependence (sepolicy isn't used anyway)
+  - sed -i -e 's/sepolicy//' selinux-src/policycoreutils/Makefile
+
+  # Drop restorecond to break glib dependence
+  - sed -i -e 's/ restorecond//' selinux-src/policycoreutils/Makefile
+
+  # Drop sandbox to break libcap-ng dependence
+  - sed -i -e 's/ sandbox//' selinux-src/policycoreutils/Makefile
+
+  # Compile and install SELinux toolchain into ~/selinux
+  # On Ubuntu 12.04, default CFLAGS make the build fail in libsepol/cil with:
+  #    error: declaration of 'index' shadows a global declarationo
+  - make "DESTDIR=$HOME/selinux" CFLAGS="-O2 -pipe -fPIC -Wall -I$HOME/selinux/usr/include" -C selinux-src install
+
+  # Use TEST_TOOLCHAIN variable to tell refpolicy Makefile about the installed location
+  - export TEST_TOOLCHAIN="$HOME/selinux"
+
+  # Drop build.conf settings to listen to env vars
+  - sed -r -i -e '/(MONOLITHIC|TYPE|DISTRO|SYSTEMD)/d' build.conf
+
+script:
+  - echo $TYPE $DISTRO $MONOLITHIC
+  - make bare
+  - make conf
+  - make
+  - make validate
