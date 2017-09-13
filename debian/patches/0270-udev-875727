@@ -1,0 +1,23 @@
+Index: refpolicy-2.20161023.1/policy/modules/system/udev.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/system/udev.te
++++ refpolicy-2.20161023.1/policy/modules/system/udev.te
+@@ -93,11 +93,18 @@ modutils_read_module_objects(udev_t)
+ # systemd-udevd needs kernel_load_module and files_read_kernel_modules
+ kernel_load_module(udev_t)
+ files_read_kernel_modules(udev_t)
++
++init_dbus_chat(udev_t)
++init_get_generic_units_status(udev_t)
++
+ # systemd-udevd searches /run/systemd
+ init_search_pid_dirs(udev_t)
++
+ # for hdparm init script run by udev
+ initrc_service_status(udev_t)
+ 
++init_stream_connect(udev_t)
++
+ kernel_getattr_core_if(udev_t)
+ kernel_use_fds(udev_t)
+ kernel_read_device_sysctls(udev_t)

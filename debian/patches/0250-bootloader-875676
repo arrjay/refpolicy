@@ -1,0 +1,213 @@
+Index: refpolicy-2.20161023.1/policy/modules/admin/bootloader.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/admin/bootloader.fc
++++ refpolicy-2.20161023.1/policy/modules/admin/bootloader.fc
+@@ -10,3 +10,4 @@
+ /usr/sbin/grub2?-install	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/sbin/grub2?-mkconfig	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/sbin/grub2?-probe	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
++/var/lib/os-prober(/.*)?	gen_context(system_u:object_r:bootloader_tmp_t,s0)
+Index: refpolicy-2.20161023.1/policy/modules/admin/bootloader.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/admin/bootloader.te
++++ refpolicy-2.20161023.1/policy/modules/admin/bootloader.te
+@@ -68,6 +68,9 @@ kernel_read_kernel_sysctls(bootloader_t)
+ # for grub-probe
+ kernel_request_load_module(bootloader_t)
+ 
++# for grub-mount
++kernel_search_debugfs(bootloader_t)
++
+ storage_raw_read_fixed_disk(bootloader_t)
+ storage_raw_write_fixed_disk(bootloader_t)
+ storage_raw_read_removable_device(bootloader_t)
+@@ -85,6 +88,7 @@ dev_rw_nvram(bootloader_t)
+ fs_getattr_xattr_fs(bootloader_t)
+ fs_getattr_tmpfs(bootloader_t)
+ fs_read_tmpfs_symlinks(bootloader_t)
++fs_unmount_xattr_fs(bootloader_t)
+ #Needed for ia64
+ fs_manage_dos_files(bootloader_t)
+ 
+@@ -138,6 +142,7 @@ userdom_dontaudit_search_user_home_dirs(
+ 
+ ifdef(`distro_debian',`
+ 	allow bootloader_t bootloader_tmp_t:{ dir file } { relabelfrom relabelto };
++	allow bootloader_t bootloader_tmp_t:dir mounton;
+ 	fs_list_tmpfs(bootloader_t)
+ 
+ 	files_relabel_kernel_modules(bootloader_t)
+@@ -148,15 +153,30 @@ ifdef(`distro_debian',`
+ 	# for /usr/share/initrd-tools/scripts
+ 	files_exec_usr_files(bootloader_t)
+ 
++	files_search_mnt(bootloader_t)
++	fs_mount_fusefs(bootloader_t)
++	fs_mounton_fusefs(bootloader_t)
++	fs_read_fusefs_symlinks(bootloader_t)
++	fs_read_fusefs_files(bootloader_t)
++	fs_stat_fusefs(bootloader_t)
++	fs_unmount_fusefs(bootloader_t)
++
+ 	fstools_manage_entry_files(bootloader_t)
+ 	fstools_relabelto_entry_files(bootloader_t)
++	fstools_manage_runfile(bootloader_t)
+ 
+ 	libs_relabelto_lib_files(bootloader_t)
+ 
++	mount_rw_runfiles(bootloader_t)
++
+ 	# for apt-cache
+ 	dpkg_read_db(bootloader_t)
++	dpkg_rw_pipes(bootloader_t)
+ 	apt_read_db(bootloader_t)
+ 	apt_read_cache(bootloader_t)
++
++	storage_rw_fuse(bootloader_t)
++	udev_read_pid_files(bootloader_t)
+ ')
+ 
+ ifdef(`distro_redhat',`
+@@ -214,5 +234,9 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	raid_manage_mdadm_pid(bootloader_t)
++')
++
++optional_policy(`
+ 	rpm_rw_pipes(bootloader_t)
+ ')
+Index: refpolicy-2.20161023.1/policy/modules/admin/bootloader.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/admin/bootloader.if
++++ refpolicy-2.20161023.1/policy/modules/admin/bootloader.if
+@@ -141,3 +141,21 @@ interface(`bootloader_create_runtime_fil
+ 	allow $1 boot_runtime_t:file { create_file_perms rw_file_perms };
+ 	files_boot_filetrans($1, boot_runtime_t, file)
+ ')
++
++########################################
++## <summary>
++##	allow bootloader to send sigchld to domain
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`bootloader_send_sigchld',`
++	gen_require(`
++		type bootloader_t;
++	')
++
++	allow bootloader_t $1:process sigchld;
++')
+Index: refpolicy-2.20161023.1/policy/modules/contrib/dpkg.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/dpkg.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/dpkg.te
+@@ -337,6 +337,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	bootloader_run(dpkg_script_t, dpkg_roles)
++	bootloader_send_sigchld(dpkg_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20161023.1/policy/modules/kernel/filesystem.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20161023.1/policy/modules/kernel/filesystem.if
+@@ -1988,6 +1988,24 @@ interface(`fs_read_eventpollfs',`
+ 
+ ########################################
+ ## <summary>
++##     stat a FUSE filesystem
++## </summary>
++## <param name="domain">
++##     <summary>
++##     Domain allowed access.
++##     </summary>
++## </param>
++#
++interface(`fs_stat_fusefs',`
++	gen_require(`
++		type fusefs_t;
++	')
++
++	allow $1 fusefs_t:filesystem getattr;
++')
++
++########################################
++## <summary>
+ ##	Mount a FUSE filesystem.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20161023.1/policy/modules/contrib/raid.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/raid.if
++++ refpolicy-2.20161023.1/policy/modules/contrib/raid.if
+@@ -63,6 +63,7 @@ interface(`raid_manage_mdadm_pid',`
+ 	')
+ 
+ 	files_search_pids($1)
++	allow $1 mdadm_var_run_t:dir search;
+ 	allow $1 mdadm_var_run_t:file manage_file_perms;
+ ')
+ 
+Index: refpolicy-2.20161023.1/policy/modules/system/fstools.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/system/fstools.if
++++ refpolicy-2.20161023.1/policy/modules/system/fstools.if
+@@ -190,3 +190,22 @@ interface(`fstools_write_log',`
+ 
+ 	allow $1 fsadm_log_t:file write_file_perms;
+ ')
++
++########################################
++## <summary>
++##	rw fsadm_run_t
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`fstools_manage_runfile',`
++	gen_require(`
++		type fsadm_run_t;
++	')
++
++	allow $1 fsadm_run_t:dir rw_dir_perms;
++	allow $1 fsadm_run_t:file manage_file_perms;
++')
+Index: refpolicy-2.20161023.1/policy/modules/system/mount.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/system/mount.if
++++ refpolicy-2.20161023.1/policy/modules/system/mount.if
+@@ -227,3 +227,22 @@ interface(`stat_mount_var_run',`
+ 
+ 	allow $1 mount_var_run_t:file getattr;
+ ')
++
++########################################
++## <summary>
++##	rw mount_var_run_t files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`mount_rw_runfiles',`
++	gen_require(`
++		type mount_var_run_t;
++	')
++
++	allow $1 mount_var_run_t:dir search;
++	allow $1 mount_var_run_t:file rw_file_perms;
++')

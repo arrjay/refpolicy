@@ -1,0 +1,243 @@
+Index: refpolicy-2.20161023.1/policy/modules/contrib/pulseaudio.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/pulseaudio.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/pulseaudio.te
+@@ -212,6 +212,12 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	# when pulseaudio is run from a user session on systems it uses files
++	# under /run/systemd/users
++	systemd_read_logind_pids(pulseaudio_t)
++')
++
++optional_policy(`
+ 	udev_read_pid_files(pulseaudio_t)
+ 	udev_read_state(pulseaudio_t)
+ 	udev_read_db(pulseaudio_t)
+Index: refpolicy-2.20161023.1/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20161023.1/policy/modules/system/userdomain.if
+@@ -66,7 +66,9 @@ template(`userdom_base_user_template',`
+ 	# avoid annoying messages on terminal hangup on role change
+ 	dontaudit $1_t user_tty_device_t:chr_file ioctl;
+ 
++	kernel_read_crypto_sysctls($1_t)
+ 	kernel_read_kernel_sysctls($1_t)
++	kernel_read_vm_overcommit_sysctl($1_t)
+ 	kernel_read_vm_sysctls($1_t)
+ 	kernel_dontaudit_list_unlabeled($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_files($1_t)
+Index: refpolicy-2.20161023.1/policy/modules/contrib/courier.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/courier.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/courier.te
+@@ -188,6 +188,8 @@ miscfiles_read_localization(courier_tcpd
+ 
+ kernel_read_kernel_sysctls(courier_sqwebmail_t)
+ 
++dev_read_urand(courier_sqwebmail_t)
++
+ optional_policy(`
+ 	cron_system_entry(courier_sqwebmail_t, courier_sqwebmail_exec_t)
+ ')
+Index: refpolicy-2.20161023.1/policy/modules/contrib/apache.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/apache.fc
++++ refpolicy-2.20161023.1/policy/modules/contrib/apache.fc
+@@ -86,6 +86,7 @@ ifdef(`distro_suse',`
+ /usr/share/mythtv/data(/.*)?	gen_context(system_u:object_r:httpd_sys_content_t,s0)
+ /usr/share/ntop/html(/.*)?	gen_context(system_u:object_r:httpd_sys_content_t,s0)
+ /usr/share/openca/htdocs(/.*)?	gen_context(system_u:object_r:httpd_sys_content_t,s0)
++/usr/share/postfixadmin/templates_c(/.*)?	gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ /usr/share/selinux-policy[^/]*/html(/.*)?	gen_context(system_u:object_r:httpd_sys_content_t,s0)
+ /usr/share/wordpress/.*\.php	--	gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
+ /usr/share/wordpress-mu/wp-config\.php	--	gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
+Index: refpolicy-2.20161023.1/policy/modules/contrib/cron.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/cron.if
++++ refpolicy-2.20161023.1/policy/modules/contrib/cron.if
+@@ -770,10 +770,31 @@ interface(`cron_read_system_job_tmp_file
+ 	')
+ 
+ 	files_search_tmp($1)
++	allow $1 system_cronjob_tmp_t:dir search_dir_perms;
+ 	allow $1 system_cronjob_tmp_t:file read_file_perms;
+ ')
+ 
+ ########################################
++## <summary>
++##	Read/write system cron job temporary files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`cron_rw_system_job_tmp_files',`
++	gen_require(`
++		type system_cronjob_tmp_t;
++	')
++
++	files_search_tmp($1)
++	allow $1 system_cronjob_tmp_t:dir search_dir_perms;
++	allow $1 system_cronjob_tmp_t:file rw_file_perms;
++')
++
++########################################
+ ## <summary>
+ ##	Do not audit attempts to append temporary
+ ##	system cron job files.
+Index: refpolicy-2.20161023.1/policy/modules/contrib/gpg.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/gpg.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/gpg.te
+@@ -98,6 +98,7 @@ gpg_stream_connect_agent(gpg_t)
+ domtrans_pattern(gpg_t, gpg_agent_exec_t, gpg_agent_t)
+ domtrans_pattern(gpg_t, gpg_helper_exec_t, gpg_helper_t)
+ 
++kernel_read_crypto_sysctls(gpg_t)
+ kernel_read_sysctl(gpg_t)
+ 
+ corecmd_exec_shell(gpg_t)
+@@ -171,6 +172,7 @@ optional_policy(`
+ optional_policy(`
+ 	cron_system_entry(gpg_t, gpg_exec_t)
+ 	cron_read_system_job_tmp_files(gpg_t)
++	cron_rw_system_job_tmp_files(gpg_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20161023.1/policy/modules/contrib/dpkg.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/dpkg.fc
++++ refpolicy-2.20161023.1/policy/modules/contrib/dpkg.fc
+@@ -4,6 +4,7 @@
+ /usr/bin/dpkg	--	gen_context(system_u:object_r:dpkg_exec_t,s0)
+ /usr/bin/dselect	--	gen_context(system_u:object_r:dpkg_exec_t,s0)
+ 
++/var/lib/debtags(/.*)?	gen_context(system_u:object_r:dpkg_var_lib_t,s0)
+ /var/lib/dpkg(/.*)?	gen_context(system_u:object_r:dpkg_var_lib_t,s0)
+ /var/lib/dpkg/(meth)?lock	--	gen_context(system_u:object_r:dpkg_lock_t,s0)
+ 
+Index: refpolicy-2.20161023.1/policy/modules/contrib/cron.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/cron.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/cron.te
+@@ -337,6 +337,7 @@ ifdef(`distro_debian',`
+ 	optional_policy(`
+ 		apt_manage_cache(system_cronjob_t)
+ 		apt_read_db(system_cronjob_t)
++		dpkg_manage_db(system_cronjob_t)
+ 	')
+ ')
+ 
+@@ -477,6 +478,7 @@ manage_files_pattern(system_cronjob_t, c
+ manage_lnk_files_pattern(system_cronjob_t, crond_tmp_t, system_cronjob_tmp_t)
+ filetrans_pattern(system_cronjob_t, crond_tmp_t, system_cronjob_tmp_t, { file lnk_file })
+ files_tmp_filetrans(system_cronjob_t, system_cronjob_tmp_t, { file dir })
++allow system_cronjob_t system_cronjob_tmp_t:dir manage_dir_perms;
+ 
+ manage_files_pattern(system_cronjob_t, system_cronjob_var_lib_t, system_cronjob_var_lib_t)
+ 
+Index: refpolicy-2.20161023.1/policy/modules/contrib/apt.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/apt.fc
++++ refpolicy-2.20161023.1/policy/modules/contrib/apt.fc
+@@ -14,6 +14,7 @@ ifndef(`distro_redhat',`
+ 
+ /var/lib/apt(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
+ /var/lib/aptitude(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
++/var/lib/apt-xapian-inde(x)(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
+ 
+ /var/lock/aptitude	gen_context(system_u:object_r:apt_lock_t,s0)
+ 
+Index: refpolicy-2.20161023.1/policy/modules/contrib/dkim.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/dkim.fc
++++ refpolicy-2.20161023.1/policy/modules/contrib/dkim.fc
+@@ -1,4 +1,5 @@
+ /etc/opendkim/keys(/.*)?	gen_context(system_u:object_r:dkim_milter_private_key_t,s0)
++/etc/dkimkeys(/.*)?	gen_context(system_u:object_r:dkim_milter_private_key_t,s0)
+ 
+ /etc/rc\.d/init\.d/((opendkim)|(dkim-milter))	--	gen_context(system_u:object_r:dkim_milter_initrc_exec_t,s0)
+ 
+Index: refpolicy-2.20161023.1/policy/modules/contrib/dkim.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/dkim.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/dkim.te
+@@ -35,6 +35,7 @@ dev_read_sysfs(dkim_milter_t)
+ 
+ dev_read_urand(dkim_milter_t)
+ 
++files_read_usr_files(dkim_milter_t)
+ files_search_spool(dkim_milter_t)
+ 
+ mta_read_config(dkim_milter_t)
+Index: refpolicy-2.20161023.1/policy/modules/contrib/mailman.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/mailman.fc
++++ refpolicy-2.20161023.1/policy/modules/contrib/mailman.fc
+@@ -1,6 +1,7 @@
+ /etc/cron\.(daily|monthly)/mailman	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
+ 
+ /etc/mailman.*	gen_context(system_u:object_r:mailman_data_t,s0)
++/etc/mailman/postfix-to-mailman\.py --	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+ 
+ /usr/lib/mailman/bin/mailmanctl	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+ /usr/lib/mailman/bin/mm-handler.*	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+Index: refpolicy-2.20161023.1/policy/modules/contrib/dpkg.if
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/dpkg.if
++++ refpolicy-2.20161023.1/policy/modules/contrib/dpkg.if
+@@ -242,3 +242,23 @@ interface(`dpkg_lock_db',`
+ 	allow $1 dpkg_var_lib_t:dir list_dir_perms;
+ 	allow $1 dpkg_lock_t:file manage_file_perms;
+ ')
++
++########################################
++## <summary>
++##	manage dpkg_tmp_t files and dirs
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dpkg_manage_tmp_files',`
++	gen_require(`
++		type dpkg_tmp_t;
++	')
++
++	files_search_tmp($1)
++	allow $1 dpkg_tmp_t:dir manage_dir_perms;
++	allow $1 dpkg_tmp_t:file manage_file_perms;
++')
+Index: refpolicy-2.20161023.1/policy/modules/contrib/dpkg.te
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/contrib/dpkg.te
++++ refpolicy-2.20161023.1/policy/modules/contrib/dpkg.te
+@@ -68,6 +68,8 @@ allow dpkg_t self:msgq create_msgq_perms
+ allow dpkg_t self:msg { send receive };
+ 
+ allow dpkg_t dpkg_lock_t:file manage_file_perms;
++corecmd_bin_domtrans(dpkg_t, dpkg_script_t)
++corecmd_bin_entry_type(dpkg_script_t)
+ 
+ manage_dirs_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
+ manage_files_pattern(dpkg_t, dpkg_tmp_t, dpkg_tmp_t)
+Index: refpolicy-2.20161023.1/policy/modules/kernel/corecommands.fc
+===================================================================
+--- refpolicy-2.20161023.1.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20161023.1/policy/modules/kernel/corecommands.fc
+@@ -129,6 +129,7 @@ ifdef(`distro_debian',`
+ # /lib
+ #
+ 
++/usr/lib/bridge-utils/.*\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/nut/.*			--	gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/readahead(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/security/pam_krb5/pam_krb5_storetmp -- gen_context(system_u:object_r:bin_t,s0)
