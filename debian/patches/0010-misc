@@ -1,0 +1,268 @@
+Index: refpolicy-2.20171228/policy/modules/system/logging.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/logging.te
++++ refpolicy-2.20171228/policy/modules/system/logging.te
+@@ -257,7 +257,7 @@ corecmd_exec_shell(audisp_t)
+ 
+ domain_use_interactive_fds(audisp_t)
+ 
+-files_read_etc_files(audisp_t)
++files_map_etc_files(audisp_t)
+ files_read_etc_runtime_files(audisp_t)
+ 
+ mls_file_write_all_levels(audisp_t)
+@@ -418,6 +418,8 @@ files_pid_filetrans(syslogd_t, syslogd_t
+ # manage temporary files
+ manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
+ manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
++allow syslogd_t syslogd_tmp_t:file map;
++
+ files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
+ 
+ manage_files_pattern(syslogd_t, syslogd_var_lib_t, syslogd_var_lib_t)
+@@ -426,6 +428,8 @@ files_search_var_lib(syslogd_t)
+ 
+ # manage pid file
+ manage_files_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
++allow syslogd_t syslogd_var_run_t:file map;
++
+ files_pid_filetrans(syslogd_t, syslogd_var_run_t, file)
+ allow syslogd_t syslogd_var_run_t:dir create_dir_perms;
+ 
+Index: refpolicy-2.20171228/policy/modules/system/lvm.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/lvm.te
++++ refpolicy-2.20171228/policy/modules/system/lvm.te
+@@ -211,6 +211,8 @@ manage_sock_files_pattern(lvm_t, lvm_var
+ files_pid_filetrans(lvm_t, lvm_var_run_t, { file sock_file })
+ 
+ read_files_pattern(lvm_t, lvm_etc_t, lvm_etc_t)
++allow lvm_t lvm_etc_t:file map;
++
+ read_lnk_files_pattern(lvm_t, lvm_etc_t, lvm_etc_t)
+ # Write to /etc/lvm, /etc/lvmtab, /etc/lvmtab.d
+ manage_files_pattern(lvm_t, lvm_metadata_t, lvm_metadata_t)
+Index: refpolicy-2.20171228/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20171228/policy/modules/system/authlogin.if
+@@ -823,6 +823,25 @@ interface(`auth_append_lastlog',`
+ 
+ #######################################
+ ## <summary>
++##	relabel the last logins log.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_relabel_lastlog',`
++	gen_require(`
++		type lastlog_t;
++	')
++
++	logging_search_logs($1)
++	allow $1 lastlog_t:file { relabelfrom relabelto };
++')
++
++#######################################
++## <summary>
+ ##	Read and write to the last logins log.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20171228/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20171228/policy/modules/system/systemd.if
+@@ -366,6 +366,7 @@ interface(`systemd_manage_journal_files'
+ 
+ 	manage_dirs_pattern($1, systemd_journal_t, systemd_journal_t)
+ 	manage_files_pattern($1, systemd_journal_t, systemd_journal_t)
++	allow $1 systemd_journal_t:file map;
+ ')
+ 
+ 
+Index: refpolicy-2.20171228/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20171228/policy/modules/system/systemd.te
+@@ -888,9 +888,11 @@ allow systemd_tmpfiles_t systemd_journal
+ allow systemd_tmpfiles_t systemd_tmpfiles_conf_t:dir list_dir_perms;
+ allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:file read_file_perms;
+ 
++kernel_getattr_proc(systemd_tmpfiles_t)
+ kernel_read_kernel_sysctls(systemd_tmpfiles_t)
+ kernel_read_network_state(systemd_tmpfiles_t)
+ 
++dev_getattr_fs(systemd_tmpfiles_t)
+ dev_manage_all_dev_nodes(systemd_tmpfiles_t)
+ dev_read_urand(systemd_tmpfiles_t)
+ dev_relabel_all_sysfs(systemd_tmpfiles_t)
+@@ -917,14 +919,17 @@ files_relabelto_etc_dirs(systemd_tmpfile
+ # for /etc/mtab
+ files_manage_etc_symlinks(systemd_tmpfiles_t)
+ 
++fs_getattr_tmpfs(systemd_tmpfiles_t)
+ fs_getattr_xattr_fs(systemd_tmpfiles_t)
+ 
+ selinux_get_fs_mount(systemd_tmpfiles_t)
+ selinux_search_fs(systemd_tmpfiles_t)
+ 
++auth_append_lastlog(systemd_tmpfiles_t)
+ auth_manage_faillog(systemd_tmpfiles_t)
+ auth_manage_login_records(systemd_tmpfiles_t)
+ auth_manage_var_auth(systemd_tmpfiles_t)
++auth_relabel_lastlog(systemd_tmpfiles_t)
+ auth_relabel_login_records(systemd_tmpfiles_t)
+ auth_setattr_login_records(systemd_tmpfiles_t)
+ 
+Index: refpolicy-2.20171228/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20171228/policy/modules/kernel/files.if
+@@ -2944,6 +2944,38 @@ interface(`files_read_etc_files',`
+ 
+ ########################################
+ ## <summary>
++##	Read generic files in /etc.
++## </summary>
++## <desc>
++##	<p>
++##	Allow the specified domain to read and map generic
++##	files in /etc.
++##	</p>
++##	<p>
++##	Related interfaces:
++##	</p>
++##	<ul>
++##		<li>files_read_etc_files()</li>
++##	</ul>
++## </desc>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <infoflow type="read" weight="10"/>
++#
++interface(`files_map_etc_files',`
++	gen_require(`
++		type etc_t;
++	')
++
++	files_read_etc_files($1)
++	allow $1 etc_t:file map;
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to write generic files in /etc.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20171228/policy/modules/contrib/dpkg.if
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/contrib/dpkg.if
++++ refpolicy-2.20171228/policy/modules/contrib/dpkg.if
+@@ -301,3 +301,21 @@ interface(`dpkg_manage_script_tmp_files'
+ 	allow $1 dpkg_script_tmp_t:dir manage_dir_perms;
+ 	allow $1 dpkg_script_tmp_t:file manage_file_perms;
+ ')
++
++########################################
++## <summary>
++##	map dpkg_script_tmp_t files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dpkg_map_script_tmp_files',`
++	gen_require(`
++		type dpkg_script_tmp_t;
++	')
++
++	allow $1 dpkg_script_tmp_t:file map;
++')
+Index: refpolicy-2.20171228/policy/modules/system/modutils.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/modutils.te
++++ refpolicy-2.20171228/policy/modules/system/modutils.te
+@@ -132,7 +132,9 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	# for postinst of a new kernel package
+ 	dpkg_manage_script_tmp_files(kmod_t)
++	dpkg_map_script_tmp_files(kmod_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20171228/policy/modules/system/sysnetwork.if
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/system/sysnetwork.if
++++ refpolicy-2.20171228/policy/modules/system/sysnetwork.if
+@@ -751,6 +751,10 @@ interface(`sysnet_dns_name_resolve',`
+ 	optional_policy(`
+ 		nscd_use($1)
+ 	')
++	optional_policy(`
++	# for /etc/resolv.conf symlink
++		networkmanager_read_pid_files($1)
++	')
+ 
+ 	# This seems needed when the mymachines NSS module is used
+ 	optional_policy(`
+Index: refpolicy-2.20171228/policy/modules/contrib/syncthing.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/contrib/syncthing.te
++++ refpolicy-2.20171228/policy/modules/contrib/syncthing.te
+@@ -66,7 +66,3 @@ userdom_use_user_terminals(syncthing_t)
+ # newly created files in ~/.config/syncthing/ will transition to syncthing_config_home_t
+ userdom_user_home_content_filetrans(syncthing_t, syncthing_config_home_t, dir, "syncthing")
+ 
+-optional_policy(`
+-	# temporary hack for /run/NetworkManager/resolv.conf until we make this part of sysnet_dns_name_resolve()
+-	networkmanager_read_pid_files(syncthing_t)
+-')
+Index: refpolicy-2.20171228/policy/modules/contrib/dictd.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/contrib/dictd.te
++++ refpolicy-2.20171228/policy/modules/contrib/dictd.te
+@@ -57,6 +57,7 @@ dev_read_sysfs(dictd_t)
+ 
+ domain_use_interactive_fds(dictd_t)
+ 
++files_map_usr_files(dictd_t)
+ files_read_etc_runtime_files(dictd_t)
+ files_read_usr_files(dictd_t)
+ files_search_var_lib(dictd_t)
+Index: refpolicy-2.20171228/policy/modules/admin/usermanage.te
+===================================================================
+--- refpolicy-2.20171228.orig/policy/modules/admin/usermanage.te
++++ refpolicy-2.20171228/policy/modules/admin/usermanage.te
+@@ -252,6 +252,10 @@ userdom_use_unpriv_users_fds(groupadd_t)
+ userdom_dontaudit_search_user_home_dirs(groupadd_t)
+ 
+ optional_policy(`
++	dbus_system_bus_client(groupadd_t)
++')
++
++optional_policy(`
+ 	dpkg_use_fds(groupadd_t)
+ 	dpkg_rw_pipes(groupadd_t)
+ ')
+@@ -538,6 +542,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	dbus_system_bus_client(useradd_t)
++')
++
++optional_policy(`
+ 	dpkg_use_fds(useradd_t)
+ 	dpkg_rw_pipes(useradd_t)
+ ')

@@ -1,4 +1,4 @@
-policy_module(dbus, 1.21.0)
+policy_module(dbus, 1.23.4)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -47,6 +47,10 @@ type system_dbusd_var_run_t;
 files_pid_file(system_dbusd_var_run_t)
 init_daemon_pid_file(system_dbusd_var_run_t, dir, "dbus")
 
+type session_dbusd_runtime_t;
+files_pid_file(session_dbusd_runtime_t)
+userdom_user_runtime_content(session_dbusd_runtime_t)
+
 ifdef(`enable_mcs',`
 	init_ranged_system_domain(system_dbusd_t, dbusd_exec_t, s0 - mcs_systemhigh)
 ')
@@ -60,7 +64,7 @@ ifdef(`enable_mls',`
 # Local policy
 #
 
-allow system_dbusd_t self:capability { sys_resource dac_override setgid setpcap setuid };
+allow system_dbusd_t self:capability { dac_override setgid setpcap setuid sys_resource };
 dontaudit system_dbusd_t self:capability sys_tty_config;
 allow system_dbusd_t self:process { getattr getsched signal_perms setpgid getcap setcap setrlimit };
 allow system_dbusd_t self:fifo_file rw_fifo_file_perms;
@@ -130,6 +134,7 @@ auth_read_pam_console_data(system_dbusd_t)
 init_use_fds(system_dbusd_t)
 init_use_script_ptys(system_dbusd_t)
 init_all_labeled_script_domtrans(system_dbusd_t)
+init_start_system(system_dbusd_t) # needed by dbus-broker
 
 logging_send_audit_msgs(system_dbusd_t)
 logging_send_syslog_msg(system_dbusd_t)
@@ -142,9 +147,28 @@ seutil_read_default_contexts(system_dbusd_t)
 
 userdom_dontaudit_use_unpriv_user_fds(system_dbusd_t)
 userdom_dontaudit_search_user_home_dirs(system_dbusd_t)
+# read a file in ~/.local/share
+userdom_read_user_home_content_files(system_dbusd_t)
+
+ifdef(`init_systemd', `
+	# gdm3 causes system_dbusd_t to want this access
+	dev_rw_dri(system_dbusd_t)
+	dev_rw_input_dev(system_dbusd_t)
+')
+
+optional_policy(`
+	# for /run/systemd/users/*
+	systemd_read_logind_pids(system_dbusd_t)
+	systemd_write_inherited_logind_inhibit_pipes(system_dbusd_t)
+	systemd_write_inherited_logind_sessions_pipes(system_dbusd_t)
+')
 
 optional_policy(`
 	bluetooth_stream_connect(system_dbusd_t)
+')
+
+optional_policy(`
+	consolekit_use_inhibit_lock(system_dbusd_t)
 ')
 
 optional_policy(`
@@ -157,6 +181,11 @@ optional_policy(`
 
 optional_policy(`
 	udev_read_db(system_dbusd_t)
+')
+
+optional_policy(`
+	xserver_read_xdm_lib_files(system_dbusd_t)
+	xserver_use_xdm_fds(system_dbusd_t)
 ')
 
 ########################################
@@ -186,11 +215,15 @@ manage_dirs_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
 manage_files_pattern(session_bus_type, session_dbusd_tmp_t, session_dbusd_tmp_t)
 files_tmp_filetrans(session_bus_type, session_dbusd_tmp_t, { dir file })
 
+manage_dirs_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_runtime_t)
+manage_files_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_runtime_t)
+manage_sock_files_pattern(session_bus_type, session_dbusd_runtime_t, session_dbusd_runtime_t)
+userdom_user_runtime_filetrans(session_bus_type, session_dbusd_runtime_t, { dir file sock_file })
+
 kernel_read_system_state(session_bus_type)
 kernel_read_kernel_sysctls(session_bus_type)
 
 corecmd_list_bin(session_bus_type)
-corecmd_read_bin_symlinks(session_bus_type)
 corecmd_read_bin_files(session_bus_type)
 corecmd_read_bin_pipes(session_bus_type)
 corecmd_read_bin_sockets(session_bus_type)
@@ -239,6 +272,7 @@ seutil_read_default_contexts(session_bus_type)
 term_use_all_terms(session_bus_type)
 
 optional_policy(`
+	xserver_rw_xsession_log(session_bus_type)
 	xserver_use_xdm_fds(session_bus_type)
 	xserver_rw_xdm_pipes(session_bus_type)
 ')

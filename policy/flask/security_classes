@@ -1,7 +1,7 @@
 # FLASK
 
 #
-# Define the security object classes 
+# Define the security object classes
 #
 
 # Classes marked as userspace are classes
@@ -119,7 +119,7 @@ class x_synthetic_event		# userspace
 class x_application_data	# userspace
 
 # kernel services that need to override task security, e.g. cachefiles
-class kernel_service 
+class kernel_service
 
 class tun_socket
 
@@ -139,6 +139,10 @@ class netlink_crypto_socket
 class x_pointer			# userspace
 class x_keyboard		# userspace
 
+# Infiniband
+class infiniband_pkey
+class infiniband_endport
+
 # More Database stuff
 class db_schema			# userspace
 class db_view			# userspace
@@ -150,5 +154,40 @@ class service			# userspace
 # Capability checks when on a non-init user namespace
 class cap_userns
 class cap2_userns
+
+# New socket classes introduced by extended_socket_class policy capability.
+# These two were previously mapped to rawip_socket.
+class sctp_socket
+class icmp_socket
+# These were previously mapped to socket.
+class ax25_socket
+class ipx_socket
+class netrom_socket
+class atmpvc_socket
+class x25_socket
+class rose_socket
+class decnet_socket
+class atmsvc_socket
+class rds_socket
+class irda_socket
+class pppox_socket
+class llc_socket
+class can_socket
+class tipc_socket
+class bluetooth_socket
+class iucv_socket
+class rxrpc_socket
+class isdn_socket
+class phonet_socket
+class ieee802154_socket
+class caif_socket
+class alg_socket
+class nfc_socket
+class vsock_socket
+class kcm_socket
+class qipcrtr_socket
+class smc_socket
+
+class process2
 
 # FLASK

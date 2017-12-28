@@ -1,4 +1,4 @@
-policy_module(networkmanager, 1.19.0)
+policy_module(networkmanager, 1.21.3)
 
 ########################################
 #
@@ -42,8 +42,9 @@ init_system_domain(wpa_cli_t, wpa_cli_exec_t)
 # Local policy
 #
 
-allow NetworkManager_t self:capability { fowner chown fsetid kill setgid setuid sys_nice dac_override net_admin net_raw ipc_lock };
-dontaudit NetworkManager_t self:capability { sys_tty_config sys_module sys_ptrace };
+allow NetworkManager_t self:capability { chown dac_override fowner fsetid ipc_lock kill net_admin net_raw setgid setuid sys_nice };
+dontaudit NetworkManager_t self:capability { sys_module sys_ptrace sys_tty_config };
+allow NetworkManager_t self:capability2 wake_alarm;
 allow NetworkManager_t self:process { ptrace getcap setcap setpgid getsched setsched signal_perms };
 allow NetworkManager_t self:fifo_file rw_fifo_file_perms;
 allow NetworkManager_t self:unix_dgram_socket sendto;
@@ -121,6 +122,8 @@ corenet_tcp_connect_all_ports(NetworkManager_t)
 corenet_rw_tun_tap_dev(NetworkManager_t)
 corenet_getattr_ppp_dev(NetworkManager_t)
 
+corenet_ib_access_unlabeled_pkeys(NetworkManager_t)
+
 corecmd_exec_shell(NetworkManager_t)
 corecmd_exec_bin(NetworkManager_t)
 
@@ -154,6 +157,7 @@ init_domtrans_script(NetworkManager_t)
 
 auth_use_nsswitch(NetworkManager_t)
 
+logging_send_audit_msgs(NetworkManager_t)
 logging_send_syslog_msg(NetworkManager_t)
 
 miscfiles_read_generic_certs(NetworkManager_t)
@@ -176,7 +180,7 @@ sysnet_manage_config(NetworkManager_t)
 sysnet_etc_filetrans_config(NetworkManager_t)
 
 # certificates in user home directories (cert_home_t in ~/\.pki)
-userdom_read_user_home_content_files(NetworkManager_t)
+userdom_read_user_certs(NetworkManager_t)
 
 userdom_write_user_tmp_sockets(NetworkManager_t)
 userdom_dontaudit_use_unpriv_user_fds(NetworkManager_t)
@@ -222,10 +226,23 @@ optional_policy(`
 
 	optional_policy(`
 		consolekit_dbus_chat(NetworkManager_t)
+		consolekit_use_inhibit_lock(NetworkManager_t)
+	')
+
+	optional_policy(`
+		cups_dbus_chat(NetworkManager_t)
 	')
 
 	optional_policy(`
 		policykit_dbus_chat(NetworkManager_t)
+	')
+
+	optional_policy(`
+		xserver_dbus_chat_xdm(NetworkManager_t)
+	')
+
+	optional_policy(`
+		unconfined_dbus_send(NetworkManager_t)
 	')
 ')
 
@@ -267,7 +284,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_domtrans_insmod(NetworkManager_t)
+	modutils_domtrans(NetworkManager_t)
 ')
 
 optional_policy(`
@@ -324,6 +341,11 @@ optional_policy(`
 
 optional_policy(`
 	seutil_sigchld_newrole(NetworkManager_t)
+')
+
+optional_policy(`
+	systemd_read_logind_sessions_files(NetworkManager_t)
+	systemd_write_inherited_logind_inhibit_pipes(NetworkManager_t)
 ')
 
 optional_policy(`

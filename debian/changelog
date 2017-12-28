@@ -1,31 +1,15 @@
-refpolicy (2:2.20161023.1-10) unstable; urgency=medium
+refpolicy (2:2.20171228-1) unstable; urgency=medium
 
-  * Add patch for typebounds. This patch was rejected upstream, to quote
-    Chris PeBenito:
-    NAK.  This has already been fixed with the upcoming nnp_transition
-    nosuid_transition permissions in refpolicy.  I'm afraid distros will
-    have to carry policy patches until they can roll out kernels that
-    support these permissions.
-    https://marc.info/?l=selinux&m=150151037511601&w=2
-    Closes: #874201
-  * Allow systemd-tmpfiles to delete /var/lib/sudo files.
-    Closes: #875668
-  * Allow brctl to create files in sysfs and correctly label
-    /usr/lib/bridge-utils/.*\.sh
-    Closes: #875669
-  * Give bootloader_t all the access it needs to create initramfs images in
-    different situations and communicate with dpkg_t.
-    Closes: #875676
-  * Allow dnsmasq_t to read it's config dir
-    Closes: #875681
-  * Build-depend and depend on version 2.7 of tools and libraries.
-  * Allow systemd_tmpfiles_t to manage lastlog_t
-    Closes: #875726
-  * Allow udev_t to talk to init via dbus and get service status in strict
-    configuration
-    Closes: #875727
+  * New upstream from git with lots of Debian patches merged.  This policy is
+    not a candidate for Buster or anything, I'm uploading it to facilitate
+    SE Linux development.  The next time Tresys make an official release I'll
+    put it in Debian Git and make it a candidate for Buster.
+  * Removed authbind policy
+  * Set WERROR=y to remove deprecated interfaces
+  * Enable UBAC for mcs policy
+  * Use compat level 11
 
- -- Russell Coker <russell@coker.com.au>  Wed, 13 Sep 2017 23:47:21 +1000
+ -- Russell Coker <russell@coker.com.au>  Thu, 28 Dec 2017 17:46:57 +1100
 
 refpolicy (2:2.20161023.1-9) unstable; urgency=medium
 

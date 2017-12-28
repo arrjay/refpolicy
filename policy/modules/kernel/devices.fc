@@ -11,7 +11,7 @@
 /dev/aload.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
 /dev/amidi.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
 /dev/amixer.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
-/dev/apm_bios		-c	gen_context(system_u:object_r:apm_bios_t,s0)
+/dev/apm_bios		-c	gen_context(system_u:object_r:acpi_bios_t,s0)
 /dev/atibm		-c	gen_context(system_u:object_r:mouse_device_t,s0)
 /dev/audio.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
 /dev/autofs.*		-c	gen_context(system_u:object_r:autofs_device_t,s0)
@@ -103,7 +103,7 @@
 /dev/smpte.*		-c	gen_context(system_u:object_r:sound_device_t,s0)
 /dev/smu		-c	gen_context(system_u:object_r:power_device_t,s0)
 /dev/srnd[0-7]		-c	gen_context(system_u:object_r:sound_device_t,s0)
-/dev/snapshot		-c	gen_context(system_u:object_r:apm_bios_t,s0)
+/dev/snapshot		-c	gen_context(system_u:object_r:acpi_bios_t,s0)
 /dev/sndstat		-c	gen_context(system_u:object_r:sound_device_t,s0)
 /dev/sonypi		-c	gen_context(system_u:object_r:v4l_device_t,s0)
 /dev/tlk[0-3]		-c	gen_context(system_u:object_r:v4l_device_t,s0)
@@ -182,10 +182,12 @@ ifdef(`distro_suse', `
 /dev/xen/evtchn		-c	gen_context(system_u:object_r:xen_device_t,s0)
 /dev/xen/gntdev		-c	gen_context(system_u:object_r:xen_device_t,s0)
 /dev/xen/gntalloc	-c	gen_context(system_u:object_r:xen_device_t,s0)
+/dev/xen/privcmd	-c	gen_context(system_u:object_r:xen_device_t,s0)
+/dev/xen/xenbus		-c	gen_context(system_u:object_r:xen_device_t,s0)
 
 ifdef(`distro_debian',`
 # this is a static /dev dir "backup mount"
-# if you want to disable udev, you'll have to boot permissive and relabel!
+# if you want to disable udev, you will have to boot permissive and relabel!
 /dev/\.static		-d	gen_context(system_u:object_r:device_t,s0)
 /dev/\.static/dev	-d	gen_context(system_u:object_r:device_t,s0)
 /dev/\.static/dev/(.*)?		<<none>>
@@ -194,10 +196,10 @@ ifdef(`distro_debian',`
 /etc/udev/devices	-d	gen_context(system_u:object_r:device_t,s0)
 
 # used by init scripts to initally populate udev /dev
-/lib/udev/devices(/.*)?		gen_context(system_u:object_r:device_t,s0)
-/lib/udev/devices/lp.*	-c	gen_context(system_u:object_r:printer_device_t,s0)
-/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
-/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
+/usr/lib/udev/devices(/.*)?		gen_context(system_u:object_r:device_t,s0)
+/usr/lib/udev/devices/lp.*	-c	gen_context(system_u:object_r:printer_device_t,s0)
+/usr/lib/udev/devices/null	-c	gen_context(system_u:object_r:null_device_t,s0)
+/usr/lib/udev/devices/zero	-c	gen_context(system_u:object_r:zero_device_t,s0)
 
 /sys(/.*)?			gen_context(system_u:object_r:sysfs_t,s0)
 /sys/devices/system/cpu/online	--	gen_context(system_u:object_r:cpu_online_t,s0)

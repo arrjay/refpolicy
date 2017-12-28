@@ -1,0 +1,141 @@
+Index: refpolicy-2.20170918/policy/modules/contrib/cron.if
+===================================================================
+--- refpolicy-2.20170918.orig/policy/modules/contrib/cron.if
++++ refpolicy-2.20170918/policy/modules/contrib/cron.if
+@@ -51,15 +51,16 @@ template(`cron_common_crontab_template',
+ ## </param>
+ ## <param name="domain">
+ ##	<summary>
+-##	User domain for the role.
++##	stem of domain for the role.
+ ##	</summary>
+ ## </param>
+ ## <rolecap/>
+ #
+ interface(`cron_role',`
+ 	gen_require(`
+-		type cronjob_t, crontab_t, crontab_exec_t;
+-		type user_cron_spool_t, crond_t;
++		type cronjob_t;
++		type crontab_exec_t, crond_t;
++		type crontab_t, user_cron_spool_t;
+ 		bool cron_userdomain_transition;
+ 	')
+ 
+@@ -68,47 +69,48 @@ interface(`cron_role',`
+ 	# Declarations
+ 	#
+ 
+-	role $1 types { cronjob_t crontab_t };
++	role $1 types { cronjob_t };
++	role $1 types { crontab_t };
+ 
+ 	##############################
+ 	#
+ 	# Local policy
+ 	#
+ 
+-	domtrans_pattern($2, crontab_exec_t, crontab_t)
++	domtrans_pattern($2_t, crontab_exec_t, crontab_t)
+ 
+-	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
+-	allow $2 crond_t:process sigchld;
++	dontaudit crond_t $2_t:process { noatsecure siginh rlimitinh };
++	allow $2_t crond_t:process sigchld;
+ 
+-	allow $2 user_cron_spool_t:file { getattr read write ioctl };
++	allow $2_t user_cron_spool_t:file { getattr read write ioctl };
+ 
+-	allow $2 crontab_t:process { ptrace signal_perms };
+-	ps_process_pattern($2, crontab_t)
++	allow $2_t crontab_t:process { ptrace signal_perms };
++	ps_process_pattern($2_t, crontab_t)
+ 
+ 	corecmd_exec_bin(crontab_t)
+ 	corecmd_exec_shell(crontab_t)
+ 
+ 	tunable_policy(`cron_userdomain_transition',`
+-		allow crond_t $2:process transition;
+-		allow crond_t $2:fd use;
+-		allow crond_t $2:key manage_key_perms;
++		allow crond_t $2_t:process transition;
++		allow crond_t $2_t:fd use;
++		allow crond_t $2_t:key manage_key_perms;
+ 
+-		allow $2 user_cron_spool_t:file entrypoint;
++		allow $2_t user_cron_spool_t:file entrypoint;
+ 
+-		allow $2 crond_t:fifo_file rw_fifo_file_perms;
++		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
+ 
+-		allow $2 cronjob_t:process { ptrace signal_perms };
+-		ps_process_pattern($2, cronjob_t)
++		allow $2_t cronjob_t:process { ptrace signal_perms };
++		ps_process_pattern($2_t, cronjob_t)
+ 	',`
+-		dontaudit crond_t $2:process transition;
+-		dontaudit crond_t $2:fd use;
+-		dontaudit crond_t $2:key manage_key_perms;
++		dontaudit crond_t $2_t:process transition;
++		dontaudit crond_t $2_t:fd use;
++		dontaudit crond_t $2_t:key manage_key_perms;
+ 
+-		dontaudit $2 user_cron_spool_t:file entrypoint;
++		dontaudit $2_t user_cron_spool_t:file entrypoint;
+ 
+-		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
++		dontaudit $2_t crond_t:fifo_file rw_fifo_file_perms;
+ 
+-		dontaudit $2 cronjob_t:process { ptrace signal_perms };
++		dontaudit $2_t cronjob_t:process { ptrace signal_perms };
+ 	')
+ 
+ 	optional_policy(`
+@@ -118,7 +120,7 @@ interface(`cron_role',`
+ 
+ 		dbus_stub(cronjob_t)
+ 
+-		allow cronjob_t $2:dbus send_msg;
++		allow cronjob_t $2_t:dbus send_msg;
+ 	')
+ ')
+ 
+Index: refpolicy-2.20170918/policy/modules/roles/staff.te
+===================================================================
+--- refpolicy-2.20170918.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20170918/policy/modules/roles/staff.te
+@@ -82,7 +82,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		cron_role(staff_r, staff_t)
++		cron_role(staff_r, staff)
+ 	')
+ 
+ 	optional_policy(`
+Index: refpolicy-2.20170918/policy/modules/roles/unprivuser.te
+===================================================================
+--- refpolicy-2.20170918.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20170918/policy/modules/roles/unprivuser.te
+@@ -50,7 +50,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		cron_role(user_r, user_t)
++		cron_role(user_r, user)
+ 	')
+ 
+ 	optional_policy(`
+Index: refpolicy-2.20170918/policy/modules/system/unconfined.te
+===================================================================
+--- refpolicy-2.20170918.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20170918/policy/modules/system/unconfined.te
+@@ -76,7 +76,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	cron_unconfined_role(unconfined_r, unconfined_t)
++	cron_role(unconfined_r, unconfined)
+ ')
+ 
+ optional_policy(`

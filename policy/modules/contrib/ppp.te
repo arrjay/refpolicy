@@ -1,4 +1,4 @@
-policy_module(ppp, 1.16.0)
+policy_module(ppp, 1.18.0)
 
 ########################################
 #
@@ -78,7 +78,7 @@ userdom_user_home_content(ppp_home_t)
 # PPPD local policy
 #
 
-allow pppd_t self:capability { kill net_admin setuid setgid sys_admin fsetid fowner net_raw dac_override sys_nice };
+allow pppd_t self:capability { dac_override fowner fsetid kill net_admin net_raw setgid setuid sys_admin sys_nice };
 dontaudit pppd_t self:capability sys_tty_config;
 allow pppd_t self:process { getsched setsched signal };
 allow pppd_t self:fifo_file rw_fifo_file_perms;
@@ -193,7 +193,7 @@ optional_policy(`
 
 optional_policy(`
 	tunable_policy(`pppd_can_insmod',`
-		modutils_domtrans_insmod(pppd_t)
+		modutils_domtrans(pppd_t)
 	')
 ')
 
@@ -224,7 +224,7 @@ optional_policy(`
 # PPTP local policy
 #
 
-allow pptp_t self:capability { dac_override dac_read_search net_raw net_admin };
+allow pptp_t self:capability { dac_override dac_read_search net_admin net_raw };
 dontaudit pptp_t self:capability sys_tty_config;
 allow pptp_t self:process signal;
 allow pptp_t self:fifo_file rw_fifo_file_perms;
@@ -257,7 +257,6 @@ kernel_read_system_state(pptp_t)
 kernel_signal(pptp_t)
 
 corecmd_exec_shell(pptp_t)
-corecmd_read_bin_symlinks(pptp_t)
 
 corenet_all_recvfrom_unlabeled(pptp_t)
 corenet_all_recvfrom_netlabel(pptp_t)

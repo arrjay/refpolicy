@@ -1,4 +1,4 @@
-policy_module(vlock, 1.2.0)
+policy_module(vlock, 1.3.0)
 
 ########################################
 #
@@ -17,14 +17,13 @@ role vlock_roles types vlock_t;
 # Local policy
 #
 
-dontaudit vlock_t self:capability { setuid setgid };
+dontaudit vlock_t self:capability { setgid setuid };
 allow vlock_t self:fd use;
 allow vlock_t self:fifo_file rw_fifo_file_perms;
 
 kernel_read_system_state(vlock_t)
 
 corecmd_list_bin(vlock_t)
-corecmd_read_bin_symlinks(vlock_t)
 
 domain_use_interactive_fds(vlock_t)
 

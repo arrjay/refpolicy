@@ -243,6 +243,44 @@ interface(`udev_rw_db',`
 
 ########################################
 ## <summary>
+##      Allow process to relabelto udev database
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`udev_relabelto_db',`
+	gen_require(`
+		type udev_var_run_t;
+	')
+
+	files_search_pids($1)
+	allow $1 udev_var_run_t:file relabelto_file_perms;
+	allow $1 udev_var_run_t:lnk_file relabelto_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow process to relabelto sockets in /run/udev
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`udev_relabelto_db_sockets',`
+	gen_require(`
+		type udev_var_run_t;
+	')
+
+	allow $1 udev_var_run_t:sock_file relabelto_sock_file_perms;
+')
+
+########################################
+## <summary>
 ##	Search through udev pid content
 ## </summary>
 ## <param name="domain">
@@ -258,6 +296,25 @@ interface(`udev_search_pids',`
 
 	files_search_pids($1)
 	search_dirs_pattern($1, udev_var_run_t, udev_var_run_t)
+')
+
+########################################
+## <summary>
+##      list udev pid content
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`udev_list_pids',`
+	gen_require(`
+		type udev_var_run_t;
+	')
+
+	files_search_pids($1)
+	allow $1 udev_var_run_t:dir list_dir_perms;
 ')
 
 ########################################
@@ -297,6 +354,24 @@ interface(`udev_read_pid_files',`
 
 	files_search_pids($1)
 	read_files_pattern($1, udev_var_run_t, udev_var_run_t)
+')
+
+########################################
+## <summary>
+##	dontaudit attempts to read/write udev pidfiles
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`udev_dontaudit_rw_pid_files',`
+	gen_require(`
+		type udev_var_run_t;
+	')
+
+	dontaudit $1 udev_var_run_t:file { read write };
 ')
 
 ########################################

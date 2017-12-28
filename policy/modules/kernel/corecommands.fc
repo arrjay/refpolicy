@@ -1,21 +1,4 @@
 #
-# /bin
-#
-/bin				-d	gen_context(system_u:object_r:bin_t,s0)
-/bin/.*					gen_context(system_u:object_r:bin_t,s0)
-/bin/d?ash			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/bash			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/bash2			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/fish			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/ksh.*			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/mksh			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/mountpoint			--	gen_context(system_u:object_r:bin_t,s0)
-/bin/sash			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/tcsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/yash			--	gen_context(system_u:object_r:shell_exec_t,s0)
-/bin/zsh.*			--	gen_context(system_u:object_r:shell_exec_t,s0)
-
-#
 # /dev
 #
 /dev/MAKEDEV			--	gen_context(system_u:object_r:bin_t,s0)
@@ -75,6 +58,7 @@ ifdef(`distro_redhat',`
 /etc/mcelog/.*\.local		--	gen_context(system_u:object_r:bin_t,s0)
 
 ifdef(`distro_redhat',`
+/etc/mcelog/mcelog.setup	--	gen_context(system_u:object_r:bin_t,s0)
 /etc/mcelog/triggers(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 ')
 
@@ -128,35 +112,6 @@ ifdef(`distro_debian',`
 ')
 
 #
-# /lib
-#
-
-/lib/nut/.*			--	gen_context(system_u:object_r:bin_t,s0)
-/lib/readahead(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-/lib/security/pam_krb5/pam_krb5_storetmp -- gen_context(system_u:object_r:bin_t,s0)
-/lib/udev/[^/]*			--	gen_context(system_u:object_r:bin_t,s0)
-/lib/udev/scsi_id		--	gen_context(system_u:object_r:bin_t,s0)
-/lib/upstart(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-
-ifdef(`distro_gentoo',`
-/lib/dhcpcd/dhcpcd-run-hooks	--	gen_context(system_u:object_r:bin_t,s0)
-
-/lib/rcscripts/addons(/.*)?		gen_context(system_u:object_r:bin_t,s0)
-/lib/rcscripts/sh(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-/lib/rcscripts/net\.modules\.d/helpers\.d/dhclient-.* -- gen_context(system_u:object_r:bin_t,s0)
-/lib/rcscripts/net\.modules\.d/helpers\.d/udhcpc-.* -- gen_context(system_u:object_r:bin_t,s0)
-')
-
-#
-# /sbin
-#
-/sbin				-d	gen_context(system_u:object_r:bin_t,s0)
-/sbin/.*				gen_context(system_u:object_r:bin_t,s0)
-/sbin/insmod_ksymoops_clean	--	gen_context(system_u:object_r:bin_t,s0)
-/sbin/mkfs\.cramfs		--	gen_context(system_u:object_r:bin_t,s0)
-/sbin/nologin			--	gen_context(system_u:object_r:shell_exec_t,s0)
-
-#
 # /opt
 #
 /opt/(.*/)?bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
@@ -182,26 +137,49 @@ ifdef(`distro_gentoo',`
 #
 /usr/(.*/)?Bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/(.*/)?bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-/usr/bin/git-shell		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin(/.*)?				gen_context(system_u:object_r:bin_t,s0)
+/usr/bin/d?ash			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/bash			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/bash2			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/fish			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/git-shell		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/insmod_ksymoops_clean	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/bin/ksh.*			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/mkfs\.cramfs		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/bin/mksh			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/mountpoint		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/bin/nologin		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/sash			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/scponly		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/scponlyc		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/bin/tcsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/yash			--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/bin/zsh.*			--	gen_context(system_u:object_r:shell_exec_t,s0)
 
-/usr/lib(.*/)?bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/postfix/configure-instance\.sh -- gen_context(system_u:object_r:bin_t,s0)
 
 /usr/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-/usr/lib(.*/)?sbin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/(.*/)?sbin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 
 /usr/lib/at-spi2-core(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/avahi/avahi-daemon-check-dns\.sh	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/bridge-utils/.*\.sh	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ccache/bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/dhcpcd/dhcpcd-hooks(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/dhcpcd/dhcpcd-run-hooks --	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/dovecot/.+			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/fence(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/pgsql/test/regress/.*\.sh --	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/qt.*/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/wicd/monitor\.py 	-- 	gen_context(system_u:object_r:bin_t, s0)
 /usr/lib/apt/methods.+		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/ConsoleKit/.*		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/ConsoleKit/run-seat.d(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/ConsoleKit/run-session.d(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ConsoleKit/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
-/usr/lib/ConsoleKit/run-session.d(/.*)? gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/courier(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/cups(/.*)? 			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/cyrus/.*		--	gen_context(system_u:object_r:bin_t,s0)
@@ -222,25 +200,37 @@ ifdef(`distro_gentoo',`
 /usr/lib/mailman/mail(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/mediawiki/math/texvc.*		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/misc/sftp-server	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/mon/alert.d(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/nagios/plugins(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/netsaint/plugins(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/NetworkManager/nm-.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/networkmanager/nm-.*	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/news/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/nspluginwrapper/np.*		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/nut/.*			--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/portage/bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/pm-utils(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/readahead(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rpm/rpmd		-- 	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rpm/rpmk		-- 	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rpm/rpmq		-- 	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/rpm/rpmv		-- 	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/security/pam_krb5/pam_krb5_storetmp -- gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/selinux/hll/pp		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/sftp-server		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/ssh(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/sudo/sesh		--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/lib/systemd/systemd.*	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/systemd/system-environment-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/systemd/system-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/systemd/system-shutdown(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/systemd/system-sleep(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/systemd/user-environment-generators(/.*)? gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/systemd/user-generators(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/tumbler-1/tumblerd	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/udev/[^/]*			--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/udev/scsi_id		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/upstart(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/vte/gnome-pty-helper	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/xfce4/exo-1/exo-compose-mail-1 -- gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/xfce4/exo-1/exo-helper-1 --	gen_context(system_u:object_r:bin_t,s0)
@@ -269,22 +259,29 @@ ifdef(`distro_gentoo',`
 /usr/lib/[^/]*/mozilla-xremote-client -- gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/thunderbird.*/mozilla-xremote-client -- gen_context(system_u:object_r:bin_t,s0)
 
-/usr/lib/xen/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-
 /usr/libexec(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/libexec/git-core/git-shell	--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/libexec/sesh		--	gen_context(system_u:object_r:shell_exec_t,s0)
+/usr/libexec/sudo/sesh	--	gen_context(system_u:object_r:shell_exec_t,s0)
 
 /usr/libexec/openssh/sftp-server --	gen_context(system_u:object_r:bin_t,s0)
 
+/usr/local/(.*/)?bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+/usr/local/sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 /usr/local/Brother(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/local/Printer(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/local/linuxprinter/filters(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 
+/usr/sbin(/.*)?				gen_context(system_u:object_r:bin_t,s0)
+/usr/sbin/insmod_ksymoops_clean	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/sbin/mkfs\.cramfs		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/sbin/nologin		--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/sbin/scponlyc		--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 
+/usr/share/mdadm/checkarray	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/ajaxterm.py.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/qweb.py.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/apr-0/build/[^/]+\.sh --	gen_context(system_u:object_r:bin_t,s0)
@@ -295,6 +292,7 @@ ifdef(`distro_gentoo',`
 /usr/share/debconf/.+		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/denyhosts/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/denyhosts/plugins(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/dput/execute-dput	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/.*\.sh		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/ocf-shellfuncs --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/svclib_nfslock --	gen_context(system_u:object_r:bin_t,s0)
@@ -304,15 +302,20 @@ ifdef(`distro_gentoo',`
 /usr/share/gedit-2/plugins/externaltools/tools(/.*)? gen_context(system_u:object_r:bin_t,s0)
 /usr/share/gitolite/hooks/common/update -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/gitolite/hooks/gitolite-admin/post-update -- gen_context(system_u:object_r:bin_t,s0)
+/usr/share/gnome-sound-recorder/org\.gnome\.SoundRecorder	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/gnucash/finance-quote-check -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/gnucash/finance-quote-helper -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/hal/device-manager/hal-device-manager -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/hal/scripts(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/share/libalpm/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/mc/extfs/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/Modules/init(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/share/org.gnome.Weather/org\.gnome\.Weather\.Application	--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/org.gnome.Weather/org\.gnome\.Weather\.BackgroundService	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/printconf/util/print\.py --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/PackageKit/pk-upgrade-distro\.sh -- 	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/PackageKit/helpers(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/reportbug/handle_bugscript -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/sandbox/sandboxX.sh	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/sectool/.*\.py	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/selinux/devel/policygentool -- gen_context(system_u:object_r:bin_t,s0)
@@ -325,6 +328,11 @@ ifdef(`distro_gentoo',`
 /usr/share/shorewall6-lite(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/spamassassin/sa-update\.cron gen_context(system_u:object_r:bin_t,s0)
 /usr/share/system-config-printer/applet\.py -- gen_context(system_u:object_r:bin_t,s0)
+/usr/share/texlive/texmf-dist/scripts/checkcites/checkcites\.lua -- gen_context(system_u:object_r:bin_t,s0)
+/usr/share/texlive/texmf-dist/scripts/checklistings/checklistings\.sh -- gen_context(system_u:object_r:bin_t,s0)
+/usr/share/texlive/texmf-dist/scripts/fontools/autoinst -- gen_context(system_u:object_r:bin_t,s0)
+/usr/share/texlive/texmf-dist/scripts/match_parens/match_parens -- gen_context(system_u:object_r:bin_t,s0)
+/usr/share/texlive/texmf-dist/scripts/yplan/yplan -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/texmf-dist/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/turboprint/lib(/.*)?	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/vhostmd/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
@@ -332,14 +340,19 @@ ifdef(`distro_gentoo',`
 /usr/X11R6/lib(64)?/X11/xkb/xkbcomp --	gen_context(system_u:object_r:bin_t,s0)
 
 ifdef(`distro_debian',`
-/usr/lib/ConsoleKit/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/gdm3/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/udisks/.*		--	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/bug/.*		--	gen_context(system_u:object_r:bin_t,s0)
 ')
 
 ifdef(`distro_gentoo', `
 /usr/.*-.*-linux-gnu/gcc-bin/.*(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 /usr/.*-.*-linux-gnu/binutils-bin(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+
+/usr/lib/rcscripts/addons(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/rcscripts/sh(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/rcscripts/net\.modules\.d/helpers\.d/dhclient-.* -- gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/rcscripts/net\.modules\.d/helpers\.d/udhcpc-.* -- gen_context(system_u:object_r:bin_t,s0)
 ')
 
 ifdef(`distro_redhat', `
@@ -412,6 +425,7 @@ ifdef(`distro_suse', `
 /var/ftp/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
 /var/lib/asterisk/agi-bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+/usr/lib/chkrootkit/.*		--	gen_context(system_u:object_r:bin_t,s0)
 /usr/lib/yp/.+			--	gen_context(system_u:object_r:bin_t,s0)
 
 /var/qmail/bin			-d	gen_context(system_u:object_r:bin_t,s0)

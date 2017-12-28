@@ -1,4 +1,4 @@
-policy_module(gnome, 2.6.0)
+policy_module(gnome, 2.8.2)
 
 ##############################
 #
@@ -45,9 +45,11 @@ userdom_user_home_content(gnome_keyring_home_t)
 
 type gnome_keyring_tmp_t;
 userdom_user_tmp_file(gnome_keyring_tmp_t)
+userdom_user_runtime_content(gnome_keyring_tmp_t)
 
 type gstreamer_orcexec_t;
 application_executable_file(gstreamer_orcexec_t)
+userdom_user_runtime_content(gstreamer_orcexec_t)
 
 ##############################
 #
@@ -70,6 +72,7 @@ logging_send_syslog_msg(gnomedomain)
 userdom_use_user_terminals(gnomedomain)
 
 optional_policy(`
+	xserver_rw_xsession_log(gnomedomain)
 	xserver_rw_xdm_pipes(gnomedomain)
 	xserver_use_xdm_fds(gnomedomain)
 ')
@@ -90,18 +93,37 @@ manage_dirs_pattern(gconfd_t, gconf_tmp_t, gconf_tmp_t)
 manage_files_pattern(gconfd_t, gconf_tmp_t, gconf_tmp_t)
 userdom_user_tmp_filetrans(gconfd_t, gconf_tmp_t, { dir file })
 
+# for /proc/filesystems
+kernel_read_system_state(gconfd_t)
+
+# for /var/lib/gconf/defaults
+files_read_var_lib_files(gconfd_t)
+
 userdom_manage_user_tmp_dirs(gconfd_t)
-userdom_tmp_filetrans_user_tmp(gconfd_t, dir)
+userdom_manage_user_tmp_sockets(gconfd_t)
+userdom_tmp_filetrans_user_tmp(gconfd_t, { dir sock_file })
 userdom_user_runtime_filetrans_user_tmp(gconfd_t, dir)
 
 optional_policy(`
 	dbus_all_session_domain(gconfd_t, gconfd_exec_t)
 
 	dbus_system_bus_client(gconfd_t)
+
+	optional_policy(`
+		pulseaudio_dbus_chat(gconfd_t)
+	')
 ')
 
 optional_policy(`
 	nscd_dontaudit_search_pid(gconfd_t)
+')
+
+optional_policy(`
+	ooffice_stream_connect(gconfd_t)
+')
+
+optional_policy(`
+	pulseaudio_stream_connect(gconfd_t)
 ')
 
 ##############################
@@ -123,9 +145,11 @@ gnome_home_filetrans(gkeyringd_domain, gnome_keyring_home_t, dir, "keyrings")
 manage_dirs_pattern(gkeyringd_domain, gnome_keyring_tmp_t, gnome_keyring_tmp_t)
 manage_sock_files_pattern(gkeyringd_domain, gnome_keyring_tmp_t, gnome_keyring_tmp_t)
 files_tmp_filetrans(gkeyringd_domain, gnome_keyring_tmp_t, dir)
+userdom_user_runtime_filetrans(gkeyringd_domain, gnome_keyring_tmp_t, dir)
 
-kernel_read_system_state(gkeyringd_domain)
 kernel_read_crypto_sysctls(gkeyringd_domain)
+kernel_read_kernel_sysctls(gkeyringd_domain)
+kernel_read_system_state(gkeyringd_domain)
 
 dev_read_rand(gkeyringd_domain)
 dev_read_sysfs(gkeyringd_domain)
@@ -136,10 +160,16 @@ fs_getattr_all_fs(gkeyringd_domain)
 
 selinux_getattr_fs(gkeyringd_domain)
 
+seutil_read_config(gkeyringd_domain)
+
 optional_policy(`
 	ssh_read_user_home_files(gkeyringd_domain)
 ')
 
 optional_policy(`
 	telepathy_mission_control_read_state(gkeyringd_domain)
+')
+
+optional_policy(`
+	xserver_rw_xsession_log(gkeyringd_domain)
 ')

@@ -279,11 +279,11 @@ apache = module
 apcupsd = module
 
 # Layer: contrib
-# Module: apm
+# Module: acpi
 #
 # Advanced power management.
 # 
-apm = module
+acpi = module
 
 # Layer: contrib
 # Module: apt
@@ -305,13 +305,6 @@ arpwatch = module
 # Asterisk IP telephony server.
 # 
 asterisk = module
-
-# Layer: contrib
-# Module: authbind
-#
-# Tool for non-root processes to bind to reserved ports.
-# 
-authbind = off
 
 # Layer: contrib
 # Module: automount

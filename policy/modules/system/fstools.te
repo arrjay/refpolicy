@@ -1,4 +1,4 @@
-policy_module(fstools, 1.19.0)
+policy_module(fstools, 1.21.1)
 
 ########################################
 #
@@ -28,8 +28,8 @@ files_type(swapfile_t)
 #
 
 # ipc_lock is for losetup
-allow fsadm_t self:capability { ipc_lock sys_rawio sys_admin sys_resource sys_tty_config dac_override dac_read_search };
-allow fsadm_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execmem execheap };
+allow fsadm_t self:capability { dac_override dac_read_search ipc_lock sys_admin sys_rawio sys_resource sys_tty_config };
+allow fsadm_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition execstack setkeycreate setsockcreate getrlimit };
 allow fsadm_t self:fd use;
 allow fsadm_t self:fifo_file rw_fifo_file_perms;
 allow fsadm_t self:sock_file read_sock_file_perms;
@@ -134,6 +134,8 @@ files_search_all(fsadm_t)
 mls_file_read_all_levels(fsadm_t)
 mls_file_write_all_levels(fsadm_t)
 
+selinux_getattr_fs(fsadm_t)
+
 storage_raw_read_fixed_disk(fsadm_t)
 storage_raw_write_fixed_disk(fsadm_t)
 storage_raw_read_removable_device(fsadm_t)
@@ -146,11 +148,14 @@ term_use_console(fsadm_t)
 init_use_fds(fsadm_t)
 init_use_script_ptys(fsadm_t)
 init_dontaudit_getattr_initctl(fsadm_t)
+init_rw_script_stream_sockets(fsadm_t)
 
 logging_send_syslog_msg(fsadm_t)
 
 miscfiles_read_localization(fsadm_t)
 
+# for /run/mount/utab
+mount_getattr_runtime_files(fsadm_t)
 # losetup: bind mount_loopback_t files to loop devices
 mount_rw_loopback_files(fsadm_t)
 
@@ -207,6 +212,10 @@ optional_policy(`
 
 optional_policy(`
 	udev_read_db(fsadm_t)
+
+	# Xen causes losetup to run with a presumably accidentally inherited
+	# file handle for /run/xen-hotplug/block
+	udev_dontaudit_rw_pid_files(fsadm_t)
 ')
 
 optional_policy(`

@@ -1,4 +1,4 @@
-policy_module(ulogd, 1.4.0)
+policy_module(ulogd, 1.5.0)
 
 ########################################
 #
@@ -26,7 +26,7 @@ logging_log_file(ulogd_var_log_t)
 # Local policy
 #
 
-allow ulogd_t self:capability { net_admin setuid setgid sys_nice };
+allow ulogd_t self:capability { net_admin setgid setuid sys_nice };
 allow ulogd_t self:process setsched;
 allow ulogd_t self:netlink_nflog_socket create_socket_perms;
 allow ulogd_t self:netlink_socket create_socket_perms;
@@ -35,7 +35,7 @@ allow ulogd_t self:tcp_socket create_stream_socket_perms;
 read_files_pattern(ulogd_t, ulogd_etc_t, ulogd_etc_t)
 
 list_dirs_pattern(ulogd_t, ulogd_modules_t, ulogd_modules_t)
-mmap_files_pattern(ulogd_t, ulogd_modules_t, ulogd_modules_t)
+mmap_exec_files_pattern(ulogd_t, ulogd_modules_t, ulogd_modules_t)
 
 append_files_pattern(ulogd_t, ulogd_var_log_t, ulogd_var_log_t)
 create_files_pattern(ulogd_t, ulogd_var_log_t, ulogd_var_log_t)

@@ -1,4 +1,4 @@
-policy_module(nut, 1.5.0)
+policy_module(nut, 1.7.0)
 
 ########################################
 #
@@ -34,7 +34,7 @@ init_daemon_pid_file(nut_var_run_t, dir, "nut")
 # Common nut domain local policy
 #
 
-allow nut_domain self:capability { setgid setuid dac_override kill };
+allow nut_domain self:capability { dac_override kill setgid setuid };
 allow nut_domain self:process signal_perms;
 allow nut_domain self:fifo_file rw_fifo_file_perms;
 allow nut_domain self:unix_dgram_socket sendto;
@@ -116,7 +116,9 @@ term_write_all_terms(nut_upsmon_t)
 
 auth_use_nsswitch(nut_upsmon_t)
 
-mta_send_mail(nut_upsmon_t)
+optional_policy(`
+	mta_send_mail(nut_upsmon_t)
+')
 
 optional_policy(`
 	shutdown_domtrans(nut_upsmon_t)

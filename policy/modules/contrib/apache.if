@@ -392,6 +392,25 @@ interface(`apache_dontaudit_rw_tcp_sockets',`
 
 ########################################
 ## <summary>
+##	Reload the httpd service (systemd).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`apache_reload',`
+	gen_require(`
+		type httpd_unit_t;
+		class service { reload status };
+	')
+
+	allow $1 httpd_unit_t:service { reload status };
+')
+
+########################################
+## <summary>
 ##	Read all appendable content
 ## </summary>
 ## <param name="domain">
@@ -1250,6 +1269,25 @@ interface(`apache_dontaudit_write_tmp_files',`
 	')
 
 	dontaudit $1 httpd_tmp_t:file write_file_perms;
+')
+
+########################################
+## <summary>
+##	Delete httpd_var_lib_t files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain that can delete the files
+##	</summary>
+## </param>
+#
+interface(`apache_delete_lib_files',`
+	gen_require(`
+		type httpd_var_lib_t;
+	')
+
+	files_search_var_lib($1)
+	delete_files_pattern($1, httpd_var_lib_t, httpd_var_lib_t)
 ')
 
 ########################################

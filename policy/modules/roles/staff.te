@@ -1,4 +1,4 @@
-policy_module(staff, 2.7.0)
+policy_module(staff, 2.9.0)
 
 ########################################
 #
@@ -13,6 +13,7 @@ userdom_unpriv_user_template(staff)
 #
 # Local policy
 #
+corenet_ib_access_unlabeled_pkeys(staff_t)
 
 optional_policy(`
 	apache_role(staff_r, staff_t)
@@ -60,6 +61,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	xscreensaver_role(staff_r, staff_t)
+')
+
+optional_policy(`
 	xserver_role(staff_r, staff_t)
 ')
 
@@ -88,12 +93,16 @@ ifndef(`distro_redhat',`
 		')
 
 		optional_policy(`
-			pulseaudio_role(staff_r, staff_t)
+			telepathy_role_template(staff, staff_r, staff_t)
 		')
 
 		optional_policy(`
-			telepathy_role_template(staff, staff_r, staff_t)
+			wm_role_template(staff, staff_r, staff_t)
 		')
+	')
+
+	optional_policy(`
+		dirmngr_role(staff_r, staff_t)
 	')
 
 	optional_policy(`
@@ -121,6 +130,10 @@ ifndef(`distro_redhat',`
 	')
 
 	optional_policy(`
+		libmtp_role(staff_r, staff_t)
+	')
+
+	optional_policy(`
 		lockdev_role(staff_r, staff_t)
 	')
 
@@ -138,6 +151,14 @@ ifndef(`distro_redhat',`
 
 	optional_policy(`
 		mta_role(staff_r, staff_t)
+	')
+
+	optional_policy(`
+		ooffice_role(staff_r, staff_t)
+	')
+
+	optional_policy(`
+		pulseaudio_role(staff_r, staff_t)
 	')
 
 	optional_policy(`

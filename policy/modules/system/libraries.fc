@@ -29,18 +29,9 @@ ifdef(`distro_redhat',`
 #
 /etc/ld\.so\.cache			--	gen_context(system_u:object_r:ld_so_cache_t,s0)
 /etc/ld\.so\.preload			--	gen_context(system_u:object_r:ld_so_cache_t,s0)
+/etc/ld-musl-[^/]*\.path		--	gen_context(system_u:object_r:ld_so_cache_t,s0)
 
 /etc/ppp/plugins/rp-pppoe\.so 		--	gen_context(system_u:object_r:lib_t,s0)
-
-#
-# /lib(64)?
-#
-/lib					-d	gen_context(system_u:object_r:lib_t,s0)
-/lib					-l	gen_context(system_u:object_r:lib_t,s0)
-/lib/.*						gen_context(system_u:object_r:lib_t,s0)
-/lib/ld-[^/]*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:ld_so_t,s0)
-
-/lib/security/pam_poldi\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 #
 # /opt
@@ -51,6 +42,8 @@ ifdef(`distro_redhat',`
 /opt/(.*/)?java/.+\.jar			--	gen_context(system_u:object_r:lib_t,s0)
 /opt/(.*/)?jre.*/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /opt/(.*/)?jre/.+\.jar			--	gen_context(system_u:object_r:lib_t,s0)
+
+/opt/openoffice4/program/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:lib_t,s0)
 
 /opt/(.*/)?/RealPlayer/.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 # despite the extensions, they are actually libs
@@ -89,13 +82,13 @@ ifdef(`distro_redhat',`
 ')
 
 #
-# /sbin
-#
-/sbin/ldconfig				--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
-
-#
 # /usr
 #
+/usr/bin/ldconfig			--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
+
+/usr/lib					gen_context(system_u:object_r:lib_t,s0)
+/usr/lib/.*					gen_context(system_u:object_r:lib_t,s0)
+
 /usr/(.*/)?/HelixPlayer/.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/(.*/)?/RealPlayer/.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
@@ -106,7 +99,8 @@ ifdef(`distro_redhat',`
 /usr/(.*/)?lib(/.*)?				gen_context(system_u:object_r:lib_t,s0)
 /usr/(.*/)?lib64(/.*)?				gen_context(system_u:object_r:lib_t,s0)
 
-/usr/(.*/)?lib(64)?(/.*)?/ld-[^/]*\.so(\.[^/]*)* gen_context(system_u:object_r:ld_so_t,s0)
+/usr/lib/ld-[^/]*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:ld_so_t,s0)
+/usr/lib/(.*/)?ld-[^/]*\.so(\.[^/]*)?	--	gen_context(system_u:object_r:ld_so_t,s0)
 
 /usr/(.*/)?nvidia/.+\.so(\..*)?		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
@@ -114,6 +108,7 @@ ifdef(`distro_debian',`
 /usr/(.*/)?dh-python/dh_pypy		--	gen_context(system_u:object_r:lib_t,s0)
 ')
 
+/usr/lib/postfix/lib.*so.*		--	gen_context(system_u:object_r:lib_t,s0)
 /usr/lib/altivec/libavcodec\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/cedega/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/dovecot/(.*/)?lib.*\.so.*      --      gen_context(system_u:object_r:lib_t,s0)
@@ -148,6 +143,7 @@ ifdef(`distro_debian',`
 /usr/lib/nvidia-graphics(-[^/]*/)?libXvMCNVIDIA\.so.* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/nvidia/libGL(core)?\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/xorg/modules/glesx\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/security/pam_poldi\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 /usr/(local/)?.*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:lib_t,s0)
 /usr/(local/)?lib(64)?/wine/.+\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
@@ -163,13 +159,7 @@ ifdef(`distro_debian',`
 /usr/lib/xorg/modules/extensions/libglx\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/x11R6/lib/modules/extensions/libglx\.so(\.[^/]*)* -- gen_context(system_u:object_r:textrel_shlib_t,s0)
 
-ifdef(`distro_debian',`
-/usr/lib				-l	gen_context(system_u:object_r:lib_t,s0)
-')
-
-ifdef(`distro_gentoo',`
-/usr/lib				-l	gen_context(system_u:object_r:lib_t,s0)
-')
+/usr/sbin/ldconfig			--	gen_context(system_u:object_r:ldconfig_exec_t,s0)
 
 ifdef(`distro_redhat',`
 /usr/share/rhn/rhn_applet/eggtrayiconmodule\.so -- gen_context(system_u:object_r:lib_t,s0)
@@ -238,7 +228,7 @@ HOME_DIR/.*/plugins/nppdf\.so.* 	--	gen_context(system_u:object_r:textrel_shlib_
 /usr/lib/ocaml/stublibs/dllnums\.so	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 
 # Livna.org packages: xmms-mp3, ffmpeg, xvidcore, xine-lib, gsm, lame
-/usr/lib.*/libmpg123\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/libmpg123\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/local(/.*)?/libmpg123\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/codecs/drv[1-9c]\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 

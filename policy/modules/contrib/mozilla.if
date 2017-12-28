@@ -221,21 +221,6 @@ interface(`mozilla_dontaudit_manage_user_home_files',`
 
 ########################################
 ## <summary>
-##	Execute mozilla home directory files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`mozilla_exec_user_home_files',`
-	refpolicywarn(`$0($*) has been deprecated, use mozilla_exec_user_plugin_home_files() instead.')
-	mozilla_exec_user_plugin_home_files($1)
-')
-
-########################################
-## <summary>
 ##	Execute mozilla plugin home directory files.
 ## </summary>
 ## <param name="domain">
@@ -255,22 +240,6 @@ interface(`mozilla_exec_user_plugin_home_files',`
 
 ########################################
 ## <summary>
-##	Mozilla home directory file
-##	text relocation.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`mozilla_execmod_user_home_files',`
-	refpolicywarn(`$0($*) has been deprecated, use mozilla_execmod_user_plugin_home_files() instead.')
-	mozilla_execmod_user_plugin_home_files($1)
-')
-
-########################################
-## <summary>
 ##	Mozilla plugin home directory file
 ##	text relocation.
 ## </summary>
@@ -286,6 +255,24 @@ interface(`mozilla_execmod_user_plugin_home_files',`
 	')
 
 	allow $1 mozilla_plugin_home_t:file execmod;
+')
+
+#######################################
+## <summary>
+##	Read temporary mozilla files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`mozilla_read_tmp_files',`
+	gen_require(`
+		type mozilla_tmp_t;
+	')
+
+	read_files_pattern($1, mozilla_tmp_t, mozilla_tmp_t)
 ')
 
 ########################################

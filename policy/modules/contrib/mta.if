@@ -338,6 +338,24 @@ interface(`mta_sendmail_mailserver',`
 	typeattribute $1 mailserver_domain;
 ')
 
+########################################
+## <summary>
+##	Inherit FDs from mailserver_domain domains
+## </summary>
+## <param name="type">
+##	<summary>
+##	Type for a list server or delivery agent that inherits fds
+##	</summary>
+## </param>
+#
+interface(`mta_use_mailserver_fds',`
+	gen_require(`
+		attribute mailserver_domain;
+	')
+
+	allow $1 mailserver_domain:fd use;
+')
+
 #######################################
 ## <summary>
 ##	Make a type a mailserver type used
@@ -449,7 +467,7 @@ interface(`mta_sendmail_domtrans',`
 	')
 
 	corecmd_search_bin($1)
-	domain_auto_trans($1, sendmail_exec_t, $2)
+	domain_auto_transition_pattern($1, sendmail_exec_t, $2)
 
 	allow $1 sendmail_exec_t:lnk_file read_lnk_file_perms;
 ')
@@ -569,6 +587,24 @@ interface(`mta_read_aliases',`
 
 	files_search_etc($1)
 	allow $1 etc_aliases_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	Read mail address alias files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`mta_map_aliases',`
+	gen_require(`
+		type etc_aliases_t;
+	')
+
+	allow $1 etc_aliases_t:file map;
 ')
 
 ########################################
@@ -695,20 +731,6 @@ interface(`mta_dontaudit_rw_delivery_tcp_sockets',`
 	')
 
 	dontaudit $1 mailserver_delivery:tcp_socket { read write };
-')
-
-#######################################
-## <summary>
-##	Connect to all mail servers over TCP.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`mta_tcp_connect_all_mailservers',`
-	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 #######################################

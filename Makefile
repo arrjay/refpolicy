@@ -2,7 +2,7 @@
 # Makefile for the security policy.
 #
 # Targets:
-# 
+#
 # install       - compile and install the policy configuration, and context files.
 # load          - compile, install, and load the policy configuration.
 # reload        - compile, install, and load/reload the policy configuration.
@@ -32,7 +32,7 @@ ifdef LOCAL_ROOT
 endif
 
 # refpolicy version
-version = $(shell cat VERSION)
+version := $(shell cat VERSION)
 
 ifdef LOCAL_ROOT
 builddir := $(LOCAL_ROOT)/
@@ -70,13 +70,13 @@ SECHECK ?= $(BINDIR)/sechecker
 AWK ?= gawk
 GREP ?= egrep
 INSTALL ?= install
-M4 ?= m4
-PYTHON ?= python
+M4 ?= m4 -E -E
+PYTHON ?= python -t -t -E -W error
 SED ?= sed
 SORT ?= LC_ALL=C sort
 UMASK ?= umask
 
-CFLAGS += -Wall
+CFLAGS += -Wall -Wextra -Werror -O2
 
 # policy source layout
 poldir := policy
@@ -94,76 +94,77 @@ endif
 
 # policy building support tools
 support := support
-genxml := $(PYTHON) -E $(support)/segenxml.py
-gendoc := $(PYTHON) -E $(support)/sedoctool.py
-genperm := $(PYTHON) -E $(support)/genclassperms.py
-policyvers := $(PYTHON) -E $(support)/policyvers.py
+genxml := $(PYTHON) $(support)/segenxml.py
+gendoc := $(PYTHON) $(support)/sedoctool.py
+genperm := $(PYTHON) $(support)/genclassperms.py
+policyvers := $(PYTHON) $(support)/policyvers.py
 fcsort := $(tmpdir)/fc_sort
 setbools := $(AWK) -f $(support)/set_bools_tuns.awk
 get_type_attr_decl := $(SED) -r -f $(support)/get_type_attr_decl.sed
 comment_move_decl := $(SED) -r -f $(support)/comment_move_decl.sed
-gennetfilter := $(PYTHON) -E $(support)/gennetfilter.py
+gennetfilter := $(PYTHON) $(support)/gennetfilter.py
 m4iferror := $(support)/iferror.m4
 m4divert := $(support)/divert.m4
 m4undivert := $(support)/undivert.m4
+m4terminate := $(support)/fatal_error.m4
 # use our own genhomedircon to make sure we have a known usable one,
 # so policycoreutils updates are not required (RHEL4)
-genhomedircon := $(PYTHON) -E $(support)/genhomedircon
+genhomedircon := $(PYTHON) $(support)/genhomedircon.py
 
 # documentation paths
 docs := doc
-xmldtd = $(docs)/policy.dtd
-metaxml = metadata.xml
-doctemplate = $(docs)/templates
-docfiles = $(docs)/Makefile.example $(addprefix $(docs)/,example.te example.if example.fc)
+xmldtd := $(docs)/policy.dtd
+metaxml := metadata.xml
+doctemplate := $(docs)/templates
+docfiles := $(docs)/Makefile.example $(addprefix $(docs)/,example.te example.if example.fc)
 
 ifndef LOCAL_ROOT
-polxml = $(docs)/policy.xml
-tunxml = $(docs)/global_tunables.xml
-boolxml = $(docs)/global_booleans.xml
-htmldir = $(docs)/html
+polxml := $(docs)/policy.xml
+tunxml := $(docs)/global_tunables.xml
+boolxml := $(docs)/global_booleans.xml
+htmldir := $(docs)/html
 else
-polxml = $(LOCAL_ROOT)/doc/policy.xml
-tunxml = $(LOCAL_ROOT)/doc/global_tunables.xml
-boolxml = $(LOCAL_ROOT)/doc/global_booleans.xml
-htmldir = $(LOCAL_ROOT)/doc/html
+polxml := $(LOCAL_ROOT)/doc/policy.xml
+tunxml := $(LOCAL_ROOT)/doc/global_tunables.xml
+boolxml := $(LOCAL_ROOT)/doc/global_booleans.xml
+htmldir := $(LOCAL_ROOT)/doc/html
 endif
 
 # config file paths
-globaltun = $(poldir)/global_tunables
-globalbool = $(poldir)/global_booleans
+globaltun := $(poldir)/global_tunables
+globalbool := $(poldir)/global_booleans
 user_files := $(poldir)/users
 policycaps := $(poldir)/policy_capabilities
 ctx_defaults := $(poldir)/context_defaults
 
 # local config file paths
 ifndef LOCAL_ROOT
-mod_conf = $(poldir)/modules.conf
-booleans = $(poldir)/booleans.conf
-tunables = $(poldir)/tunables.conf
+mod_conf := $(poldir)/modules.conf
+booleans := $(poldir)/booleans.conf
+tunables := $(poldir)/tunables.conf
 else
-mod_conf = $(local_poldir)/modules.conf
-booleans = $(local_poldir)/booleans.conf
-tunables = $(local_poldir)/tunables.conf
+mod_conf := $(local_poldir)/modules.conf
+booleans := $(local_poldir)/booleans.conf
+tunables := $(local_poldir)/tunables.conf
 endif
 
 # install paths
 PKGNAME ?= refpolicy-$(version)
-prefix = $(DESTDIR)/usr
-topdir = $(DESTDIR)/etc/selinux
-installdir = $(topdir)/$(strip $(NAME))
-srcpath = $(installdir)/src
-userpath = $(installdir)/users
-policypath = $(installdir)/policy
-contextpath = $(installdir)/contexts
-homedirpath = $(contextpath)/files/homedir_template
-fcpath = $(contextpath)/files/file_contexts
-fcsubspath = $(contextpath)/files/file_contexts.subs_dist
-ncpath = $(contextpath)/netfilter_contexts
-sharedir = $(prefix)/share/selinux
-modpkgdir = $(sharedir)/$(strip $(NAME))
-headerdir = $(modpkgdir)/include
-docsdir = $(prefix)/share/doc/$(PKGNAME)
+prefix := $(DESTDIR)/usr
+topdir := $(DESTDIR)/etc/selinux
+installdir := $(topdir)/$(strip $(NAME))
+srcpath := $(installdir)/src
+userpath := $(installdir)/users
+policypath := $(installdir)/policy
+contextpath := $(installdir)/contexts
+homedirpath := $(contextpath)/files/homedir_template
+fcpath := $(contextpath)/files/file_contexts
+fcsubspath := $(contextpath)/files/file_contexts.subs_dist
+ncpath := $(contextpath)/netfilter_contexts
+sharedir := $(prefix)/share/selinux
+modpkgdir := $(sharedir)/$(strip $(NAME))
+headerdir := $(modpkgdir)/include
+docsdir := $(prefix)/share/doc/$(PKGNAME)
 
 # enable MLS if requested.
 ifeq "$(TYPE)" "mls"
@@ -212,6 +213,10 @@ ifeq ($(DIRECT_INITRC),y)
 	M4PARAM += -D direct_sysadm_daemon
 endif
 
+ifeq "$(WERROR)" "y"
+	M4PARAM += -D m4_werror
+endif
+
 ifeq "$(UBAC)" "y"
 	M4PARAM += -D enable_ubac
 endif
@@ -234,7 +239,7 @@ ifeq ($(DISTRO),debian)
 endif
 
 ifeq ($(DISTRO),gentoo)
-	CTAGS := exuberant-ctags	
+	CTAGS := exuberant-ctags
 endif
 
 CTAGS ?= ctags
@@ -250,7 +255,7 @@ seusers := $(appconf)/seusers
 appdir := $(contextpath)
 user_default_contexts := $(wildcard config/appconfig-$(TYPE)/*_default_contexts)
 user_default_contexts_names := $(addprefix $(contextpath)/users/,$(subst _default_contexts,,$(notdir $(user_default_contexts))))
-appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types lxc_contexts virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
+appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types lxc_contexts openrc_contexts virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
 net_contexts := $(builddir)net_contexts
 
 all_layers := $(shell find $(wildcard $(moddir)/*) -maxdepth 0 -type d)
@@ -365,7 +370,7 @@ $(moddir)/kernel/corenetwork.if: $(moddir)/kernel/corenetwork.te.in $(moddir)/ke
 	@echo "# $(notdir $@).in or $(notdir $@).m4 file should be modified." >> $@
 	@echo "#" >> $@
 	$(verbose) cat $@.in >> $@
-	$(verbose) $(GREP) "^[[:blank:]]*network_(interface|node|port|packet)(_controlled)?\(.*\)" $< \
+	$(verbose) $(GREP) "^[[:blank:]]*(network_(interface|node|port|packet)(_controlled)?)|ib_(pkey|endport)\(.*\)" $< \
 		| $(M4) -D self_contained_policy $(M4PARAM) $(m4divert) $@.m4 $(m4undivert) - \
 		| $(SED) -e 's/dollarsone/\$$1/g' -e 's/dollarszero/\$$0/g' >> $@
 
@@ -389,10 +394,13 @@ $(net_contexts): $(moddir)/kernel/corenetwork.te.in
 #
 # Create config files
 #
-conf: $(mod_conf) $(booleans) $(generated_te) $(generated_if) $(generated_fc)
+conf: $(mod_conf) $(booleans) generate
 
-$(mod_conf) $(booleans): $(polxml)
-	@echo "Updating $(mod_conf) and $(booleans)"
+$(booleans) $(mod_conf): conf.intermediate
+
+.INTERMEDIATE: conf.intermediate
+conf.intermediate: $(polxml)
+	@echo "Updating $(booleans) and $(mod_conf)"
 	$(verbose) $(gendoc) -b $(booleans) -m $(mod_conf) -x $(polxml)
 
 ########################################
@@ -412,7 +420,7 @@ $(layerxml): %.xml: $(all_metaxml) $(filter $(addprefix $(moddir)/, $(notdir $*)
 	$(verbose) for i in $(basename $(filter $(addprefix $(moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -m $$i >> $@; done
 ifdef LOCAL_ROOT
 	$(verbose) for i in $(basename $(filter $(addprefix $(local_moddir)/, $(notdir $*))%, $(detected_mods))); do $(genxml) -w -m $$i >> $@; done
-endif	
+endif
 
 $(tunxml): $(globaltun)
 	$(verbose) $(genxml) -w -t $< > $@
@@ -513,7 +521,8 @@ install-headers: $(layerxml) $(tunxml) $(boolxml)
 	@echo "Installing $(NAME) policy headers."
 	$(verbose) $(INSTALL) -m 644 $^ $(headerdir)
 	$(verbose) mkdir -p $(headerdir)/support
-	$(verbose) $(INSTALL) -m 644 $(m4support) $(word $(words $(genxml)),$(genxml)) $(xmldtd) $(headerdir)/support
+	$(verbose) $(INSTALL) -m 644 $(m4support) $(xmldtd) $(headerdir)/support
+	$(verbose) $(INSTALL) -m 755 $(word $(words $(genxml)),$(genxml)) $(headerdir)/support
 	$(verbose) $(genperm) $(avs) $(secclass) > $(headerdir)/support/all_perms.spt
 	$(verbose) for i in $(notdir $(all_layers)); do \
 		mkdir -p $(headerdir)/$$i ;\
@@ -549,7 +558,9 @@ install-docs: $(tmpdir)/html
 #
 install-src:
 	rm -rf $(srcpath)/policy.old
-	-mv $(srcpath)/policy $(srcpath)/policy.old
+	if test -d $(srcpath)/policy; then \
+		mv $(srcpath)/policy $(srcpath)/policy.old ;\
+	fi
 	mkdir -p $(srcpath)/policy
 	cp -R . $(srcpath)/policy
 
@@ -623,6 +634,7 @@ bare: clean
 ifndef LOCAL_ROOT
 	$(verbose) rm -f $(fcsort)
 	$(verbose) rm -f $(support)/*.pyc
+	$(verbose) rm -Rf $(support)/__pycache__/
 ifneq ($(generated_te),)
 	$(verbose) rm -f $(generated_te)
 endif

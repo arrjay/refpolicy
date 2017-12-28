@@ -1,4 +1,4 @@
-policy_module(kdump, 1.5.0)
+policy_module(kdump, 1.6.0)
 
 #######################################
 #
@@ -31,7 +31,7 @@ files_tmp_file(kdumpctl_tmp_t)
 # Local policy
 #
 
-allow kdump_t self:capability { sys_boot dac_override };
+allow kdump_t self:capability { dac_override sys_boot };
 
 allow kdump_t kdump_etc_t:file read_file_perms;
 
@@ -106,7 +106,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	modutils_domtrans_insmod(kdumpctl_t)
+	modutils_domtrans(kdumpctl_t)
 	modutils_read_module_config(kdumpctl_t)
 ')
 

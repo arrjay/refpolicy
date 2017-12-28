@@ -1,10 +1,10 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-COMMON_OPTIONS = DISTRO=debian DIRECT_INITRC=y MONOLITHIC=n SYSTEMD=y
+COMMON_OPTIONS = DISTRO=debian DIRECT_INITRC=y MONOLITHIC=n SYSTEMD=y WERROR=y
 FLAVOURS = default mls
 TYPE_default = mcs
-UBAC_default = n
+UBAC_default = y
 UNK_PERMS_default = allow
 TYPE_mls = mls
 UBAC_mls = n
@@ -23,7 +23,8 @@ endif
 override_dh_auto_configure: $(patsubst %, conf-%-policy, $(FLAVOURS)) conf-docs conf-src
 
 override_dh_install:
-	dh_install --fail-missing
+	dh_install
+	dh_missing --fail-missing
 
 override_dh_fixperms:
 	dh_fixperms
@@ -90,7 +91,7 @@ conf-docs:
                 README man $(CURDIR)/debian/build-docs
 	cp  debian/build.conf.default $(CURDIR)/debian/build-docs/build.conf
 	(cd $(CURDIR)/debian/build-docs ;                          \
-           $(MAKE) NAME=default TYPE=mcs UBAC=n UNK_PERMS=allow $(COMMON_OPTIONS) conf)
+           $(MAKE) NAME=default TYPE=mcs UBAC=y UNK_PERMS=allow $(COMMON_OPTIONS) conf)
 	touch $@
 
 conf-src:

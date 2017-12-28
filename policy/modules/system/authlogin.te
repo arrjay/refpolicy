@@ -1,4 +1,4 @@
-policy_module(authlogin, 2.9.0)
+policy_module(authlogin, 2.11.2)
 
 ########################################
 #
@@ -85,6 +85,11 @@ files_type(var_auth_t)
 type wtmp_t;
 logging_log_file(wtmp_t)
 
+optional_policy(`
+	systemd_tmpfilesd_managed(faillog_t, file)
+	systemd_tmpfilesd_managed(var_auth_t, dir)
+')
+
 ########################################
 #
 # Check password local policy
@@ -112,6 +117,9 @@ files_read_etc_files(chkpwd_t)
 files_dontaudit_search_var(chkpwd_t)
 
 fs_dontaudit_getattr_xattr_fs(chkpwd_t)
+
+selinux_get_enforce_mode(chkpwd_t)
+selinux_getattr_fs(chkpwd_t)
 
 term_dontaudit_use_console(chkpwd_t)
 term_dontaudit_use_unallocated_ttys(chkpwd_t)
@@ -154,7 +162,7 @@ optional_policy(`
 # PAM local policy
 #
 
-allow pam_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+allow pam_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 dontaudit pam_t self:capability sys_tty_config;
 
 allow pam_t self:fd use;
@@ -225,8 +233,8 @@ kernel_dontaudit_search_unlabeled(pam_console_t)
 kernel_read_system_state(pam_console_t)
 
 dev_read_sysfs(pam_console_t)
-dev_getattr_apm_bios_dev(pam_console_t)
-dev_setattr_apm_bios_dev(pam_console_t)
+dev_getattr_acpi_bios_dev(pam_console_t)
+dev_setattr_acpi_bios_dev(pam_console_t)
 dev_getattr_dri_dev(pam_console_t)
 dev_setattr_dri_dev(pam_console_t)
 dev_getattr_input_dev(pam_console_t)
@@ -410,6 +418,8 @@ optional_policy(`
 #
 # nsswitch_domain local policy
 #
+
+allow nsswitch_domain self:key manage_key_perms;
 
 files_list_var_lib(nsswitch_domain)
 
