@@ -1,0 +1,292 @@
+Index: refpolicy-2.20180220/policy/modules/contrib/networkmanager.te
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/contrib/networkmanager.te
++++ refpolicy-2.20180220/policy/modules/contrib/networkmanager.te
+@@ -57,6 +57,7 @@ allow NetworkManager_t self:tcp_socket {
+ allow NetworkManager_t self:tun_socket { create_socket_perms relabelfrom relabelto };
+ allow NetworkManager_t self:packet_socket create_socket_perms;
+ allow NetworkManager_t self:socket create_socket_perms;
++allow NetworkManager_t self:rawip_socket { create setopt getattr write read };
+ 
+ allow NetworkManager_t wpa_cli_t:unix_dgram_socket sendto;
+ 
+@@ -137,6 +138,8 @@ dev_rw_wireless(NetworkManager_t)
+ domain_use_interactive_fds(NetworkManager_t)
+ domain_read_all_domains_state(NetworkManager_t)
+ 
++# /etc/resolv.conf is a symlink written by NM
++files_manage_etc_symlinks(NetworkManager_t)
+ files_read_etc_runtime_files(NetworkManager_t)
+ files_read_usr_files(NetworkManager_t)
+ files_read_usr_src_files(NetworkManager_t)
+@@ -345,6 +348,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_read_logind_pids(NetworkManager_t)
+ 	systemd_read_logind_sessions_files(NetworkManager_t)
+ 	systemd_write_inherited_logind_inhibit_pipes(NetworkManager_t)
+ ')
+Index: refpolicy-2.20180220/policy/modules/contrib/ntp.fc
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/contrib/ntp.fc
++++ refpolicy-2.20180220/policy/modules/contrib/ntp.fc
+@@ -31,6 +31,7 @@
+ /var/lib/ntp(/.*)?				gen_context(system_u:object_r:ntp_drift_t,s0)
+ /var/lib/sntp-kod(/.*)?				gen_context(system_u:object_r:ntp_drift_t,s0)
+ /var/lib/systemd/clock			--	gen_context(system_u:object_r:ntp_drift_t,s0)
++/var/lib/private/systemd/timesync(/.*)? --	gen_context(system_u:object_r:ntp_drift_t,s0)
+ 
+ /var/lock/ntpdate                       --      gen_context(system_u:object_r:ntpd_lock_t,s0)
+ 
+Index: refpolicy-2.20180220/policy/modules/contrib/ntp.te
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/contrib/ntp.te
++++ refpolicy-2.20180220/policy/modules/contrib/ntp.te
+@@ -148,6 +148,8 @@ ifdef(`init_systemd',`
+ 	dbus_connect_system_bus(ntpd_t)
+ 	init_dbus_chat(ntpd_t)
+ 	init_get_system_status(ntpd_t)
++	# for /var/lib/systemd/timesync
++	init_read_var_lib_links(ntpd_t)
+ 	allow ntpd_t self:capability { fowner setpcap };
+ 	init_reload(ntpd_t)
+ 
+Index: refpolicy-2.20180220/policy/modules/contrib/openvpn.te
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/contrib/openvpn.te
++++ refpolicy-2.20180220/policy/modules/contrib/openvpn.te
+@@ -175,3 +175,7 @@ optional_policy(`
+ 		networkmanager_dbus_chat(openvpn_t)
+ 	')
+ ')
++
++optional_policy(`
++	systemd_use_passwd_agent(openvpn_t)
++')
+Index: refpolicy-2.20180220/policy/modules/contrib/tor.te
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/contrib/tor.te
++++ refpolicy-2.20180220/policy/modules/contrib/tor.te
+@@ -107,6 +107,8 @@ files_read_etc_runtime_files(tor_t)
+ files_read_usr_files(tor_t)
+ 
+ fs_search_tmpfs(tor_t)
++# for log symlink on a tmpfs filesystem systemd creates for it
++fs_read_tmpfs_symlinks(tor_t)
+ 
+ auth_use_nsswitch(tor_t)
+ 
+Index: refpolicy-2.20180220/policy/modules/system/init.if
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/system/init.if
++++ refpolicy-2.20180220/policy/modules/system/init.if
+@@ -1131,6 +1131,25 @@ interface(`init_dbus_chat',`
+ 
+ ########################################
+ ## <summary>
++##      read/follow symlinks under /var/lib/systemd/
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`init_read_var_lib_links',`
++	gen_require(`
++		type init_var_lib_t;
++	')
++
++	allow $1 init_var_lib_t:dir list_dir_perms;
++	allow $1 init_var_lib_t:lnk_file read_lnk_file_perms;
++')
++
++########################################
++## <summary>
+ ##      List /var/lib/systemd/ dir
+ ## </summary>
+ ## <param name="domain">
+@@ -1851,6 +1870,25 @@ interface(`init_ptrace',`
+ 
+ ########################################
+ ## <summary>
++##	get init process stats
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`init_getattr',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:process getattr;
++')
++
++########################################
++## <summary>
+ ##	Write an init script unnamed pipe.
+ ## </summary>
+ ## <param name="domain">
+@@ -2814,6 +2852,25 @@ interface(`init_search_units',`
+ 	fs_search_tmpfs($1)
+ ')
+ 
++######################################
++## <summary>
++##	read systemd unit lnk files (usually under /run/systemd/units/)
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_read_unit_links',`
++	gen_require(`
++		type init_var_run_t, systemd_unit_t;
++	')
++
++	search_dirs_pattern($1, init_var_run_t, systemd_unit_t)
++	allow $1 init_var_run_t:lnk_file read_lnk_file_perms;
++')
++
+ ########################################
+ ## <summary>
+ ##	Get status of generic systemd units.
+Index: refpolicy-2.20180220/policy/modules/system/logging.te
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/system/logging.te
++++ refpolicy-2.20180220/policy/modules/system/logging.te
+@@ -542,11 +542,14 @@ ifdef(`init_systemd',`
+ 
+ 	init_create_pid_dirs(syslogd_t)
+ 	init_daemon_pid_file(syslogd_var_run_t, dir, "syslogd")
++	init_getattr(syslogd_t)
+ 	init_rename_pid_files(syslogd_t)
+ 	init_delete_pid_files(syslogd_t)
+ 	init_dgram_send(syslogd_t)
+ 	init_read_pid_pipes(syslogd_t)
+ 	init_read_state(syslogd_t)
++	# for /run/systemd/units/invocation:* links
++	init_read_unit_links(syslogd_t)
+ 
+ 	systemd_manage_journal_files(syslogd_t)
+ 
+Index: refpolicy-2.20180220/policy/modules/system/systemd.fc
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/system/systemd.fc
++++ refpolicy-2.20180220/policy/modules/system/systemd.fc
+@@ -46,6 +46,7 @@
+ /run/\.nologin[^/]*	--	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
+ /run/nologin	--	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
+ 
++/run/systemd/ask-password(/.*)?	gen_context(system_u:object_r:systemd_passwd_var_run_t,s0)
+ /run/systemd/resolve(/.*)?  gen_context(system_u:object_r:systemd_resolved_var_run_t,s0)
+ /run/systemd/seats(/.*)?	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
+ /run/systemd/sessions(/.*)?	gen_context(system_u:object_r:systemd_sessions_var_run_t,s0)
+Index: refpolicy-2.20180220/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20180220/policy/modules/system/systemd.if
+@@ -289,6 +289,8 @@ interface(`systemd_use_passwd_agent',`
+ 	manage_sock_files_pattern($1, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
+ 
+ 	allow systemd_passwd_agent_t $1:process signull;
++	allow systemd_passwd_agent_t $1:dir search;
++	allow systemd_passwd_agent_t $1:file read_file_perms;
+ 	allow systemd_passwd_agent_t $1:unix_dgram_socket sendto;
+ ')
+ 
+Index: refpolicy-2.20180220/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20180220.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20180220/policy/modules/system/systemd.te
+@@ -356,7 +356,7 @@ logging_send_syslog_msg(systemd_log_pars
+ # Logind local policy
+ #
+ 
+-allow systemd_logind_t self:capability { chown dac_override fowner sys_admin sys_tty_config };
++allow systemd_logind_t self:capability { chown dac_override dac_read_search fowner sys_admin sys_tty_config };
+ allow systemd_logind_t self:process { getcap setfscreate };
+ allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
+ allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
+@@ -641,7 +641,7 @@ miscfiles_read_localization(systemd_noti
+ #
+ 
+ allow systemd_nspawn_t self:process { getcap setcap setfscreate sigkill };
+-allow systemd_nspawn_t self:capability { dac_override fsetid mknod net_admin setgid setuid setpcap sys_admin sys_chroot };
++allow systemd_nspawn_t self:capability { dac_override dac_read_search fsetid mknod net_admin setgid setuid setpcap sys_admin sys_chroot };
+ allow systemd_nspawn_t self:capability2 wake_alarm;
+ allow systemd_nspawn_t self:unix_dgram_socket connected_socket_perms;
+ 
+@@ -744,6 +744,7 @@ tunable_policy(`systemd_nspawn_labeled_n
+ 	fs_write_cgroup_files(systemd_nspawn_t)
+ 
+ 	selinux_getattr_fs(systemd_nspawn_t)
++	selinux_remount_fs(systemd_nspawn_t)
+ 	selinux_search_fs(systemd_nspawn_t)
+ 
+ 	init_domtrans(systemd_nspawn_t)
+@@ -813,6 +814,7 @@ miscfiles_read_localization(systemd_pass
+ 
+ seutil_search_default_contexts(systemd_passwd_agent_t)
+ 
++userdom_use_user_ttys(systemd_passwd_agent_t)
+ userdom_use_user_ptys(systemd_passwd_agent_t)
+ 
+ optional_policy(`
+@@ -884,7 +886,7 @@ systemd_log_parse_environment(systemd_se
+ # Tmpfiles local policy
+ #
+ 
+-allow systemd_tmpfiles_t self:capability { chown dac_override fowner fsetid mknod net_admin sys_admin };
++allow systemd_tmpfiles_t self:capability { chown dac_override dac_read_search fowner fsetid mknod net_admin sys_admin };
+ allow systemd_tmpfiles_t self:process { setfscreate getcap };
+ 
+ allow systemd_tmpfiles_t systemd_coredump_var_lib_t:dir { relabelfrom relabelto manage_dir_perms };
+@@ -900,9 +902,11 @@ allow systemd_tmpfiles_t systemd_journal
+ allow systemd_tmpfiles_t systemd_tmpfiles_conf_t:dir list_dir_perms;
+ allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:file read_file_perms;
+ 
++kernel_getattr_proc(systemd_tmpfiles_t)
+ kernel_read_kernel_sysctls(systemd_tmpfiles_t)
+ kernel_read_network_state(systemd_tmpfiles_t)
+ 
++dev_getattr_fs(systemd_tmpfiles_t)
+ dev_manage_all_dev_nodes(systemd_tmpfiles_t)
+ dev_read_urand(systemd_tmpfiles_t)
+ dev_relabel_all_sysfs(systemd_tmpfiles_t)
+@@ -918,6 +922,7 @@ files_manage_var_dirs(systemd_tmpfiles_t
+ files_manage_var_lib_dirs(systemd_tmpfiles_t)
+ files_purge_tmp(systemd_tmpfiles_t)
+ files_read_etc_files(systemd_tmpfiles_t)
++files_read_etc_runtime_files(systemd_tmpfiles_t)
+ files_relabel_all_lock_dirs(systemd_tmpfiles_t)
+ files_relabel_all_pid_dirs(systemd_tmpfiles_t)
+ files_relabel_all_tmp_dirs(systemd_tmpfiles_t)
+@@ -929,14 +934,19 @@ files_relabelto_etc_dirs(systemd_tmpfile
+ # for /etc/mtab
+ files_manage_etc_symlinks(systemd_tmpfiles_t)
+ 
++fs_getattr_tmpfs(systemd_tmpfiles_t)
++fs_getattr_tmpfs_dirs(systemd_tmpfiles_t)
+ fs_getattr_xattr_fs(systemd_tmpfiles_t)
+ 
+ selinux_get_fs_mount(systemd_tmpfiles_t)
+ selinux_search_fs(systemd_tmpfiles_t)
+ 
++auth_append_lastlog(systemd_tmpfiles_t)
+ auth_manage_faillog(systemd_tmpfiles_t)
++auth_manage_lastlog(systemd_tmpfiles_t)
+ auth_manage_login_records(systemd_tmpfiles_t)
+ auth_manage_var_auth(systemd_tmpfiles_t)
++auth_relabel_lastlog(systemd_tmpfiles_t)
+ auth_relabel_login_records(systemd_tmpfiles_t)
+ auth_setattr_login_records(systemd_tmpfiles_t)
+ 

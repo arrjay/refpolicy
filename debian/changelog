@@ -1,3 +1,15 @@
+refpolicy (2:2.20180114-1) unstable; urgency=medium
+
+  * New upstream 2.20180114 with patch from git version 2.20180220.
+    Took that patch because a lot of it was policy I developed.
+  * Delete the deprecated macro mmap_file_perms, anyone who uses this should
+    change to mmap_exec_file_perms instead.  Closes: #885771
+  * Now build-depend on recent toolchain.  Closes: #875546
+  * Removed typebounds patch that upstream didn't like, seems to work ok
+    without it now, but we can use nnp_transition if necessary.
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 26 Feb 2018 23:25:27 +1100
+
 refpolicy (2:2.20171228-1) unstable; urgency=medium
 
   * New upstream from git with lots of Debian patches merged.  This policy is
