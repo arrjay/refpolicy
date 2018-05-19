@@ -1,6 +1,9 @@
 0001-git-to-20180220
-0003-Make-default-and-root-mcs-seusers-unconfined.patch
-0005-var-run
+0002-git-to-20180319
+0003-git-to-20180419
+0004-git-to-20180519
+0008-Make-default-and-root-mcs-seusers-unconfined.patch
+0009-var-run
 0010-misc
 0011-systemd
 0015-cron-trivial

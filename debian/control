@@ -9,12 +9,12 @@ Uploaders: Russell Coker <russell@coker.com.au>
 Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 9)
 Build-Depends-Indep: bzip2,
-                     checkpolicy (>= 2.7~rc2-1),
+                     checkpolicy (>= 2.7~2),
                      gawk,
-                     libsepol1 (>= 2.7~rc2-1),
+                     libsepol1 (>= 2.7~2),
                      m4,
-                     policycoreutils (>= 2.6),
-                     policycoreutils-python-utils (>= 2.6),
+                     policycoreutils (>= 2.7),
+                     policycoreutils-python-utils (>= 2.7),
                      python,
 # Needed for the --sort=name option, can probably be removed when this version
 # hits stable.
@@ -22,11 +22,11 @@ Build-Depends-Indep: bzip2,
 
 Package: selinux-policy-default
 Architecture: all
-Depends: libselinux1 (>= 2.5),
-         libsemanage1 (>= 2.5),
-         libsepol1 (>= 2.5),
-         policycoreutils (>= 2.5),
-         selinux-utils (>= 2.5),
+Depends: libselinux1 (>= 2.7),
+         libsemanage1 (>= 2.7),
+         libsepol1 (>= 2.7-2),
+         policycoreutils (>= 2.7),
+         selinux-utils (>= 2.7),
          ${misc:Depends}
 Recommends: checkpolicy, setools
 Suggests: logcheck, syslog-summary

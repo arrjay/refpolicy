@@ -1,3 +1,22 @@
+refpolicy (2:2.20180114-3) unstable; urgency=medium
+
+  * Added git patch for 20180319.
+  * Added git patch for 20180419, fixes lots of typos which changes the
+    way things work.  Also adds sctp protocol support.
+  * Added git patch for 20180519.
+  * Build-depend on version 2.7-2 of checkpolicy and libsepol1-dev and Depend
+    on version 2.7-2 of libsepol1 for sctp support.
+  * Changed all Build-depends and Depends to version 2.7 from 2.5 and 2.6
+    because there's no reason to try to build against ancient versions and we
+    don't want to deal with annoying bugs later.
+  * Allow mon_t to read generic certs for using SSL for notifications
+  * Allow systemd_nspawn_t the mcs_killall if systemd_nspawn_labeled_namespace
+    is enabled
+  * Allow udev_t to run iptables in iptables_t
+  * Some other little systemd stuff
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 19 May 2018 11:12:41 +1000
+
 refpolicy (2:2.20180114-2) unstable; urgency=medium
 
   * Included changelog entry 2:2.20161023.1-10

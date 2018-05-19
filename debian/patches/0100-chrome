@@ -2,10 +2,10 @@ Description: Policy for Chromium/Chrome
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-07-03
 
-Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.fc
+Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/contrib/mozilla.fc
-+++ refpolicy-2.20171212/policy/modules/contrib/mozilla.fc
+--- refpolicy-2.20180114.orig/policy/modules/contrib/mozilla.fc
++++ refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
 @@ -1,5 +1,8 @@
  HOME_DIR/\.galeon(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.mozilla(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
@@ -34,10 +34,10 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.fc
 +/opt/google/chrome/google-chrome --	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
 +/opt/google/chrome/nacl_helper	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
 +
-Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.if
+Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.if
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/contrib/mozilla.if
-+++ refpolicy-2.20171212/policy/modules/contrib/mozilla.if
+--- refpolicy-2.20180114.orig/policy/modules/contrib/mozilla.if
++++ refpolicy-2.20180114/policy/modules/contrib/mozilla.if
 @@ -14,12 +14,18 @@
  ##	User domain for the role.
  ##	</summary>
@@ -88,10 +88,10 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.if
  ')
  
  ########################################
-Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.te
+Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/contrib/mozilla.te
-+++ refpolicy-2.20171212/policy/modules/contrib/mozilla.te
+--- refpolicy-2.20180114.orig/policy/modules/contrib/mozilla.te
++++ refpolicy-2.20180114/policy/modules/contrib/mozilla.te
 @@ -47,6 +47,45 @@ userdom_user_tmp_file(mozilla_plugin_tmp
  type mozilla_plugin_tmpfs_t;
  userdom_user_tmpfs_file(mozilla_plugin_tmpfs_t)
@@ -181,7 +181,7 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.te
  allow mozilla_t mozilla_tmp_t:file map;
  files_tmp_filetrans(mozilla_t, mozilla_tmp_t, { file dir })
  
-@@ -107,7 +165,10 @@ manage_files_pattern(mozilla_t, mozilla_
+@@ -107,7 +165,11 @@ manage_files_pattern(mozilla_t, mozilla_
  manage_lnk_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  manage_fifo_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  manage_sock_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
@@ -190,10 +190,11 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.te
 +
 +# so mozilla can create /var/run/user/PID/pulse
 +auth_read_var_auth(mozilla_t)
++
+ allow mozilla_t mozilla_plugin_tmpfs_t:file map;
  
  allow mozilla_t mozilla_plugin_rw_t:dir list_dir_perms;
- allow mozilla_t mozilla_plugin_rw_t:file read_file_perms;
-@@ -117,11 +178,16 @@ stream_connect_pattern(mozilla_t, mozill
+@@ -118,11 +180,16 @@ stream_connect_pattern(mozilla_t, mozill
  
  can_exec(mozilla_t, { mozilla_exec_t mozilla_plugin_rw_t mozilla_plugin_home_t })
  
@@ -210,7 +211,7 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.te
  corecmd_list_bin(mozilla_t)
  corecmd_exec_shell(mozilla_t)
  corecmd_exec_bin(mozilla_t)
-@@ -166,6 +232,8 @@ dev_read_rand(mozilla_t)
+@@ -167,6 +234,8 @@ dev_read_rand(mozilla_t)
  dev_read_urand(mozilla_t)
  dev_rw_dri(mozilla_t)
  dev_write_sound(mozilla_t)
@@ -219,7 +220,7 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.te
  
  domain_dontaudit_read_all_domains_state(mozilla_t)
  
-@@ -209,6 +277,7 @@ mozilla_run_plugin(mozilla_t, mozilla_ro
+@@ -210,6 +279,7 @@ mozilla_run_plugin(mozilla_t, mozilla_ro
  mozilla_run_plugin_config(mozilla_t, mozilla_roles)
  
  xserver_user_x_domain_template(mozilla, mozilla_t, mozilla_tmpfs_t)
@@ -227,10 +228,10 @@ Index: refpolicy-2.20171212/policy/modules/contrib/mozilla.te
  xserver_dontaudit_read_xdm_tmp_files(mozilla_t)
  xserver_dontaudit_getattr_xdm_tmp_sockets(mozilla_t)
  
-Index: refpolicy-2.20171212/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20171212/policy/modules/kernel/corecommands.fc
+--- refpolicy-2.20180114.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
 @@ -121,6 +121,7 @@ ifdef(`distro_debian',`
  /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
@@ -239,10 +240,10 @@ Index: refpolicy-2.20171212/policy/modules/kernel/corecommands.fc
  
  /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
-Index: refpolicy-2.20171212/policy/modules/contrib/xguest.te
+Index: refpolicy-2.20180114/policy/modules/contrib/xguest.te
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/contrib/xguest.te
-+++ refpolicy-2.20171212/policy/modules/contrib/xguest.te
+--- refpolicy-2.20180114.orig/policy/modules/contrib/xguest.te
++++ refpolicy-2.20180114/policy/modules/contrib/xguest.te
 @@ -103,7 +103,7 @@ optional_policy(`
  ')
  
@@ -252,10 +253,10 @@ Index: refpolicy-2.20171212/policy/modules/contrib/xguest.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20171212/policy/modules/roles/staff.te
+Index: refpolicy-2.20180114/policy/modules/roles/staff.te
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20171212/policy/modules/roles/staff.te
+--- refpolicy-2.20180114.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20180114/policy/modules/roles/staff.te
 @@ -142,7 +142,7 @@ ifndef(`distro_redhat',`
  	')
  
@@ -265,10 +266,10 @@ Index: refpolicy-2.20171212/policy/modules/roles/staff.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20171212/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20180114/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20171212/policy/modules/roles/sysadm.te
+--- refpolicy-2.20180114.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20180114/policy/modules/roles/sysadm.te
 @@ -652,7 +652,7 @@ optional_policy(`
  ')
  
@@ -278,10 +279,10 @@ Index: refpolicy-2.20171212/policy/modules/roles/sysadm.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20171212/policy/modules/roles/unprivuser.te
+Index: refpolicy-2.20180114/policy/modules/roles/unprivuser.te
 ===================================================================
---- refpolicy-2.20171212.orig/policy/modules/roles/unprivuser.te
-+++ refpolicy-2.20171212/policy/modules/roles/unprivuser.te
+--- refpolicy-2.20180114.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20180114/policy/modules/roles/unprivuser.te
 @@ -114,7 +114,7 @@ ifndef(`distro_redhat',`
  	')
  
