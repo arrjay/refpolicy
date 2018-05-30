@@ -1,4 +1,4 @@
-refpolicy (2:2.20180114-4) UNRELEASED; urgency=medium
+refpolicy (2:2.20180114-4) unstable; urgency=medium
 
   * Team upload.
   * debian/control: Point Vcs-* fields to new (salsa) machine
@@ -16,7 +16,7 @@ refpolicy (2:2.20180114-4) UNRELEASED; urgency=medium
     python3
   * Drop debian/source/lintian-overrides, overrides not used anymore
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 11:39:29 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 11:42:05 +0200
 
 refpolicy (2:2.20180114-3) unstable; urgency=medium
 
