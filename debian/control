@@ -7,7 +7,7 @@ Homepage: https://github.com/TresysTechnology/refpolicy/wiki
 Maintainer: Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>
 Uploaders: Russell Coker <russell@coker.com.au>
 Standards-Version: 4.1.4
-Build-Depends: debhelper (>= 9)
+Build-Depends: debhelper (>= 11)
 Build-Depends-Indep: bzip2,
                      checkpolicy (>= 2.7~2),
                      gawk,
