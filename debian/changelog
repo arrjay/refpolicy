@@ -9,8 +9,10 @@ refpolicy (2:2.20180114-4) UNRELEASED; urgency=medium
     #900285)
   * debian/rules: Drop --parallel flag passed to dh command, this is the
     default with debhelper >= 10
+  * debian/control: Bump Priority of selinux-policy-mls to optional, Priority
+    extra is now deprecated
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 10:34:48 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 10:37:05 +0200
 
 refpolicy (2:2.20180114-3) unstable; urgency=medium
 

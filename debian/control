@@ -42,7 +42,6 @@ Description: Strict and Targeted variants of the SELinux policy
 
 Package: selinux-policy-mls
 Architecture: all
-Priority: extra
 Depends: libselinux1 (>= 2.4),
          libsemanage1 (>= 2.4),
          libsepol1 (>= 2.4),
