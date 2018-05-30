@@ -18,7 +18,7 @@ ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 endif
 
 %:
-	dh $@ --parallel
+	dh $@
 
 override_dh_auto_configure: $(patsubst %, conf-%-policy, $(FLAVOURS)) conf-docs conf-src
 
