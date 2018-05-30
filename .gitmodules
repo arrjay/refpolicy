@@ -1,0 +1,3 @@
+[submodule "policy/modules/contrib"]
+	path = policy/modules/contrib
+	url = https://github.com/TresysTechnology/refpolicy-contrib.git
