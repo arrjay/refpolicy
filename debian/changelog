@@ -2,8 +2,9 @@ refpolicy (2:2.20180114-4) UNRELEASED; urgency=medium
 
   * Team upload.
   * debian/control: Point Vcs-* fields to new (salsa) machine
+  * debian/control: Bump Standards-Version to 4.1.4 (no further changes)
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 10:26:27 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 10:27:21 +0200
 
 refpolicy (2:2.20180114-3) unstable; urgency=medium
 
