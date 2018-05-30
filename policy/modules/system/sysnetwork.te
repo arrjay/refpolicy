@@ -1,4 +1,4 @@
-policy_module(sysnetwork, 1.16.0)
+policy_module(sysnetwork, 1.19.0)
 
 ########################################
 #
@@ -40,7 +40,7 @@ type net_conf_t alias resolv_conf_t;
 files_type(net_conf_t)
 
 ifdef(`distro_debian',`
-	init_daemon_run_dir(net_conf_t, "network")
+	init_daemon_pid_file(net_conf_t, dir, "network")
 ')
 
 ########################################
@@ -57,7 +57,7 @@ allow dhcpc_t self:fifo_file rw_fifo_file_perms;
 allow dhcpc_t self:tcp_socket create_stream_socket_perms;
 allow dhcpc_t self:udp_socket create_socket_perms;
 allow dhcpc_t self:packet_socket create_socket_perms;
-allow dhcpc_t self:netlink_route_socket { create_socket_perms nlmsg_read nlmsg_write };
+allow dhcpc_t self:netlink_route_socket create_netlink_socket_perms;
 
 allow dhcpc_t dhcp_etc_t:dir list_dir_perms;
 read_lnk_files_pattern(dhcpc_t, dhcp_etc_t, dhcp_etc_t)
@@ -128,9 +128,11 @@ files_search_home(dhcpc_t)
 files_search_var_lib(dhcpc_t)
 files_dontaudit_search_locks(dhcpc_t)
 files_getattr_generic_locks(dhcpc_t)
+files_manage_var_files(dhcpc_t)
 
 fs_getattr_all_fs(dhcpc_t)
 fs_search_auto_mountpoints(dhcpc_t)
+fs_search_cgroup_dirs(dhcpc_t)
 
 term_dontaudit_use_all_ttys(dhcpc_t)
 term_dontaudit_use_all_ptys(dhcpc_t)
@@ -158,6 +160,14 @@ ifdef(`distro_ubuntu',`
 	optional_policy(`
 		unconfined_domain(dhcpc_t)
 	')
+')
+
+ifdef(`init_systemd',`
+	init_rw_stream_sockets(dhcpc_t)
+	init_read_state(dhcpc_t)
+	init_stream_connect(dhcpc_t)
+	init_get_all_units_status(dhcpc_t)
+	init_search_units(dhcpc_t)
 ')
 
 optional_policy(`
@@ -195,9 +205,6 @@ optional_policy(`
 optional_policy(`
 	netutils_run_ping(dhcpc_t, dhcpc_roles)
 	netutils_run(dhcpc_t, dhcpc_roles)
-',`
-	allow dhcpc_t self:capability setuid;
-	allow dhcpc_t self:rawip_socket create_socket_perms;
 ')
 
 optional_policy(`
@@ -220,6 +227,7 @@ optional_policy(`
 optional_policy(`
 	ntp_initrc_domtrans(dhcpc_t)
 	ntp_read_drift_files(dhcpc_t)
+	ntp_read_conf_files(dhcpc_t)
 ')
 
 optional_policy(`
@@ -257,6 +265,7 @@ optional_policy(`
 #
 
 allow ifconfig_t self:capability { net_raw net_admin sys_admin sys_tty_config };
+dontaudit ifconfig_t self:capability sys_module;
 allow ifconfig_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execheap execstack };
 allow ifconfig_t self:fd use;
 allow ifconfig_t self:fifo_file rw_fifo_file_perms;
@@ -274,8 +283,12 @@ allow ifconfig_t self:msg { send receive };
 allow ifconfig_t self:udp_socket create_socket_perms;
 # for /sbin/ip
 allow ifconfig_t self:packet_socket create_socket_perms;
+# generic netlink socket for iw
+# socket(PF_NETLINK, SOCK_RAW|SOCK_CLOEXEC, NETLINK_GENERIC) = 3
+allow ifconfig_t self:netlink_socket create_socket_perms;
+allow ifconfig_t self:netlink_generic_socket create_socket_perms;
 allow ifconfig_t self:netlink_route_socket create_netlink_socket_perms;
-allow ifconfig_t self:netlink_xfrm_socket { create_netlink_socket_perms nlmsg_read };
+allow ifconfig_t self:netlink_xfrm_socket create_netlink_socket_perms;
 allow ifconfig_t self:tcp_socket { create ioctl };
 
 kernel_use_fds(ifconfig_t)
@@ -311,8 +324,6 @@ files_dontaudit_read_root_files(ifconfig_t)
 
 init_use_fds(ifconfig_t)
 init_use_script_ptys(ifconfig_t)
-
-libs_read_lib_files(ifconfig_t)
 
 logging_send_syslog_msg(ifconfig_t)
 

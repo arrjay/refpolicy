@@ -1,4 +1,4 @@
-policy_module(networkmanager, 1.16.0)
+policy_module(networkmanager, 1.19.0)
 
 ########################################
 #
@@ -24,6 +24,9 @@ logging_log_file(NetworkManager_log_t)
 type NetworkManager_tmp_t;
 files_tmp_file(NetworkManager_tmp_t)
 
+type NetworkManager_unit_t;
+init_unit_file(NetworkManager_unit_t)
+
 type NetworkManager_var_lib_t;
 files_type(NetworkManager_var_lib_t)
 
@@ -47,10 +50,12 @@ allow NetworkManager_t self:unix_dgram_socket sendto;
 allow NetworkManager_t self:unix_stream_socket { accept listen };
 allow NetworkManager_t self:netlink_route_socket create_netlink_socket_perms;
 allow NetworkManager_t self:netlink_socket create_socket_perms;
+allow NetworkManager_t self:netlink_generic_socket create_socket_perms;
 allow NetworkManager_t self:netlink_kobject_uevent_socket create_socket_perms;
 allow NetworkManager_t self:tcp_socket { accept listen };
 allow NetworkManager_t self:tun_socket { create_socket_perms relabelfrom relabelto };
 allow NetworkManager_t self:packet_socket create_socket_perms;
+allow NetworkManager_t self:socket create_socket_perms;
 
 allow NetworkManager_t wpa_cli_t:unix_dgram_socket sendto;
 
@@ -87,6 +92,7 @@ kernel_read_crypto_sysctls(NetworkManager_t)
 kernel_read_system_state(NetworkManager_t)
 kernel_read_network_state(NetworkManager_t)
 kernel_read_kernel_sysctls(NetworkManager_t)
+kernel_read_vm_overcommit_sysctl(NetworkManager_t)
 kernel_request_load_module(NetworkManager_t)
 kernel_read_debugfs(NetworkManager_t)
 kernel_rw_net_sysctls(NetworkManager_t)
@@ -265,6 +271,7 @@ optional_policy(`
 ')
 
 optional_policy(`
+	netutils_exec(NetworkManager_t)
 	netutils_exec_ping(NetworkManager_t)
 ')
 

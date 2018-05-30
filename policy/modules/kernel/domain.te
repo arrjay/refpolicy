@@ -1,4 +1,4 @@
-policy_module(domain, 1.11.1)
+policy_module(domain, 1.14.0)
 
 ########################################
 #
@@ -34,6 +34,9 @@ attribute set_curr_context;
 # know what this means or do not understand the implications of a
 # dynamic transition, you should not be using it!!!
 neverallow { domain -set_curr_context } self:process setcurrent;
+
+# No domain needs mac_override as it is unused by SELinux.
+neverallow domain self:capability2 mac_override;
 
 # entrypoint executables
 attribute entry_type;
@@ -113,6 +116,12 @@ ifdef(`hide_broken_symptoms',`
 	# listen function is called, so bad calls
 	# to listen on UDP sockets should be silenced
 	dontaudit domain self:udp_socket listen;
+')
+
+ifdef(`init_systemd',`
+	optional_policy(`
+		shutdown_sigchld(domain)
+	')
 ')
 
 tunable_policy(`global_ssp',`

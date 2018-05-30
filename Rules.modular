@@ -15,7 +15,7 @@ users_extra := $(tmpdir)/users_extra
 
 base_sections := $(tmpdir)/pre_te_files.conf $(tmpdir)/all_attrs_types.conf $(tmpdir)/global_bools.conf $(tmpdir)/only_te_rules.conf $(tmpdir)/all_post.conf
 
-base_pre_te_files := $(secclass) $(isids) $(avs) $(m4support) $(poldir)/mls $(poldir)/mcs $(policycaps)
+base_pre_te_files := $(secclass) $(isids) $(avs) $(ctx_defaults) $(m4support) $(poldir)/mls $(poldir)/mcs $(policycaps)
 base_te_files := $(base_mods)
 base_post_te_files := $(user_files) $(poldir)/constraints
 base_fc_files := $(base_mods:.te=.fc)
@@ -55,7 +55,7 @@ load: $(instpkg) $(appfiles)
 # created by semanage
 	@echo "Loading configured modules."
 	@$(INSTALL) -d -m 0755 $(policypath) $(dir $(fcpath))
-	$(verbose) $(SEMODULE) -s $(NAME) -b $(modpkgdir)/$(notdir $(base_pkg)) $(foreach mod,$(mod_pkgs),-i $(modpkgdir)/$(mod))
+	$(verbose) $(SEMODULE) -s $(NAME) -i $(modpkgdir)/$(notdir $(base_pkg)) $(foreach mod,$(mod_pkgs),-i $(modpkgdir)/$(mod))
 
 ########################################
 #
@@ -71,7 +71,7 @@ $(modpkgdir)/%.pp: $(builddir)%.pp
 # Build module packages
 #
 $(tmpdir)/%.mod: $(m4support) $(tmpdir)/generated_definitions.conf $(tmpdir)/all_interfaces.conf %.te
-	@echo "Compliling $(NAME) $(@F) module"
+	@echo "Compiling $(NAME) $(@F) module"
 	@test -d $(tmpdir) || mkdir -p $(tmpdir)
 	$(verbose) $(M4) $(M4PARAM) -s $^ > $(@:.mod=.tmp)
 	$(verbose) $(CHECKMODULE) -m $(@:.mod=.tmp) -o $@
@@ -94,12 +94,9 @@ $(base_pkg): $(base_mod) $(base_fc) $(users_extra) $(tmpdir)/seusers
 	@test -d $(builddir) || mkdir -p $(builddir)
 	$(verbose) $(SEMOD_PKG) -o $@ -m $(base_mod) -f $(base_fc) -u $(users_extra) -s $(tmpdir)/seusers
 
-ifneq "$(UNK_PERMS)" ""
-$(base_mod): CHECKMODULE += -U $(UNK_PERMS)
-endif
 $(base_mod): $(base_conf)
 	@echo "Compiling $(NAME) base module"
-	$(verbose) $(CHECKMODULE) $^ -o $@
+	$(verbose) $(CHECKMODULE) -U $(UNK_PERMS) $^ -o $@
 
 $(tmpdir)/seusers: $(seusers)
 	@mkdir -p $(tmpdir)

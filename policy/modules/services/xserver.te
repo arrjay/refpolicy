@@ -1,4 +1,4 @@
-policy_module(xserver, 3.10.1)
+policy_module(xserver, 3.12.0)
 
 gen_require(`
 	class x_drawable all_x_drawable_perms;
@@ -507,6 +507,14 @@ optional_policy(`
 ')
 
 optional_policy(`
+	colord_dbus_chat(xdm_t)
+')
+
+optional_policy(`
+	colord_dbus_chat(xdm_t)
+')
+
+optional_policy(`
 	consolekit_dbus_chat(xdm_t)
 ')
 
@@ -559,6 +567,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	shutdown_domtrans(xdm_t)
+')
+
+optional_policy(`
 	udev_read_db(xdm_t)
 ')
 
@@ -567,10 +579,6 @@ optional_policy(`
 	unconfined_domtrans(xdm_t)
 
 	ifndef(`distro_redhat',`
-		allow xdm_t self:process { execheap execmem };
-	')
-
-	ifdef(`distro_rhel4',`
 		allow xdm_t self:process { execheap execmem };
 	')
 ')
@@ -745,10 +753,6 @@ userdom_rw_user_tmpfs_files(xserver_t)
 
 xserver_use_user_fonts(xserver_t)
 
-ifdef(`distro_rhel4',`
-	allow xserver_t self:process { execmem execheap execstack };
-')
-
 ifdef(`enable_mls',`
 	range_transition xserver_t xserver_tmp_t:sock_file s0 - mls_systemhigh;
 	range_transition xserver_t xserver_t:x_drawable s0 - mls_systemhigh;
@@ -820,7 +824,7 @@ allow xserver_t xdm_t:shm rw_shm_perms;
 allow xserver_t xdm_var_lib_t:file { getattr read };
 dontaudit xserver_t xdm_var_lib_t:dir search;
 
-allow xserver_t xdm_var_run_t:file read_file_perms;
+read_files_pattern(xserver_t, xdm_var_run_t, xdm_var_run_t)
 
 # Label pid and temporary files with derived types.
 manage_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
@@ -830,6 +834,9 @@ manage_sock_files_pattern(xserver_t, xdm_tmp_t, xdm_tmp_t)
 # Run xkbcomp.
 allow xserver_t xkb_var_lib_t:lnk_file read;
 can_exec(xserver_t, xkb_var_lib_t)
+
+# Run Xorg.wrap
+can_exec(xserver_t, xserver_exec_t)
 
 # VNC v4 module in X server
 corenet_tcp_bind_vnc_port(xserver_t)

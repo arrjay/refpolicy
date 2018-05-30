@@ -1,4 +1,4 @@
-policy_module(qemu, 1.8.0)
+policy_module(qemu, 1.9.0)
 
 ########################################
 #
@@ -21,6 +21,9 @@ application_executable_file(qemu_exec_t)
 
 virt_domain_template(qemu)
 role qemu_roles types qemu_t;
+
+type qemu_unit_t;
+init_unit_file(qemu_unit_t)
 
 ########################################
 #

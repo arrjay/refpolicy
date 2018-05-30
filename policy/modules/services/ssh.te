@@ -1,4 +1,4 @@
-policy_module(ssh, 2.5.0)
+policy_module(ssh, 2.8.0)
 
 ########################################
 #
@@ -47,6 +47,12 @@ type sshd_tmp_t;
 files_tmp_file(sshd_tmp_t)
 files_poly_parent(sshd_tmp_t)
 
+type sshd_keygen_unit_t;
+init_unit_file(sshd_keygen_unit_t)
+
+type sshd_unit_t;
+init_unit_file(sshd_unit_t)
+
 ifdef(`enable_mcs',`
 	init_ranged_daemon_domain(sshd_t, sshd_exec_t, s0 - mcs_systemhigh)
 ')
@@ -85,7 +91,7 @@ type sshd_keytab_t;
 files_type(sshd_keytab_t)
 
 ifdef(`distro_debian',`
-	init_daemon_run_dir(sshd_var_run_t, "sshd")
+	init_daemon_pid_file(sshd_var_run_t, dir, "sshd")
 ')
 
 ##############################
@@ -264,6 +270,11 @@ corenet_sendrecv_xserver_server_packets(sshd_t)
 
 ifdef(`distro_debian',`
 	allow sshd_t self:process { getcap setcap };
+')
+
+ifdef(`init_systemd',`
+	systemd_dbus_chat_logind(sshd_t)
+	init_rw_stream_sockets(sshd_t)
 ')
 
 tunable_policy(`ssh_sysadm_login',`

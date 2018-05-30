@@ -63,7 +63,7 @@ interface(`ntp_run',`
 
 ########################################
 ## <summary>
-##	Execute ntp server in the ntpd domain.
+##	Execute ntpdate server in the ntpd domain.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -82,7 +82,8 @@ interface(`ntp_domtrans_ntpdate',`
 
 ########################################
 ## <summary>
-##	Execute ntp server in the ntpd domain.
+##	Execute ntpd init scripts in
+##	the init script domain.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -96,6 +97,25 @@ interface(`ntp_initrc_domtrans',`
 	')
 
 	init_labeled_script_domtrans($1, ntpd_initrc_exec_t)
+')
+
+########################################
+## <summary>
+##      Read ntp conf files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`ntp_read_conf_files',`
+	gen_require(`
+		type ntp_conf_t;
+	')
+
+	files_search_etc($1)
+	read_files_pattern($1, ntp_conf_t, ntp_conf_t)
 ')
 
 ########################################
@@ -166,10 +186,7 @@ interface(`ntp_admin',`
 	allow $1 ntpd_t:process { ptrace signal_perms };
 	ps_process_pattern($1, ntpd_t)
 
-	init_labeled_script_domtrans($1, ntpd_initrc_exec_t)
-	domain_system_change_exemption($1)
-	role_transition $2 ntpd_initrc_exec_t system_r;
-	allow $2 system_r;
+	init_startstop_service($1, $2, ntpd_t, ntpd_initrc_exec_t)
 
 	files_list_etc($1)
 	admin_pattern($1, { ntpd_key_t ntp_conf_t })

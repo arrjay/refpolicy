@@ -1,4 +1,4 @@
-policy_module(alsa, 1.13.0)
+policy_module(alsa, 1.16.0)
 
 ########################################
 #
@@ -12,8 +12,8 @@ type alsa_exec_t;
 init_system_domain(alsa_t, alsa_exec_t)
 role alsa_roles types alsa_t;
 
-type alsa_etc_rw_t;
-files_config_file(alsa_etc_rw_t)
+type alsa_etc_t alias alsa_etc_rw_t;
+files_config_file(alsa_etc_t)
 
 type alsa_tmp_t;
 files_tmp_file(alsa_tmp_t)
@@ -21,8 +21,14 @@ files_tmp_file(alsa_tmp_t)
 type alsa_tmpfs_t;
 files_tmpfs_file(alsa_tmpfs_t)
 
+type alsa_unit_t;
+init_unit_file(alsa_unit_t)
+
 type alsa_var_lib_t;
 files_type(alsa_var_lib_t)
+
+type alsa_var_lock_t;
+files_lock_file(alsa_var_lock_t)
 
 type alsa_home_t;
 userdom_user_home_content(alsa_home_t)
@@ -40,9 +46,9 @@ allow alsa_t self:unix_stream_socket { accept listen };
 
 allow alsa_t alsa_home_t:file read_file_perms;
 
-manage_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
-manage_lnk_files_pattern(alsa_t, alsa_etc_rw_t, alsa_etc_rw_t)
-files_etc_filetrans(alsa_t, alsa_etc_rw_t, file)
+list_dirs_pattern(alsa_t, alsa_etc_t, alsa_etc_t)
+read_files_pattern(alsa_t, alsa_etc_t, alsa_etc_t)
+read_lnk_files_pattern(alsa_t, alsa_etc_t, alsa_etc_t)
 
 can_exec(alsa_t, alsa_exec_t)
 
@@ -56,6 +62,9 @@ fs_tmpfs_filetrans(alsa_t, alsa_tmpfs_t, file)
 
 manage_dirs_pattern(alsa_t, alsa_var_lib_t, alsa_var_lib_t)
 manage_files_pattern(alsa_t, alsa_var_lib_t, alsa_var_lib_t)
+
+allow alsa_t alsa_var_lock_t:file manage_file_perms;
+files_lock_filetrans(alsa_t, alsa_var_lock_t, file);
 
 kernel_read_system_state(alsa_t)
 

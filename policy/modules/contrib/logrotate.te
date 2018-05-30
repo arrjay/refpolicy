@@ -1,4 +1,4 @@
-policy_module(logrotate, 1.16.0)
+policy_module(logrotate, 1.18.0)
 
 ########################################
 #
@@ -24,6 +24,9 @@ files_tmp_file(logrotate_tmp_t)
 
 type logrotate_var_lib_t;
 files_type(logrotate_var_lib_t)
+
+type logrotate_unit_t;
+init_unit_file(logrotate_unit_t)
 
 mta_base_mail_template(logrotate)
 role system_r types logrotate_mail_t;
@@ -237,6 +240,11 @@ optional_policy(`
 
 optional_policy(`
 	varnishd_manage_log(logrotate_t)
+')
+
+optional_policy(`
+	manage_webalizer_var_lib(logrotate_t)
+	webalizer_run(logrotate_t, system_r)
 ')
 
 #######################################

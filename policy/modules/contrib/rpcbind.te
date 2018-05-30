@@ -1,4 +1,4 @@
-policy_module(rpcbind, 1.7.0)
+policy_module(rpcbind, 1.10.0)
 
 ########################################
 #
@@ -8,13 +8,14 @@ policy_module(rpcbind, 1.7.0)
 type rpcbind_t;
 type rpcbind_exec_t;
 init_daemon_domain(rpcbind_t, rpcbind_exec_t)
+init_named_socket_activation(rpcbind_t, rpcbind_var_run_t)
 
 type rpcbind_initrc_exec_t;
 init_script_file(rpcbind_initrc_exec_t)
 
 type rpcbind_var_run_t;
 files_pid_file(rpcbind_var_run_t)
-init_daemon_run_dir(rpcbind_var_run_t, "rpcbind")
+init_daemon_pid_file(rpcbind_var_run_t, dir, "rpcbind")
 
 type rpcbind_var_lib_t;
 files_type(rpcbind_var_lib_t)
@@ -59,6 +60,8 @@ corenet_udp_bind_portmap_port(rpcbind_t)
 corenet_udp_bind_all_rpc_ports(rpcbind_t)
 
 corecmd_exec_shell(rpcbind_t)
+
+dev_read_cpu_online(rpcbind_t)
 
 domain_use_interactive_fds(rpcbind_t)
 

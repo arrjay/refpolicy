@@ -1,4 +1,4 @@
-policy_module(dbus, 1.19.1)
+policy_module(dbus, 1.21.0)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -22,6 +22,9 @@ type dbusd_exec_t;
 corecmd_executable_file(dbusd_exec_t)
 typealias dbusd_exec_t alias system_dbusd_exec_t;
 
+type dbusd_unit_t;
+init_unit_file(dbusd_unit_t)
+
 type session_dbusd_home_t;
 userdom_user_home_content(session_dbusd_home_t)
 
@@ -32,6 +35,7 @@ userdom_user_tmp_file(session_dbusd_tmp_t)
 
 type system_dbusd_t;
 init_system_domain(system_dbusd_t, dbusd_exec_t)
+init_named_socket_activation(system_dbusd_t, system_dbusd_var_run_t)
 
 type system_dbusd_tmp_t;
 files_tmp_file(system_dbusd_tmp_t)
@@ -41,7 +45,7 @@ files_type(system_dbusd_var_lib_t)
 
 type system_dbusd_var_run_t;
 files_pid_file(system_dbusd_var_run_t)
-init_daemon_run_dir(system_dbusd_var_run_t, "dbus")
+init_daemon_pid_file(system_dbusd_var_run_t, dir, "dbus")
 
 ifdef(`enable_mcs',`
 	init_ranged_system_domain(system_dbusd_t, dbusd_exec_t, s0 - mcs_systemhigh)
@@ -244,5 +248,5 @@ optional_policy(`
 # Unconfined access to this module
 #
 
-allow dbusd_unconfined { system_dbusd_t session_bus_type dbusd_session_bus_client dbusd_system_bus_client }:dbus all_dbus_perms;
-allow { dbusd_session_bus_client dbusd_system_bus_client } dbusd_unconfined:dbus send_msg;
+allow dbusd_unconfined { dbusd_session_bus_client dbusd_system_bus_client }:dbus send_msg;
+allow dbusd_unconfined { system_dbusd_t session_bus_type }:dbus all_dbus_perms;

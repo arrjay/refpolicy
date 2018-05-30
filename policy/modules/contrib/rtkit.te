@@ -1,4 +1,4 @@
-policy_module(rtkit, 1.2.0)
+policy_module(rtkit, 1.4.0)
 
 ########################################
 #
@@ -12,12 +12,15 @@ init_system_domain(rtkit_daemon_t, rtkit_daemon_exec_t)
 type rtkit_daemon_initrc_exec_t;
 init_script_file(rtkit_daemon_initrc_exec_t)
 
+type rtkit_daemon_unit_t;
+init_unit_file(rtkit_daemon_unit_t)
+
 ########################################
 #
 # Local policy
 #
 
-allow rtkit_daemon_t self:capability { dac_read_search setuid sys_chroot setgid sys_nice sys_ptrace };
+allow rtkit_daemon_t self:capability { dac_read_search setgid setpcap setuid sys_chroot sys_nice sys_ptrace };
 allow rtkit_daemon_t self:process { setsched getcap setcap setrlimit };
 
 kernel_read_system_state(rtkit_daemon_t)

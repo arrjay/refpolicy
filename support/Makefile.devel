@@ -58,6 +58,10 @@ ifneq ($(DISTRO),)
 	M4PARAM += -D distro_$(DISTRO)
 endif
 
+ifeq "$(SYSTEMD)" "y"
+	M4PARAM += -D init_systemd
+endif
+
 ifeq ($(DIRECT_INITRC),y)
 	M4PARAM += -D direct_sysadm_daemon
 endif
@@ -158,6 +162,7 @@ tmp/%.mod: $(m4support) tmp/all_interfaces.conf %.te
 	$(verbose) $(CHECKMODULE) -m $(@:.mod=.tmp) -o $@
 
 tmp/%.mod.fc: $(m4support) %.fc
+	@test -d $(@D) || mkdir -p $(@D)
 	$(verbose) $(M4) $(M4PARAM) $^ > $@
 
 %.pp: tmp/%.mod tmp/%.mod.fc

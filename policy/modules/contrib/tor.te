@@ -1,4 +1,4 @@
-policy_module(tor, 1.9.0)
+policy_module(tor, 1.12.0)
 
 ########################################
 #
@@ -23,6 +23,9 @@ files_config_file(tor_etc_t)
 type tor_initrc_exec_t;
 init_script_file(tor_initrc_exec_t)
 
+type tor_unit_t;
+init_unit_file(tor_unit_t)
+
 type tor_var_lib_t;
 files_type(tor_var_lib_t)
 
@@ -31,7 +34,7 @@ logging_log_file(tor_var_log_t)
 
 type tor_var_run_t;
 files_pid_file(tor_var_run_t)
-init_daemon_run_dir(tor_var_run_t, "tor")
+init_daemon_pid_file(tor_var_run_t, dir, "tor")
 
 ########################################
 #

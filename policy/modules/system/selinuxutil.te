@@ -1,4 +1,4 @@
-policy_module(selinuxutil, 1.18.1)
+policy_module(selinuxutil, 1.21.0)
 
 gen_require(`
 	bool secure_mode;
@@ -67,7 +67,7 @@ role newrole_roles types newrole_t;
 # the security server policy configuration.
 #
 type policy_config_t;
-files_type(policy_config_t)
+files_security_file(policy_config_t)
 
 neverallow ~can_relabelto_binary_policy policy_config_t:file relabelto;
 #neverallow ~can_write_binary_policy policy_config_t:file { write append };
@@ -85,6 +85,9 @@ init_daemon_domain(restorecond_t, restorecond_exec_t)
 domain_obj_id_change_exemption(restorecond_t)
 role system_r types restorecond_t;
 
+type restorecond_unit_t;
+init_unit_file(restorecond_unit_t)
+
 type restorecond_var_run_t;
 files_pid_file(restorecond_var_run_t)
 
@@ -100,7 +103,7 @@ application_domain(semanage_t, semanage_exec_t)
 domain_interactive_fd(semanage_t)
 role semanage_roles types semanage_t;
 
-type semanage_store_t;
+type semanage_store_t alias semanage_var_lib_t;
 files_type(semanage_store_t)
 
 type semanage_read_lock_t;
@@ -111,9 +114,6 @@ files_tmp_file(semanage_tmp_t)
 
 type semanage_trans_lock_t;
 files_type(semanage_trans_lock_t)
-
-type semanage_var_lib_t;
-files_type(semanage_var_lib_t)
 
 type setfiles_t alias restorecon_t, can_relabelto_binary_policy;
 type setfiles_exec_t alias restorecon_exec_t;
@@ -454,9 +454,6 @@ allow semanage_t semanage_tmp_t:dir manage_dir_perms;
 allow semanage_t semanage_tmp_t:file manage_file_perms;
 files_tmp_filetrans(semanage_t, semanage_tmp_t, { file dir })
 
-manage_dirs_pattern(semanage_t, semanage_var_lib_t, semanage_var_lib_t)
-manage_files_pattern(semanage_t, semanage_var_lib_t, semanage_var_lib_t)
-
 kernel_read_system_state(semanage_t)
 kernel_read_kernel_sysctls(semanage_t)
 
@@ -592,6 +589,7 @@ logging_send_syslog_msg(setfiles_t)
 miscfiles_read_localization(setfiles_t)
 
 seutil_libselinux_linked(setfiles_t)
+seutil_read_module_store(setfiles_t)
 
 userdom_use_all_users_fds(setfiles_t)
 # for config files in a home directory

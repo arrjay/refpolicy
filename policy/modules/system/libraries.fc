@@ -36,18 +36,11 @@ ifdef(`distro_redhat',`
 # /lib(64)?
 #
 /lib					-d	gen_context(system_u:object_r:lib_t,s0)
+/lib					-l	gen_context(system_u:object_r:lib_t,s0)
 /lib/.*						gen_context(system_u:object_r:lib_t,s0)
 /lib/ld-[^/]*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:ld_so_t,s0)
 
 /lib/security/pam_poldi\.so		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
-
-ifdef(`distro_debian',`
-/lib					-l	gen_context(system_u:object_r:lib_t,s0)
-')
-
-ifdef(`distro_gentoo',`
-/lib					-l	gen_context(system_u:object_r:lib_t,s0)
-')
 
 #
 # /opt
@@ -146,6 +139,7 @@ ifdef(`distro_debian',`
 /usr/lib/fglrx/.*\.so(\.[^/]*)*		--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/libjs\.so.*			--	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/sse2/libx264\.so(\.[^/]*)* 	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
+/usr/lib/systemd/libsystemd-shared-[0-9]+\.so.* -- gen_context(system_u:object_r:lib_t,s0)
 /usr/lib(/.*)?/libnvidia.+\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib(/.*)?/nvidia_drv.*\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)
 /usr/lib/nero/plug-ins/libMP3\.so(\.[^/]*)* --	gen_context(system_u:object_r:textrel_shlib_t,s0)

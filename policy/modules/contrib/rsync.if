@@ -50,7 +50,7 @@ interface(`rsync_entry_spec_domtrans',`
 	')
 
 	corecmd_search_bin($1)
-	auto_trans($1, rsync_exec_t, $2)
+	domain_auto_trans($1, rsync_exec_t, $2)
 ')
 
 ########################################
@@ -257,7 +257,7 @@ interface(`rsync_etc_filetrans_config',`
 interface(`rsync_admin',`
 	gen_require(`
 		type rsync_t, rsync_etc_t, rsync_data_t;
-		type rsync_log_t, rsync_tmp_t. rsync_var_run_t;
+		type rsync_log_t, rsync_tmp_t, rsync_var_run_t;
 	')
 
 	allow $1 rsync_t:process { ptrace signal_perms };
@@ -276,6 +276,4 @@ interface(`rsync_admin',`
 
 	files_search_pids($1)
 	admin_pattern($1, rsync_var_run_t)
-
-	rsync_run($1, $2)
 ')

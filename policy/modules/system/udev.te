@@ -1,4 +1,4 @@
-policy_module(udev, 1.17.1)
+policy_module(udev, 1.20.0)
 
 ########################################
 #
@@ -13,6 +13,7 @@ domain_obj_id_change_exemption(udev_t)
 domain_entry_file(udev_t, udev_helper_exec_t)
 domain_interactive_fd(udev_t)
 init_daemon_domain(udev_t, udev_exec_t)
+init_named_socket_activation(udev_t, udev_var_run_t)
 
 type udev_etc_t alias etc_udev_t;
 files_config_file(udev_etc_t)
@@ -25,7 +26,7 @@ files_type(udev_rules_t)
 
 type udev_var_run_t;
 files_pid_file(udev_var_run_t)
-init_daemon_run_dir(udev_var_run_t, "udev")
+init_daemon_pid_file(udev_var_run_t, dir, "udev")
 
 ifdef(`enable_mcs',`
 	kernel_ranged_domtrans_to(udev_t, udev_exec_t, s0 - mcs_systemhigh)
@@ -53,6 +54,7 @@ allow udev_t self:unix_stream_socket { listen accept };
 allow udev_t self:unix_dgram_socket sendto;
 allow udev_t self:unix_stream_socket connectto;
 allow udev_t self:netlink_kobject_uevent_socket create_socket_perms;
+allow udev_t self:netlink_generic_socket create_socket_perms;
 allow udev_t self:rawip_socket create_socket_perms;
 
 allow udev_t udev_exec_t:file write;
@@ -130,7 +132,7 @@ mls_file_read_all_levels(udev_t)
 mls_file_write_all_levels(udev_t)
 mls_file_upgrade(udev_t)
 mls_file_downgrade(udev_t)
-mls_process_write_down(udev_t)
+mls_process_write_all_levels(udev_t)
 
 selinux_get_fs_mount(udev_t)
 selinux_validate_context(udev_t)
@@ -193,7 +195,7 @@ ifdef(`distro_debian',`
 
 ifdef(`distro_gentoo',`
 	# during boot, init scripts use /dev/.rcsysinit
-	# existance to determine if we are in early booting
+	# existence to determine if we are in early booting
 	init_getattr_script_status_files(udev_t)
 ')
 
@@ -217,10 +219,22 @@ ifdef(`distro_redhat',`
 	')
 ')
 
+ifdef(`init_systemd',`
+	kernel_load_module(udev_t)
+
+	files_search_kernel_modules(udev_t)
+
+	fs_read_cgroup_files(udev_t)
+
+	init_dgram_send(udev_t)
+
+	systemd_read_logind_pids(udev_t)
+')
+
 optional_policy(`
 	alsa_domtrans(udev_t)
 	alsa_read_lib(udev_t)
-	alsa_read_rw_config(udev_t)
+	alsa_read_config(udev_t)
 ')
 
 optional_policy(`

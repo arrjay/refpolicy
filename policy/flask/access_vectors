@@ -121,6 +121,60 @@ common x_device
 }
 
 #
+# Define a common for capability access vectors.
+#
+common cap
+{
+	# The capabilities are defined in include/linux/capability.h
+	# Capabilities >= 32 are defined in the cap2 common.
+	# Care should be taken to ensure that these are consistent with
+	# those definitions. (Order matters)
+
+	chown
+	dac_override
+	dac_read_search
+	fowner
+	fsetid
+	kill
+	setgid
+	setuid
+	setpcap
+	linux_immutable
+	net_bind_service
+	net_broadcast
+	net_admin
+	net_raw
+	ipc_lock
+	ipc_owner
+	sys_module
+	sys_rawio
+	sys_chroot
+	sys_ptrace
+	sys_pacct
+	sys_admin
+	sys_boot
+	sys_nice
+	sys_resource
+	sys_time
+	sys_tty_config
+	mknod
+	lease
+	audit_write
+	audit_control
+	setfcap
+}
+
+common cap2
+{
+	mac_override	# unused by SELinux
+	mac_admin	# unused by SELinux
+	syslog
+	wake_alarm
+	block_suspend
+	audit_read
+}
+
+#
 # Define the access vectors.
 #
 # class class_name [ inherits common_name ] { permission_name ... }
@@ -379,6 +433,7 @@ class security
 	setsecparam
 	setcheckreqprot
 	read_policy
+	validate_trans
 }
 
 
@@ -393,61 +448,29 @@ class system
 	syslog_mod
 	syslog_console
 	module_request
+	module_load
+
+	# these are overloaded userspace
+	# permissions from systemd
+	halt
+	reboot
+	status
+	start
+	stop
+	enable
+	disable
+	reload
 }
 
 #
-# Define the access vector interpretation for controling capabilies
+# Define the access vector interpretation for controlling capabilities
 #
 
 class capability
-{
-	# The capabilities are defined in include/linux/capability.h
-	# Capabilities >= 32 are defined in the capability2 class.
-	# Care should be taken to ensure that these are consistent with
-	# those definitions. (Order matters)
+inherits cap
 
-	chown           
-	dac_override    
-	dac_read_search 
-	fowner          
-	fsetid          
-	kill            
-	setgid           
-	setuid           
-	setpcap          
-	linux_immutable  
-	net_bind_service 
-	net_broadcast    
-	net_admin        
-	net_raw          
-	ipc_lock         
-	ipc_owner        
-	sys_module       
-	sys_rawio        
-	sys_chroot       
-	sys_ptrace       
-	sys_pacct        
-	sys_admin        
-	sys_boot         
-	sys_nice         
-	sys_resource     
-	sys_time         
-	sys_tty_config  
-	mknod
-	lease
-	audit_write
-	audit_control
-	setfcap
-}
-
-class capability2 
-{
-	mac_override	# unused by SELinux
-	mac_admin	# unused by SELinux
-	syslog
-	wake_alarm
-	block_suspend
-}
+class capability2
+inherits cap2
 
 #
 # Define the access vector interpretation for controlling
@@ -806,6 +829,18 @@ inherits database
 	export
 }
 
+class db_exception
+inherits database
+{
+	use
+}
+
+class db_datatype
+inherits database
+{
+	use
+}
+
 # network peer labels
 class peer
 {
@@ -830,6 +865,38 @@ inherits socket
 {
 	attach_queue
 }
+
+class binder
+{
+	impersonate
+	call
+	set_context_mgr
+	transfer
+}
+
+class netlink_iscsi_socket
+inherits socket
+
+class netlink_fib_lookup_socket
+inherits socket
+
+class netlink_connector_socket
+inherits socket
+
+class netlink_netfilter_socket
+inherits socket
+
+class netlink_generic_socket
+inherits socket
+
+class netlink_scsitransport_socket
+inherits socket
+
+class netlink_rdma_socket
+inherits socket
+
+class netlink_crypto_socket
+inherits socket
 
 class x_pointer
 inherits x_device
@@ -865,3 +932,23 @@ inherits database
 	implement
 	execute
 }
+
+class service
+{
+	start
+	stop
+	status
+	reload
+	enable
+	disable
+}
+
+#
+# Define the access vector interpretation for controlling capabilities
+# in user namespaces
+#
+class cap_userns
+inherits cap
+
+class cap2_userns
+inherits cap2

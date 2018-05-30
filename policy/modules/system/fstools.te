@@ -1,4 +1,4 @@
-policy_module(fstools, 1.17.0)
+policy_module(fstools, 1.19.0)
 
 ########################################
 #
@@ -15,6 +15,9 @@ logging_log_file(fsadm_log_t)
 
 type fsadm_tmp_t;
 files_tmp_file(fsadm_tmp_t)
+
+type fsadm_run_t;
+files_pid_file(fsadm_run_t)
 
 type swapfile_t; # customizable
 files_type(swapfile_t)
@@ -44,6 +47,10 @@ can_exec(fsadm_t, fsadm_exec_t)
 allow fsadm_t fsadm_tmp_t:dir manage_dir_perms;
 allow fsadm_t fsadm_tmp_t:file manage_file_perms;
 files_tmp_filetrans(fsadm_t, fsadm_tmp_t, { file dir })
+
+allow fsadm_t fsadm_run_t:dir manage_dir_perms;
+allow fsadm_t fsadm_run_t:file manage_file_perms;
+files_pid_filetrans(fsadm_t, fsadm_run_t, dir)
 
 # log files
 allow fsadm_t fsadm_log_t:dir setattr;
@@ -94,6 +101,8 @@ dev_rw_sysfs(fsadm_t)
 dev_getattr_usbfs_dirs(fsadm_t)
 # Access to /dev/mapper/control
 dev_rw_lvm_control(fsadm_t)
+# for losetup
+dev_rw_loop_control(fsadm_t)
 
 domain_use_interactive_fds(fsadm_t)
 
@@ -141,6 +150,9 @@ init_dontaudit_getattr_initctl(fsadm_t)
 logging_send_syslog_msg(fsadm_t)
 
 miscfiles_read_localization(fsadm_t)
+
+# losetup: bind mount_loopback_t files to loop devices
+mount_rw_loopback_files(fsadm_t)
 
 seutil_read_config(fsadm_t)
 

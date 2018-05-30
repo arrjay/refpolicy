@@ -134,6 +134,7 @@ globaltun = $(poldir)/global_tunables
 globalbool = $(poldir)/global_booleans
 user_files := $(poldir)/users
 policycaps := $(poldir)/policy_capabilities
+ctx_defaults := $(poldir)/context_defaults
 
 # local config file paths
 ifndef LOCAL_ROOT
@@ -185,13 +186,12 @@ ifneq ($(DISTRO),)
 	M4PARAM += -D distro_$(DISTRO)
 endif
 
-# rhel4 also implies redhat
-ifeq "$(DISTRO)" "rhel4"
-	M4PARAM += -D distro_redhat
-endif
-
 ifeq "$(DISTRO)" "ubuntu"
 	M4PARAM += -D distro_debian
+endif
+
+ifeq "$(SYSTEMD)" "y"
+	M4PARAM += -D init_systemd
 endif
 
 ifneq ($(OUTPUT_POLICY),)
@@ -206,7 +206,7 @@ endif
 NAME ?= $(TYPE)
 
 # default unknown permissions setting
-#UNK_PERMS ?= deny
+UNK_PERMS ?= deny
 
 ifeq ($(DIRECT_INITRC),y)
 	M4PARAM += -D direct_sysadm_daemon
@@ -250,7 +250,7 @@ seusers := $(appconf)/seusers
 appdir := $(contextpath)
 user_default_contexts := $(wildcard config/appconfig-$(TYPE)/*_default_contexts)
 user_default_contexts_names := $(addprefix $(contextpath)/users/,$(subst _default_contexts,,$(notdir $(user_default_contexts))))
-appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
+appfiles := $(addprefix $(appdir)/,default_contexts default_type initrc_context failsafe_context userhelper_context removable_context dbus_contexts sepgsql_contexts x_contexts customizable_types securetty_types lxc_contexts virtual_domain_context virtual_image_context) $(contextpath)/files/media $(fcsubspath) $(user_default_contexts_names)
 net_contexts := $(builddir)net_contexts
 
 all_layers := $(shell find $(wildcard $(moddir)/*) -maxdepth 0 -type d)
@@ -293,9 +293,9 @@ cmdline_mods := $(addsuffix .te,$(APPS_MODS))
 cmdline_off := $(addsuffix .te,$(APPS_OFF))
 
 # extract settings from modules.conf
-mod_conf_base := $(addsuffix .te,$(sort $(shell awk '/^[[:blank:]]*[[:alpha:]]/{ if ($$3 == "$(configbase)") print $$1 }' $(mod_conf) 2> /dev/null)))
-mod_conf_mods := $(addsuffix .te,$(sort $(shell awk '/^[[:blank:]]*[[:alpha:]]/{ if ($$3 == "$(configmod)") print $$1 }' $(mod_conf) 2> /dev/null)))
-mod_conf_off := $(addsuffix .te,$(sort $(shell awk '/^[[:blank:]]*[[:alpha:]]/{ if ($$3 == "$(configoff)") print $$1 }' $(mod_conf) 2> /dev/null)))
+mod_conf_base := $(addsuffix .te,$(sort $(shell $(AWK) '/^[[:blank:]]*[[:alpha:]]/{ if ($$3 == "$(configbase)") print $$1 }' $(mod_conf) 2> /dev/null)))
+mod_conf_mods := $(addsuffix .te,$(sort $(shell $(AWK) '/^[[:blank:]]*[[:alpha:]]/{ if ($$3 == "$(configmod)") print $$1 }' $(mod_conf) 2> /dev/null)))
+mod_conf_off := $(addsuffix .te,$(sort $(shell $(AWK) '/^[[:blank:]]*[[:alpha:]]/{ if ($$3 == "$(configoff)") print $$1 }' $(mod_conf) 2> /dev/null)))
 
 base_mods := $(cmdline_base)
 mod_mods := $(cmdline_mods)
@@ -309,7 +309,7 @@ off_mods += $(filter-out $(cmdline_off) $(cmdline_base) $(cmdline_mods), $(mod_c
 off_mods += $(filter-out $(base_mods) $(mod_mods) $(off_mods),$(notdir $(detected_mods)))
 
 # filesystems to be used in labeling targets
-filesystems = $(shell mount | grep -v "context=" | egrep -v '\((|.*,)bind(,.*|)\)' | awk '/(ext[234]|btrfs| xfs| jfs).*rw/{print $$3}';)
+filesystems = $(shell mount | grep -v "context=" | egrep -v '\((|.*,)bind(,.*|)\)' | $(AWK) '/(ext[234]|btrfs| xfs| jfs).*rw/{print $$3}';)
 fs_names := "btrfs ext2 ext3 ext4 xfs jfs"
 
 ########################################
@@ -526,6 +526,7 @@ ifneq "$(DISTRO)" ""
 endif
 	$(verbose) echo "MONOLITHIC ?= n" >> $(headerdir)/build.conf
 	$(verbose) echo "DIRECT_INITRC ?= $(DIRECT_INITRC)" >> $(headerdir)/build.conf
+	$(verbose) echo "SYSTEMD ?= $(SYSTEMD)" >> $(headerdir)/build.conf
 	$(verbose) echo "override UBAC := $(UBAC)" >> $(headerdir)/build.conf
 	$(verbose) echo "override MLS_SENS := $(MLS_SENS)" >> $(headerdir)/build.conf
 	$(verbose) echo "override MLS_CATS := $(MLS_CATS)" >> $(headerdir)/build.conf

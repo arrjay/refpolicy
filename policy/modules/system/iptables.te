@@ -1,4 +1,4 @@
-policy_module(iptables, 1.15.0)
+policy_module(iptables, 1.17.0)
 
 ########################################
 #
@@ -22,6 +22,9 @@ files_config_file(iptables_conf_t)
 type iptables_tmp_t;
 files_tmp_file(iptables_tmp_t)
 
+type iptables_unit_t;
+init_unit_file(iptables_unit_t)
+
 type iptables_var_run_t;
 files_pid_file(iptables_var_run_t)
 
@@ -35,6 +38,7 @@ dontaudit iptables_t self:capability sys_tty_config;
 allow iptables_t self:fifo_file rw_fifo_file_perms;
 allow iptables_t self:process { sigchld sigkill sigstop signull signal };
 allow iptables_t self:netlink_socket create_socket_perms;
+allow iptables_t self:netlink_netfilter_socket create_socket_perms;
 allow iptables_t self:rawip_socket create_socket_perms;
 
 manage_files_pattern(iptables_t, iptables_conf_t, iptables_conf_t)
@@ -107,6 +111,7 @@ optional_policy(`
 
 optional_policy(`
 	firewalld_read_config_files(iptables_t)
+	firewalld_read_var_run_files(iptables_t)
 	firewalld_dontaudit_rw_tmp_files(iptables_t)
 ')
 

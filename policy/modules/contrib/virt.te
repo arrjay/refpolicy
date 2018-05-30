@@ -1,4 +1,4 @@
-policy_module(virt, 1.8.0)
+policy_module(virt, 1.10.0)
 
 ########################################
 #
@@ -70,6 +70,14 @@ gen_tunable(virt_use_usb, false)
 ## </desc>
 gen_tunable(virt_use_xserver, false)
 
+## <desc>
+##	<p>
+##	Determine whether confined virtual guests
+##	can use vfio for pci device pass through (vt-d).
+##	</p>
+## </desc>
+gen_tunable(virt_use_vfio, false)
+
 attribute virt_ptynode;
 attribute virt_domain;
 attribute virt_image_type;
@@ -127,6 +135,9 @@ mls_trusted_object(virt_log_t)
 type virt_tmp_t;
 files_tmp_file(virt_tmp_t)
 
+type virt_tmpfs_t;
+files_tmpfs_file(virt_tmpfs_t)
+
 type virt_var_run_t;
 files_pid_file(virt_var_run_t)
 
@@ -163,6 +174,12 @@ domain_type(virt_bridgehelper_t)
 domain_entry_file(virt_bridgehelper_t, virt_bridgehelper_exec_t)
 role virt_bridgehelper_roles types virt_bridgehelper_t;
 
+type virt_leaseshelper_t;
+type virt_leaseshelper_exec_t;
+domain_type(virt_leaseshelper_t)
+domain_entry_file(virt_leaseshelper_t, virt_leaseshelper_exec_t)
+role system_r types virt_leaseshelper_t;
+
 type virtd_lxc_t;
 type virtd_lxc_exec_t;
 init_system_domain(virtd_lxc_t, virtd_lxc_exec_t)
@@ -180,6 +197,24 @@ virt_lxc_domain_template(svirt_lxc_net)
 type virsh_t;
 type virsh_exec_t;
 init_system_domain(virsh_t, virsh_exec_t)
+
+type virtlockd_t;
+type virtlockd_exec_t;
+init_daemon_domain(virtlockd_t, virtlockd_exec_t)
+
+type virtlockd_run_t;
+files_pid_file(virtlockd_run_t)
+
+type virtlockd_var_lib_t;
+files_type(virtlockd_var_lib_t)
+
+ifdef(`enable_mcs',`
+	init_ranged_daemon_domain(virtlockd_t, virtlockd_exec_t, s0 - mcs_systemhigh)
+')
+
+ifdef(`enable_mls',`
+	init_ranged_daemon_domain(virtlockd_t, virtlockd_exec_t, s0 - mls_systemhigh)
+')
 
 ########################################
 #
@@ -212,6 +247,7 @@ manage_lnk_files_pattern(virt_domain, svirt_var_run_t, svirt_var_run_t)
 files_pid_filetrans(virt_domain, svirt_var_run_t, { dir file })
 
 stream_connect_pattern(virt_domain, svirt_var_run_t, svirt_var_run_t, virtd_t)
+stream_connect_pattern(virt_domain, virt_var_run_t, virtlockd_run_t, virtlockd_t)
 
 dontaudit virt_domain virt_tmpfs_type:file { read write };
 
@@ -406,6 +442,10 @@ corenet_tcp_bind_all_ports(svirt_t)
 corenet_sendrecv_all_client_packets(svirt_t)
 corenet_tcp_connect_all_ports(svirt_t)
 
+tunable_policy(`virt_use_vfio',`
+	dev_rw_vfio_dev(svirt_t)
+')
+
 ########################################
 #
 # virtd local policy
@@ -425,7 +465,7 @@ allow virtd_t self:netlink_route_socket nlmsg_write;
 allow virtd_t virt_domain:process { getattr getsched setsched transition signal signull sigkill };
 dontaudit virtd_t virt_domain:process { siginh noatsecure rlimitinh };
 
-allow virtd_t svirt_lxc_domain:unix_stream_socket { create_stream_socket_perms connectto };
+allow virtd_t { virt_domain svirt_lxc_domain }:unix_stream_socket { create_stream_socket_perms connectto };
 allow virtd_t svirt_lxc_domain:process signal_perms;
 
 allow virtd_t virtd_lxc_t:process { signal signull sigkill };
@@ -480,6 +520,10 @@ manage_dirs_pattern(virtd_t, virt_tmp_t, virt_tmp_t)
 manage_files_pattern(virtd_t, virt_tmp_t, virt_tmp_t)
 files_tmp_filetrans(virtd_t, virt_tmp_t, { file dir })
 
+manage_dirs_pattern(virtd_t, virt_tmpfs_t, virt_tmpfs_t)
+manage_files_pattern(virtd_t, virt_tmpfs_t, virt_tmpfs_t)
+fs_tmpfs_filetrans(virtd_t, virt_tmpfs_t, { file dir })
+
 # This needs a file context specification
 manage_dirs_pattern(virtd_t, virt_lock_t, virt_lock_t)
 manage_files_pattern(virtd_t, virt_lock_t, virt_lock_t)
@@ -509,6 +553,7 @@ filetrans_pattern(virtd_t, virt_var_run_t, virtd_lxc_var_run_t, dir, "lxc")
 
 stream_connect_pattern(virtd_t, virtd_lxc_var_run_t, virtd_lxc_var_run_t, virtd_lxc_t)
 stream_connect_pattern(virtd_t, svirt_var_run_t, svirt_var_run_t, virt_domain)
+stream_connect_pattern(virtd_t, virt_var_run_t, virtlockd_run_t, virtlockd_t)
 
 can_exec(virtd_t, virt_tmp_t)
 
@@ -517,6 +562,7 @@ kernel_read_system_state(virtd_t)
 kernel_read_network_state(virtd_t)
 kernel_rw_net_sysctls(virtd_t)
 kernel_read_kernel_sysctls(virtd_t)
+kernel_read_vm_overcommit_sysctl(virtd_t)
 kernel_request_load_module(virtd_t)
 kernel_search_debugfs(virtd_t)
 kernel_setsched(virtd_t)
@@ -643,6 +689,13 @@ tunable_policy(`virt_use_samba',`
 	fs_manage_cifs_files(virtd_t)
 	fs_manage_cifs_files(virtd_t)
 	fs_read_cifs_symlinks(virtd_t)
+')
+
+tunable_policy(`virt_use_vfio',`
+	allow virtd_t self:capability sys_resource;
+	allow virtd_t self:process setrlimit;
+	allow virtd_t svirt_t:process rlimitinh;
+	dev_relabelfrom_vfio_dev(virtd_t)
 ')
 
 optional_policy(`
@@ -1209,3 +1262,56 @@ corenet_rw_tun_tap_dev(virt_bridgehelper_t)
 
 userdom_search_user_home_dirs(virt_bridgehelper_t)
 userdom_use_user_ptys(virt_bridgehelper_t)
+
+########################################
+#
+# Leaseshelper local policy
+#
+
+allow virt_leaseshelper_t virtd_t:fd use;
+allow virt_leaseshelper_t virtd_t:fifo_file write_fifo_file_perms;
+
+manage_dirs_pattern(virt_leaseshelper_t, virt_var_lib_t, virt_var_lib_t)
+manage_files_pattern(virt_leaseshelper_t, virt_var_lib_t, virt_var_lib_t)
+files_var_lib_filetrans(virt_leaseshelper_t, virt_var_lib_t, { file dir })
+
+manage_files_pattern(virt_leaseshelper_t, virt_var_run_t, virt_var_run_t)
+files_pid_filetrans(virt_leaseshelper_t, virt_var_run_t, file)
+
+kernel_dontaudit_read_system_state(virt_leaseshelper_t)
+
+########################################
+#
+# Virtlockd local policy
+#
+
+allow virtlockd_t self:capability dac_override;
+allow virtlockd_t self:fifo_file rw_fifo_file_perms;
+
+allow virtlockd_t virt_image_type:dir list_dir_perms;
+allow virtlockd_t virt_image_type:file rw_file_perms;
+
+create_files_pattern(virtlockd_t, virt_log_t, virt_log_t)
+
+list_dirs_pattern(virtlockd_t, virt_var_lib_t, virt_var_lib_t)
+
+manage_dirs_pattern(virtlockd_t, { virt_var_lib_t virtlockd_var_lib_t }, virtlockd_var_lib_t)
+manage_files_pattern(virtlockd_t, virtlockd_var_lib_t, virtlockd_var_lib_t)
+filetrans_pattern(virtlockd_t, virt_var_lib_t, virtlockd_var_lib_t, dir)
+
+manage_files_pattern(virtlockd_t, virt_var_run_t, virtlockd_run_t)
+manage_sock_files_pattern(virtlockd_t, virt_var_run_t, virtlockd_run_t)
+filetrans_pattern(virtlockd_t, virt_var_run_t, virtlockd_run_t, sock_file)
+files_pid_filetrans(virtlockd_t, virtlockd_run_t, file)
+
+can_exec(virtlockd_t, virtlockd_exec_t)
+
+ps_process_pattern(virtlockd_t, virtd_t)
+
+files_read_etc_files(virtlockd_t)
+files_list_var_lib(virtlockd_t)
+
+miscfiles_read_localization(virtlockd_t)
+
+virt_append_log(virtlockd_t)
+virt_read_config(virtlockd_t)

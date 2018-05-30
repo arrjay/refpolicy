@@ -1,3 +1,510 @@
+* Sun Oct 23 2016 Chris PeBenito <pebenito@ieee.org> - 2.20161023
+Chris PeBenito (94):
+      Module version bump for systemd-user-sessions fc entry from Dominick Grift
+      Module version bumps for 2 patches from Dominick Grift.
+      Module version bump for vm overcommit sysctl interfaces from Laurent
+         Bigonville.
+      Update contrib.
+      Module version bump for Xorg and SSH patches from Nicolas Iooss.
+      Add neverallow for mac_override capability. It is not used by SELinux.
+      Merge branch 'overcommit-1' of git://github.com/bigon/refpolicy into
+         bigon-overcommit-1
+      Merge branch 'bigon-overcommit-1'
+      Merge branch 'systemd-1' of git://github.com/bigon/refpolicy into
+         bigon-systemd-1
+      Merge branch 'bigon-systemd-1'
+      Module version bump for syslog and systemd changes from Laurent Bigonville
+      Merge pull request #19 from shootingatshadow/fc_sort
+      Merge branch 'xorg-1' of git://github.com/bigon/refpolicy into
+         bigon-xorg-1
+      Merge branch 'bigon-xorg-1'
+      Module version bump for Debian Xorg fc fixes from Laurent Bigonville
+      Add a type and genfscon for nsfs.
+      Module version bump for systemd PrivateNetwork patch from Nicolas Iooss
+      Module version bump for systemd audit_read capability from Laurent
+         Bigonville
+      Merge pull request #21 from fishilico/typos
+      Module version bump for patches from Nicolas Iooss and Grant Ridder.
+      Update contrib.
+      Module version bump for efivarfs patches from Dan Walsh, Vit Mojzis, and
+         Laurent Bigonville
+      Module version bump for ipset fc entry from Laurent Bigonville.
+      Update contrib.
+      Whitespace fix in iptables.fc.
+      Module version bump for iptables fc entries from Laurent Bigonville and
+         Lukas Vrabec.
+      Update contrib.
+      Module version bump for iptables/firewalld patch from Laurent Bigonville.
+      Merge pull request #29 from bigon/appconfig-lxc
+      Module version bump for getty patch from Luis Ressel.
+      Module version bump for tboot utils from Luis Ressel and systemd fix from
+         Jason Zaman.
+      Merge branch 'corecommands-archlinux' of
+         https://github.com/fishilico/selinux-refpolicy-patched
+      Merge branch 'dev_setattr_dlm_control-typo' of
+         https://github.com/fishilico/selinux-refpolicy-patched
+      Merge branch 'kdevtmpfs-unlink' of
+         https://github.com/fishilico/selinux-refpolicy-patched
+      Module version bump for several Arch fixes from Nicolas Iooss.
+      Update contrib.
+      Reduce broad entrypoints for unconfined domains.
+      Update Travis-CI build to newest SELinux userspace release.
+      Update su for libselinux-2.5 changes.
+      Merge branch 'selinux-1' of https://github.com/bigon/refpolicy
+      Module version bump for Debian fc entries from Laurent Bigonville.
+      Module version bump for patches from Dominick Grift and Lukas Vrabec.
+      Add user namespace capability object classes.
+      Module version bump for hwloc-dump-hwdata from Dominick Grift and Grzegorz
+         Andrejczuk.
+      Module version bump for nftables fc entry from Jason Zaman.
+      Update contrib.
+      Module version bump for LMNR port from Laurent Bigonville.
+      Module version bump for systemd-resolved patch from Laurent BIgonville.
+      Merge branch 'master' of https://github.com/qqo/refpolicy into qqo-master
+      Merge branch 'qqo-master'
+      Module version bump for mlstrustedsocket from qqo.
+      Module version bumps + contrib update for user_runtime from Jason Zaman.
+      Update contrib.
+      Module version bump for corecommands update from Garrett Holmstrom.
+      Module version bump for MLS relabeling patch from Lukas Vrabec.
+      Get attributes of generic ptys, from Russell Coker.
+      Module version bump for user_udp_server tunable from Russell Coker.
+      libraries: Move libsystemd fc entry.
+      libraries: Module version bump for libsystemd fc entry from Lukas Vrabec.
+      Update contrib.
+      Systemd units from Russell Coker.
+      corenetwork: Add port labeling for Global Catalog over LDAPS.
+      corenetwork: Missed version bump for previous commit.
+      Update contrib.
+      Allow the system user domains to chat over dbus with a few other domains
+         (e.g. gnome session).
+      Update alsa module use from Guido Trentalancia.
+      Update the sysnetwork module to add some permissions needed by the dhcp
+         client (another separate patch makes changes to the ifconfig part).
+      Ifconfig should be able to read firmware files in /lib (i.e. some network
+         cards need to load their firmware) and it should not audit attempts to
+         load kernel modules directly.
+      Remove redundant libs_read_lib_files() for ifconfig_t.
+      Module version bump for various patches from Guido Trentalancia.
+      Update contrib.
+      Update for the xserver module:
+      userdomain: Fix compile errors.
+      Update contrib.
+      Merge pull request #38 from fishilico/travis-nosudo
+      Module version bump for module_load perm use from Guido Trentalancia.
+      Update contrib.
+      Merge pull request #39 from rfkrocktk/feature/vagrant
+      Merge pull request #40 from jer-gentoo/patch-1
+      userdomain: Move enable_mls block in userdom_common_user_template().
+      Module version bumps for LVM and useromain patches from Guido
+         Trentalancia.
+      Update contrib.
+      Additional change from Guido Trentalancia related to evolution.
+      Module version bump for selinuxutil fix from Jason Zaman.
+      Update contrib.
+      Update contrib.
+      Merge branch 'feature/syncthing' of https://github.com/rfkrocktk/refpolicy
+         into rfkrocktk-feature/syncthing
+      Merge branch 'rfkrocktk-feature/syncthing'
+      Module version bumps for syncthing from Naftuli Tzvi Kay.
+      Merge pull request #41 from SeanPlacchetti/patch-1
+      Merge pull request #42 from SeanPlacchetti/patch-1
+      Merge pull request #43 from williamcroberts/google-patch
+      Update contrib.
+      Bump module versions for release.
+
+Dan Walsh (1):
+      Add label for efivarfs
+
+Dominick Grift (5):
+      systemd: add missing file context spec for systemd-user-sessions
+         executable file
+      authlogin: remove duplicate files_list_var_lib(nsswitch_domain)
+      kernel: implement sysctl_vm_overcommit_t for
+         /proc/sys/vm/overcommit_memory
+      systemd: Add support for --log-target
+      Update refpolicy to handle hwloc
+
+Garrett Holmstrom (1):
+      corecmd: Remove fcontext for /etc/sysconfig/libvirtd
+
+Grant Ridder (1):
+      Add redis-sentinel port to redis network_port def
+
+Guido Trentalancia (6):
+      Add module_load permission to class system
+      Add module_load permission to can_load_kernmodule
+      Remove deprecated semodule options from Makefile
+      Update the lvm module
+      Improve tunable support for rw operations on noxattr fs / removable media
+      userdomain: introduce the user certificate file context (was miscfiles:
+         introduce the user certificate file context)
+
+Jason Zaman (6):
+      system/init: move systemd_ interfaces into optional_policy
+      iptables: add fcontext for nftables
+      authlogin: remove fcontext for /var/run/user
+      userdomain: Introduce types for /run/user
+      userdomain: user_tmp requires searching /run/user
+      userdomain: introduce interfaces for user runtime
+
+Jason Zaman via refpolicy (1):
+      selinuxutil: allow setfiles to read semanage store
+
+Jeroen Roovers (1):
+      Use $(AWK) not plain awk
+
+Laurent Bigonville (15):
+      Add interfaces to read/write /proc/sys/vm/overcommit_memory
+      Give some systemd domain access to /proc/sys/kernel/random/boot_id
+      On Debian, systemd binaries are installed in / not /usr
+      Allow syslogd_t to read sysctl_vm_overcommit_t
+      Label Xorg server binary correctly on Debian
+      Allow systemd the audit_read capability
+      Allow logind to read efivarfs files
+      Add label for /sbin/ipset
+      Label /var/run/ebtables.lock as iptables_var_run_t.
+      Allow {eb,ip,ip6}tables-restore to read files in /run/firewalld
+      Add lxc_contexts config file
+      Add some labels for SELinux tools path in Debian
+      Add the validate_trans access vector to the security class
+      Add llmnr/5355 (Link-local Multicast Name Resolution)
+      Add policy for systemd-resolved
+
+Luis Ressel (2):
+      Allow getty the sys_admin capability
+      Allow sysadm to run txt-stat.
+
+Lukas Vrabec (4):
+      Label /var/run/xtables.lock as iptables_var_run_t.
+      SELinux support for cgroup2 filesystem.
+      Add new MLS attribute to allow relabeling objects higher than system low.
+         This exception is needed for package managers when processing sensitive
+         data.
+      Systemd by version 231 starts using shared library and systemd daemons
+         execute it. For this reason lib_t type is needed.
+
+Mike Palmiotto (1):
+      Add mls support for some db classes
+
+Naftuli Tzvi Kay (2):
+      Add Syncthing Support to Policy
+      Add Vagrant box for development.
+
+Nicolas Iooss (18):
+      Label Xorg server binary correctly on Arch Linux
+      Label OpenSSH files correctly on Arch Linux
+      Label OpenSSH systemd unit files
+      Allow systemd services to use PrivateNetwork feature
+      Fix typo in init_dbus_chat requirements
+      Fix typos in comments from corenetwork module
+      man: Spelling fixes
+      Fix interface descriptions when duplicate ones are found
+      Label /sys/kernel/debug/tracing filesystem
+      Label TexLive scripts bin_t
+      Label system-config-printer applet properly on Arch Linux
+      Label gedit plugins properly on Arch Linux
+      Label some user session DBus services as bin_t
+      Do not label /usr/lib/gvfs/libgvfscommon.so as bin_t
+      Fix typo in dev_setattr_dlm_control interface requirements
+      Allow kdevtmpfs to unlink fixed disk devices
+      Fix typo in module compilation message
+      Make Travis-CI build without using sudo
+
+Rahul Chaudhry (1):
+      fc_sort: cleanup warnings caught by clang tidy / static analyzer.
+
+Russell Coker (2):
+      user_udp_server tunable
+      getattr on unlabeled blk devs
+
+Sean Placchetti (2):
+      Update to refpolicy spec file
+      Update specfile
+
+Vit Mojzis (1):
+      Add interface to allow reading files in efivarfs - contains Linux Kernel
+         configuration options for UEFI systems (UEFI Runtime Variables)
+
+William Roberts (1):
+      fc_sort: strip whitespace errors
+
+qqo (1):
+      Adds attribute mlstrustedsocket, along with the interface.
+
+* Tue Dec 08 2015 Chris PeBenito <selinux@tresys.com> - 2.20151208
+Alexander Wetzel (1):
+      adds vfio device support to base policy
+
+Chris PeBenito (48):
+      Module version bump for optional else block removal from Steve Lawrence.
+      Add always_check_network policy capability.
+      Update contrib.
+      Fix domain_mmap_low() to be a proper tunable.
+      Add initial Travis CI configuration.
+      Travis CI already exports variables.
+      Add validate target for monolithic policy.
+      Update contrib.
+      Use matrix keyword to simplify travis-ci build definitions.
+      Undo last commit.
+      Simplify travis-ci build handling of SELinux toolchain.
+      Update contrib.
+      Module version bump for fstools blkid fix from Jason Zaman
+      Update contrib.
+      Module version bump for debufs mount point fc entry from Laurent
+         Bigonville.
+      Module version bump for updated netlink sockets from Stephen Smalley
+      Update contrib.
+      Module version bump for init_startstop_service from Jason Zaman.
+      Update contrib.
+      Change CI tests to drop DIRECT_INITRC.
+      Module version bumps for further init_startstop_service() changes from
+         Jason Zaman.
+      Module version bump for admin interface changes from Jason Zaman.
+      Update contrib.
+      Module version bumps for admin interfaces from Jason Zaman.
+      Module version bump for cron_admin for sysadm from Jason Zaman.
+      Module version bump for ssh-agent -k fix from Luis Ressel.
+      Module version bump for APR build script labeling from Luis Ressel.
+      Module version bump for vfio device from Alexander Wetzel.
+      Update contrib.
+      Rearrange lines in ipsec.te.
+      Module version bump for patches from Jason Zaman/Matthias Dahl.
+      Add systemd build option.
+      Add systemd access vectors.
+      Implement core systemd policy.
+      Add supporting rules for domains tightly-coupled with systemd.
+      Add rules for sysadm_r to manage the services.
+      Add systemd units for core refpolicy services.
+      Add sysfs_types attribute.
+      Add refpolicy core socket-activated services.
+      Change policy_config_t to a security file type.
+      Merge branch 'pebenito-master'
+      Module version bump for systemd additions.
+      Update contrib for dbus systemd fix.
+      Revise selinux module interfaces for perms protected by neverallows.
+      Remove bad interface in systemd.if.
+      Module version bump for utempter Debian helper from Laurent Bigonville.
+      Update contrib.
+      Bump module versions for release.
+
+Jason Zaman (13):
+      fstools: add in filetrans for /run dir
+      Introduce init_startstop_service interface
+      logging: use init_startstop_service in _admin interface
+      postgresql: use init_startstop_service in _admin interface
+      Add openrc support to init_startstop_service
+      Introduce iptables_admin
+      Add all the missing _admin interfaces to sysadm
+      Introduce lvm_admin interface
+      Introduce ipsec_admin interface
+      Introduce setrans_admin interface
+      add new cron_admin interface to sysadm
+      Add overlayfs as an XATTR capable fs
+      system/ipsec: Add policy for StrongSwan
+
+Laurent Bigonville (4):
+      Add fc for /sys/kernel/debug as debugfs_t
+      Add "binder" security class and access vectors
+      Properly label utempter helper on debian
+      Allow the user cronjobs to run in their userdomain
+
+Luis Ressel (2):
+      Allow ssh-agent to send signals to itself
+      Mark APR build scripts as bin_t
+
+Stephen Smalley (1):
+      Update netlink socket classes.
+
+Steve Lawrence (1):
+      Remove optional else block for dhcp ping
+
+* Wed Dec 03 2014 Chris PeBenito <selinux@tresys.com> - 2.20141203
+Artyom Smirnov (3):
+      New database object classes
+      Fixes for db_domain and db_exception
+      Renamed db_type to db_datatype, to avoid confusion with SELinux "type"
+
+Chris PeBenito (69):
+      Whitespace fix in postgresql.fc
+      Module version bump for postgresql fc entries from Luis Ressel.
+      Add symlink to contrib Changelog for easy reference.
+      Move lightdm line in xserver.fc.
+      Whitespace fix in xserver.fc.
+      Update contrib.
+      Module version bump for userdomain kernel symbol table fix from Nicolas
+         Iooss.
+      Module version bump for 2 Gentoo patches from Sven Vermeulen.
+      Update contrib.
+      Module version bump for 2 patch sets from Laurent Bigonville.
+      Update contrib.
+      Module version bump for gnome keyring fix from Laurent Bigonville.
+      Update contrib.
+      Module version bump for /sys/fs/selinux support from Sven Vermeulen.
+      Module version bump for fixes from Laurent Bigonville.
+      Update contrib.
+      Module version bumps for fc fixes from Nicolas Iooss.
+      Update contrib.
+      Add file for placing default_* statements.
+      Fix error in default_user example.
+      Module version bump for unconfined->lvm transition from Nicolas Iooss.
+      Need the __future__ import for python2 if using print().
+      Module version bump for ifconfig fc entry from Sven Vermeulen.
+      Module version bump for deprecated interface usage removal from Nicolas
+         Iooss.
+      Update contrib.
+      Module version bump for rcs2log and xserver updates from Sven Vermeulen.
+      Module version bump for shutdown transitions from Luis Ressel.
+      Remove firstboot_rw_t as FC5 has been gone for a long time.
+      Module version bump for firstboot_rw_t alias removal.
+      Module version bump for dropbox port from Sven Vermeulen.
+      Module version bump for unconfined syslog cap from Nicolas Iooss.
+      Always use the unknown permissions handling build option.
+      Merge pull request #1 from artyom-smirnov/master
+      Module version bump for zram fc entry from Jason Zaman.
+      Update contrib.
+      Module version bump for init_daemon_pid_file from Sven Vermeulen.
+      Move tumblerd fc entry
+      Module version bump for tumblerd fc entry from Jason Zaman.
+      Module version bump for libraries fc fix from Nicolas Iooss.
+      Update contrib.
+      Module version bump for fstools fc entries from Luis Ressel.
+      Module version bump for missing unlabeled interfaces from Sven Vermeulen.
+      Module version bump for ping rawip socket fix from Luis Ressel.
+      Module version bump for full IRC ports from Luis Ressel.
+      Move losetup addition in fstools.
+      Module version bump for losetup fixes from Luis Ressel.
+      Update contrib.
+      Module version bump for postgres fc revisions from Luis Ressel.
+      Module version bump for FUSE fix for mount from Luis Ressel.
+      Module version bump for misc fixes from Nicolas Iooss.
+      Move systemd fc entry.
+      Whitespace change in logging.fc.
+      Add comment for journald ring buffer reading.
+      Module version bumps for systemd/journald patches from Nicolas Iooss.
+      Update contrib.
+      /dev/log symlinks are not labeled devlog_t.
+      Module version bump for CIL fixes from Yuli Khodorkovskiy.
+      Drop RHEL4 and RHEL5 support.
+      Merge pull request #3 from bigon/arping
+      Merge pull request #4 from fishilico/minor-typo
+      Module version bump for Debian arping fc entries from Laurent Bigonville.
+      Add comment for iw generic netlink socket usage
+      Module version bump for /sbin/iw support from Nicolas Iooss.
+      Merge pull request #5 from bigon/audit_read
+      Update contrib.
+      Module version bump for misc fixes from Sven Vermeulen.
+      Update contrib.
+      Module version bump for module store move from Steve Lawrence.
+      Bump module versions for release.
+
+Elia Pinto (1):
+      Fix misspelling
+
+Jason Zaman (2):
+      File contexts for zram
+      File Context for tumbler
+
+Laurent Bigonville (14):
+      Properly label git-shell and other git commands for Debian
+      Label /usr/sbin/lightdm as xdm_exec_t
+      Create new xattrfs attribute and fs_getattr_all_xattr_fs() interface
+      Associate the new xattrfs attribute to fs_t and some pseudo-fs
+      Use new fs_getattr_all_xattr_fs interface for setfiles_t and restorecond_t
+      Add telepathy role for user_r and staff_r
+      Properly label the manpages installed by postgresql
+      Label /usr/local/share/ca-certificates(/.*)? as cert_t
+      Allow the xdm_t domain to enter all the gkeyringd ones
+      Label /etc/locale.alias as locale_t on Debian
+      Allow hugetlbfs_t to be associated to /dev
+      On Debian iputils-arping is installed in /usr/bin/arping
+      Debian also ship a different arping implementation
+      Add new audit_read access vector in capability2 class
+
+Luis Ressel (13):
+      Add two postgresql file contexts from gentoo policy
+      Allow init to execute shutdown
+      Allow xdm_t to transition to shutdown_t domain
+      Some of the fsadm tools can also be in /usr/sbin instead of /sbin
+      Label /usr/sbin/{add, del}part as fsadm_exec_t
+      Grant ping_t getattr on rawip_socket
+      kernel/corenetwork.te: Add all registered IRC ports
+      system/mount.if: Add mount_rw_loopback_files interface
+      system/fstools.if: Add fstools_use_fds interface
+      Add neccessary permissions for losetup
+      Only label administrative postgres commands as postgresql_exec_t
+      Also apply the new postgres labeling scheme on Debian
+      Grant mount permission to access /dev/fuse
+
+Nicolas Iooss (31):
+      Fix parallel build of the policy
+      fc_sort: fix typos in comments
+      fc_sort: initialize allocated memory to fix execution on an empty file
+      fc_sort: make outfile argument optional
+      userdomain: no longer allow unprivileged users to read kernel symbols
+      Label syslog-ng.pid as syslogd_var_run_t
+      filesystem: label cgroup symlinks
+      Label /usr/lib/getconf as bin_t
+      Label /usr/share/virtualbox/VBoxCreateUSBNode.sh as udev_helper_exec_t
+      Make support/policyvers.py compatible with Python 3
+      Make unconfined user run lvm programs in confined domain
+      No longer use deprecated MLS interfaces
+      Allow unconfined domains to use syslog capability
+      Label /lib symlink as lib_t for every distro
+      Label /usr/lib/networkmanager/ like /usr/lib/NetworkManager/
+      Add ioctl and lock to manage_lnk_file_perms
+      Label (/var)?/tmp/systemd-private-.../tmp like /tmp
+      Fix typo in fs_getattr_all_fs description
+      Label systemd files in init module
+      Introduce init_search_run interface
+      Label systemd-journald files and directories
+      Support logging with /run/systemd/journal/dev-log
+      Allow journald to read the kernel ring buffer and to use /dev/kmsg
+      Allow journald to access to the state of all processes
+      Remove redundant Gentoo-specific term_append_unallocated_ttys(syslogd_t)
+      Fix minor typo in init.if
+      Label /sbin/iw as ifconfig_exec_t
+      Allow iw to create generic netlink sockets
+      Use create_netlink_socket_perms when allowing netlink socket creation
+      Update Python requirement in INSTALL
+      Create tmp directory when compiling a .mod.fc file in a modular way
+
+Steve Lawrence (1):
+      Update policy for selinux userspace moving the policy store to
+         /var/lib/selinux
+
+Sven Vermeulen (24):
+      Hide getattr denials upon sudo invocation
+      Support /sys/devices/system/cpu/online
+      The security_t file system can be at /sys/fs/selinux
+      Dontaudit access on security_t file system at /sys/fs/selinux
+      ifconfig can also be in /bin
+      xserver_t needs to ender dirs labeled xdm_var_run_t
+      Enable rcs2log location for all distributions
+      Add dropbox_port_t support
+      Support initrc_t generated pid files with file transition
+      Deprecate init_daemon_run_dir interface
+      Use init_daemon_pid_file instead of init_daemon_run_dir
+      Introduce kernel_delete_unlabeled_symlinks
+      Introduce kernel_delete_unlabeled_pipes
+      Introduce kernel_delete_unlabeled_sockets
+      Introduce kernel_delete_unlabeled_blk_files
+      Introduce kernel_delete_unlabeled_chr_files
+      Run grub(2)-mkconfig in bootloader domain
+      Add auth_pid_filetrans_pam_var_run
+      New sudo manages timestamp directory in /var/run/sudo
+      xfce4-notifyd is an executable
+      Mark f2fs as a SELinux capable file system
+      Add in LightDM contexts
+      Add gfisk and efibootmgr as fsadm_exec_t
+      Add /var/lib/racoon as runtime directory for ipsec
+
+Yuli Khodorkovskiy (1):
+      Remove duplicate role declarations
+
+cgarst (1):
+      Updating submodule URL to github
+
 * Tue Mar 11 2014 Chris PeBenito <selinux@tresys.com> - 2.20140311
 Chris PeBenito (96):
       Update contrib to pull in minidlna.

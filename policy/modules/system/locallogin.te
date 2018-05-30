@@ -1,4 +1,4 @@
-policy_module(locallogin, 1.13.0)
+policy_module(locallogin, 1.14.0)
 
 ########################################
 #
@@ -134,6 +134,14 @@ userdom_search_user_home_content(local_login_t)
 userdom_use_unpriv_users_fds(local_login_t)
 userdom_sigchld_all_users(local_login_t)
 userdom_create_all_users_keys(local_login_t)
+
+ifdef(`init_systemd',`
+	auth_manage_faillog(local_login_t)
+
+	systemd_dbus_chat_logind(local_login_t)
+	systemd_use_logind_fds(local_login_t)
+	systemd_manage_logind_pid_pipes(local_login_t)
+')
 
 ifdef(`distro_ubuntu',`
 	optional_policy(`

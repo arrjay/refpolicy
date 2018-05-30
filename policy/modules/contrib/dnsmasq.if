@@ -273,15 +273,12 @@ interface(`dnsmasq_admin',`
 	allow $1 dnsmasq_t:process { ptrace signal_perms };
 	ps_process_pattern($1, dnsmasq_t)
 
-	init_labeled_script_domtrans($1, dnsmasq_initrc_exec_t)
-	domain_system_change_exemption($1)
-	role_transition $2 dnsmasq_initrc_exec_t system_r;
-	allow $2 system_r;
+	init_startstop_service($1, $2, dnsmasq_t, dnsmasq_initrc_exec_t)
 
 	files_list_var_lib($1)
 	admin_pattern($1, dnsmasq_lease_t)
 
-	logging_seearch_logs($1)
+	logging_search_logs($1)
 	admin_pattern($1, dnsmasq_var_log_t)
 
 	files_list_pids($1)

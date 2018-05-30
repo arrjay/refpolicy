@@ -2,7 +2,7 @@
 # This is a generated file!  Instead of modifying this file, the
 # corenetwork.te.in or corenetwork.te.m4 file should be modified.
 #
-policy_module(corenetwork, 1.20.0)
+policy_module(corenetwork, 1.22.0)
 
 ########################################
 #
@@ -460,6 +460,14 @@ portcon tcp 53 gen_context(system_u:object_r:dns_port_t,s0)
 portcon udp 53 gen_context(system_u:object_r:dns_port_t,s0)
 
 
+type dropbox_port_t, port_type, defined_port_type;
+type dropbox_client_packet_t, packet_type, client_packet_type;
+type dropbox_server_packet_t, packet_type, server_packet_type;
+typeattribute dropbox_port_t unreserved_port_type;
+portcon tcp 17500 gen_context(system_u:object_r:dropbox_port_t,s0)
+portcon udp 17500 gen_context(system_u:object_r:dropbox_port_t,s0)
+
+
 type efs_port_t, port_type, defined_port_type;
 type efs_client_packet_t, packet_type, client_packet_type;
 type efs_server_packet_t, packet_type, server_packet_type;
@@ -755,7 +763,12 @@ type ircd_port_t, port_type, defined_port_type;
 type ircd_client_packet_t, packet_type, client_packet_type;
 type ircd_server_packet_t, packet_type, server_packet_type;
 typeattribute ircd_port_t unreserved_port_type;
+portcon tcp 6665 gen_context(system_u:object_r:ircd_port_t,s0)
+portcon tcp 6666 gen_context(system_u:object_r:ircd_port_t,s0)
 portcon tcp 6667 gen_context(system_u:object_r:ircd_port_t,s0)
+portcon tcp 6668 gen_context(system_u:object_r:ircd_port_t,s0)
+portcon tcp 6669 gen_context(system_u:object_r:ircd_port_t,s0)
+portcon tcp 6697 gen_context(system_u:object_r:ircd_port_t,s0)
 
 
 type isakmp_port_t, port_type, defined_port_type;
@@ -874,6 +887,7 @@ portcon udp 389 gen_context(system_u:object_r:ldap_port_t,s0)
 portcon tcp 636 gen_context(system_u:object_r:ldap_port_t,s0)
 portcon udp 636 gen_context(system_u:object_r:ldap_port_t,s0)
 portcon tcp 3268 gen_context(system_u:object_r:ldap_port_t,s0)
+portcon tcp 3269 gen_context(system_u:object_r:ldap_port_t,s0)
 
 
 type lirc_port_t, port_type, defined_port_type;
@@ -881,6 +895,14 @@ type lirc_client_packet_t, packet_type, client_packet_type;
 type lirc_server_packet_t, packet_type, server_packet_type;
 typeattribute lirc_port_t unreserved_port_type;
 portcon tcp 8765 gen_context(system_u:object_r:lirc_port_t,s0)
+
+
+type llmnr_port_t, port_type, defined_port_type;
+type llmnr_client_packet_t, packet_type, client_packet_type;
+type llmnr_server_packet_t, packet_type, server_packet_type;
+typeattribute llmnr_port_t unreserved_port_type;
+portcon tcp 5355 gen_context(system_u:object_r:llmnr_port_t,s0)
+portcon udp 5355 gen_context(system_u:object_r:llmnr_port_t,s0)
 
 
 type lmtp_port_t, port_type, defined_port_type;
@@ -1325,6 +1347,7 @@ type redis_client_packet_t, packet_type, client_packet_type;
 type redis_server_packet_t, packet_type, server_packet_type;
 typeattribute redis_port_t unreserved_port_type;
 portcon tcp 6379 gen_context(system_u:object_r:redis_port_t,s0)
+portcon tcp 26379 gen_context(system_u:object_r:redis_port_t,s0)
 
 
 type repository_port_t, port_type, defined_port_type;
@@ -1561,6 +1584,27 @@ type swat_server_packet_t, packet_type, server_packet_type;
 typeattribute swat_port_t reserved_port_type;
 typeattribute swat_port_t rpc_port_type;
 portcon tcp 901 gen_context(system_u:object_r:swat_port_t,s0)
+
+
+type syncthing_port_t, port_type, defined_port_type;
+type syncthing_client_packet_t, packet_type, client_packet_type;
+type syncthing_server_packet_t, packet_type, server_packet_type;
+typeattribute syncthing_port_t unreserved_port_type;
+portcon tcp 22000 gen_context(system_u:object_r:syncthing_port_t,s0)
+
+
+type syncthing_admin_port_t, port_type, defined_port_type;
+type syncthing_admin_client_packet_t, packet_type, client_packet_type;
+type syncthing_admin_server_packet_t, packet_type, server_packet_type;
+typeattribute syncthing_admin_port_t unreserved_port_type;
+portcon tcp 8384 gen_context(system_u:object_r:syncthing_admin_port_t,s0)
+
+
+type syncthing_discovery_port_t, port_type, defined_port_type;
+type syncthing_discovery_client_packet_t, packet_type, client_packet_type;
+type syncthing_discovery_server_packet_t, packet_type, server_packet_type;
+typeattribute syncthing_discovery_port_t unreserved_port_type;
+portcon udp 21027 gen_context(system_u:object_r:syncthing_discovery_port_t,s0)
 
 
 type sype_transport_port_t, port_type, defined_port_type;

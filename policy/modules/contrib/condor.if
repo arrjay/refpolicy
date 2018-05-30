@@ -58,7 +58,7 @@ template(`condor_domain_template',`
 interface(`condor_admin',`
 	gen_require(`
 		attribute condor_domain;
-		type condor_initrc_exec_config_t, condor_log_t;
+		type condor_initrc_exec_t, condor_log_t;
 		type condor_var_lib_t, condor_var_lock_t, condor_schedd_tmp_t;
 		type condor_var_run_t, condor_startd_tmp_t, condor_conf_t;
 	')
@@ -66,10 +66,7 @@ interface(`condor_admin',`
 	allow $1 condor_domain:process { ptrace signal_perms };
 	ps_process_pattern($1, condor_domain)
 
-	init_labeled_script_domtrans($1, condor_initrc_exec_t)
-	domain_system_change_exemption($1)
-	role_transition $2 condor_initrc_exec_t system_r;
-	allow $2 system_r;
+	init_startstop_service($1, $2, condor_domain, condor_initrc_exec_t)
 
 	files_search_etc($1)
 	admin_pattern($1, condor_conf_t)

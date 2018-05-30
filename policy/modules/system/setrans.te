@@ -1,4 +1,4 @@
-policy_module(setrans, 1.9.0)
+policy_module(setrans, 1.12.0)
 
 gen_require(`
 	class context contains;
@@ -16,12 +16,15 @@ init_daemon_domain(setrans_t, setrans_exec_t)
 type setrans_initrc_exec_t;
 init_script_file(setrans_initrc_exec_t)
 
+type setrans_unit_t;
+init_unit_file(setrans_unit_t)
+
 type setrans_var_run_t;
 files_pid_file(setrans_var_run_t)
 mls_trusted_object(setrans_var_run_t)
 
 ifdef(`distro_debian',`
-	init_daemon_run_dir(setrans_var_run_t, "setrans")
+	init_daemon_pid_file(setrans_var_run_t, dir, "setrans")
 ')
 
 ifdef(`enable_mcs',`
@@ -68,7 +71,7 @@ mls_file_read_all_levels(setrans_t)
 mls_file_write_all_levels(setrans_t)
 mls_net_receive_all_levels(setrans_t)
 mls_socket_write_all_levels(setrans_t)
-mls_process_read_up(setrans_t)
+mls_process_read_all_levels(setrans_t)
 mls_socket_read_all_levels(setrans_t)
 
 selinux_compute_access_vector(setrans_t)

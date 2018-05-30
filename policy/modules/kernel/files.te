@@ -1,4 +1,4 @@
-policy_module(files, 1.19.0)
+policy_module(files, 1.22.0)
 
 ########################################
 #
@@ -71,8 +71,6 @@ typealias etc_t alias snmpd_etc_t;
 #
 type etc_runtime_t;
 files_type(etc_runtime_t)
-#Temporarily in policy until FC5 dissappears
-typealias etc_runtime_t alias firstboot_rw_t;
 
 #
 # home_root_t is the type for the directory where user home directories
@@ -214,7 +212,7 @@ fs_associate_tmpfs(tmpfsfile)
 #
 
 # Create/access any file in a labeled filesystem;
-allow files_unconfined_type file_type:{ file chr_file } ~execmod;
+allow files_unconfined_type file_type:{ file chr_file } ~{ entrypoint execmod };
 allow files_unconfined_type file_type:{ dir lnk_file sock_file fifo_file blk_file } *;
 
 # Mount/unmount any filesystem with the context= option.

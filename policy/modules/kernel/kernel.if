@@ -8,6 +8,27 @@
 
 ########################################
 ## <summary>
+##	Allows the kernel to start userland processes
+##	by dynamic transitions to the specified domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	The process type entered by the kernel.
+##	</summary>
+## </param>
+#
+interface(`kernel_dyntrans_to',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	domain_dyntrans_type(kernel_t)
+	allow kernel_t self:process setcurrent;
+	allow kernel_t $1:process dyntransition;
+')
+
+########################################
+## <summary>
 ##	Allows to start userland processes
 ##	by transitioning to the specified domain.
 ## </summary>
@@ -254,6 +275,25 @@ interface(`kernel_rw_pipes',`
 
 ########################################
 ## <summary>
+##	Read/write to kernel using a unix
+##	domain stream socket.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_rw_stream_sockets',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	allow $1 kernel_t:unix_stream_socket rw_socket_perms;
+')
+
+########################################
+## <summary>
 ##	Connect to kernel using a unix
 ##	domain stream socket.
 ## </summary>
@@ -273,7 +313,25 @@ interface(`kernel_stream_connect',`
 
 ########################################
 ## <summary>
-##	Read and write kernel unix datagram sockets.
+##	Getattr on kernel unix datagram sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_getattr_dgram_sockets',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	allow $1 kernel_t:unix_dgram_socket getattr;
+')
+
+########################################
+## <summary>
+##	Read and write kernel unix datagram sockets. (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -495,14 +553,6 @@ interface(`kernel_change_ring_buffer_level',`
 
 	allow $1 self:capability2 syslog;
 	allow $1 kernel_t:system syslog_console;
-
-	ifdef(`distro_rhel4',`
-		allow $1 self:capability sys_admin;
-	')
-
-	ifdef(`distro_rhel5',`
-		allow $1 self:capability sys_admin;
-	')
 ')
 
 ########################################
@@ -523,14 +573,6 @@ interface(`kernel_clear_ring_buffer',`
 
 	allow $1 self:capability2 syslog;
 	allow $1 kernel_t:system syslog_mod;
-
-	ifdef(`distro_rhel4',`
-		allow $1 self:capability sys_admin;
-	')
-
-	ifdef(`distro_rhel5',`
-		allow $1 self:capability sys_admin;
-	')
 ')
 
 ########################################
@@ -1045,7 +1087,7 @@ interface(`kernel_dontaudit_read_system_state',`
 ########################################
 ## <summary>
 ##	Do not audit attempts by caller to
-##	read system state information in proc.
+##	read symbolic links in proc.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -2538,6 +2580,24 @@ interface(`kernel_dontaudit_read_unlabeled_files',`
 
 ########################################
 ## <summary>
+##	Delete unlabeled symbolic links.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_delete_unlabeled_symlinks',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	delete_lnk_files_pattern($1, unlabeled_t, unlabeled_t)
+')
+
+########################################
+## <summary>
 ##	Create, read, write, and delete unlabeled symbolic links.
 ## </summary>
 ## <param name="domain">
@@ -2650,6 +2710,24 @@ interface(`kernel_rw_unlabeled_blk_files',`
 
 ########################################
 ## <summary>
+##	Delete unlabeled block device nodes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_delete_unlabeled_blk_files',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	delete_blk_files_pattern($1, unlabeled_t, unlabeled_t)
+')
+
+########################################
+## <summary>
 ##	Create, read, write, and delete unlabeled block device nodes.
 ## </summary>
 ## <param name="domain">
@@ -2703,6 +2781,25 @@ interface(`kernel_dontaudit_write_unlabeled_chr_files',`
 
 	dontaudit $1 unlabeled_t:file write;
 ')
+
+########################################
+## <summary>
+##	Delete unlabeled character device nodes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_delete_unlabeled_chr_files',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	delete_chr_files_pattern($1, unlabeled_t, unlabeled_t)
+')
+
 
 ########################################
 ## <summary>
@@ -2799,6 +2896,24 @@ interface(`kernel_relabelfrom_unlabeled_pipes',`
 
 ########################################
 ## <summary>
+##	Delete unlabeled named pipes
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_delete_unlabeled_pipes',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	delete_fifo_files_pattern($1, unlabeled_t, unlabeled_t)
+')
+
+########################################
+## <summary>
 ##	Allow caller to relabel unlabeled named sockets.
 ## </summary>
 ## <param name="domain">
@@ -2816,6 +2931,23 @@ interface(`kernel_relabelfrom_unlabeled_sockets',`
 	allow $1 unlabeled_t:sock_file { getattr relabelfrom };
 ')
 
+########################################
+## <summary>
+##	Delete unlabeled named sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_delete_unlabeled_sockets',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	delete_sock_files_pattern($1, unlabeled_t, unlabeled_t)
+')
 ########################################
 ## <summary>
 ##	Send and receive messages from an
@@ -3190,4 +3322,44 @@ interface(`kernel_unconfined',`
 
 	typeattribute $1 kern_unconfined;
 	kernel_load_module($1)
+')
+
+########################################
+## <summary>
+##	Read virtual memory overcommit sysctl.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_read_vm_overcommit_sysctl',`
+	gen_require(`
+		type sysctl_vm_overcommit_t;
+	')
+
+	kernel_search_vm_sysctl($1)
+	allow $1 sysctl_vm_overcommit_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	Read and write virtual memory overcommit sysctl.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_rw_vm_overcommit_sysctl',`
+	gen_require(`
+		type sysctl_vm_overcommit_t;
+	')
+
+	kernel_search_vm_sysctl($1)
+	allow $1 sysctl_vm_overcommit_t:file rw_file_perms;
 ')
