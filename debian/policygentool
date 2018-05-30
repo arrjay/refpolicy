@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # Copyright (C) 2006 Red Hat 
 # see file 'COPYING' for use and warranty information
 #
@@ -224,13 +224,13 @@ def gen_policy(module, executable, pidfile, logfile, libfile, initsc, network):
 	
 if __name__ == '__main__':
 	def usage(message = ""):
-		print '%s ModuleName Executable' % sys.argv[0]
+		print('%s ModuleName Executable' % sys.argv[0])
 		sys.exit(1)
 		
 	if len(sys.argv) != 3:
 		usage()
 
-	print """\n
+	print("""\n
 This tool generate three files for policy development, A Type Enforcement (te)
 file, a File Context (fc), and a Interface File(if).  Most of the policy rules
 will be written in the te file.  Use the File Context file to associate file
@@ -255,37 +255,37 @@ into policy.
 # /etc/init.d/myapp start
 # audit2allow -R -i /var/log/audit/audit.log
 
-Return to continue:"""
-        sys.stdin.readline().rstrip()
+Return to continue:""")
+	sys.stdin.readline().rstrip()
 
-	print 'If the module uses pidfiles, what is the pidfile called?'
+	print('If the module uses pidfiles, what is the pidfile called?')
 	pidfile = sys.stdin.readline().rstrip()
 	if pidfile == "":
 		pidfile = None
-	print 'If the module uses logfiles, where are they stored?'
+	print('If the module uses logfiles, where are they stored?')
 	logfile = sys.stdin.readline().rstrip()
 	if logfile == "":
 		logfile = None
-	print 'If the module has var/lib files, where are they stored?'
+	print('If the module has var/lib files, where are they stored?')
 	libfile = sys.stdin.readline().rstrip()
 	if libfile == "":
 		libfile = None
-	print 'Does the module have a init script? [yN]'
+	print('Does the module have a init script? [yN]')
 	initsc = sys.stdin.readline().rstrip()
 	if initsc == "" or initsc == "n" or initsc == "N":
 		initsc = False
 	elif initsc == "y" or initsc == "Y":
 		initsc = True
 	else:
-		raise "Please answer with 'y' or 'n'!"
-	print 'Does the module use the network? [yN]'
+		raise ValueError("Please answer with 'y' or 'n'!")
+	print('Does the module use the network? [yN]')
 	network = sys.stdin.readline().rstrip()
 	if network == "" or network == "n" or network == "N":
 		network = False
 	elif network == "y" or network == "Y":
 		network = True
 	else:
-		raise "Please answer with 'y' or 'n'!"
+		raise ValueError("Please answer with 'y' or 'n'!")
 
 	gen_policy(
 		module=sys.argv[1],
