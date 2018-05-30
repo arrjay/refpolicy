@@ -15,7 +15,7 @@ Build-Depends-Indep: bzip2,
                      m4,
                      policycoreutils (>= 2.7),
                      policycoreutils-python-utils (>= 2.7),
-                     python,
+                     python3,
 # Needed for the --sort=name option, can probably be removed when this version
 # hits stable.
                      tar (>= 1.28)
@@ -69,7 +69,7 @@ Depends: checkpolicy (>= 2.4),
          make,
          policycoreutils (>= 2.4),
          policycoreutils-python-utils (>= 2.4),
-         python,
+         python3,
          ${misc:Depends}
 Recommends: policycoreutils-dev (>= 2.4), setools
 Suggests: logcheck, syslog-summary
@@ -103,7 +103,7 @@ Depends: checkpolicy (>= 2.4),
          policycoreutils (>= 2.4),
          policycoreutils-dev (>= 2.4),
          policycoreutils-python-utils (>= 2.4),
-         python,
+         python3,
          selinux-utils (>= 2.4),
          ${misc:Depends}
 Recommends: setools

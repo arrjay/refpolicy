@@ -5,8 +5,10 @@ refpolicy (2:2.20180114-4) UNRELEASED; urgency=medium
   * debian/control: Bump Standards-Version to 4.1.4 (no further changes)
   * debian/control: Bump debhelper build-dependency version to 11 to match
     debian/compat version
+  * debian/control: Bump python {build-}dependencies to python3 (Closes:
+    #900285)
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 10:28:03 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 10:33:56 +0200
 
 refpolicy (2:2.20180114-3) unstable; urgency=medium
 
