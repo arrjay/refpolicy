@@ -1,3 +1,0 @@
-# These is scripts are Perl scripts, the debhelper token cannot be added to them
-refpolicy source: maintainer-script-lacks-debhelper-token debian/selinux-policy-default.postrm
-refpolicy source: maintainer-script-lacks-debhelper-token debian/selinux-policy-mls.postrm

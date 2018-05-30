@@ -14,8 +14,9 @@ refpolicy (2:2.20180114-4) UNRELEASED; urgency=medium
   * debian/policygentool: Port to python3
   * debian/patches/python3-buildsystem.patch: Port the buildsystem to use
     python3
+  * Drop debian/source/lintian-overrides, overrides not used anymore
 
- -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 11:38:25 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 30 May 2018 11:39:29 +0200
 
 refpolicy (2:2.20180114-3) unstable; urgency=medium
 
