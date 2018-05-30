@@ -12,6 +12,7 @@ ifdef(`distro_gentoo',`
 /etc/httpd/alias/[^/]*\.db(\.[^/]*)* -- gen_context(system_u:object_r:cert_t,s0)
 /etc/localtime		--	gen_context(system_u:object_r:locale_t,s0)
 /etc/pki(/.*)?			gen_context(system_u:object_r:cert_t,s0)
+/etc/pki/.*/private(/.*)?	gen_context(system_u:object_r:tls_privkey_t,s0)
 /etc/ssl(/.*)?			gen_context(system_u:object_r:cert_t,s0)
 /etc/timezone		--	gen_context(system_u:object_r:locale_t,s0)
 
@@ -37,26 +38,20 @@ ifdef(`distro_redhat',`
 #
 # /usr
 #
+/usr/(.*/)?man		-d	gen_context(system_u:object_r:man_t,s0)
+/usr/(.*/)?man/.*		gen_context(system_u:object_r:man_t,s0)
+
 /usr/lib/locale(/.*)?		gen_context(system_u:object_r:locale_t,s0)
 
 /usr/lib/perl5/man(/.*)?	gen_context(system_u:object_r:man_t,s0)
 
-/usr/local/share/ca-certificates(/.*)?	gen_context(system_u:object_r:cert_t,s0)
-
-/usr/local/man(/.*)?		gen_context(system_u:object_r:man_t,s0)
-/usr/local/share/man(/.*)?	gen_context(system_u:object_r:man_t,s0)
-
 /usr/local/share/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
 
-/usr/man(/.*)?			gen_context(system_u:object_r:man_t,s0)
-
-/usr/share/ca-certificates(/.*)?	gen_context(system_u:object_r:cert_t,s0)
+/usr/share/docbook2X/xslt/man(/.*)?	gen_context(system_u:object_r:usr_t,s0)
 /usr/share/fonts(/.*)?		gen_context(system_u:object_r:fonts_t,s0)
 /usr/share/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
 /usr/share/ghostscript/fonts(/.*)? gen_context(system_u:object_r:fonts_t,s0)
 /usr/share/locale(/.*)?		gen_context(system_u:object_r:locale_t,s0)
-/usr/share/man(/.*)?		gen_context(system_u:object_r:man_t,s0)
-/usr/share/postgresql/[^/]*/man(/.*)?      gen_context(system_u:object_r:man_t,s0)
 /usr/share/X11/locale(/.*)?	gen_context(system_u:object_r:locale_t,s0)
 /usr/share/zoneinfo(/.*)?	gen_context(system_u:object_r:locale_t,s0)
 
@@ -64,8 +59,6 @@ ifdef(`distro_redhat',`
 /usr/share/ssl/private(/.*)?	gen_context(system_u:object_r:cert_t,s0)
 
 /usr/X11R6/lib/X11/fonts(/.*)?	gen_context(system_u:object_r:fonts_t,s0)
-
-/usr/X11R6/man(/.*)?		gen_context(system_u:object_r:man_t,s0)
 
 ifdef(`distro_gentoo',`
 /usr/share/misc/(pci|usb)\.ids -- gen_context(system_u:object_r:hwdata_t,s0)

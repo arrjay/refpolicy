@@ -24,7 +24,13 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_context(system_u:object_r:virt_content_t
 /usr/libexec/qemu-bridge-helper	gen_context(system_u:object_r:virt_bridgehelper_exec_t,s0)
 /usr/libexec/libvirt_leaseshelper	--	gen_context(system_u:object_r:virt_leaseshelper_exec_t,s0)
 
-/usr/bin/virsh	--	gen_context(system_u:object_r:virsh_exec_t,s0)
+/usr/bin/condor_vm-gahp	--	gen_context(system_u:object_r:virtd_exec_t,s0)
+/usr/bin/fence_virtd	--	gen_context(system_u:object_r:virsh_exec_t,s0)
+/usr/bin/libvirt-qmf	--	gen_context(system_u:object_r:virt_qmf_exec_t,s0)
+/usr/bin/libvirtd	--	gen_context(system_u:object_r:virtd_exec_t,s0)
+/usr/bin/virsh		--	gen_context(system_u:object_r:virsh_exec_t,s0)
+/usr/bin/virtlockd	--	gen_context(system_u:object_r:virtlockd_exec_t,s0)
+/usr/bin/virtlogd	--	gen_context(system_u:object_r:virtlogd_exec_t,s0)
 /usr/bin/virt-sandbox-service.*	--	gen_context(system_u:object_r:virsh_exec_t,s0)
 
 /usr/sbin/condor_vm-gahp	--	gen_context(system_u:object_r:virtd_exec_t,s0)
@@ -32,6 +38,7 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_context(system_u:object_r:virt_content_t
 /usr/sbin/libvirt-qmf	--	gen_context(system_u:object_r:virt_qmf_exec_t,s0)
 /usr/sbin/libvirtd	--	gen_context(system_u:object_r:virtd_exec_t,s0)
 /usr/sbin/virtlockd	--	gen_context(system_u:object_r:virtlockd_exec_t,s0)
+/usr/sbin/virtlogd	--	gen_context(system_u:object_r:virtlogd_exec_t,s0)
 
 /var/cache/libvirt(/.*)?	gen_context(system_u:object_r:virt_cache_t,s0-mls_systemhigh)
 
@@ -48,13 +55,13 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_context(system_u:object_r:virt_content_t
 
 /var/vdsm(/.*)?		gen_context(system_u:object_r:virt_var_run_t,s0)
 
-/var/run/libguestfs(/.*)?	gen_context(system_u:object_r:virt_var_run_t,s0)
-/var/run/libvirtd\.pid	--	gen_context(system_u:object_r:virt_var_run_t,s0)
-/var/run/libvirt(/.*)?	gen_context(system_u:object_r:virt_var_run_t,s0)
-/var/run/libvirt/lxc(/.*)?	gen_context(system_u:object_r:virtd_lxc_var_run_t,s0)
-/var/run/libvirt-sandbox(/.*)?	gen_context(system_u:object_r:virtd_lxc_var_run_t,s0)
-/var/run/libvirt/qemu(/.*)?	gen_context(system_u:object_r:svirt_var_run_t,s0-mls_systemhigh)
-/var/run/libvirt/virtlockd-sock	-s	gen_context(system_u:object_r:virtlockd_run_t,s0)
-/var/run/user/[^/]*/libguestfs(/.*)?	gen_context(system_u:object_r:virt_home_t,s0)
-/var/run/vdsm(/.*)?	gen_context(system_u:object_r:virt_var_run_t,s0)
-/var/run/virtlockd.pid	--	gen_context(system_u:object_r:virtlockd_run_t,s0)
+/run/libguestfs(/.*)?	gen_context(system_u:object_r:virt_var_run_t,s0)
+/run/libvirtd\.pid	--	gen_context(system_u:object_r:virt_var_run_t,s0)
+/run/libvirt(/.*)?	gen_context(system_u:object_r:virt_var_run_t,s0)
+/run/libvirt/lxc(/.*)?	gen_context(system_u:object_r:virtd_lxc_var_run_t,s0)
+/run/libvirt-sandbox(/.*)?	gen_context(system_u:object_r:virtd_lxc_var_run_t,s0)
+/run/libvirt/qemu(/.*)?	gen_context(system_u:object_r:svirt_var_run_t,s0-mls_systemhigh)
+/run/libvirt/virtlockd-sock	-s	gen_context(system_u:object_r:virtlockd_run_t,s0)
+/run/user/[^/]*/libguestfs(/.*)?	gen_context(system_u:object_r:virt_home_t,s0)
+/run/vdsm(/.*)?	gen_context(system_u:object_r:virt_var_run_t,s0)
+/run/virtlockd.pid	--	gen_context(system_u:object_r:virtlockd_run_t,s0)

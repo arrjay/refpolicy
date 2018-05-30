@@ -1,8 +1,8 @@
-## <summary>Tool for non-root processes to bind to reserved ports.</summary>
+## <summary>chkrootkit - rootkit checker.</summary>
 
 ########################################
 ## <summary>
-##	Execute authbind in the authbind domain.
+##	Execute a domain transition to run chkrootkit.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -10,20 +10,20 @@
 ##	</summary>
 ## </param>
 #
-interface(`authbind_domtrans',`
+interface(`chkrootkit_domtrans',`
 	gen_require(`
-		type authbind_t, authbind_exec_t;
+		type chkrootkit_t, chkrootkit_exec_t;
 	')
 
 	corecmd_search_bin($1)
-	domtrans_pattern($1, authbind_exec_t, authbind_t)
+	domtrans_pattern($1, chkrootkit_exec_t, chkrootkit_t)
 ')
 
 ########################################
 ## <summary>
-##	Execute authbind in the authbind
-##	domain, and allow the specified
-##	role the authbind domain.
+##	Execute chkrootkit in the chkrootkit domain,
+##	and allow the specified role
+##	the chkrootkit domain.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -36,11 +36,11 @@ interface(`authbind_domtrans',`
 ##	</summary>
 ## </param>
 #
-interface(`authbind_run',`
+interface(`chkrootkit_run',`
 	gen_require(`
-		attribute_role authbind_roles;
+		attribute_role chkrootkit_roles;
 	')
 
-	authbind_domtrans($1)
-	roleattribute $2 authbind_roles;
+	chkrootkit_domtrans($1)
+	roleattribute $2 chkrootkit_roles;
 ')

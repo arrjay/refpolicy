@@ -99,9 +99,21 @@ define(`read_files_pattern',`
 	allow $1 $3:file read_file_perms;
 ')
 
-define(`mmap_files_pattern',`
+define(`mmap_read_files_pattern',`
 	allow $1 $2:dir search_dir_perms;
-	allow $1 $3:file mmap_file_perms;
+	allow $1 $3:file mmap_read_file_perms;
+')
+
+define(`mmap_files_pattern',`
+	# deprecated 20171213
+	refpolicywarn(`mmap_files_pattern() is deprecated, please use mmap_exec_files_pattern() instead')
+	allow $1 $2:dir search_dir_perms;
+	allow $1 $3:file mmap_exec_file_perms;
+')
+
+define(`mmap_exec_files_pattern',`
+	allow $1 $2:dir search_dir_perms;
+	allow $1 $3:file mmap_exec_file_perms;
 ')
 
 define(`exec_files_pattern',`
@@ -122,6 +134,11 @@ define(`write_files_pattern',`
 define(`rw_files_pattern',`
 	allow $1 $2:dir search_dir_perms;
 	allow $1 $3:file rw_file_perms;
+')
+
+define(`mmap_rw_files_pattern',`
+	allow $1 $2:dir search_dir_perms;
+	allow $1 $3:file mmap_rw_file_perms;
 ')
 
 define(`create_files_pattern',`
@@ -526,21 +543,32 @@ define(`relabel_chr_files_pattern',`
 #
 # File type_transition patterns
 #
-# filetrans_add_pattern(domain,dirtype,newtype,class(es),[filename])
+# Parameters:
+# 1. domain type
+# 2. container (directory) type
+# 3. new object type
+# 4. object class(es)
+# [optional] 5. filename (c style strcmp ready)
 #
+
+# do not grant $2:dir remove_name
 define(`filetrans_add_pattern',`
 	allow $1 $2:dir { list_dir_perms add_entry_dir_perms };
 	type_transition $1 $2:$4 $3 $5;
 ')
 
-#
-# filetrans_pattern(domain,dirtype,newtype,class(es),[filename])
-#
 define(`filetrans_pattern',`
 	allow $1 $2:dir rw_dir_perms;
 	type_transition $1 $2:$4 $3 $5;
 ')
 
+#
+# Admin pattern for file_type
+#
+# Parameters:
+# 1. domain type
+# 2. source object type
+#
 define(`admin_pattern',`
         manage_dirs_pattern($1,$2,$2)
         manage_files_pattern($1,$2,$2)

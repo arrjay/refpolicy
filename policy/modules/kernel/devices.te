@@ -1,4 +1,4 @@
-policy_module(devices, 1.19.0)
+policy_module(devices, 1.21.4)
 
 ########################################
 #
@@ -22,6 +22,10 @@ files_associate_tmp(device_t)
 fs_xattr_type(device_t)
 fs_use_trans devtmpfs gen_context(system_u:object_r:device_t,s0);
 
+optional_policy(`
+	systemd_tmpfilesd_managed(device_t, fifo_file)
+')
+
 #
 # Type for /dev/agpgart
 #
@@ -31,8 +35,8 @@ dev_node(agp_device_t)
 #
 # Type for /dev/apm_bios
 #
-type apm_bios_t;
-dev_node(apm_bios_t)
+type acpi_bios_t;
+dev_node(acpi_bios_t)
 
 #
 # Type for /dev/autofs
@@ -66,6 +70,7 @@ dev_node(cpu_device_t)
 type cpu_online_t, sysfs_types;
 files_type(cpu_online_t)
 dev_associate_sysfs(cpu_online_t)
+genfscon sysfs /devices/system/cpu/online gen_context(system_u:object_r:cpu_online_t,s0)
 
 #
 # Type for /dev/crash
@@ -330,5 +335,6 @@ files_associate_tmp(device_node)
 #
 
 allow devices_unconfined_type self:capability sys_rawio;
-allow devices_unconfined_type device_node:{ blk_file chr_file } *;
-allow devices_unconfined_type mtrr_device_t:file *;
+allow devices_unconfined_type device_node:blk_file { manage_blk_file_perms relabelfrom relabelto map execute swapon quotaon mounton audit_access execmod };
+allow devices_unconfined_type device_node:chr_file { manage_chr_file_perms relabelfrom relabelto map execute swapon quotaon mounton execute_no_trans entrypoint execmod audit_access };
+allow devices_unconfined_type mtrr_device_t:file { manage_file_perms relabelfrom relabelto map execute swapon quotaon mounton execute_no_trans entrypoint execmod audit_access };

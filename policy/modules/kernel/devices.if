@@ -154,6 +154,25 @@ interface(`dev_relabel_all_dev_nodes',`
 
 ########################################
 ## <summary>
+##     Allow full relabeling (to and from) of all device files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+## <rolecap/>
+#
+interface(`dev_relabel_all_dev_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	relabel_files_pattern($1, device_t, device_t)
+')
+
+########################################
+## <summary>
 ##	List all of the device nodes in a device directory.
 ## </summary>
 ## <param name="domain">
@@ -480,6 +499,25 @@ interface(`dev_dontaudit_getattr_generic_blk_files',`
 
 ########################################
 ## <summary>
+##	Set the attributes on generic
+##	block devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_generic_blk_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 device_t:blk_file setattr;
+')
+
+########################################
+## <summary>
 ##	Dontaudit setattr on generic block devices.
 ## </summary>
 ## <param name="domain">
@@ -566,6 +604,25 @@ interface(`dev_dontaudit_getattr_generic_chr_files',`
 	')
 
 	dontaudit $1 device_t:chr_file getattr;
+')
+
+########################################
+## <summary>
+##	Set the attributes for generic
+##	character device files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_generic_chr_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 device_t:chr_file setattr;
 ')
 
 ########################################
@@ -819,6 +876,24 @@ interface(`dev_relabel_generic_symlinks',`
 	')
 
 	relabel_lnk_files_pattern($1, device_t, device_t)
+')
+
+########################################
+## <summary>
+##     Write generic sock files in /dev.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_write_generic_sock_files',`
+	gen_require(`
+		type device_t;
+	')
+
+	write_sock_files_pattern($1, device_t, device_t)
 ')
 
 ########################################
@@ -1322,6 +1397,98 @@ interface(`dev_manage_all_chr_files',`
 
 ########################################
 ## <summary>
+##	Get the attributes of the apm bios device node.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_getattr_acpi_bios_dev',`
+	gen_require(`
+		type device_t, acpi_bios_t;
+	')
+
+	getattr_chr_files_pattern($1, device_t, acpi_bios_t)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to get the attributes of
+##	the apm bios device node.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`dev_dontaudit_getattr_acpi_bios_dev',`
+	gen_require(`
+		type acpi_bios_t;
+	')
+
+	dontaudit $1 acpi_bios_t:chr_file getattr;
+')
+
+########################################
+## <summary>
+##	Set the attributes of the apm bios device node.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_setattr_acpi_bios_dev',`
+	gen_require(`
+		type device_t, acpi_bios_t;
+	')
+
+	setattr_chr_files_pattern($1, device_t, acpi_bios_t)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to set the attributes of
+##	the apm bios device node.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`dev_dontaudit_setattr_acpi_bios_dev',`
+	gen_require(`
+		type acpi_bios_t;
+	')
+
+	dontaudit $1 acpi_bios_t:chr_file setattr;
+')
+
+########################################
+## <summary>
+##	Read and write the apm bios.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_rw_acpi_bios',`
+	gen_require(`
+		type device_t, acpi_bios_t;
+	')
+
+	rw_chr_files_pattern($1, device_t, acpi_bios_t)
+')
+
+########################################
+## <summary>
 ##	Getattr the agp devices.
 ## </summary>
 ## <param name="domain">
@@ -1356,97 +1523,6 @@ interface(`dev_rw_agp',`
 	rw_chr_files_pattern($1, device_t, agp_device_t)
 ')
 
-########################################
-## <summary>
-##	Get the attributes of the apm bios device node.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_getattr_apm_bios_dev',`
-	gen_require(`
-		type device_t, apm_bios_t;
-	')
-
-	getattr_chr_files_pattern($1, device_t, apm_bios_t)
-')
-
-########################################
-## <summary>
-##	Do not audit attempts to get the attributes of
-##	the apm bios device node.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain to not audit.
-##	</summary>
-## </param>
-#
-interface(`dev_dontaudit_getattr_apm_bios_dev',`
-	gen_require(`
-		type apm_bios_t;
-	')
-
-	dontaudit $1 apm_bios_t:chr_file getattr;
-')
-
-########################################
-## <summary>
-##	Set the attributes of the apm bios device node.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_setattr_apm_bios_dev',`
-	gen_require(`
-		type device_t, apm_bios_t;
-	')
-
-	setattr_chr_files_pattern($1, device_t, apm_bios_t)
-')
-
-########################################
-## <summary>
-##	Do not audit attempts to set the attributes of
-##	the apm bios device node.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain to not audit.
-##	</summary>
-## </param>
-#
-interface(`dev_dontaudit_setattr_apm_bios_dev',`
-	gen_require(`
-		type apm_bios_t;
-	')
-
-	dontaudit $1 apm_bios_t:chr_file setattr;
-')
-
-########################################
-## <summary>
-##	Read and write the apm bios.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_rw_apm_bios',`
-	gen_require(`
-		type device_t, apm_bios_t;
-	')
-
-	rw_chr_files_pattern($1, device_t, apm_bios_t)
-')
 
 ########################################
 ## <summary>
@@ -1879,6 +1955,7 @@ interface(`dev_rw_dri',`
 	')
 
 	rw_chr_files_pattern($1, device_t, dri_device_t)
+	allow $1 dri_device_t:chr_file map;
 ')
 
 ########################################
@@ -1915,6 +1992,7 @@ interface(`dev_manage_dri_dev',`
 	')
 
 	manage_chr_files_pattern($1, device_t, dri_device_t)
+	allow $1 dri_device_t:chr_file map;
 ')
 
 ########################################
@@ -2665,7 +2743,7 @@ interface(`dev_rx_raw_memory',`
 	')
 
 	dev_read_raw_memory($1)
-	allow $1 memory_device_t:chr_file execute;
+	allow $1 memory_device_t:chr_file { map execute };
 ')
 
 ########################################
@@ -2684,7 +2762,7 @@ interface(`dev_wx_raw_memory',`
 	')
 
 	dev_write_raw_memory($1)
-	allow $1 memory_device_t:chr_file execute;
+	allow $1 memory_device_t:chr_file { map execute };
 ')
 
 ########################################
@@ -2981,64 +3059,6 @@ interface(`dev_getattr_mtrr_dev',`
 
 ########################################
 ## <summary>
-##	Read the memory type range
-##	registers (MTRR).  (Deprecated)
-## </summary>
-## <desc>
-##	<p>
-##	Read the memory type range
-##	registers (MTRR).  This interface has
-##	been deprecated, dev_rw_mtrr() should be
-##	used instead.
-##	</p>
-##	<p>
-##	The MTRR device ioctls can be used for
-##	reading and writing; thus, read access to the
-##	device cannot be separated from write access.
-##	</p>
-## </desc>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_read_mtrr',`
-	refpolicywarn(`$0($*) has been replaced with dev_rw_mtrr().')
-	dev_rw_mtrr($1)
-')
-
-########################################
-## <summary>
-##	Write the memory type range
-##	registers (MTRR).  (Deprecated)
-## </summary>
-## <desc>
-##	<p>
-##	Write the memory type range
-##	registers (MTRR).  This interface has
-##	been deprecated, dev_rw_mtrr() should be
-##	used instead.
-##	</p>
-##	<p>
-##	The MTRR device ioctls can be used for
-##	reading and writing; thus, write access to the
-##	device cannot be separated from read access.
-##	</p>
-## </desc>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`dev_write_mtrr',`
-	refpolicywarn(`$0($*) has been replaced with dev_rw_mtrr().')
-	dev_rw_mtrr($1)
-')
-
-########################################
-## <summary>
 ##	Do not audit attempts to write the memory type
 ##	range registers (MTRR).
 ## </summary>
@@ -3218,6 +3238,26 @@ interface(`dev_create_null_dev',`
 	')
 
 	create_chr_files_pattern($1, device_t, null_device_t)
+')
+
+########################################
+## <summary>
+##     Manage services with script type null_device_t for when
+##     /lib/systemd/system/something.service is a link to /dev/null
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_manage_null_service',`
+	gen_require(`
+		type null_device_t;
+		class service { status start stop reload };
+	')
+
+	allow $1 null_device_t:service { status start stop reload };
 ')
 
 ########################################
@@ -3711,6 +3751,7 @@ interface(`dev_read_sound',`
 	')
 
 	read_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -3729,6 +3770,7 @@ interface(`dev_write_sound',`
 	')
 
 	write_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -3747,6 +3789,7 @@ interface(`dev_read_sound_mixer',`
 	')
 
 	read_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -3765,6 +3808,7 @@ interface(`dev_write_sound_mixer',`
 	')
 
 	write_chr_files_pattern($1, device_t, sound_device_t)
+	allow $1 sound_device_t:chr_file map;
 ')
 
 ########################################
@@ -3897,6 +3941,24 @@ interface(`dev_manage_smartcard',`
 
 ########################################
 ## <summary>
+##	Mount a filesystem on sysfs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allow access.
+##	</summary>
+## </param>
+#
+interface(`dev_mounton_sysfs',`
+	gen_require(`
+		type device_t;
+	')
+
+	allow $1 sysfs_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Associate a file to a sysfs filesystem.
 ## </summary>
 ## <param name="file_type">
@@ -3951,6 +4013,24 @@ interface(`dev_getattr_sysfs',`
 
 ########################################
 ## <summary>
+##     mount a sysfs filesystem
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_mount_sysfs',`
+	gen_require(`
+		type sysfs_t;
+	')
+
+	allow $1 sysfs_t:filesystem mount;
+')
+
+########################################
+## <summary>
 ##	Do not audit getting the attributes of sysfs filesystem
 ## </summary>
 ## <param name="domain">
@@ -3965,6 +4045,24 @@ interface(`dev_dontaudit_getattr_sysfs',`
 	')
 
 	dontaudit $1 sysfs_t:filesystem getattr;
+')
+
+########################################
+## <summary>
+##     mounton sysfs directories.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_mounton_sysfs_dirs',`
+	gen_require(`
+		type sysfs_t;
+	')
+
+	allow $1 sysfs_t:dir mounton;
 ')
 
 ########################################
@@ -4126,6 +4224,42 @@ interface(`dev_rw_sysfs',`
 	read_lnk_files_pattern($1, sysfs_t, sysfs_t)
 
 	list_dirs_pattern($1, sysfs_t, sysfs_t)
+')
+
+########################################
+## <summary>
+##	Add a sysfs file
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_create_sysfs_files',`
+	gen_require(`
+		type sysfs_t;
+	')
+
+	create_files_pattern($1, sysfs_t, sysfs_t)
+')
+
+########################################
+## <summary>
+##     Relabel hardware state directories.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`dev_relabel_sysfs_dirs',`
+	gen_require(`
+		type sysfs_t;
+	')
+
+	relabel_dirs_pattern($1, sysfs_t, sysfs_t)
 ')
 
 ########################################
@@ -4759,7 +4893,7 @@ interface(`dev_rwx_vmware',`
 	')
 
 	dev_rw_vmware($1)
-	allow $1 vmware_device_t:chr_file execute;
+	allow $1 vmware_device_t:chr_file { map execute };
 ')
 
 ########################################
@@ -4818,6 +4952,24 @@ interface(`dev_rw_wireless',`
 
 ########################################
 ## <summary>
+##	manage the wireless device.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dev_manage_wireless',`
+	gen_require(`
+		type device_t, wireless_device_t;
+	')
+
+	manage_chr_files_pattern($1, device_t, wireless_device_t)
+')
+
+########################################
+## <summary>
 ##	Read and write Xen devices.
 ## </summary>
 ## <param name="domain">
@@ -4832,6 +4984,7 @@ interface(`dev_rw_xen',`
 	')
 
 	rw_chr_files_pattern($1, device_t, xen_device_t)
+	allow $1 xen_device_t:chr_file map;
 ')
 
 ########################################
@@ -4964,7 +5117,7 @@ interface(`dev_rwx_zero',`
 	')
 
 	dev_rw_zero($1)
-	allow $1 zero_device_t:chr_file execute;
+	allow $1 zero_device_t:chr_file { map execute };
 ')
 
 ########################################

@@ -177,16 +177,21 @@ interface(`squid_manage_logs',`
 
 ########################################
 ## <summary>
-##	Use squid services by connecting over TCP.  (Deprecated)
+##	dontaudit statting tmpfs files
 ## </summary>
 ## <param name="domain">
 ##	<summary>
-##	Domain allowed access.
+##	Domain to not be audited
 ##	</summary>
 ## </param>
+## <rolecap/>
 #
-interface(`squid_use',`
-	refpolicywarn(`$0($*) has been deprecated.')
+interface(`squid_dontaudit_read_tmpfs_files',`
+	gen_require(`
+		type squid_tmpfs_t;
+	')
+
+	dontaudit $1 squid_tmpfs_t:file getattr;
 ')
 
 ########################################

@@ -1,4 +1,4 @@
-policy_module(consoletype, 1.10.0)
+policy_module(consoletype, 1.12.0)
 
 ########################################
 #
@@ -16,7 +16,7 @@ init_system_domain(consoletype_t, consoletype_exec_t)
 #
 
 allow consoletype_t self:capability { sys_admin sys_tty_config };
-allow consoletype_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+allow consoletype_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow consoletype_t self:fd use;
 allow consoletype_t self:fifo_file rw_fifo_file_perms;
 allow consoletype_t self:sock_file read_sock_file_perms;
@@ -61,8 +61,8 @@ ifdef(`distro_redhat',`
 ')
 
 optional_policy(`
-	apm_use_fds(consoletype_t)
-	apm_write_pipes(consoletype_t)
+	acpi_use_fds(consoletype_t)
+	acpi_write_pipes(consoletype_t)
 ')
 
 optional_policy(`

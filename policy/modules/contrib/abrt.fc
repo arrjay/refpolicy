@@ -1,8 +1,11 @@
 /etc/abrt(/.*)?	gen_context(system_u:object_r:abrt_etc_t,s0)
 /etc/rc\.d/init\.d/abrt	--	gen_context(system_u:object_r:abrt_initrc_exec_t,s0)
 
+/usr/bin/abrtd			--	gen_context(system_u:object_r:abrt_exec_t,s0)
+/usr/bin/abrt-dbus		--	gen_context(system_u:object_r:abrt_exec_t,s0)
 /usr/bin/abrt-pyhook-helper	--	gen_context(system_u:object_r:abrt_helper_exec_t,s0)
 /usr/bin/abrt-retrace-worker	--	gen_context(system_u:object_r:abrt_retrace_worker_exec_t,s0)
+/usr/bin/abrt-upload-watch	--	gen_context(system_u:object_r:abrt_upload_watch_exec_t,s0)
 /usr/bin/coredump2packages	--	gen_context(system_u:object_r:abrt_retrace_coredump_exec_t,s0)
 /usr/bin/retrace-server-worker	--	gen_context(system_u:object_r:abrt_retrace_worker_exec_t,s0)
 
@@ -21,10 +24,10 @@
 
 /var/log/abrt-logger.*	--	gen_context(system_u:object_r:abrt_var_log_t,s0)
 
-/var/run/abrt\.pid	--	gen_context(system_u:object_r:abrt_var_run_t,s0)
-/var/run/abrtd?\.lock	--	gen_context(system_u:object_r:abrt_var_run_t,s0)
-/var/run/abrtd?\.socket	-s	gen_context(system_u:object_r:abrt_var_run_t,s0)
-/var/run/abrt(/.*)?	gen_context(system_u:object_r:abrt_var_run_t,s0)
+/run/abrt\.pid	--	gen_context(system_u:object_r:abrt_var_run_t,s0)
+/run/abrtd?\.lock	--	gen_context(system_u:object_r:abrt_var_run_t,s0)
+/run/abrtd?\.socket	-s	gen_context(system_u:object_r:abrt_var_run_t,s0)
+/run/abrt(/.*)?	gen_context(system_u:object_r:abrt_var_run_t,s0)
 
 /var/spool/abrt(/.*)?	gen_context(system_u:object_r:abrt_var_cache_t,s0)
 /var/spool/abrt-retrace(/.*)?	gen_context(system_u:object_r:abrt_retrace_spool_t,s0)

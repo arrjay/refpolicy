@@ -56,8 +56,8 @@ template(`ssh_basic_client_template',`
 	# Client local policy
 	#
 
-	allow $1_ssh_t self:capability { setuid setgid dac_override dac_read_search };
-	allow $1_ssh_t self:process ~{ ptrace setcurrent setexec setfscreate setrlimit execmem execstack execheap };
+	allow $1_ssh_t self:capability { dac_override dac_read_search setgid setuid };
+	allow $1_ssh_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 	allow $1_ssh_t self:fd use;
 	allow $1_ssh_t self:fifo_file rw_fifo_file_perms;
 	allow $1_ssh_t self:unix_dgram_socket { create_socket_perms sendto };
@@ -181,7 +181,9 @@ template(`ssh_server_template', `
 	type $1_var_run_t;
 	files_pid_file($1_var_run_t)
 
-	allow $1_t self:capability { kill sys_chroot sys_nice sys_resource chown dac_override fowner fsetid setgid setuid sys_tty_config };
+	allow $1_t self:capability { chown dac_override fowner fsetid kill setgid setuid sys_chroot sys_nice sys_resource sys_tty_config };
+	# net_admin is for SO_SNDBUFFORCE
+	dontaudit $1_t self:capability net_admin;
 	allow $1_t self:fifo_file rw_fifo_file_perms;
 	allow $1_t self:process { signal getsched setsched setrlimit setexec setkeycreate };
 	allow $1_t self:tcp_socket create_stream_socket_perms;
@@ -229,8 +231,6 @@ template(`ssh_server_template', `
 	auth_rw_login_records($1_t)
 	auth_rw_faillog($1_t)
 
-	corecmd_read_bin_symlinks($1_t)
-	corecmd_getattr_bin_files($1_t)
 	# for sshd subsystems, such as sftp-server.
 	corecmd_getattr_bin_files($1_t)
 
@@ -270,6 +270,10 @@ template(`ssh_server_template', `
 	optional_policy(`
 		files_read_var_lib_symlinks($1_t)
 		nx_spec_domtrans_server($1_t)
+	')
+
+	optional_policy(`
+		systemd_read_logind_sessions_files($1_t)
 	')
 ')
 
@@ -334,6 +338,7 @@ template(`ssh_role_template',`
 	# for rsync
 	allow ssh_t $3:unix_stream_socket rw_socket_perms;
 	allow ssh_t $3:unix_stream_socket connectto;
+	allow ssh_t $3:key manage_key_perms;
 
 	# user can manage the keys and config
 	manage_files_pattern($3, ssh_home_t, ssh_home_t)
@@ -348,6 +353,7 @@ template(`ssh_role_template',`
 
 	allow $1_ssh_agent_t self:process { setrlimit signal };
 	allow $1_ssh_agent_t self:capability setgid;
+	allow $1_ssh_agent_t self:fifo_file rw_file_perms;
 
 	allow $1_ssh_agent_t { $1_ssh_agent_t $3 }:process signull;
 
@@ -432,6 +438,7 @@ template(`ssh_role_template',`
 	optional_policy(`
 		xserver_use_xdm_fds($1_ssh_agent_t)
 		xserver_rw_xdm_pipes($1_ssh_agent_t)
+		xserver_sigchld_xdm($1_ssh_agent_t)
 	')
 ')
 
@@ -581,7 +588,7 @@ interface(`ssh_dontaudit_rw_tcp_sockets',`
 
 ########################################
 ## <summary>
-##	Connect to SSH daemons over TCP sockets.  (Deprecated)
+##	Execute the ssh daemon in the caller domain.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -589,8 +596,13 @@ interface(`ssh_dontaudit_rw_tcp_sockets',`
 ##	</summary>
 ## </param>
 #
-interface(`ssh_tcp_connect',`
-	refpolicywarn(`$0($*) has been deprecated.')
+interface(`ssh_exec_sshd',`
+	gen_require(`
+		type sshd_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, sshd_exec_t)
 ')
 
 ########################################

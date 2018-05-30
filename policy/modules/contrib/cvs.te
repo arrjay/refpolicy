@@ -1,4 +1,4 @@
-policy_module(cvs, 1.12.0)
+policy_module(cvs, 1.13.0)
 
 ########################################
 #
@@ -39,7 +39,7 @@ files_pid_file(cvs_var_run_t)
 # Local policy
 #
 
-allow cvs_t self:capability { setuid setgid };
+allow cvs_t self:capability { setgid setuid };
 allow cvs_t self:process signal_perms;
 allow cvs_t self:fifo_file rw_fifo_file_perms;
 allow cvs_t self:netlink_tcpdiag_socket r_netlink_socket_perms;
@@ -91,8 +91,6 @@ logging_send_audit_msgs(cvs_t)
 
 miscfiles_read_localization(cvs_t)
 
-mta_send_mail(cvs_t)
-
 userdom_dontaudit_search_user_home_dirs(cvs_t)
 
 # cjp: typeattribute doesnt work in conditionals yet
@@ -107,6 +105,10 @@ optional_policy(`
 	kerberos_read_keytab(cvs_t)
 	kerberos_use(cvs_t)
 	kerberos_dontaudit_write_config(cvs_t)
+')
+
+optional_policy(`
+	mta_send_mail(cvs_t)
 ')
 
 ########################################

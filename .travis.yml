@@ -2,32 +2,35 @@
 
 language: generic
 
+matrix:
+  fast_finish: true
+
 env:
-  - TYPE=standard DISTRO=redhat MONOLITHIC=y SYSTEMD=y
-  - TYPE=standard DISTRO=redhat MONOLITHIC=n SYSTEMD=y
-  - TYPE=standard DISTRO=debian MONOLITHIC=y SYSTEMD=y
-  - TYPE=standard DISTRO=debian MONOLITHIC=n SYSTEMD=y
-  - TYPE=standard DISTRO=gentoo MONOLITHIC=y SYSTEMD=n
-  - TYPE=standard DISTRO=gentoo MONOLITHIC=n SYSTEMD=n
-  - TYPE=mcs DISTRO=redhat MONOLITHIC=y SYSTEMD=y
-  - TYPE=mcs DISTRO=redhat MONOLITHIC=n SYSTEMD=y
-  - TYPE=mcs DISTRO=debian MONOLITHIC=y SYSTEMD=y
-  - TYPE=mcs DISTRO=debian MONOLITHIC=n SYSTEMD=y
-  - TYPE=mcs DISTRO=gentoo MONOLITHIC=y SYSTEMD=n
-  - TYPE=mcs DISTRO=gentoo MONOLITHIC=n SYSTEMD=n
-  - TYPE=mls DISTRO=redhat MONOLITHIC=y SYSTEMD=y
-  - TYPE=mls DISTRO=redhat MONOLITHIC=n SYSTEMD=y
-  - TYPE=mls DISTRO=debian MONOLITHIC=y SYSTEMD=y
-  - TYPE=mls DISTRO=debian MONOLITHIC=n SYSTEMD=y
-  - TYPE=mls DISTRO=gentoo MONOLITHIC=y SYSTEMD=n
-  - TYPE=mls DISTRO=gentoo MONOLITHIC=n SYSTEMD=n
+  - TYPE=standard DISTRO=redhat MONOLITHIC=y SYSTEMD=y WERROR=y
+  - TYPE=standard DISTRO=redhat MONOLITHIC=n SYSTEMD=y WERROR=y
+  - TYPE=standard DISTRO=debian MONOLITHIC=y SYSTEMD=y WERROR=y
+  - TYPE=standard DISTRO=debian MONOLITHIC=n SYSTEMD=y WERROR=y
+  - TYPE=standard DISTRO=gentoo MONOLITHIC=y SYSTEMD=n WERROR=y
+  - TYPE=standard DISTRO=gentoo MONOLITHIC=n SYSTEMD=n WERROR=y
+  - TYPE=mcs DISTRO=redhat MONOLITHIC=y SYSTEMD=y WERROR=y
+  - TYPE=mcs DISTRO=redhat MONOLITHIC=n SYSTEMD=y WERROR=y
+  - TYPE=mcs DISTRO=debian MONOLITHIC=y SYSTEMD=y WERROR=y
+  - TYPE=mcs DISTRO=debian MONOLITHIC=n SYSTEMD=y WERROR=y
+  - TYPE=mcs DISTRO=gentoo MONOLITHIC=y SYSTEMD=n WERROR=y
+  - TYPE=mcs DISTRO=gentoo MONOLITHIC=n SYSTEMD=n WERROR=y
+  - TYPE=mls DISTRO=redhat MONOLITHIC=y SYSTEMD=y WERROR=y
+  - TYPE=mls DISTRO=redhat MONOLITHIC=n SYSTEMD=y WERROR=y
+  - TYPE=mls DISTRO=debian MONOLITHIC=y SYSTEMD=y WERROR=y
+  - TYPE=mls DISTRO=debian MONOLITHIC=n SYSTEMD=y WERROR=y
+  - TYPE=mls DISTRO=gentoo MONOLITHIC=y SYSTEMD=n WERROR=y
+  - TYPE=mls DISTRO=gentoo MONOLITHIC=n SYSTEMD=n WERROR=y
 
-# Uncomment to use Travis-CI container infrastructure (https://docs.travis-ci.com/user/ci-environment/)
-#sudo: false
+sudo: false
+dist: trusty
 
-# Uncomment these two lines to use Travis-CI Trusty Beta environment
-#sudo: required
-#dist: trusty
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/selinux
 
 addons:
   apt:
@@ -38,49 +41,62 @@ addons:
     - gettext
     - libaudit-dev
     - libbz2-dev
-    - libustr-dev
     - libpcre3-dev
     - swig
 
-install:
+before_install:
   - lsb_release -a
   - bison -V
   - flex -V
+  - swig -version
+  - python -V
 
-  # Download current SELinux userspace tools and libraries
-  - curl -sS -L https://github.com/SELinuxProject/selinux/archive/20160223.tar.gz | tar xz
-  - mv selinux-20160223 selinux-src
+install:
+  - SELINUX_USERSPACE_VERSION=libsepol-2.7
 
-  # Ubuntu 12.04 coreutils is too old to provide "ln --relative" :(
-  - sed 's/ln -sf --relative /ln -sf /' -i selinux-src/libsepol/src/Makefile
-  - sed 's/ln -sf --relative /ln -sf /' -i selinux-src/libselinux/src/Makefile
+  - export DESTDIR="${TRAVIS_BUILD_DIR}/selinux"
+  - |
+      if [[ "${SELINUX_USERSPACE_VERSION}" != "$(cat ${TRAVIS_BUILD_DIR}/selinux/travis.version)" ]]; then
+        rm -fR selinux-src
 
-  # Drop secilc to break xmlto dependence (secilc isn't used here anyway)
-  - sed -i -e 's/secilc//' selinux-src/Makefile
+        # Download current SELinux userspace tools and libraries
+        git clone https://github.com/SELinuxProject/selinux.git selinux-src -b ${SELINUX_USERSPACE_VERSION}
+        mv "selinux-${SELINUX_USERSPACE_VERSION}" selinux-src
 
-  # Drop sepolicy to break setools dependence (sepolicy isn't used anyway)
-  - sed -i -e 's/sepolicy//' selinux-src/policycoreutils/Makefile
+        # Drop secilc to break xmlto dependence (secilc isn't used here anyway)
+        sed -i -e 's/secilc//' selinux-src/Makefile
 
-  # Drop restorecond to break glib dependence
-  - sed -i -e 's/ restorecond//' selinux-src/policycoreutils/Makefile
+        # Drop sepolicy to break setools dependence (sepolicy isn't used anyway)
+        sed -i -e 's/sepolicy//' selinux-src/policycoreutils/Makefile
 
-  # Drop sandbox to break libcap-ng dependence
-  - sed -i -e 's/ sandbox//' selinux-src/policycoreutils/Makefile
+        # Drop restorecond to break glib dependence
+        sed -i -e 's/ restorecond//' selinux-src/policycoreutils/Makefile
 
-  # Compile and install SELinux toolchain into ~/selinux
-  # On Ubuntu 12.04, default CFLAGS make the build fail in libsepol/cil with:
-  #    error: declaration of 'index' shadows a global declarationo
-  - make "DESTDIR=$HOME/selinux" CFLAGS="-O2 -pipe -fPIC -Wall -I$HOME/selinux/usr/include" -C selinux-src install
+        # Drop sandbox to break libcap-ng dependence
+        sed -i -e 's/ sandbox//' selinux-src/policycoreutils/Makefile
+
+        # Compile and install SELinux toolchain into ~/selinux
+        make OPT_SUBDIRS=semodule-utils -C selinux-src install
+        echo "${SELINUX_USERSPACE_VERSION}" > "${TRAVIS_BUILD_DIR}/selinux/travis.version"
+      fi
 
   # Use TEST_TOOLCHAIN variable to tell refpolicy Makefile about the installed location
-  - export TEST_TOOLCHAIN="$HOME/selinux"
+  - export TEST_TOOLCHAIN="${TRAVIS_BUILD_DIR}/selinux"
 
   # Drop build.conf settings to listen to env vars
-  - sed -r -i -e '/(MONOLITHIC|TYPE|DISTRO|SYSTEMD)/d' build.conf
+  - sed -r -i -e '/(MONOLITHIC|TYPE|DISTRO|SYSTEMD|WERROR)/d' build.conf
 
 script:
-  - echo $TYPE $DISTRO $MONOLITHIC
+  - echo $TYPE $DISTRO $MONOLITHIC $SYSTEMD $WERROR
+  - set -e
   - make bare
   - make conf
   - make
   - make validate
+  - make xml
+  - make html
+  - make DESTDIR=${HOME}/tmp install
+  - make DESTDIR=${HOME}/tmp install-headers
+  - make DESTDIR=${HOME}/tmp install-src
+  - make DESTDIR=${HOME}/tmp install-docs
+  - make DESTDIR=${HOME}/tmp install-appconfig

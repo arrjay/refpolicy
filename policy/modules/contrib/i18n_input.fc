@@ -2,6 +2,8 @@
 
 /usr/bin/iiimd	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
 /usr/bin/iiimd\.bin	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
+/usr/bin/htt	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
+/usr/bin/htt_server	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
 /usr/bin/httx	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
 /usr/bin/htt_xbe	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
 /usr/bin/iiimx	--	gen_context(system_u:object_r:i18n_input_exec_t,s0)
@@ -13,4 +15,4 @@
 
 /var/log/iiim(/.*)?	gen_context(system_u:object_r:i18n_input_log_t,s0)
 
-/var/run/iiim(/.*)?	gen_context(system_u:object_r:i18n_input_var_run_t,s0)
+/run/iiim(/.*)?	gen_context(system_u:object_r:i18n_input_var_run_t,s0)

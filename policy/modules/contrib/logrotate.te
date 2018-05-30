@@ -1,4 +1,4 @@
-policy_module(logrotate, 1.18.0)
+policy_module(logrotate, 1.19.1)
 
 ########################################
 #
@@ -14,6 +14,7 @@ domain_type(logrotate_t)
 domain_obj_id_change_exemption(logrotate_t)
 domain_system_change_exemption(logrotate_t)
 domain_entry_file(logrotate_t, logrotate_exec_t)
+init_system_domain(logrotate_t, logrotate_exec_t)
 role logrotate_roles types logrotate_t;
 
 type logrotate_lock_t;
@@ -36,8 +37,8 @@ role system_r types logrotate_mail_t;
 # Local policy
 #
 
-allow logrotate_t self:capability { chown dac_override dac_read_search kill fsetid fowner setuid setgid sys_resource sys_nice };
-allow logrotate_t self:process ~{ ptrace setcurrent setexec setrlimit execmem execstack execheap };
+allow logrotate_t self:capability { chown dac_override dac_read_search fowner fsetid kill setgid setuid sys_nice sys_resource };
+allow logrotate_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow logrotate_t self:fd use;
 allow logrotate_t self:key manage_key_perms;
 allow logrotate_t self:fifo_file rw_fifo_file_perms;
@@ -89,6 +90,7 @@ files_dontaudit_list_mnt(logrotate_t)
 fs_search_auto_mountpoints(logrotate_t)
 fs_getattr_xattr_fs(logrotate_t)
 fs_list_inotifyfs(logrotate_t)
+fs_getattr_tmpfs(logrotate_t)
 
 mls_file_read_all_levels(logrotate_t)
 mls_file_write_all_levels(logrotate_t)
@@ -102,6 +104,13 @@ auth_manage_login_records(logrotate_t)
 auth_use_nsswitch(logrotate_t)
 
 init_all_labeled_script_domtrans(logrotate_t)
+init_startstop_all_script_services(logrotate_t)
+init_get_generic_units_status(logrotate_t)
+init_get_all_units_status(logrotate_t)
+init_get_system_status(logrotate_t)
+init_dbus_chat(logrotate_t)
+init_stream_connect(logrotate_t)
+init_manage_all_units(logrotate_t)
 
 logging_manage_all_logs(logrotate_t)
 logging_send_syslog_msg(logrotate_t)
@@ -173,6 +182,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	dbus_system_bus_client(logrotate_t)
+	init_write_pid_socket(logrotate_t)
+')
+
+optional_policy(`
 	fail2ban_stream_connect(logrotate_t)
 ')
 
@@ -195,6 +209,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	# reload after log rotation
+	monit_reload(logrotate_t)
+')
+
+optional_policy(`
 	munin_read_config(logrotate_t)
 	munin_stream_connect(logrotate_t)
 	munin_search_lib(logrotate_t)
@@ -203,6 +222,7 @@ optional_policy(`
 optional_policy(`
 	mysql_read_config(logrotate_t)
 	mysql_stream_connect(logrotate_t)
+	mysql_signal(logrotate_t)
 ')
 
 optional_policy(`

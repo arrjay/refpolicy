@@ -344,7 +344,7 @@ interface(`cron_domtrans',`
 
 ########################################
 ## <summary>
-##	Execute crond in the caller domain. 
+##	Execute crond in the caller domain.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -689,6 +689,43 @@ interface(`cron_use_system_job_fds',`
 
 ########################################
 ## <summary>
+##      Create, read, write, and delete the system spool.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`cron_manage_system_spool',`
+	gen_require(`
+		type cron_system_spool_t;
+	')
+
+	files_search_spool($1)
+	manage_files_pattern($1, cron_system_spool_t, cron_system_spool_t)
+')
+
+########################################
+## <summary>
+##      Read and write crond temporary files.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`cron_rw_tmp_files',`
+	gen_require(`
+		type crond_tmp_t;
+	')
+
+	allow $1 crond_tmp_t:file rw_file_perms;
+')
+
+########################################
+## <summary>
 ##	Read system cron job lib files.
 ## </summary>
 ## <param name="domain">
@@ -822,6 +859,24 @@ interface(`cron_dontaudit_append_system_job_tmp_files',`
 
 ########################################
 ## <summary>
+##	Read and write to inherited system cron job temporary files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`cron_rw_inherited_system_job_tmp_files',`
+	gen_require(`
+		type system_cronjob_tmp_t;
+	')
+
+	allow $1 system_cronjob_tmp_t:file rw_inherited_file_perms;
+')
+
+########################################
+## <summary>
 ##	Do not audit attempts to write temporary
 ##	system cron job files.
 ## </summary>
@@ -837,6 +892,26 @@ interface(`cron_dontaudit_write_system_job_tmp_files',`
 	')
 
 	dontaudit $1 system_cronjob_tmp_t:file write_file_perms;
+')
+
+########################################
+## <summary>
+##	Execute crontab in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+## 	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`cron_exec_crontab',`
+	gen_require(`
+		type crontab_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, crontab_exec_t)
 ')
 
 ########################################

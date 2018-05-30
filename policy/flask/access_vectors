@@ -20,6 +20,7 @@ common file
 	relabelfrom
 	relabelto
 	append
+	map
 	unlink
 	link
 	rename
@@ -47,6 +48,7 @@ common socket
 	relabelfrom
 	relabelto
 	append
+	map
 # socket-specific
 	bind
 	connect
@@ -60,7 +62,7 @@ common socket
 	recv_msg
 	send_msg
 	name_bind
-}	
+}
 
 #
 # Define a common prefix for ipc access vectors.
@@ -298,7 +300,7 @@ inherits socket
 	node_bind
 }
 
-class node 
+class node
 {
 	tcp_recv
 	tcp_send
@@ -383,8 +385,14 @@ class process
 	execheap
 	setkeycreate
 	setsockcreate
+	getrlimit
 }
 
+class process2
+{
+	nnp_transition
+	nosuid_transition
+}
 
 #
 # Define the access vector interpretation for ipc-related objects
@@ -416,7 +424,7 @@ inherits ipc
 
 
 #
-# Define the access vector interpretation for the security server. 
+# Define the access vector interpretation for the security server.
 #
 
 class security
@@ -444,7 +452,7 @@ class security
 class system
 {
 	ipc_info
-	syslog_read  
+	syslog_read
 	syslog_mod
 	syslog_console
 	module_request
@@ -857,7 +865,7 @@ class x_application_data
 class kernel_service
 {
 	use_as_override
-	create_files_as	
+	create_files_as
 }
 
 class tun_socket
@@ -926,6 +934,16 @@ inherits database
 	set_value
 }
 
+class infiniband_pkey
+{
+	access
+}
+
+class infiniband_endport
+{
+	manage_subnet
+}
+
 class db_language
 inherits database
 {
@@ -952,3 +970,112 @@ inherits cap
 
 class cap2_userns
 inherits cap2
+
+#
+# Define the access vector interpretation for the new socket classes
+# enabled by the extended_socket_class policy capability.
+#
+
+#
+# The next two classes were previously mapped to rawip_socket and therefore
+# have the same definition as rawip_socket (until further permissions
+# are defined).
+#
+class sctp_socket
+inherits socket
+{
+	node_bind
+}
+
+class icmp_socket
+inherits socket
+{
+	node_bind
+}
+
+#
+# The remaining network socket classes were previously
+# mapped to the socket class and therefore have the
+# same definition as socket.
+#
+
+class ax25_socket
+inherits socket
+
+class ipx_socket
+inherits socket
+
+class netrom_socket
+inherits socket
+
+class atmpvc_socket
+inherits socket
+
+class x25_socket
+inherits socket
+
+class rose_socket
+inherits socket
+
+class decnet_socket
+inherits socket
+
+class atmsvc_socket
+inherits socket
+
+class rds_socket
+inherits socket
+
+class irda_socket
+inherits socket
+
+class pppox_socket
+inherits socket
+
+class llc_socket
+inherits socket
+
+class can_socket
+inherits socket
+
+class tipc_socket
+inherits socket
+
+class bluetooth_socket
+inherits socket
+
+class iucv_socket
+inherits socket
+
+class rxrpc_socket
+inherits socket
+
+class isdn_socket
+inherits socket
+
+class phonet_socket
+inherits socket
+
+class ieee802154_socket
+inherits socket
+
+class caif_socket
+inherits socket
+
+class alg_socket
+inherits socket
+
+class nfc_socket
+inherits socket
+
+class vsock_socket
+inherits socket
+
+class kcm_socket
+inherits socket
+
+class qipcrtr_socket
+inherits socket
+
+class smc_socket
+inherits socket

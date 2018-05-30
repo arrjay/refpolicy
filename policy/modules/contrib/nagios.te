@@ -1,4 +1,4 @@
-policy_module(nagios, 1.14.0)
+policy_module(nagios, 1.16.0)
 
 ########################################
 #
@@ -158,9 +158,11 @@ miscfiles_read_localization(nagios_t)
 userdom_dontaudit_use_unpriv_user_fds(nagios_t)
 userdom_dontaudit_search_user_home_dirs(nagios_t)
 
-mta_send_mail(nagios_t)
-mta_signal_system_mail(nagios_t)
-mta_kill_system_mail(nagios_t)
+optional_policy(`
+	mta_send_mail(nagios_t)
+	mta_signal_system_mail(nagios_t)
+	mta_kill_system_mail(nagios_t)
+')
 
 optional_policy(`
 	netutils_kill_ping(nagios_t)
@@ -214,11 +216,14 @@ optional_policy(`
 # Nrpe local policy
 #
 
-allow nrpe_t self:capability { setuid setgid };
-dontaudit nrpe_t self:capability { sys_tty_config sys_resource };
+allow nrpe_t self:capability { dac_override setgid setuid };
+dontaudit nrpe_t self:capability { sys_resource sys_tty_config };
 allow nrpe_t self:process { setpgid signal_perms setsched setrlimit };
 allow nrpe_t self:fifo_file rw_fifo_file_perms;
 allow nrpe_t self:tcp_socket { accept listen };
+
+allow nrpe_t nagios_etc_t:dir list_dir_perms;
+allow nrpe_t nagios_etc_t:file read_file_perms;
 
 allow nrpe_t nagios_plugin_domain:process { signal sigkill };
 
@@ -292,7 +297,6 @@ optional_policy(`
 #
 
 corecmd_read_bin_files(nagios_admin_plugin_t)
-corecmd_read_bin_symlinks(nagios_admin_plugin_t)
 
 dev_getattr_all_chr_files(nagios_admin_plugin_t)
 dev_getattr_all_blk_files(nagios_admin_plugin_t)
@@ -309,13 +313,12 @@ files_getattr_all_file_type_fs(nagios_admin_plugin_t)
 # Mail local policy
 #
 
-allow nagios_mail_plugin_t self:capability { setuid setgid dac_override };
+allow nagios_mail_plugin_t self:capability { dac_override setgid setuid };
 allow nagios_mail_plugin_t self:tcp_socket { accept listen };
 
 kernel_read_kernel_sysctls(nagios_mail_plugin_t)
 
 corecmd_read_bin_files(nagios_mail_plugin_t)
-corecmd_read_bin_symlinks(nagios_mail_plugin_t)
 
 files_read_etc_files(nagios_mail_plugin_t)
 
@@ -403,7 +406,7 @@ optional_policy(`
 #
 
 allow nagios_system_plugin_t self:capability dac_override;
-dontaudit nagios_system_plugin_t self:capability { setuid setgid };
+dontaudit nagios_system_plugin_t self:capability { setgid setuid };
 
 read_files_pattern(nagios_system_plugin_t, nagios_log_t, nagios_log_t)
 
