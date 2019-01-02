@@ -2,11 +2,12 @@ Description: Policy for Chromium/Chrome
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2014-07-03
 
-Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
+Index: refpolicy-2.20180701/policy/modules/apps/mozilla.fc
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/mozilla.fc
-+++ refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
-@@ -1,5 +1,8 @@
+--- refpolicy-2.20180701.orig/policy/modules/apps/mozilla.fc
++++ refpolicy-2.20180701/policy/modules/apps/mozilla.fc
+@@ -1,6 +1,9 @@
+ HOME_DIR/\.cache/mozilla(/.*)?	gen_context(system_u:object_r:mozilla_xdg_cache_t,s0)
  HOME_DIR/\.galeon(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.mozilla(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
 +HOME_DIR/\.config/chromium(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
@@ -15,7 +16,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
  HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
  HOME_DIR/\.netscape(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
  HOME_DIR/\.phoenix(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-@@ -14,6 +17,7 @@ HOME_DIR/\.spicec(/.*)?	gen_context(syst
+@@ -15,6 +18,7 @@ HOME_DIR/\.spicec(/.*)?	gen_context(syst
  HOME_DIR/\.ICAClient(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
  HOME_DIR/zimbrauserdata(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
  
@@ -23,7 +24,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
  /usr/bin/epiphany	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
  /usr/bin/epiphany-bin	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
  /usr/bin/mozilla	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
-@@ -39,3 +43,10 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
+@@ -40,3 +44,10 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
  /usr/lib/nspluginwrapper/npviewer.bin	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
  /usr/lib/nspluginwrapper/plugin-config	--	gen_context(system_u:object_r:mozilla_plugin_config_exec_t,s0)
  /usr/lib/xulrunner[^/]*/plugin-container	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
@@ -34,10 +35,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.fc
 +/opt/google/chrome/google-chrome --	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
 +/opt/google/chrome/nacl_helper	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
 +
-Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.if
+Index: refpolicy-2.20180701/policy/modules/apps/mozilla.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/mozilla.if
-+++ refpolicy-2.20180114/policy/modules/contrib/mozilla.if
+--- refpolicy-2.20180701.orig/policy/modules/apps/mozilla.if
++++ refpolicy-2.20180701/policy/modules/apps/mozilla.if
 @@ -14,12 +14,18 @@
  ##	User domain for the role.
  ##	</summary>
@@ -88,10 +89,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.if
  ')
  
  ########################################
-Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
+Index: refpolicy-2.20180701/policy/modules/apps/mozilla.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/mozilla.te
-+++ refpolicy-2.20180114/policy/modules/contrib/mozilla.te
+--- refpolicy-2.20180701.orig/policy/modules/apps/mozilla.te
++++ refpolicy-2.20180701/policy/modules/apps/mozilla.te
 @@ -47,6 +47,45 @@ userdom_user_tmp_file(mozilla_plugin_tmp
  type mozilla_plugin_tmpfs_t;
  userdom_user_tmpfs_file(mozilla_plugin_tmpfs_t)
@@ -138,7 +139,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  optional_policy(`
  	pulseaudio_tmpfs_content(mozilla_plugin_tmpfs_t)
  ')
-@@ -76,8 +115,22 @@ optional_policy(`
+@@ -79,8 +118,22 @@ xdg_cache_content(mozilla_xdg_cache_t)
  # Local policy
  #
  
@@ -162,7 +163,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  allow mozilla_t self:fifo_file rw_fifo_file_perms;
  allow mozilla_t self:shm create_shm_perms;
  allow mozilla_t self:sem create_sem_perms;
-@@ -90,6 +143,10 @@ allow mozilla_t mozilla_plugin_t:fd use;
+@@ -93,6 +146,10 @@ allow mozilla_t mozilla_plugin_t:fd use;
  allow mozilla_t { mozilla_home_t mozilla_plugin_home_t }:dir manage_dir_perms;
  allow mozilla_t { mozilla_home_t mozilla_plugin_home_t }:file { manage_file_perms map };
  allow mozilla_t mozilla_home_t:lnk_file manage_lnk_file_perms;
@@ -173,7 +174,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".galeon")
  userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".mozilla")
  userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".netscape")
-@@ -100,6 +157,7 @@ filetrans_pattern(mozilla_t, mozilla_hom
+@@ -103,6 +160,7 @@ filetrans_pattern(mozilla_t, mozilla_hom
  manage_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
  manage_lnk_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
  manage_dirs_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
@@ -181,7 +182,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  allow mozilla_t mozilla_tmp_t:file map;
  files_tmp_filetrans(mozilla_t, mozilla_tmp_t, { file dir })
  
-@@ -107,7 +165,11 @@ manage_files_pattern(mozilla_t, mozilla_
+@@ -110,7 +168,11 @@ manage_files_pattern(mozilla_t, mozilla_
  manage_lnk_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  manage_fifo_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
  manage_sock_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
@@ -194,7 +195,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  allow mozilla_t mozilla_plugin_tmpfs_t:file map;
  
  allow mozilla_t mozilla_plugin_rw_t:dir list_dir_perms;
-@@ -118,11 +180,16 @@ stream_connect_pattern(mozilla_t, mozill
+@@ -125,11 +187,16 @@ xdg_cache_filetrans(mozilla_t, mozilla_x
  
  can_exec(mozilla_t, { mozilla_exec_t mozilla_plugin_rw_t mozilla_plugin_home_t })
  
@@ -211,7 +212,7 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  corecmd_list_bin(mozilla_t)
  corecmd_exec_shell(mozilla_t)
  corecmd_exec_bin(mozilla_t)
-@@ -167,6 +234,8 @@ dev_read_rand(mozilla_t)
+@@ -174,6 +241,8 @@ dev_read_rand(mozilla_t)
  dev_read_urand(mozilla_t)
  dev_rw_dri(mozilla_t)
  dev_write_sound(mozilla_t)
@@ -220,18 +221,18 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mozilla.te
  
  domain_dontaudit_read_all_domains_state(mozilla_t)
  
-@@ -210,6 +279,7 @@ mozilla_run_plugin(mozilla_t, mozilla_ro
- mozilla_run_plugin_config(mozilla_t, mozilla_roles)
+@@ -222,6 +291,7 @@ xdg_manage_downloads(mozilla_t)
  
+ xserver_rw_mesa_shader_cache(mozilla_t)
  xserver_user_x_domain_template(mozilla, mozilla_t, mozilla_tmpfs_t)
 +corenet_tcp_connect_xserver_port(mozilla_t)
  xserver_dontaudit_read_xdm_tmp_files(mozilla_t)
  xserver_dontaudit_getattr_xdm_tmp_sockets(mozilla_t)
  
-Index: refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20180701/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
+--- refpolicy-2.20180701.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20180701/policy/modules/kernel/corecommands.fc
 @@ -121,6 +121,7 @@ ifdef(`distro_debian',`
  /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
@@ -240,10 +241,10 @@ Index: refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
  
  /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
-Index: refpolicy-2.20180114/policy/modules/contrib/xguest.te
+Index: refpolicy-2.20180701/policy/modules/roles/xguest.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/xguest.te
-+++ refpolicy-2.20180114/policy/modules/contrib/xguest.te
+--- refpolicy-2.20180701.orig/policy/modules/roles/xguest.te
++++ refpolicy-2.20180701/policy/modules/roles/xguest.te
 @@ -103,7 +103,7 @@ optional_policy(`
  ')
  
@@ -253,10 +254,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/xguest.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20180114/policy/modules/roles/staff.te
+Index: refpolicy-2.20180701/policy/modules/roles/staff.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20180114/policy/modules/roles/staff.te
+--- refpolicy-2.20180701.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20180701/policy/modules/roles/staff.te
 @@ -142,7 +142,7 @@ ifndef(`distro_redhat',`
  	')
  
@@ -266,10 +267,10 @@ Index: refpolicy-2.20180114/policy/modules/roles/staff.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20180114/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20180701/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20180114/policy/modules/roles/sysadm.te
+--- refpolicy-2.20180701.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20180701/policy/modules/roles/sysadm.te
 @@ -652,7 +652,7 @@ optional_policy(`
  ')
  
@@ -279,10 +280,10 @@ Index: refpolicy-2.20180114/policy/modules/roles/sysadm.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20180114/policy/modules/roles/unprivuser.te
+Index: refpolicy-2.20180701/policy/modules/roles/unprivuser.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/roles/unprivuser.te
-+++ refpolicy-2.20180114/policy/modules/roles/unprivuser.te
+--- refpolicy-2.20180701.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20180701/policy/modules/roles/unprivuser.te
 @@ -114,7 +114,7 @@ ifndef(`distro_redhat',`
  	')
  

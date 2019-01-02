@@ -1,7 +1,7 @@
-Index: refpolicy-2.20180114/policy/modules/contrib/mon.te
+Index: refpolicy-2.20180701/policy/modules/services/mon.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/mon.te
-+++ refpolicy-2.20180114/policy/modules/contrib/mon.te
+--- refpolicy-2.20180701.orig/policy/modules/services/mon.te
++++ refpolicy-2.20180701/policy/modules/services/mon.te
 @@ -232,3 +232,8 @@ optional_policy(`
  optional_policy(`
  	xserver_rw_console(mon_local_test_t)
@@ -11,10 +11,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mon.te
 +        sudo_role_template(system, system_r, mon_local_test_t)
 +        corecmd_bin_entry_type(mon_local_test_t)
 +')
-Index: refpolicy-2.20180114/policy/modules/system/init.if
+Index: refpolicy-2.20180701/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/init.if
-+++ refpolicy-2.20180114/policy/modules/system/init.if
+--- refpolicy-2.20180701.orig/policy/modules/system/init.if
++++ refpolicy-2.20180701/policy/modules/system/init.if
 @@ -127,7 +127,11 @@ interface(`init_domain',`
  
  	role system_r types $1;
@@ -28,10 +28,10 @@ Index: refpolicy-2.20180114/policy/modules/system/init.if
  
  	allow init_t $1:process rlimitinh;
  
-Index: refpolicy-2.20180114/policy/modules/contrib/jabber.te
+Index: refpolicy-2.20180701/policy/modules/services/jabber.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/jabber.te
-+++ refpolicy-2.20180114/policy/modules/contrib/jabber.te
+--- refpolicy-2.20180701.orig/policy/modules/services/jabber.te
++++ refpolicy-2.20180701/policy/modules/services/jabber.te
 @@ -80,9 +80,8 @@ allow jabberd_t self:netlink_route_socke
  manage_files_pattern(jabberd_t, jabberd_lock_t, jabberd_lock_t)
  
@@ -44,10 +44,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/jabber.te
  logging_log_filetrans(jabberd_t, jabberd_log_t, { file dir })
  
  manage_files_pattern(jabberd_domain, jabberd_spool_t, jabberd_spool_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/ntp.te
+Index: refpolicy-2.20180701/policy/modules/services/ntp.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/ntp.te
-+++ refpolicy-2.20180114/policy/modules/contrib/ntp.te
+--- refpolicy-2.20180701.orig/policy/modules/services/ntp.te
++++ refpolicy-2.20180701/policy/modules/services/ntp.te
 @@ -73,9 +73,8 @@ read_lnk_files_pattern(ntpd_t, ntpd_key_
  allow ntpd_t ntpd_lock_t:file rw_file_perms;
  
@@ -60,15 +60,19 @@ Index: refpolicy-2.20180114/policy/modules/contrib/ntp.te
  logging_log_filetrans(ntpd_t, ntpd_log_t, { file dir })
  
  manage_files_pattern(ntpd_t, ntpd_pid_t, ntpd_pid_t)
-Index: refpolicy-2.20180114/policy/support/obj_perm_sets.spt
+Index: refpolicy-2.20180701/policy/support/obj_perm_sets.spt
 ===================================================================
---- refpolicy-2.20180114.orig/policy/support/obj_perm_sets.spt
-+++ refpolicy-2.20180114/policy/support/obj_perm_sets.spt
-@@ -154,7 +154,6 @@ define(`relabel_dir_perms',`{ getattr re
+--- refpolicy-2.20180701.orig/policy/support/obj_perm_sets.spt
++++ refpolicy-2.20180701/policy/support/obj_perm_sets.spt
+@@ -154,11 +154,6 @@ define(`relabel_dir_perms',`{ getattr re
  define(`getattr_file_perms',`{ getattr }')
  define(`setattr_file_perms',`{ setattr }')
  define(`read_file_perms',`{ getattr open read lock ioctl }')
--define(`mmap_file_perms',`{ getattr open map read execute ioctl } refpolicywarn(`mmap_file_perms is deprecated, please use mmap_exec_file_perms instead')') # deprecated 20171213
+-# deprecated 20171213
+-define(`mmap_file_perms',`
+-	{ getattr open map read execute ioctl }
+-	refpolicywarn(`mmap_file_perms is deprecated, please use mmap_exec_file_perms instead')
+-')
  define(`mmap_read_inherited_file_perms',`{ getattr map read ioctl }')
  define(`mmap_read_file_perms',`{ getattr open map read ioctl }')
  define(`mmap_exec_inherited_file_perms',`{ getattr map read execute ioctl }')

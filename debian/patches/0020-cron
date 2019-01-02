@@ -2,10 +2,10 @@ Description: cron patches
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2017-02-21
 
-Index: refpolicy-2.20170903/policy/modules/contrib/cron.if
+Index: refpolicy-2.20180701/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20170903.orig/policy/modules/contrib/cron.if
-+++ refpolicy-2.20170903/policy/modules/contrib/cron.if
+--- refpolicy-2.20180701.orig/policy/modules/services/cron.if
++++ refpolicy-2.20180701/policy/modules/services/cron.if
 @@ -21,23 +21,33 @@ template(`cron_common_crontab_template',
  	# Declarations
  	#
@@ -154,10 +154,10 @@ Index: refpolicy-2.20170903/policy/modules/contrib/cron.if
  
  ########################################
  ## <summary>
-Index: refpolicy-2.20170903/policy/modules/contrib/cron.te
+Index: refpolicy-2.20180701/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20170903.orig/policy/modules/contrib/cron.te
-+++ refpolicy-2.20170903/policy/modules/contrib/cron.te
+--- refpolicy-2.20180701.orig/policy/modules/services/cron.te
++++ refpolicy-2.20180701/policy/modules/services/cron.te
 @@ -25,7 +25,9 @@ gen_tunable(cron_can_relabel, false)
  ##	the generic cronjob domain.
  ##	</p>
@@ -218,7 +218,7 @@ Index: refpolicy-2.20170903/policy/modules/contrib/cron.te
  allow crontab_domain cron_spool_t:dir setattr_dir_perms;
  
  allow crontab_domain crond_t:process signal;
-@@ -218,8 +214,8 @@ tunable_policy(`fcron_crond',`
+@@ -216,8 +212,8 @@ tunable_policy(`fcron_crond',`
  # Daemon local policy
  #
  
@@ -229,7 +229,7 @@ Index: refpolicy-2.20170903/policy/modules/contrib/cron.te
  
  allow crond_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
  allow crond_t self:fd use;
-@@ -233,6 +229,7 @@ allow crond_t self:msg { send receive };
+@@ -231,6 +227,7 @@ allow crond_t self:msg { send receive };
  allow crond_t self:key { search write link };
  dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
  
