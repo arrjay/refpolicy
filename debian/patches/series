@@ -1,7 +1,4 @@
-0001-git-to-20180220
-0002-git-to-20180319
-0003-git-to-20180419
-0004-git-to-20180519
+0001-git-to-20190102
 0008-Make-default-and-root-mcs-seusers-unconfined.patch
 0009-var-run
 0010-misc
@@ -12,4 +9,3 @@
 0110-gpg
 0180-mls
 2000-hacks
-python3-buildsystem.patch

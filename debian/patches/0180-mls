@@ -1,7 +1,7 @@
-Index: refpolicy-2.20180114/policy/modules/kernel/kernel.te
+Index: refpolicy-2.20180701/policy/modules/kernel/kernel.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/kernel/kernel.te
-+++ refpolicy-2.20180114/policy/modules/kernel/kernel.te
+--- refpolicy-2.20180701.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20180701/policy/modules/kernel/kernel.te
 @@ -39,6 +39,7 @@ role unconfined_r;
  ifdef(`enable_mls',`
  	role secadm_r;
@@ -10,11 +10,11 @@ Index: refpolicy-2.20180114/policy/modules/kernel/kernel.te
  ')
  
  #
-Index: refpolicy-2.20180114/policy/modules/system/systemd.te
+Index: refpolicy-2.20180701/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20180114/policy/modules/system/systemd.te
-@@ -237,7 +237,13 @@ systemd_log_parse_environment(systemd_gp
+--- refpolicy-2.20180701.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20180701/policy/modules/system/systemd.te
+@@ -251,7 +251,13 @@ systemd_log_parse_environment(systemd_gp
  
  allow systemd_cgroups_t self:capability net_admin;
  
@@ -29,10 +29,10 @@ Index: refpolicy-2.20180114/policy/modules/system/systemd.te
  kernel_dgram_send(systemd_cgroups_t)
  # for /proc/cmdline
  kernel_read_system_state(systemd_cgroups_t)
-Index: refpolicy-2.20180114/policy/modules/system/init.te
+Index: refpolicy-2.20180701/policy/modules/system/init.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/init.te
-+++ refpolicy-2.20180114/policy/modules/system/init.te
+--- refpolicy-2.20180701.orig/policy/modules/system/init.te
++++ refpolicy-2.20180701/policy/modules/system/init.te
 @@ -191,6 +191,7 @@ mls_file_read_all_levels(init_t)
  mls_file_write_all_levels(init_t)
  mls_process_write_all_levels(init_t)
@@ -50,10 +50,10 @@ Index: refpolicy-2.20180114/policy/modules/system/init.te
  
  	selinux_unmount_fs(init_t)
  	selinux_validate_context(init_t)
-Index: refpolicy-2.20180114/policy/modules/system/logging.if
+Index: refpolicy-2.20180701/policy/modules/system/logging.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/logging.if
-+++ refpolicy-2.20180114/policy/modules/system/logging.if
+--- refpolicy-2.20180701.orig/policy/modules/system/logging.if
++++ refpolicy-2.20180701/policy/modules/system/logging.if
 @@ -422,6 +422,9 @@ interface(`logging_domtrans_syslog',`
  
  	corecmd_search_bin($1)

@@ -1,7 +1,7 @@
-Index: refpolicy-2.20180114/policy/modules/contrib/backup.te
+Index: refpolicy-2.20180701/policy/modules/admin/backup.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/backup.te
-+++ refpolicy-2.20180114/policy/modules/contrib/backup.te
+--- refpolicy-2.20180701.orig/policy/modules/admin/backup.te
++++ refpolicy-2.20180701/policy/modules/admin/backup.te
 @@ -65,6 +65,8 @@ auth_read_shadow(backup_t)
  
  logging_send_syslog_msg(backup_t)
@@ -11,10 +11,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/backup.te
  sysnet_read_config(backup_t)
  
  userdom_use_user_terminals(backup_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/boinc.te
+Index: refpolicy-2.20180701/policy/modules/services/boinc.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/boinc.te
-+++ refpolicy-2.20180114/policy/modules/contrib/boinc.te
+--- refpolicy-2.20180701.orig/policy/modules/services/boinc.te
++++ refpolicy-2.20180701/policy/modules/services/boinc.te
 @@ -47,7 +47,7 @@ files_tmp_file(boinc_project_tmp_t)
  # Local policy
  #
@@ -76,10 +76,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/boinc.te
 +optional_policy(`
  	java_exec(boinc_project_t)
  ')
-Index: refpolicy-2.20180114/policy/modules/contrib/fetchmail.te
+Index: refpolicy-2.20180701/policy/modules/services/fetchmail.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/fetchmail.te
-+++ refpolicy-2.20180114/policy/modules/contrib/fetchmail.te
+--- refpolicy-2.20180701.orig/policy/modules/services/fetchmail.te
++++ refpolicy-2.20180701/policy/modules/services/fetchmail.te
 @@ -78,6 +78,7 @@ dev_read_rand(fetchmail_t)
  dev_read_urand(fetchmail_t)
  
@@ -88,19 +88,19 @@ Index: refpolicy-2.20180114/policy/modules/contrib/fetchmail.te
  files_search_tmp(fetchmail_t)
  files_dontaudit_search_home(fetchmail_t)
  
-Index: refpolicy-2.20180114/policy/modules/contrib/gdomap.fc
+Index: refpolicy-2.20180701/policy/modules/services/gdomap.fc
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/gdomap.fc
-+++ refpolicy-2.20180114/policy/modules/contrib/gdomap.fc
+--- refpolicy-2.20180701.orig/policy/modules/services/gdomap.fc
++++ refpolicy-2.20180701/policy/modules/services/gdomap.fc
 @@ -5,3 +5,4 @@
  /usr/bin/gdomap	--	gen_context(system_u:object_r:gdomap_exec_t,s0)
  
  /run/gdomap\.pid	--	gen_context(system_u:object_r:gdomap_var_run_t,s0)
 +/run/gdomap(/.*)?		gen_context(system_u:object_r:gdomap_var_run_t,s0)
-Index: refpolicy-2.20180114/policy/modules/contrib/gdomap.te
+Index: refpolicy-2.20180701/policy/modules/services/gdomap.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/gdomap.te
-+++ refpolicy-2.20180114/policy/modules/contrib/gdomap.te
+--- refpolicy-2.20180701.orig/policy/modules/services/gdomap.te
++++ refpolicy-2.20180701/policy/modules/services/gdomap.te
 @@ -27,6 +27,8 @@ allow gdomap_t self:capability { net_bin
  allow gdomap_t self:tcp_socket { listen accept };
  
@@ -116,10 +116,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/gdomap.te
  logging_send_syslog_msg(gdomap_t)
 +
 +miscfiles_read_localization(gdomap_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/jabber.te
+Index: refpolicy-2.20180701/policy/modules/services/jabber.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/jabber.te
-+++ refpolicy-2.20180114/policy/modules/contrib/jabber.te
+--- refpolicy-2.20180701.orig/policy/modules/services/jabber.te
++++ refpolicy-2.20180701/policy/modules/services/jabber.te
 @@ -38,6 +38,7 @@ allow jabberd_domain self:fifo_file rw_f
  allow jabberd_domain self:tcp_socket { accept listen };
  
@@ -136,10 +136,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/jabber.te
  
  dev_read_urand(jabberd_domain)
  dev_read_sysfs(jabberd_domain)
-Index: refpolicy-2.20180114/policy/modules/contrib/mon.te
+Index: refpolicy-2.20180701/policy/modules/services/mon.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/mon.te
-+++ refpolicy-2.20180114/policy/modules/contrib/mon.te
+--- refpolicy-2.20180701.orig/policy/modules/services/mon.te
++++ refpolicy-2.20180701/policy/modules/services/mon.te
 @@ -161,6 +161,7 @@ optional_policy(`
  
  allow mon_local_test_t self:capability sys_admin;
@@ -165,22 +165,22 @@ Index: refpolicy-2.20180114/policy/modules/contrib/mon.te
  miscfiles_read_localization(mon_local_test_t)
  
  sysnet_read_config(mon_local_test_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/syncthing.te
+Index: refpolicy-2.20180701/policy/modules/apps/syncthing.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/syncthing.te
-+++ refpolicy-2.20180114/policy/modules/contrib/syncthing.te
-@@ -66,7 +66,3 @@ userdom_use_user_terminals(syncthing_t)
- # newly created files in ~/.config/syncthing/ will transition to syncthing_config_home_t
- userdom_user_home_content_filetrans(syncthing_t, syncthing_config_home_t, dir, "syncthing")
+--- refpolicy-2.20180701.orig/policy/modules/apps/syncthing.te
++++ refpolicy-2.20180701/policy/modules/apps/syncthing.te
+@@ -63,7 +63,3 @@ userdom_user_content_access_template(syn
+ 
+ userdom_use_user_terminals(syncthing_t)
  
 -optional_policy(`
 -	# temporary hack for /run/NetworkManager/resolv.conf until we make this part of sysnet_dns_name_resolve()
 -	networkmanager_read_pid_files(syncthing_t)
 -')
-Index: refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20180701/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
+--- refpolicy-2.20180701.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20180701/policy/modules/kernel/corecommands.fc
 @@ -181,6 +181,7 @@ ifdef(`distro_gentoo',`
  /usr/lib/ConsoleKit/run-session.d(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/ConsoleKit/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
@@ -205,11 +205,11 @@ Index: refpolicy-2.20180114/policy/modules/kernel/corecommands.fc
  /usr/share/smolt/client(/.*)?		gen_context(system_u:object_r:bin_t,s0)
  /usr/share/shorewall/compiler\.pl --	gen_context(system_u:object_r:bin_t,s0)
  /usr/share/shorewall/configpath	--	gen_context(system_u:object_r:bin_t,s0)
-Index: refpolicy-2.20180114/policy/modules/services/ssh.te
+Index: refpolicy-2.20180701/policy/modules/services/ssh.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/services/ssh.te
-+++ refpolicy-2.20180114/policy/modules/services/ssh.te
-@@ -247,6 +247,9 @@ optional_policy(`
+--- refpolicy-2.20180701.orig/policy/modules/services/ssh.te
++++ refpolicy-2.20180701/policy/modules/services/ssh.te
+@@ -248,6 +248,9 @@ optional_policy(`
  # sshd_t is the domain for the sshd program.
  #
  
@@ -219,10 +219,10 @@ Index: refpolicy-2.20180114/policy/modules/services/ssh.te
  # so a tunnel can point to another ssh tunnel
  allow sshd_t self:netlink_route_socket r_netlink_socket_perms;
  allow sshd_t self:key { search link write };
-Index: refpolicy-2.20180114/policy/modules/system/authlogin.if
+Index: refpolicy-2.20180701/policy/modules/system/authlogin.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/authlogin.if
-+++ refpolicy-2.20180114/policy/modules/system/authlogin.if
+--- refpolicy-2.20180701.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20180701/policy/modules/system/authlogin.if
 @@ -823,6 +823,25 @@ interface(`auth_append_lastlog',`
  
  #######################################
@@ -275,10 +275,10 @@ Index: refpolicy-2.20180114/policy/modules/system/authlogin.if
  ## <summary>
  ##	Execute pam programs in the pam domain.
  ## </summary>
-Index: refpolicy-2.20180114/policy/modules/system/locallogin.te
+Index: refpolicy-2.20180701/policy/modules/system/locallogin.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/locallogin.te
-+++ refpolicy-2.20180114/policy/modules/system/locallogin.te
+--- refpolicy-2.20180701.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20180701/policy/modules/system/locallogin.te
 @@ -34,7 +34,7 @@ role system_r types sulogin_t;
  
  allow local_login_t self:capability { chown dac_read_search dac_override fowner fsetid kill setgid setuid sys_nice sys_resource sys_tty_config };
@@ -296,11 +296,11 @@ Index: refpolicy-2.20180114/policy/modules/system/locallogin.te
  userdom_spec_domtrans_all_users(local_login_t)
  userdom_signal_all_users(local_login_t)
  userdom_search_user_home_content(local_login_t)
-Index: refpolicy-2.20180114/policy/modules/system/selinuxutil.te
+Index: refpolicy-2.20180701/policy/modules/system/selinuxutil.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/selinuxutil.te
-+++ refpolicy-2.20180114/policy/modules/system/selinuxutil.te
-@@ -599,6 +599,7 @@ files_read_usr_symlinks(setfiles_t)
+--- refpolicy-2.20180701.orig/policy/modules/system/selinuxutil.te
++++ refpolicy-2.20180701/policy/modules/system/selinuxutil.te
+@@ -606,6 +606,7 @@ files_read_usr_symlinks(setfiles_t)
  files_dontaudit_read_all_symlinks(setfiles_t)
  
  fs_getattr_all_xattr_fs(setfiles_t)
@@ -308,10 +308,10 @@ Index: refpolicy-2.20180114/policy/modules/system/selinuxutil.te
  fs_getattr_nfs(setfiles_t)
  fs_getattr_pstore_dirs(setfiles_t)
  fs_getattr_pstorefs(setfiles_t)
-Index: refpolicy-2.20180114/policy/modules/system/sysnetwork.if
+Index: refpolicy-2.20180701/policy/modules/system/sysnetwork.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/sysnetwork.if
-+++ refpolicy-2.20180114/policy/modules/system/sysnetwork.if
+--- refpolicy-2.20180701.orig/policy/modules/system/sysnetwork.if
++++ refpolicy-2.20180701/policy/modules/system/sysnetwork.if
 @@ -755,6 +755,10 @@ interface(`sysnet_dns_name_resolve',`
  	optional_policy(`
  		nscd_use($1)
@@ -321,12 +321,12 @@ Index: refpolicy-2.20180114/policy/modules/system/sysnetwork.if
 +		networkmanager_read_pid_files($1)
 +	')
  
- 	# This seems needed when the mymachines NSS module is used
- 	optional_policy(`
-Index: refpolicy-2.20180114/policy/modules/system/sysnetwork.te
+ 	ifdef(`init_systemd',`
+ 		optional_policy(`
+Index: refpolicy-2.20180701/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20180114/policy/modules/system/sysnetwork.te
+--- refpolicy-2.20180701.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20180701/policy/modules/system/sysnetwork.te
 @@ -68,6 +68,7 @@ exec_files_pattern(dhcpc_t, dhcp_etc_t,
  allow dhcpc_t dhcp_state_t:file read_file_perms;
  manage_files_pattern(dhcpc_t, dhcpc_state_t, dhcpc_state_t)
@@ -344,10 +344,10 @@ Index: refpolicy-2.20180114/policy/modules/system/sysnetwork.te
  miscfiles_read_localization(ifconfig_t)
  
  seutil_use_runinit_fds(ifconfig_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/consolekit.te
+Index: refpolicy-2.20180701/policy/modules/services/consolekit.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/consolekit.te
-+++ refpolicy-2.20180114/policy/modules/contrib/consolekit.te
+--- refpolicy-2.20180701.orig/policy/modules/services/consolekit.te
++++ refpolicy-2.20180701/policy/modules/services/consolekit.te
 @@ -27,7 +27,7 @@ init_daemon_pid_file(consolekit_var_run_
  # Local policy
  #
@@ -357,10 +357,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/consolekit.te
  allow consolekit_t self:process { getsched signal setfscreate };
  allow consolekit_t self:fifo_file rw_fifo_file_perms;
  allow consolekit_t self:unix_stream_socket { accept listen };
-Index: refpolicy-2.20180114/policy/modules/admin/usermanage.te
+Index: refpolicy-2.20180701/policy/modules/admin/usermanage.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/admin/usermanage.te
-+++ refpolicy-2.20180114/policy/modules/admin/usermanage.te
+--- refpolicy-2.20180701.orig/policy/modules/admin/usermanage.te
++++ refpolicy-2.20180701/policy/modules/admin/usermanage.te
 @@ -189,7 +189,7 @@ optional_policy(`
  #
  
@@ -420,10 +420,10 @@ Index: refpolicy-2.20180114/policy/modules/admin/usermanage.te
 +optional_policy(`
 +	unconfined_use_fds(useradd_t)
 +')
-Index: refpolicy-2.20180114/policy/modules/contrib/apt.if
+Index: refpolicy-2.20180701/policy/modules/admin/apt.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/apt.if
-+++ refpolicy-2.20180114/policy/modules/contrib/apt.if
+--- refpolicy-2.20180701.orig/policy/modules/admin/apt.if
++++ refpolicy-2.20180701/policy/modules/admin/apt.if
 @@ -171,7 +171,7 @@ interface(`apt_read_cache',`
  
  	files_search_var($1)
@@ -442,10 +442,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/apt.if
  ')
  
  ########################################
-Index: refpolicy-2.20180114/policy/modules/contrib/dpkg.te
+Index: refpolicy-2.20180701/policy/modules/admin/dpkg.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/dpkg.te
-+++ refpolicy-2.20180114/policy/modules/contrib/dpkg.te
+--- refpolicy-2.20180701.orig/policy/modules/admin/dpkg.te
++++ refpolicy-2.20180701/policy/modules/admin/dpkg.te
 @@ -317,6 +317,10 @@ optional_policy(`
  ')
  
@@ -457,11 +457,11 @@ Index: refpolicy-2.20180114/policy/modules/contrib/dpkg.te
  	modutils_run(dpkg_script_t, dpkg_roles)
  ')
  
-Index: refpolicy-2.20180114/policy/modules/system/udev.te
+Index: refpolicy-2.20180701/policy/modules/system/udev.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/udev.te
-+++ refpolicy-2.20180114/policy/modules/system/udev.te
-@@ -305,10 +305,6 @@ optional_policy(`
+--- refpolicy-2.20180701.orig/policy/modules/system/udev.te
++++ refpolicy-2.20180701/policy/modules/system/udev.te
+@@ -306,10 +306,6 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -472,7 +472,7 @@ Index: refpolicy-2.20180114/policy/modules/system/udev.te
  	fstools_domtrans(udev_t)
  ')
  
-@@ -327,6 +323,11 @@ optional_policy(`
+@@ -328,6 +324,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -484,10 +484,10 @@ Index: refpolicy-2.20180114/policy/modules/system/udev.te
  	lvm_domtrans(udev_t)
  ')
  
-Index: refpolicy-2.20180114/policy/modules/system/iptables.if
+Index: refpolicy-2.20180701/policy/modules/system/iptables.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/iptables.if
-+++ refpolicy-2.20180114/policy/modules/system/iptables.if
+--- refpolicy-2.20180701.orig/policy/modules/system/iptables.if
++++ refpolicy-2.20180701/policy/modules/system/iptables.if
 @@ -25,6 +25,24 @@ interface(`iptables_domtrans',`
  
  ########################################
@@ -513,10 +513,10 @@ Index: refpolicy-2.20180114/policy/modules/system/iptables.if
  ##	Execute iptables in the iptables domain, and
  ##	allow the specified role the iptables domain.
  ## </summary>
-Index: refpolicy-2.20180114/policy/modules/contrib/logrotate.te
+Index: refpolicy-2.20180701/policy/modules/admin/logrotate.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/logrotate.te
-+++ refpolicy-2.20180114/policy/modules/contrib/logrotate.te
+--- refpolicy-2.20180701.orig/policy/modules/admin/logrotate.te
++++ refpolicy-2.20180701/policy/modules/admin/logrotate.te
 @@ -92,6 +92,8 @@ fs_search_auto_mountpoints(logrotate_t)
  fs_getattr_xattr_fs(logrotate_t)
  fs_list_inotifyfs(logrotate_t)
@@ -526,10 +526,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/logrotate.te
  
  mls_file_read_all_levels(logrotate_t)
  mls_file_write_all_levels(logrotate_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/gpm.if
+Index: refpolicy-2.20180701/policy/modules/services/gpm.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/gpm.if
-+++ refpolicy-2.20180114/policy/modules/contrib/gpm.if
+--- refpolicy-2.20180701.orig/policy/modules/services/gpm.if
++++ refpolicy-2.20180701/policy/modules/services/gpm.if
 @@ -59,6 +59,7 @@ interface(`gpm_dontaudit_getattr_gpmctl'
  	')
  
@@ -538,10 +538,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/gpm.if
  ')
  
  ########################################
-Index: refpolicy-2.20180114/policy/modules/contrib/networkmanager.te
+Index: refpolicy-2.20180701/policy/modules/services/networkmanager.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/networkmanager.te
-+++ refpolicy-2.20180114/policy/modules/contrib/networkmanager.te
+--- refpolicy-2.20180701.orig/policy/modules/services/networkmanager.te
++++ refpolicy-2.20180701/policy/modules/services/networkmanager.te
 @@ -57,6 +57,7 @@ allow NetworkManager_t self:tcp_socket {
  allow NetworkManager_t self:tun_socket { create_socket_perms relabelfrom relabelto };
  allow NetworkManager_t self:packet_socket create_socket_perms;
@@ -550,10 +550,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/networkmanager.te
  
  allow NetworkManager_t wpa_cli_t:unix_dgram_socket sendto;
  
-Index: refpolicy-2.20180114/policy/modules/contrib/apt.fc
+Index: refpolicy-2.20180701/policy/modules/admin/apt.fc
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/apt.fc
-+++ refpolicy-2.20180114/policy/modules/contrib/apt.fc
+--- refpolicy-2.20180701.orig/policy/modules/admin/apt.fc
++++ refpolicy-2.20180701/policy/modules/admin/apt.fc
 @@ -1,9 +1,12 @@
  /etc/cron\.daily/apt	--	gen_context(system_u:object_r:apt_exec_t,s0)
  
@@ -569,10 +569,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/apt.fc
  /usr/sbin/synaptic	--	gen_context(system_u:object_r:apt_exec_t,s0)
  /usr/lib/packagekit/packagekitd	--	gen_context(system_u:object_r:apt_exec_t,s0)
  /var/cache/PackageKit(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
-Index: refpolicy-2.20180114/policy/modules/admin/bootloader.te
+Index: refpolicy-2.20180701/policy/modules/admin/bootloader.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/admin/bootloader.te
-+++ refpolicy-2.20180114/policy/modules/admin/bootloader.te
+--- refpolicy-2.20180701.orig/policy/modules/admin/bootloader.te
++++ refpolicy-2.20180701/policy/modules/admin/bootloader.te
 @@ -95,6 +95,7 @@ mls_file_read_all_levels(bootloader_t)
  mls_file_write_all_levels(bootloader_t)
  
@@ -627,10 +627,10 @@ Index: refpolicy-2.20180114/policy/modules/admin/bootloader.te
 +optional_policy(`
  	rpm_rw_pipes(bootloader_t)
  ')
-Index: refpolicy-2.20180114/policy/modules/contrib/dpkg.if
+Index: refpolicy-2.20180701/policy/modules/admin/dpkg.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/dpkg.if
-+++ refpolicy-2.20180114/policy/modules/contrib/dpkg.if
+--- refpolicy-2.20180701.orig/policy/modules/admin/dpkg.if
++++ refpolicy-2.20180701/policy/modules/admin/dpkg.if
 @@ -319,3 +319,21 @@ interface(`dpkg_map_script_tmp_files',`
  
  	allow $1 dpkg_script_tmp_t:file map;
@@ -653,10 +653,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/dpkg.if
 +
 +	allow $1 dpkg_script_tmp_t:lnk_file read_lnk_file_perms;
 +')
-Index: refpolicy-2.20180114/policy/modules/contrib/raid.if
+Index: refpolicy-2.20180701/policy/modules/system/raid.if
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/raid.if
-+++ refpolicy-2.20180114/policy/modules/contrib/raid.if
+--- refpolicy-2.20180701.orig/policy/modules/system/raid.if
++++ refpolicy-2.20180701/policy/modules/system/raid.if
 @@ -48,6 +48,26 @@ interface(`raid_run_mdadm',`
  
  ########################################
@@ -684,11 +684,11 @@ Index: refpolicy-2.20180114/policy/modules/contrib/raid.if
  ##	Create, read, write, and delete
  ##	mdadm pid files.
  ## </summary>
-Index: refpolicy-2.20180114/policy/modules/system/modutils.te
+Index: refpolicy-2.20180701/policy/modules/system/modutils.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/system/modutils.te
-+++ refpolicy-2.20180114/policy/modules/system/modutils.te
-@@ -135,6 +135,7 @@ optional_policy(`
+--- refpolicy-2.20180701.orig/policy/modules/system/modutils.te
++++ refpolicy-2.20180701/policy/modules/system/modutils.te
+@@ -136,6 +136,7 @@ optional_policy(`
  	# for postinst of a new kernel package
  	dpkg_manage_script_tmp_files(kmod_t)
  	dpkg_map_script_tmp_files(kmod_t)
@@ -696,10 +696,10 @@ Index: refpolicy-2.20180114/policy/modules/system/modutils.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20180114/policy/modules/contrib/tor.te
+Index: refpolicy-2.20180701/policy/modules/services/tor.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/tor.te
-+++ refpolicy-2.20180114/policy/modules/contrib/tor.te
+--- refpolicy-2.20180701.orig/policy/modules/services/tor.te
++++ refpolicy-2.20180701/policy/modules/services/tor.te
 @@ -99,6 +99,7 @@ corenet_tcp_sendrecv_all_ports(tor_t)
  corenet_tcp_sendrecv_all_reserved_ports(tor_t)
  
@@ -716,10 +716,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/tor.te
  miscfiles_read_localization(tor_t)
  
  tunable_policy(`tor_bind_all_unreserved_ports',`
-Index: refpolicy-2.20180114/policy/modules/contrib/devicekit.te
+Index: refpolicy-2.20180701/policy/modules/services/devicekit.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/devicekit.te
-+++ refpolicy-2.20180114/policy/modules/contrib/devicekit.te
+--- refpolicy-2.20180701.orig/policy/modules/services/devicekit.te
++++ refpolicy-2.20180701/policy/modules/services/devicekit.te
 @@ -43,6 +43,7 @@ files_pid_filetrans(devicekit_t, devicek
  kernel_read_system_state(devicekit_t)
  
@@ -728,10 +728,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/devicekit.te
  dev_read_urand(devicekit_t)
  
  files_read_etc_files(devicekit_t)
-Index: refpolicy-2.20180114/policy/modules/contrib/dictd.te
+Index: refpolicy-2.20180701/policy/modules/services/dictd.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/dictd.te
-+++ refpolicy-2.20180114/policy/modules/contrib/dictd.te
+--- refpolicy-2.20180701.orig/policy/modules/services/dictd.te
++++ refpolicy-2.20180701/policy/modules/services/dictd.te
 @@ -74,6 +74,10 @@ miscfiles_read_localization(dictd_t)
  userdom_dontaudit_use_unpriv_user_fds(dictd_t)
  
@@ -743,11 +743,11 @@ Index: refpolicy-2.20180114/policy/modules/contrib/dictd.te
  	seutil_sigchld_newrole(dictd_t)
  ')
  
-Index: refpolicy-2.20180114/policy/modules/contrib/irqbalance.te
+Index: refpolicy-2.20180701/policy/modules/services/irqbalance.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/irqbalance.te
-+++ refpolicy-2.20180114/policy/modules/contrib/irqbalance.te
-@@ -44,6 +44,7 @@ files_read_etc_runtime_files(irqbalance_
+--- refpolicy-2.20180701.orig/policy/modules/services/irqbalance.te
++++ refpolicy-2.20180701/policy/modules/services/irqbalance.te
+@@ -45,6 +45,7 @@ files_read_etc_runtime_files(irqbalance_
  
  fs_getattr_all_fs(irqbalance_t)
  fs_search_auto_mountpoints(irqbalance_t)
@@ -755,10 +755,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/irqbalance.te
  
  domain_use_interactive_fds(irqbalance_t)
  
-Index: refpolicy-2.20180114/policy/modules/contrib/policykit.te
+Index: refpolicy-2.20180701/policy/modules/services/policykit.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/policykit.te
-+++ refpolicy-2.20180114/policy/modules/contrib/policykit.te
+--- refpolicy-2.20180701.orig/policy/modules/services/policykit.te
++++ refpolicy-2.20180701/policy/modules/services/policykit.te
 @@ -108,6 +108,7 @@ userdom_read_all_users_state(policykit_t
  
  optional_policy(`
@@ -767,10 +767,10 @@ Index: refpolicy-2.20180114/policy/modules/contrib/policykit.te
  
  	userdom_dbus_send_all_users(policykit_t)
  
-Index: refpolicy-2.20180114/policy/modules/contrib/postfix.te
+Index: refpolicy-2.20180701/policy/modules/services/postfix.te
 ===================================================================
---- refpolicy-2.20180114.orig/policy/modules/contrib/postfix.te
-+++ refpolicy-2.20180114/policy/modules/contrib/postfix.te
+--- refpolicy-2.20180701.orig/policy/modules/services/postfix.te
++++ refpolicy-2.20180701/policy/modules/services/postfix.te
 @@ -372,6 +372,10 @@ manage_dirs_pattern(postfix_bounce_t, po
  manage_files_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)
  manage_lnk_files_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)

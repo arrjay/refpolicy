@@ -2925,3 +2925,9 @@ unconfined = module
 # 
 userdomain = base
 
+# Layer: system
+# Module: xdg
+#
+# Policy for xdg cache types
+#
+xdg = module
