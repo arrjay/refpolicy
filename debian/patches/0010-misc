@@ -57,11 +57,16 @@ Index: refpolicy-2.20180114/policy/modules/contrib/boinc.te
  
  manage_dirs_pattern(boinc_project_t, boinc_project_tmp_t, boinc_project_tmp_t)
  manage_files_pattern(boinc_project_t, boinc_project_tmp_t, boinc_project_tmp_t)
-@@ -210,5 +214,13 @@ term_getattr_generic_ptys(boinc_t)
+@@ -210,5 +214,18 @@ term_getattr_generic_ptys(boinc_t)
  userdom_getattr_user_ttys(boinc_t)
  
  optional_policy(`
 +	# for lsb_release -a
++	apt_read_cache(boinc_t)
++	apt_read_db(boinc_t)
++	dpkg_exec(boinc_t)
++	dpkg_read_db(boinc_t)
++
 +	apt_read_cache(boinc_project_t)
 +	apt_read_db(boinc_project_t)
 +	dpkg_exec(boinc_project_t)
@@ -428,6 +433,15 @@ Index: refpolicy-2.20180114/policy/modules/contrib/apt.if
  ')
  
  ########################################
+@@ -191,7 +191,7 @@ interface(`apt_manage_cache',`
+ 
+ 	files_search_var($1)
+ 	allow $1 apt_var_cache_t:dir manage_dir_perms;
+-	allow $1 apt_var_cache_t:file manage_file_perms;
++	allow $1 apt_var_cache_t:file { manage_file_perms map };
+ ')
+ 
+ ########################################
 Index: refpolicy-2.20180114/policy/modules/contrib/dpkg.te
 ===================================================================
 --- refpolicy-2.20180114.orig/policy/modules/contrib/dpkg.te
@@ -499,3 +513,272 @@ Index: refpolicy-2.20180114/policy/modules/system/iptables.if
  ##	Execute iptables in the iptables domain, and
  ##	allow the specified role the iptables domain.
  ## </summary>
+Index: refpolicy-2.20180114/policy/modules/contrib/logrotate.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/logrotate.te
++++ refpolicy-2.20180114/policy/modules/contrib/logrotate.te
+@@ -92,6 +92,8 @@ fs_search_auto_mountpoints(logrotate_t)
+ fs_getattr_xattr_fs(logrotate_t)
+ fs_list_inotifyfs(logrotate_t)
+ fs_getattr_tmpfs(logrotate_t)
++# killall reads nsfs files
++fs_read_nsfs_files(logrotate_t)
+ 
+ mls_file_read_all_levels(logrotate_t)
+ mls_file_write_all_levels(logrotate_t)
+Index: refpolicy-2.20180114/policy/modules/contrib/gpm.if
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/gpm.if
++++ refpolicy-2.20180114/policy/modules/contrib/gpm.if
+@@ -59,6 +59,7 @@ interface(`gpm_dontaudit_getattr_gpmctl'
+ 	')
+ 
+ 	dontaudit $1 gpmctl_t:sock_file getattr_sock_file_perms;
++	dontaudit $1 gpmctl_t:fifo_file getattr_fifo_file_perms;
+ ')
+ 
+ ########################################
+Index: refpolicy-2.20180114/policy/modules/contrib/networkmanager.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/networkmanager.te
++++ refpolicy-2.20180114/policy/modules/contrib/networkmanager.te
+@@ -57,6 +57,7 @@ allow NetworkManager_t self:tcp_socket {
+ allow NetworkManager_t self:tun_socket { create_socket_perms relabelfrom relabelto };
+ allow NetworkManager_t self:packet_socket create_socket_perms;
+ allow NetworkManager_t self:socket create_socket_perms;
++allow NetworkManager_t self:rawip_socket { create setopt getattr write read };
+ 
+ allow NetworkManager_t wpa_cli_t:unix_dgram_socket sendto;
+ 
+Index: refpolicy-2.20180114/policy/modules/contrib/apt.fc
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/apt.fc
++++ refpolicy-2.20180114/policy/modules/contrib/apt.fc
+@@ -1,9 +1,12 @@
+ /etc/cron\.daily/apt	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ 
+-ifndef(`distro_redhat',`
++/usr/bin/apt		--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/apt-get	--	gen_context(system_u:object_r:apt_exec_t,s0)
+-/usr/bin/apt-shell	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/aptitude	--	gen_context(system_u:object_r:apt_exec_t,s0)
++/usr/sbin/update-apt-xapian-index -- gen_context(system_u:object_r:apt_exec_t,s0)
++
++ifndef(`distro_redhat',`
++/usr/bin/apt-shell	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/sbin/synaptic	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/lib/packagekit/packagekitd	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /var/cache/PackageKit(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
+Index: refpolicy-2.20180114/policy/modules/admin/bootloader.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/admin/bootloader.te
++++ refpolicy-2.20180114/policy/modules/admin/bootloader.te
+@@ -95,6 +95,7 @@ mls_file_read_all_levels(bootloader_t)
+ mls_file_write_all_levels(bootloader_t)
+ 
+ term_getattr_all_ttys(bootloader_t)
++term_getattr_generic_ptys(bootloader_t)
+ term_dontaudit_manage_pty_dirs(bootloader_t)
+ 
+ corecmd_exec_all_executables(bootloader_t)
+@@ -102,6 +103,7 @@ corecmd_exec_all_executables(bootloader_
+ domain_use_interactive_fds(bootloader_t)
+ 
+ files_create_boot_dirs(bootloader_t)
++files_getattr_default_dirs(bootloader_t)
+ files_manage_boot_files(bootloader_t)
+ files_manage_boot_symlinks(bootloader_t)
+ files_read_etc_files(bootloader_t)
+@@ -118,6 +120,7 @@ files_manage_etc_runtime_files(bootloade
+ files_etc_filetrans_etc_runtime(bootloader_t, file)
+ files_dontaudit_search_home(bootloader_t)
+ 
++fs_list_hugetlbfs(bootloader_t)
+ fs_mount_fusefs(bootloader_t)
+ fs_mount_xattr_fs(bootloader_t)
+ fs_mounton_fusefs(bootloader_t)
+@@ -172,7 +175,7 @@ ifdef(`distro_debian',`
+ 
+ 	# for apt-cache
+ 	apt_read_db(bootloader_t)
+-	apt_read_cache(bootloader_t)
++	apt_manage_cache(bootloader_t)
+ 
+ 	dpkg_read_db(bootloader_t)
+ 	dpkg_rw_pipes(bootloader_t)
+@@ -204,6 +207,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	gpm_getattr_gpmctl(bootloader_t)
++')
++
++optional_policy(`
+ 	hal_dontaudit_append_lib_files(bootloader_t)
+ 	hal_write_log(bootloader_t)
+ ')
+@@ -230,5 +237,9 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	raid_read_mdadm_pid(bootloader_t)
++')
++
++optional_policy(`
+ 	rpm_rw_pipes(bootloader_t)
+ ')
+Index: refpolicy-2.20180114/policy/modules/contrib/dpkg.if
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/dpkg.if
++++ refpolicy-2.20180114/policy/modules/contrib/dpkg.if
+@@ -319,3 +319,21 @@ interface(`dpkg_map_script_tmp_files',`
+ 
+ 	allow $1 dpkg_script_tmp_t:file map;
+ ')
++
++########################################
++## <summary>
++##	read dpkg_script_tmp_t links
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dpkg_read_script_tmp_links',`
++	gen_require(`
++		type dpkg_script_tmp_t;
++	')
++
++	allow $1 dpkg_script_tmp_t:lnk_file read_lnk_file_perms;
++')
+Index: refpolicy-2.20180114/policy/modules/contrib/raid.if
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/raid.if
++++ refpolicy-2.20180114/policy/modules/contrib/raid.if
+@@ -48,6 +48,26 @@ interface(`raid_run_mdadm',`
+ 
+ ########################################
+ ## <summary>
++##	read mdadm pid files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`raid_read_mdadm_pid',`
++	gen_require(`
++		type mdadm_var_run_t;
++	')
++
++	files_search_pids($1)
++	allow $1 mdadm_var_run_t:dir list_dir_perms;
++	allow $1 mdadm_var_run_t:file read_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Create, read, write, and delete
+ ##	mdadm pid files.
+ ## </summary>
+Index: refpolicy-2.20180114/policy/modules/system/modutils.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/system/modutils.te
++++ refpolicy-2.20180114/policy/modules/system/modutils.te
+@@ -135,6 +135,7 @@ optional_policy(`
+ 	# for postinst of a new kernel package
+ 	dpkg_manage_script_tmp_files(kmod_t)
+ 	dpkg_map_script_tmp_files(kmod_t)
++	dpkg_read_script_tmp_links(kmod_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20180114/policy/modules/contrib/tor.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/tor.te
++++ refpolicy-2.20180114/policy/modules/contrib/tor.te
+@@ -99,6 +99,7 @@ corenet_tcp_sendrecv_all_ports(tor_t)
+ corenet_tcp_sendrecv_all_reserved_ports(tor_t)
+ 
+ dev_read_sysfs(tor_t)
++dev_read_rand(tor_t)
+ dev_read_urand(tor_t)
+ 
+ domain_use_interactive_fds(tor_t)
+@@ -112,6 +113,7 @@ auth_use_nsswitch(tor_t)
+ 
+ logging_send_syslog_msg(tor_t)
+ 
++miscfiles_read_generic_certs(tor_t)
+ miscfiles_read_localization(tor_t)
+ 
+ tunable_policy(`tor_bind_all_unreserved_ports',`
+Index: refpolicy-2.20180114/policy/modules/contrib/devicekit.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/devicekit.te
++++ refpolicy-2.20180114/policy/modules/contrib/devicekit.te
+@@ -43,6 +43,7 @@ files_pid_filetrans(devicekit_t, devicek
+ kernel_read_system_state(devicekit_t)
+ 
+ dev_read_sysfs(devicekit_t)
++dev_read_rand(devicekit_t)
+ dev_read_urand(devicekit_t)
+ 
+ files_read_etc_files(devicekit_t)
+Index: refpolicy-2.20180114/policy/modules/contrib/dictd.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/dictd.te
++++ refpolicy-2.20180114/policy/modules/contrib/dictd.te
+@@ -74,6 +74,10 @@ miscfiles_read_localization(dictd_t)
+ userdom_dontaudit_use_unpriv_user_fds(dictd_t)
+ 
+ optional_policy(`
++	dbus_system_bus_client(dictd_t)
++')
++
++optional_policy(`
+ 	seutil_sigchld_newrole(dictd_t)
+ ')
+ 
+Index: refpolicy-2.20180114/policy/modules/contrib/irqbalance.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/irqbalance.te
++++ refpolicy-2.20180114/policy/modules/contrib/irqbalance.te
+@@ -44,6 +44,7 @@ files_read_etc_runtime_files(irqbalance_
+ 
+ fs_getattr_all_fs(irqbalance_t)
+ fs_search_auto_mountpoints(irqbalance_t)
++fs_search_tmpfs(irqbalance_t)
+ 
+ domain_use_interactive_fds(irqbalance_t)
+ 
+Index: refpolicy-2.20180114/policy/modules/contrib/policykit.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/policykit.te
++++ refpolicy-2.20180114/policy/modules/contrib/policykit.te
+@@ -108,6 +108,7 @@ userdom_read_all_users_state(policykit_t
+ 
+ optional_policy(`
+ 	dbus_system_domain(policykit_t, policykit_exec_t)
++	init_dbus_chat(policykit_t)
+ 
+ 	userdom_dbus_send_all_users(policykit_t)
+ 
+Index: refpolicy-2.20180114/policy/modules/contrib/postfix.te
+===================================================================
+--- refpolicy-2.20180114.orig/policy/modules/contrib/postfix.te
++++ refpolicy-2.20180114/policy/modules/contrib/postfix.te
+@@ -372,6 +372,10 @@ manage_dirs_pattern(postfix_bounce_t, po
+ manage_files_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)
+ manage_lnk_files_pattern(postfix_bounce_t, postfix_spool_bounce_t, postfix_spool_bounce_t)
+ 
++optional_policy(`
++	init_dbus_chat(postfix_bounce_t)
++')
++
+ ########################################
+ #
+ # Cleanup local policy
