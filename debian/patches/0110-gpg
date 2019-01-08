@@ -41,7 +41,7 @@ Index: refpolicy-2.20180701/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/roles/sysadm.te
 +++ refpolicy-2.20180701/policy/modules/roles/sysadm.te
-@@ -1300,10 +1300,6 @@ ifndef(`distro_redhat',`
+@@ -1304,10 +1304,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -111,7 +111,7 @@ Index: refpolicy-2.20180701/policy/modules/roles/unprivuser.te
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/roles/unprivuser.te
 +++ refpolicy-2.20180701/policy/modules/roles/unprivuser.te
-@@ -153,8 +153,9 @@ ifndef(`distro_redhat',`
+@@ -157,8 +157,9 @@ ifndef(`distro_redhat',`
  		spamassassin_role(user_r, user_t)
  	')
  
@@ -167,7 +167,7 @@ Index: refpolicy-2.20180701/policy/modules/services/dbus.if
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/services/dbus.if
 +++ refpolicy-2.20180701/policy/modules/services/dbus.if
-@@ -56,6 +56,9 @@ template(`dbus_role_template',`
+@@ -75,6 +75,9 @@ template(`dbus_role_template',`
  	domain_entry_file($1_dbusd_t, dbusd_exec_t)
  	ubac_constrained($1_dbusd_t)
  
@@ -177,7 +177,7 @@ Index: refpolicy-2.20180701/policy/modules/services/dbus.if
  	role $2 types $1_dbusd_t;
  
  	##############################
-@@ -63,7 +66,7 @@ template(`dbus_role_template',`
+@@ -82,7 +85,7 @@ template(`dbus_role_template',`
  	# Local policy
  	#
  
@@ -186,7 +186,7 @@ Index: refpolicy-2.20180701/policy/modules/services/dbus.if
  	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
  	allow $3 $1_dbusd_t:fd use;
  
-@@ -194,7 +197,7 @@ interface(`dbus_all_session_bus_client',
+@@ -213,7 +216,7 @@ interface(`dbus_all_session_bus_client',
  	allow $1 { session_bus_type self }:dbus send_msg;
  	allow session_bus_type $1:dbus send_msg;
  
@@ -195,7 +195,7 @@ Index: refpolicy-2.20180701/policy/modules/services/dbus.if
  	allow $1 session_bus_type:fd use;
  ')
  
-@@ -227,7 +230,7 @@ interface(`dbus_spec_session_bus_client'
+@@ -246,7 +249,7 @@ interface(`dbus_spec_session_bus_client'
  	allow $2 { $1_dbusd_t self }:dbus send_msg;
  	allow $1_dbusd_t $2:dbus send_msg;
  

@@ -1,8 +1,8 @@
 0001-git-to-20190102
+0002-git-to-20190106
+0003-git-to-20190107
 0008-Make-default-and-root-mcs-seusers-unconfined.patch
 0009-var-run
-0010-misc
-0011-systemd
 0015-cron-trivial
 0020-cron
 0100-chrome
