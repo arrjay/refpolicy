@@ -15,38 +15,6 @@ Index: refpolicy-2.20180701/policy/modules/system/init.if
  
  	allow init_t $1:process rlimitinh;
  
-Index: refpolicy-2.20180701/policy/modules/services/jabber.te
-===================================================================
---- refpolicy-2.20180701.orig/policy/modules/services/jabber.te
-+++ refpolicy-2.20180701/policy/modules/services/jabber.te
-@@ -80,9 +80,8 @@ allow jabberd_t self:netlink_route_socke
- manage_files_pattern(jabberd_t, jabberd_lock_t, jabberd_lock_t)
- 
- allow jabberd_t jabberd_log_t:dir setattr_dir_perms;
--append_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
--create_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
--setattr_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
-+manage_files_pattern(jabberd_t, jabberd_log_t, jabberd_log_t)
-+
- logging_log_filetrans(jabberd_t, jabberd_log_t, { file dir })
- 
- manage_files_pattern(jabberd_domain, jabberd_spool_t, jabberd_spool_t)
-Index: refpolicy-2.20180701/policy/modules/services/ntp.te
-===================================================================
---- refpolicy-2.20180701.orig/policy/modules/services/ntp.te
-+++ refpolicy-2.20180701/policy/modules/services/ntp.te
-@@ -73,9 +73,8 @@ read_lnk_files_pattern(ntpd_t, ntpd_key_
- allow ntpd_t ntpd_lock_t:file rw_file_perms;
- 
- allow ntpd_t ntpd_log_t:dir setattr_dir_perms;
--append_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
--create_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
--setattr_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
-+manage_dirs_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
-+manage_files_pattern(ntpd_t, ntpd_log_t, ntpd_log_t)
- logging_log_filetrans(ntpd_t, ntpd_log_t, { file dir })
- 
- manage_files_pattern(ntpd_t, ntpd_pid_t, ntpd_pid_t)
 Index: refpolicy-2.20180701/policy/support/obj_perm_sets.spt
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/support/obj_perm_sets.spt
