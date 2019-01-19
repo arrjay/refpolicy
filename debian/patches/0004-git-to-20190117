@@ -1,0 +1,128 @@
+Only in refpolicy-2.20180701/policy/flask: userspace
+Index: refpolicy-2.20180701/policy/modules/system/logging.fc
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/logging.fc
++++ refpolicy-2.20180701/policy/modules/system/logging.fc
+@@ -1,11 +1,13 @@
+ /dev/log		-s	gen_context(system_u:object_r:devlog_t,mls_systemhigh)
+ 
+-/etc/rsyslog.conf		gen_context(system_u:object_r:syslog_conf_t,s0)
+-/etc/syslog.conf		gen_context(system_u:object_r:syslog_conf_t,s0)
+-/etc/rsyslog.d(/.*)?	gen_context(system_u:object_r:syslog_conf_t,s0)
+-/etc/audit(/.*)?		gen_context(system_u:object_r:auditd_etc_t,mls_systemhigh)
+-/etc/rc\.d/init\.d/auditd --	gen_context(system_u:object_r:auditd_initrc_exec_t,s0)
+-/etc/rc\.d/init\.d/rsyslog --	gen_context(system_u:object_r:syslogd_initrc_exec_t,s0)
++/etc/rsyslog\.conf					--	gen_context(system_u:object_r:syslog_conf_t,s0)
++/etc/syslog\.conf					--	gen_context(system_u:object_r:syslog_conf_t,s0)
++/etc/rsyslog\.d(/.*)?					gen_context(system_u:object_r:syslog_conf_t,s0)
++/etc/audit(/.*)?						gen_context(system_u:object_r:auditd_etc_t,mls_systemhigh)
++/etc/systemd/journal.*\.conf		--	gen_context(system_u:object_r:syslog_conf_t,s0)
++/etc/systemd/journald\.conf\.d(/.*)?	gen_context(system_u:object_r:syslog_conf_t,s0)
++/etc/rc\.d/init\.d/auditd 			--	gen_context(system_u:object_r:auditd_initrc_exec_t,s0)
++/etc/rc\.d/init\.d/rsyslog 			--	gen_context(system_u:object_r:syslogd_initrc_exec_t,s0)
+ 
+ /usr/bin/audispd	--	gen_context(system_u:object_r:audisp_exec_t,s0)
+ /usr/bin/audisp-remote	--	gen_context(system_u:object_r:audisp_remote_exec_t,s0)
+Index: refpolicy-2.20180701/policy/modules/system/logging.te
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/logging.te
++++ refpolicy-2.20180701/policy/modules/system/logging.te
+@@ -1,4 +1,4 @@
+-policy_module(logging, 1.28.5)
++policy_module(logging, 1.28.6)
+ 
+ ########################################
+ #
+Index: refpolicy-2.20180701/policy/modules/system/selinuxutil.te
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/selinuxutil.te
++++ refpolicy-2.20180701/policy/modules/system/selinuxutil.te
+@@ -1,4 +1,4 @@
+-policy_module(selinuxutil, 1.24.4)
++policy_module(selinuxutil, 1.24.5)
+ 
+ gen_require(`
+ 	bool secure_mode;
+@@ -372,7 +372,7 @@ selinux_compute_user_contexts(restorecon
+ 
+ files_relabel_non_auth_files(restorecond_t )
+ files_read_non_auth_files(restorecond_t)
+-files_read_non_auth_symlinks(restorecond_t)
++files_dontaudit_read_all_symlinks(restorecond_t)
+ auth_use_nsswitch(restorecond_t)
+ 
+ logging_send_syslog_msg(restorecond_t)
+Index: refpolicy-2.20180701/policy/modules/system/sysnetwork.fc
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/sysnetwork.fc
++++ refpolicy-2.20180701/policy/modules/system/sysnetwork.fc
+@@ -18,6 +18,7 @@ ifdef(`distro_debian',`
+ /etc/hosts		--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/hosts\.allow.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/hosts\.deny.*	--	gen_context(system_u:object_r:net_conf_t,s0)
++/etc/hostname		--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/denyhosts.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/resolv\.conf.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/yp\.conf.*		--	gen_context(system_u:object_r:net_conf_t,s0)
+Index: refpolicy-2.20180701/policy/modules/system/sysnetwork.te
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20180701/policy/modules/system/sysnetwork.te
+@@ -1,4 +1,4 @@
+-policy_module(sysnetwork, 1.23.2)
++policy_module(sysnetwork, 1.23.3)
+ 
+ ########################################
+ #
+Index: refpolicy-2.20180701/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20180701/policy/modules/system/systemd.if
+@@ -270,6 +270,27 @@ interface(`systemd_read_machines',`
+ 
+ ########################################
+ ## <summary>
++##   Send and receive messages from
++##   systemd hostnamed over dbus.
++## </summary>
++## <param name="domain">
++##   <summary>
++##     Domain allowed access.
++##   </summary>
++## </param>
++#
++interface(`systemd_dbus_chat_hostnamed',`
++	gen_require(`
++		type systemd_hostnamed_t;
++		class dbus send_msg;
++	')
++
++	allow $1 systemd_hostnamed_t:dbus send_msg;
++	allow systemd_hostnamed_t $1:dbus send_msg;
++')
++
++########################################
++## <summary>
+ ##      allow systemd_passwd_agent to inherit fds
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20180701/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20180701/policy/modules/system/systemd.te
+@@ -1,4 +1,4 @@
+-policy_module(systemd, 1.6.7)
++policy_module(systemd, 1.6.8)
+ 
+ #########################################
+ #
+@@ -335,6 +335,9 @@ files_read_etc_files(systemd_hostnamed_t
+ 
+ seutil_read_file_contexts(systemd_hostnamed_t)
+ 
++sysnet_etc_filetrans_config(systemd_hostnamed_t)
++sysnet_manage_config(systemd_hostnamed_t)
++
+ systemd_log_parse_environment(systemd_hostnamed_t)
+ 
+ optional_policy(`
