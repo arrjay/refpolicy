@@ -7,33 +7,33 @@ Index: refpolicy-2.20180701/policy/modules/apps/mozilla.fc
 --- refpolicy-2.20180701.orig/policy/modules/apps/mozilla.fc
 +++ refpolicy-2.20180701/policy/modules/apps/mozilla.fc
 @@ -1,6 +1,9 @@
- HOME_DIR/\.cache/mozilla(/.*)?	gen_context(system_u:object_r:mozilla_xdg_cache_t,s0)
- HOME_DIR/\.galeon(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
- HOME_DIR/\.mozilla(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-+HOME_DIR/\.config/chromium(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-+HOME_DIR/\.config/google-chrome(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
-+HOME_DIR/\.cache/chromium(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
- HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
- HOME_DIR/\.netscape(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
- HOME_DIR/\.phoenix(/.*)?	gen_context(system_u:object_r:mozilla_home_t,s0)
+ HOME_DIR/\.cache/mozilla(/.*)?	gen_context(system_u:object_r:webbrowser_xdg_cache_t,s0)
+ HOME_DIR/\.galeon(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
+ HOME_DIR/\.mozilla(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
++HOME_DIR/\.config/chromium(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
++HOME_DIR/\.config/google-chrome(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
++HOME_DIR/\.cache/chromium(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
+ HOME_DIR/\.mozilla/plugins(/.*)?	gen_context(system_u:object_r:webbrowser_plugin_home_t,s0)
+ HOME_DIR/\.netscape(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
+ HOME_DIR/\.phoenix(/.*)?	gen_context(system_u:object_r:webbrowser_home_t,s0)
 @@ -15,6 +18,7 @@ HOME_DIR/\.spicec(/.*)?	gen_context(syst
- HOME_DIR/\.ICAClient(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
- HOME_DIR/zimbrauserdata(/.*)?	gen_context(system_u:object_r:mozilla_plugin_home_t,s0)
+ HOME_DIR/\.ICAClient(/.*)?	gen_context(system_u:object_r:webbrowser_plugin_home_t,s0)
+ HOME_DIR/zimbrauserdata(/.*)?	gen_context(system_u:object_r:webbrowser_plugin_home_t,s0)
  
-+/usr/bin/chromium	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
- /usr/bin/epiphany	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
- /usr/bin/epiphany-bin	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
- /usr/bin/mozilla	--	gen_context(system_u:object_r:mozilla_exec_t,s0)
++/usr/bin/chromium	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
+ /usr/bin/epiphany	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
+ /usr/bin/epiphany-bin	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
+ /usr/bin/mozilla	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
 @@ -40,3 +44,10 @@ HOME_DIR/zimbrauserdata(/.*)?	gen_contex
- /usr/lib/nspluginwrapper/npviewer.bin	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
- /usr/lib/nspluginwrapper/plugin-config	--	gen_context(system_u:object_r:mozilla_plugin_config_exec_t,s0)
- /usr/lib/xulrunner[^/]*/plugin-container	--	gen_context(system_u:object_r:mozilla_plugin_exec_t,s0)
-+/usr/lib/chromium/chrome-sandbox --	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
-+/usr/lib/chromium/chromium	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
-+/opt/google/chrome/chrome-sandbox --	gen_context(system_u:object_r:chrome_sandbox_exec_t,s0)
-+/opt/google/chrome/chrome	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
-+/opt/google/chrome/google-chrome --	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
-+/opt/google/chrome/nacl_helper	--	gen_context(system_u:object_r:chrome_browser_exec_t,s0)
+ /usr/lib/nspluginwrapper/npviewer.bin	--	gen_context(system_u:object_r:webbrowser_plugin_exec_t,s0)
+ /usr/lib/nspluginwrapper/plugin-config	--	gen_context(system_u:object_r:webbrowser_plugin_config_exec_t,s0)
+ /usr/lib/xulrunner[^/]*/plugin-container	--	gen_context(system_u:object_r:webbrowser_plugin_exec_t,s0)
++/usr/lib/chromium/chrome-sandbox --	gen_context(system_u:object_r:webbrowser_sandbox_exec_t,s0)
++/usr/lib/chromium/chromium	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
++/opt/google/chrome/chrome-sandbox --	gen_context(system_u:object_r:webbrowser_sandbox_exec_t,s0)
++/opt/google/chrome/chrome	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
++/opt/google/chrome/google-chrome --	gen_context(system_u:object_r:webbrowser_exec_t,s0)
++/opt/google/chrome/nacl_helper	--	gen_context(system_u:object_r:webbrowser_exec_t,s0)
 +
 Index: refpolicy-2.20180701/policy/modules/apps/mozilla.if
 ===================================================================
@@ -49,186 +49,191 @@ Index: refpolicy-2.20180701/policy/modules/apps/mozilla.if
 +##	</summary>
 +## </param>
  #
- interface(`mozilla_role',`
+ interface(`webbrowser_role',`
  	gen_require(`
- 		type mozilla_t, mozilla_exec_t, mozilla_home_t;
- 		type mozilla_tmp_t, mozilla_tmpfs_t, mozilla_plugin_tmp_t;
- 		type mozilla_plugin_tmpfs_t, mozilla_plugin_home_t;
-+		type chrome_sandbox_t, chrome_browser_exec_t;
- 		attribute_role mozilla_roles;
+ 		type webbrowser_t, webbrowser_exec_t, webbrowser_home_t;
+ 		type webbrowser_tmp_t, webbrowser_tmpfs_t, webbrowser_plugin_tmp_t;
+ 		type webbrowser_plugin_tmpfs_t, webbrowser_plugin_home_t;
++		type webbrowser_sandbox_t;
+ 		attribute_role webbrowser_roles;
  	')
  
-@@ -36,6 +42,7 @@ interface(`mozilla_role',`
- 	#
+@@ -45,6 +51,9 @@ interface(`webbrowser_role',`
  
- 	domtrans_pattern($2, mozilla_exec_t, mozilla_t)
-+	domtrans_pattern($2, chrome_browser_exec_t, mozilla_t)
+ 	allow $2 webbrowser_t:fd use;
+ 	allow $2 webbrowser_t:shm rw_shm_perms;
++	allow webbrowser_sandbox_t $2:fd use;
++	allow webbrowser_sandbox_t $2:fifo_file write;
++	allow webbrowser_sandbox_t $3:chr_file { read write };
  
- 	allow $2 mozilla_t:process { noatsecure siginh rlimitinh ptrace signal_perms };
- 	ps_process_pattern($2, mozilla_t)
-@@ -45,6 +52,9 @@ interface(`mozilla_role',`
+ 	stream_connect_pattern($2, webbrowser_tmpfs_t, webbrowser_tmpfs_t, webbrowser_t)
  
- 	allow $2 mozilla_t:fd use;
- 	allow $2 mozilla_t:shm rw_shm_perms;
-+	allow chrome_sandbox_t $2:fd use;
-+	allow chrome_sandbox_t $2:fifo_file write;
-+	allow chrome_sandbox_t $3:chr_file { read write };
- 
- 	stream_connect_pattern($2, mozilla_tmpfs_t, mozilla_tmpfs_t, mozilla_t)
- 
-@@ -288,10 +298,12 @@ interface(`mozilla_read_tmp_files',`
- interface(`mozilla_domtrans',`
- 	gen_require(`
- 		type mozilla_t, mozilla_exec_t;
-+		type chrome_browser_exec_t;
- 	')
- 
- 	corecmd_search_bin($1)
- 	domtrans_pattern($1, mozilla_exec_t, mozilla_t)
-+	domtrans_pattern($1, chrome_browser_exec_t, mozilla_t)
- ')
- 
- ########################################
 Index: refpolicy-2.20180701/policy/modules/apps/mozilla.te
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/apps/mozilla.te
 +++ refpolicy-2.20180701/policy/modules/apps/mozilla.te
-@@ -47,6 +47,45 @@ userdom_user_tmp_file(mozilla_plugin_tmp
- type mozilla_plugin_tmpfs_t;
- userdom_user_tmpfs_file(mozilla_plugin_tmpfs_t)
+@@ -53,6 +53,44 @@ type webbrowser_plugin_tmpfs_t;
+ typealias webbrowser_plugin_tmpfs_t alias { mozilla_plugin_tmpfs_t };
+ userdom_user_tmpfs_file(webbrowser_plugin_tmpfs_t)
  
-+type chrome_sandbox_t;
-+type chrome_sandbox_exec_t;
-+type chrome_browser_exec_t;
-+application_domain(mozilla_t, chrome_browser_exec_t)
-+userdom_user_application_domain(mozilla_t, chrome_browser_exec_t )
-+role mozilla_plugin_roles types chrome_sandbox_t;
-+domain_auto_transition_pattern(chrome_sandbox_t, chrome_browser_exec_t, mozilla_t)
-+allow mozilla_t chrome_sandbox_t:process sigchld;
-+application_domain(chrome_sandbox_t, chrome_sandbox_exec_t)
-+ubac_constrained(chrome_sandbox_t)
-+fs_getattr_xattr_fs(chrome_sandbox_t)
++type webbrowser_sandbox_t;
++type webbrowser_sandbox_exec_t;
++typealias webbrowser_sandbox_t alias { chrome_browser_sandbox_t };
++typealias webbrowser_sandbox_exec_t alias { chrome_browser_sandbox_exec_t };
++typealias webbrowser_exec_t alias { chrome_browser_exec_t };
++application_domain(webbrowser_t, webbrowser_exec_t)
++userdom_user_application_domain(webbrowser_t, webbrowser_exec_t )
++role webbrowser_plugin_roles types webbrowser_sandbox_t;
++domain_auto_transition_pattern(webbrowser_sandbox_t, webbrowser_exec_t, webbrowser_t)
++allow webbrowser_t webbrowser_sandbox_t:process sigchld;
++application_domain(webbrowser_sandbox_t, webbrowser_sandbox_exec_t)
++ubac_constrained(webbrowser_sandbox_t)
++fs_getattr_xattr_fs(webbrowser_sandbox_t)
 +
-+allow chrome_sandbox_t mozilla_t:dir list_dir_perms;
-+allow chrome_sandbox_t mozilla_t:fifo_file rw_file_perms;
-+allow chrome_sandbox_t mozilla_t:file read_file_perms;
-+allow chrome_sandbox_t mozilla_t:lnk_file read_lnk_file_perms;
-+allow chrome_sandbox_t mozilla_t:unix_dgram_socket { read write };
-+allow chrome_sandbox_t mozilla_t:unix_stream_socket { read write };
-+allow chrome_sandbox_t mozilla_t:fd use;
-+allow chrome_sandbox_t mozilla_t:file write;
-+allow chrome_sandbox_t proc_t:dir read;
-+allow chrome_sandbox_t self:process setrlimit;
-+type chrome_sandbox_tmp_t;
++allow webbrowser_sandbox_t webbrowser_t:dir list_dir_perms;
++allow webbrowser_sandbox_t webbrowser_t:fifo_file rw_file_perms;
++allow webbrowser_sandbox_t webbrowser_t:file read_file_perms;
++allow webbrowser_sandbox_t webbrowser_t:lnk_file read_lnk_file_perms;
++allow webbrowser_sandbox_t webbrowser_t:unix_dgram_socket { read write };
++allow webbrowser_sandbox_t webbrowser_t:unix_stream_socket { read write };
++allow webbrowser_sandbox_t webbrowser_t:fd use;
++allow webbrowser_sandbox_t webbrowser_t:file write;
++allow webbrowser_sandbox_t proc_t:dir read;
++allow webbrowser_sandbox_t self:process setrlimit;
++type webbrowser_sandbox_tmp_t;
 +
 +# this is needed for Chrome (not Chromium) startup
-+allow chrome_sandbox_t mozilla_t:process { siginh rlimitinh noatsecure };
++allow webbrowser_sandbox_t webbrowser_t:process { siginh rlimitinh noatsecure };
 +
-+files_tmp_file(chrome_sandbox_tmp_t)
-+ubac_constrained(chrome_sandbox_tmp_t)
-+files_tmp_filetrans(chrome_sandbox_t, chrome_sandbox_tmp_t, { file dir })
-+allow chrome_sandbox_t chrome_sandbox_tmp_t:dir manage_dir_perms;
-+allow mozilla_t self:unix_dgram_socket sendto;
-+allow mozilla_t chrome_browser_exec_t:file execute_no_trans;
-+# for V8
-+allow mozilla_t self:process execmem;
++files_tmp_file(webbrowser_sandbox_tmp_t)
++ubac_constrained(webbrowser_sandbox_tmp_t)
++files_tmp_filetrans(webbrowser_sandbox_t, webbrowser_sandbox_tmp_t, { file dir })
++allow webbrowser_sandbox_t webbrowser_sandbox_tmp_t:dir manage_dir_perms;
++allow webbrowser_t self:unix_dgram_socket sendto;
 +
-+allow mozilla_t chrome_sandbox_t:shm { write unix_read getattr unix_write associate read };
-+allow mozilla_t chrome_sandbox_t:unix_dgram_socket { read write };
++allow webbrowser_t webbrowser_sandbox_t:shm { write unix_read getattr unix_write associate read };
++allow webbrowser_t webbrowser_sandbox_t:unix_dgram_socket { read write };
 +
  optional_policy(`
- 	pulseaudio_tmpfs_content(mozilla_plugin_tmpfs_t)
+ 	pulseaudio_tmpfs_content(webbrowser_plugin_tmpfs_t)
  ')
-@@ -79,8 +118,22 @@ xdg_cache_content(mozilla_xdg_cache_t)
+@@ -90,8 +128,23 @@ xdg_cache_content(webbrowser_xdg_cache_t
  # Local policy
  #
  
-+dontaudit chrome_sandbox_t domain:dir getattr;
-+application_domain(chrome_sandbox_t, chrome_sandbox_exec_t)
-+domain_auto_transition_pattern(mozilla_t, chrome_sandbox_exec_t, chrome_sandbox_t)
-+allow mozilla_t mozilla_home_t:sock_file manage_sock_file_perms;
-+allow chrome_sandbox_t self:fifo_file rw_file_perms;
-+allow chrome_sandbox_t mozilla_t:unix_dgram_socket { read write };
-+allow chrome_sandbox_t mozilla_t:unix_stream_socket { read write };
-+allow chrome_sandbox_t self:capability { chown dac_override fsetid net_raw setgid setuid sys_admin sys_chroot sys_ptrace };
-+allow chrome_sandbox_t mozilla_t:process { share sigchld };
-+allow mozilla_t chrome_sandbox_t:fd use;
-+allow mozilla_t chrome_sandbox_t:unix_stream_socket { read write };
-+dev_read_sysfs(mozilla_t)
-+domain_dontaudit_search_all_domains_state(chrome_sandbox_t)
++dontaudit webbrowser_sandbox_t domain:dir getattr;
++application_domain(webbrowser_sandbox_t, webbrowser_sandbox_exec_t)
++domain_auto_transition_pattern(webbrowser_t, webbrowser_sandbox_exec_t, webbrowser_sandbox_t)
++allow webbrowser_t webbrowser_home_t:sock_file manage_sock_file_perms;
++allow webbrowser_sandbox_t self:fifo_file rw_file_perms;
++allow webbrowser_sandbox_t self:unix_stream_socket { create shutdown read write };
++allow webbrowser_sandbox_t webbrowser_t:unix_dgram_socket { read write };
++allow webbrowser_sandbox_t webbrowser_t:unix_stream_socket { read write };
++allow webbrowser_sandbox_t self:capability { chown dac_override fsetid net_raw setgid setuid sys_admin sys_chroot sys_ptrace };
++allow webbrowser_sandbox_t webbrowser_t:process { share sigchld };
++allow webbrowser_t webbrowser_sandbox_t:fd use;
++allow webbrowser_t webbrowser_sandbox_t:unix_stream_socket { getattr read write };
++dev_read_sysfs(webbrowser_t)
++domain_dontaudit_search_all_domains_state(webbrowser_sandbox_t)
 +
- allow mozilla_t self:capability { setgid setuid sys_nice };
--allow mozilla_t self:process { sigkill signal setsched getsched setrlimit };
-+allow mozilla_t self:process { sigkill signal setsched getsched setrlimit setcap };
- allow mozilla_t self:fifo_file rw_fifo_file_perms;
- allow mozilla_t self:shm create_shm_perms;
- allow mozilla_t self:sem create_sem_perms;
-@@ -93,6 +146,10 @@ allow mozilla_t mozilla_plugin_t:fd use;
- allow mozilla_t { mozilla_home_t mozilla_plugin_home_t }:dir manage_dir_perms;
- allow mozilla_t { mozilla_home_t mozilla_plugin_home_t }:file { manage_file_perms map };
- allow mozilla_t mozilla_home_t:lnk_file manage_lnk_file_perms;
+ allow webbrowser_t self:capability { setgid setuid sys_nice };
+-allow webbrowser_t self:process { sigkill signal setsched getsched setrlimit };
++allow webbrowser_t self:process { sigkill signal setsched getsched setrlimit setcap };
+ allow webbrowser_t self:fifo_file rw_fifo_file_perms;
+ allow webbrowser_t self:shm create_shm_perms;
+ allow webbrowser_t self:sem create_sem_perms;
+@@ -104,6 +157,10 @@ allow webbrowser_t webbrowser_plugin_t:f
+ allow webbrowser_t { webbrowser_home_t webbrowser_plugin_home_t }:dir manage_dir_perms;
+ allow webbrowser_t { webbrowser_home_t webbrowser_plugin_home_t }:file { manage_file_perms map };
+ allow webbrowser_t webbrowser_home_t:lnk_file manage_lnk_file_perms;
 +
 +# for plugins
-+can_exec(mozilla_t, mozilla_home_t)
++can_exec(webbrowser_t, webbrowser_home_t)
 +
- userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".galeon")
- userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".mozilla")
- userdom_user_home_dir_filetrans(mozilla_t, mozilla_home_t, dir, ".netscape")
-@@ -103,6 +160,7 @@ filetrans_pattern(mozilla_t, mozilla_hom
- manage_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
- manage_lnk_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
- manage_dirs_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
-+manage_sock_files_pattern(mozilla_t, mozilla_tmp_t, mozilla_tmp_t)
- allow mozilla_t mozilla_tmp_t:file map;
- files_tmp_filetrans(mozilla_t, mozilla_tmp_t, { file dir })
+ userdom_user_home_dir_filetrans(webbrowser_t, webbrowser_home_t, dir, ".galeon")
+ userdom_user_home_dir_filetrans(webbrowser_t, webbrowser_home_t, dir, ".mozilla")
+ userdom_user_home_dir_filetrans(webbrowser_t, webbrowser_home_t, dir, ".netscape")
+@@ -114,6 +171,7 @@ filetrans_pattern(webbrowser_t, webbrows
+ manage_files_pattern(webbrowser_t, webbrowser_tmp_t, webbrowser_tmp_t)
+ manage_lnk_files_pattern(webbrowser_t, webbrowser_tmp_t, webbrowser_tmp_t)
+ manage_dirs_pattern(webbrowser_t, webbrowser_tmp_t, webbrowser_tmp_t)
++manage_sock_files_pattern(webbrowser_t, webbrowser_tmp_t, webbrowser_tmp_t)
+ allow webbrowser_t webbrowser_tmp_t:file map;
+ files_tmp_filetrans(webbrowser_t, webbrowser_tmp_t, { file dir })
  
-@@ -110,7 +168,11 @@ manage_files_pattern(mozilla_t, mozilla_
- manage_lnk_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
- manage_fifo_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
- manage_sock_files_pattern(mozilla_t, mozilla_tmpfs_t, mozilla_tmpfs_t)
--fs_tmpfs_filetrans(mozilla_t, mozilla_tmpfs_t, { file lnk_file sock_file fifo_file })
-+fs_tmpfs_filetrans(mozilla_t, mozilla_tmpfs_t, { dir file lnk_file sock_file fifo_file })
+@@ -121,7 +179,11 @@ manage_files_pattern(webbrowser_t, webbr
+ manage_lnk_files_pattern(webbrowser_t, webbrowser_tmpfs_t, webbrowser_tmpfs_t)
+ manage_fifo_files_pattern(webbrowser_t, webbrowser_tmpfs_t, webbrowser_tmpfs_t)
+ manage_sock_files_pattern(webbrowser_t, webbrowser_tmpfs_t, webbrowser_tmpfs_t)
+-fs_tmpfs_filetrans(webbrowser_t, webbrowser_tmpfs_t, { file lnk_file sock_file fifo_file })
++fs_tmpfs_filetrans(webbrowser_t, webbrowser_tmpfs_t, { dir file lnk_file sock_file fifo_file })
 +
 +# so mozilla can create /var/run/user/PID/pulse
-+auth_read_var_auth(mozilla_t)
++auth_read_var_auth(webbrowser_t)
 +
- allow mozilla_t mozilla_plugin_tmpfs_t:file map;
+ allow webbrowser_t webbrowser_plugin_tmpfs_t:file map;
  
- allow mozilla_t mozilla_plugin_rw_t:dir list_dir_perms;
-@@ -125,11 +187,16 @@ xdg_cache_filetrans(mozilla_t, mozilla_x
+ allow webbrowser_t webbrowser_plugin_rw_t:dir list_dir_perms;
+@@ -136,11 +198,17 @@ xdg_cache_filetrans(webbrowser_t, webbro
  
- can_exec(mozilla_t, { mozilla_exec_t mozilla_plugin_rw_t mozilla_plugin_home_t })
+ can_exec(webbrowser_t, { webbrowser_exec_t webbrowser_plugin_rw_t webbrowser_plugin_home_t })
  
-+allow mozilla_t self:netlink_kobject_uevent_socket create_socket_perms;
++allow webbrowser_t self:netlink_kobject_uevent_socket create_socket_perms;
 +
- kernel_read_kernel_sysctls(mozilla_t)
- kernel_read_network_state(mozilla_t)
- kernel_read_system_state(mozilla_t)
- kernel_read_net_sysctls(mozilla_t)
++kernel_read_crypto_sysctls(webbrowser_t)
+ kernel_read_kernel_sysctls(webbrowser_t)
+ kernel_read_network_state(webbrowser_t)
+ kernel_read_system_state(webbrowser_t)
+ kernel_read_net_sysctls(webbrowser_t)
  
 +# for overcommit_memory
-+kernel_read_vm_overcommit_sysctl(mozilla_t)
++kernel_read_vm_overcommit_sysctl(webbrowser_t)
 +
- corecmd_list_bin(mozilla_t)
- corecmd_exec_shell(mozilla_t)
- corecmd_exec_bin(mozilla_t)
-@@ -174,6 +241,8 @@ dev_read_rand(mozilla_t)
- dev_read_urand(mozilla_t)
- dev_rw_dri(mozilla_t)
- dev_write_sound(mozilla_t)
-+dev_dontaudit_getattr_all_chr_files(mozilla_t)
-+dev_dontaudit_getattr_all_blk_files(mozilla_t)
+ corecmd_list_bin(webbrowser_t)
+ corecmd_exec_shell(webbrowser_t)
+ corecmd_exec_bin(webbrowser_t)
+@@ -149,6 +217,8 @@ corenet_all_recvfrom_unlabeled(webbrowse
+ corenet_all_recvfrom_netlabel(webbrowser_t)
+ corenet_tcp_sendrecv_generic_if(webbrowser_t)
+ corenet_tcp_sendrecv_generic_node(webbrowser_t)
++corenet_udp_bind_generic_node(webbrowser_t)
++corenet_udp_bind_howl_port(webbrowser_t)
  
- domain_dontaudit_read_all_domains_state(mozilla_t)
+ corenet_sendrecv_http_client_packets(webbrowser_t)
+ corenet_tcp_connect_http_port(webbrowser_t)
+@@ -185,6 +255,8 @@ dev_read_rand(webbrowser_t)
+ dev_read_urand(webbrowser_t)
+ dev_rw_dri(webbrowser_t)
+ dev_write_sound(webbrowser_t)
++dev_dontaudit_getattr_all_chr_files(webbrowser_t)
++dev_dontaudit_getattr_all_blk_files(webbrowser_t)
  
-@@ -222,6 +291,7 @@ xdg_manage_downloads(mozilla_t)
+ domain_dontaudit_read_all_domains_state(webbrowser_t)
  
- xserver_rw_mesa_shader_cache(mozilla_t)
- xserver_user_x_domain_template(mozilla, mozilla_t, mozilla_tmpfs_t)
-+corenet_tcp_connect_xserver_port(mozilla_t)
- xserver_dontaudit_read_xdm_tmp_files(mozilla_t)
- xserver_dontaudit_getattr_xdm_tmp_sockets(mozilla_t)
+@@ -198,6 +270,7 @@ files_dontaudit_getattr_boot_dirs(webbro
  
+ fs_getattr_all_fs(webbrowser_t)
+ fs_search_auto_mountpoints(webbrowser_t)
++fs_search_cgroup_dirs(webbrowser_t)
+ fs_list_inotifyfs(webbrowser_t)
+ fs_rw_tmpfs_files(webbrowser_t)
+ 
+@@ -233,6 +306,7 @@ xdg_manage_downloads(webbrowser_t)
+ 
+ xserver_rw_mesa_shader_cache(webbrowser_t)
+ xserver_user_x_domain_template(webbrowser, webbrowser_t, webbrowser_tmpfs_t)
++corenet_tcp_connect_xserver_port(webbrowser_t)
+ xserver_dontaudit_read_xdm_tmp_files(webbrowser_t)
+ xserver_dontaudit_getattr_xdm_tmp_sockets(webbrowser_t)
+ 
+@@ -622,6 +696,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	udev_read_db(webbrowser_plugin_t)
++	udev_search_pids(webbrowser_t)
+ ')
+ 
+ optional_policy(`
 Index: refpolicy-2.20180701/policy/modules/kernel/corecommands.fc
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/kernel/corecommands.fc
@@ -241,19 +246,6 @@ Index: refpolicy-2.20180701/policy/modules/kernel/corecommands.fc
  
  /opt/gutenprint/cups/lib/filter(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
-Index: refpolicy-2.20180701/policy/modules/roles/xguest.te
-===================================================================
---- refpolicy-2.20180701.orig/policy/modules/roles/xguest.te
-+++ refpolicy-2.20180701/policy/modules/roles/xguest.te
-@@ -103,7 +103,7 @@ optional_policy(`
- ')
- 
- optional_policy(`
--	mozilla_role(xguest_r, xguest_t)
-+	mozilla_role(xguest_r, xguest_t, user_devpts_t)
- ')
- 
- optional_policy(`
 Index: refpolicy-2.20180701/policy/modules/roles/staff.te
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/roles/staff.te
@@ -262,8 +254,8 @@ Index: refpolicy-2.20180701/policy/modules/roles/staff.te
  	')
  
  	optional_policy(`
--		mozilla_role(staff_r, staff_t)
-+		mozilla_role(staff_r, staff_t, user_devpts_t)
+-		webbrowser_role(staff_r, staff_t)
++		webbrowser_role(staff_r, staff_t, user_devpts_t)
  	')
  
  	optional_policy(`
@@ -275,8 +267,8 @@ Index: refpolicy-2.20180701/policy/modules/roles/sysadm.te
  ')
  
  optional_policy(`
--	mozilla_role(sysadm_r, sysadm_t)
-+	mozilla_role(sysadm_r, sysadm_t, user_devpts_t)
+-	webbrowser_role(sysadm_r, sysadm_t)
++	webbrowser_role(sysadm_r, sysadm_t, user_devpts_t)
  ')
  
  optional_policy(`
@@ -288,8 +280,21 @@ Index: refpolicy-2.20180701/policy/modules/roles/unprivuser.te
  	')
  
  	optional_policy(`
--		mozilla_role(user_r, user_t)
-+		mozilla_role(user_r, user_t, user_devpts_t)
+-		webbrowser_role(user_r, user_t)
++		webbrowser_role(user_r, user_t, user_devpts_t)
  	')
  
  	optional_policy(`
+Index: refpolicy-2.20180701/policy/modules/roles/xguest.te
+===================================================================
+--- refpolicy-2.20180701.orig/policy/modules/roles/xguest.te
++++ refpolicy-2.20180701/policy/modules/roles/xguest.te
+@@ -103,7 +103,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	webbrowser_role(xguest_r, xguest_t)
++	webbrowser_role(xguest_r, xguest_t, user_devpts_t)
+ ')
+ 
+ optional_policy(`

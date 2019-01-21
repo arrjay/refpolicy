@@ -6,10 +6,10 @@ Subject: Make default and root mcs/seusers unconfined
  config/appconfig-mcs/seusers |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: refpolicy-2.20170204/config/appconfig-mcs/seusers
+Index: refpolicy-2.20180701/config/appconfig-mcs/seusers
 ===================================================================
---- refpolicy-2.20170204.orig/config/appconfig-mcs/seusers
-+++ refpolicy-2.20170204/config/appconfig-mcs/seusers
+--- refpolicy-2.20180701.orig/config/appconfig-mcs/seusers
++++ refpolicy-2.20180701/config/appconfig-mcs/seusers
 @@ -1,2 +1,2 @@
 -root:root:s0-mcs_systemhigh
 -__default__:user_u:s0

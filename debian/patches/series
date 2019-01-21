@@ -1,9 +1,6 @@
-0001-git-to-20190110
-0002-git-to-20190114
-0003-git-to-20190115
-0004-git-to-20190117
+0001-git-to-20190121
+0005-private
 0008-Make-default-and-root-mcs-seusers-unconfined.patch
-0009-var-run
 0010-misc
 0015-cron-trivial
 0020-cron
