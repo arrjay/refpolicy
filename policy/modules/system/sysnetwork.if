@@ -358,6 +358,10 @@ interface(`sysnet_read_config',`
 		allow $1 net_conf_t:dir list_dir_perms;
 		read_files_pattern($1, net_conf_t, net_conf_t)
 	')
+
+	ifdef(`init_systemd',`
+		systemd_read_resolved_runtime($1)
+	')
 ')
 
 #######################################
