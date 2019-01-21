@@ -130,7 +130,7 @@ Index: refpolicy-2.20180701/policy/modules/system/unconfined.te
 ===================================================================
 --- refpolicy-2.20180701.orig/policy/modules/system/unconfined.te
 +++ refpolicy-2.20180701/policy/modules/system/unconfined.te
-@@ -82,7 +82,7 @@ optional_policy(`
+@@ -85,7 +85,7 @@ optional_policy(`
  ')
  
  optional_policy(`
