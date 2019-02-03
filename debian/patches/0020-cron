@@ -2,10 +2,10 @@ Description: cron patches
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2017-02-21
 
-Index: refpolicy-2.20180701/policy/modules/services/cron.if
+Index: refpolicy-2.20190201/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20180701.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20180701/policy/modules/services/cron.if
+--- refpolicy-2.20190201.orig/policy/modules/services/cron.if
++++ refpolicy-2.20190201/policy/modules/services/cron.if
 @@ -21,23 +21,33 @@ template(`cron_common_crontab_template',
  	# Declarations
  	#
@@ -154,10 +154,10 @@ Index: refpolicy-2.20180701/policy/modules/services/cron.if
  
  ########################################
  ## <summary>
-Index: refpolicy-2.20180701/policy/modules/services/cron.te
+Index: refpolicy-2.20190201/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20180701.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20180701/policy/modules/services/cron.te
+--- refpolicy-2.20190201.orig/policy/modules/services/cron.te
++++ refpolicy-2.20190201/policy/modules/services/cron.te
 @@ -25,7 +25,9 @@ gen_tunable(cron_can_relabel, false)
  ##	the generic cronjob domain.
  ##	</p>

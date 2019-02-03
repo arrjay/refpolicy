@@ -1,9 +1,11 @@
-0001-git-to-20190121
-0005-private
 0008-Make-default-and-root-mcs-seusers-unconfined.patch
-0010-misc
+0010-chromium-dri
+0011-pulseaudio
+0013-strict
+0014-misc
 0015-cron-trivial
 0020-cron
 0110-gpg
 0190-net_admin
+0191-GetDynamicUsers
 2000-hacks
