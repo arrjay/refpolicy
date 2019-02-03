@@ -482,6 +482,13 @@ cfengine = module
 cgroup = module
 
 # Layer: contrib
+# Module: chromium
+#
+# Chromium web browser
+# 
+chromium = module
+
+# Layer: contrib
 # Module: chronyd
 #
 # Chrony NTP background daemon.

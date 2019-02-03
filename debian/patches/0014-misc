@@ -1,0 +1,186 @@
+Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.fc
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/sysnetwork.fc
++++ refpolicy-2.20190201/policy/modules/system/sysnetwork.fc
+@@ -27,6 +27,7 @@ ifdef(`distro_debian',`
+ /etc/dhcp3?/dhclient.*		gen_context(system_u:object_r:dhcp_etc_t,s0)
+ 
+ /etc/systemd/network(/.*)?	gen_context(system_u:object_r:net_conf_t,s0)
++/etc/tor/torsocks.conf	--	gen_context(system_u:object_r:net_conf_t,s0)
+ 
+ ifdef(`distro_redhat',`
+ /etc/sysconfig/network-scripts/.*resolv\.conf -- gen_context(system_u:object_r:net_conf_t,s0)
+Index: refpolicy-2.20190201/policy/modules/admin/netutils.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/admin/netutils.te
++++ refpolicy-2.20190201/policy/modules/admin/netutils.te
+@@ -112,6 +112,7 @@ allow ping_t self:tcp_socket create_sock
+ allow ping_t self:rawip_socket { create ioctl read write bind getopt setopt getattr };
+ allow ping_t self:packet_socket { create ioctl read write bind getopt setopt };
+ allow ping_t self:netlink_route_socket create_netlink_socket_perms;
++allow ping_t self:icmp_socket create;
+ 
+ corenet_all_recvfrom_unlabeled(ping_t)
+ corenet_all_recvfrom_netlabel(ping_t)
+Index: refpolicy-2.20190201/policy/modules/roles/staff.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20190201/policy/modules/roles/staff.te
+@@ -15,6 +15,10 @@ userdom_unpriv_user_template(staff)
+ #
+ corenet_ib_access_unlabeled_pkeys(staff_t)
+ 
++corenet_tcp_bind_all_unreserved_ports(staff_t)
++corenet_udp_bind_all_unreserved_ports(staff_t)
++corenet_tcp_bind_generic_node(staff_t)
++
+ optional_policy(`
+ 	apache_role(staff_r, staff_t)
+ ')
+@@ -36,6 +40,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	netutils_domtrans_ping(staff_t)
++')
++
++optional_policy(`
+ 	postgresql_role(staff_r, staff_t)
+ ')
+ 
+@@ -65,6 +73,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	# for torbrowser-launcher
++	xdg_exec_data(staff_t)
++')
++
++optional_policy(`
+ 	xscreensaver_role(staff_r, staff_t)
+ ')
+ 
+Index: refpolicy-2.20190201/policy/modules/roles/unprivuser.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20190201/policy/modules/roles/unprivuser.te
+@@ -7,11 +7,23 @@ policy_module(unprivuser, 2.10.0)
+ #
+ # Declarations
+ #
++## <desc>
++## <p>
++## Allow user to bind all unreserved ports
++## </p>
++## </desc>
++gen_tunable(user_bind_unreserved, false)
+ 
+ #role user_r;
+ 
+ userdom_unpriv_user_template(user)
+ 
++tunable_policy(`user_bind_unreserved', `
++	corenet_tcp_bind_all_unreserved_ports(user_t)
++	corenet_udp_bind_all_unreserved_ports(user_t)
++	corenet_tcp_bind_generic_node(user_t)
++')
++
+ optional_policy(`
+ 	apache_role(user_r, user_t)
+ ')
+@@ -25,6 +37,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	netutils_domtrans_ping(user_t)
++')
++
++optional_policy(`
+ 	screen_role_template(user, user_r, user_t)
+ ')
+ 
+@@ -33,6 +49,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	# for torbrowser-launcher
++	xdg_exec_data(user_t)
++')
++
++optional_policy(`
+ 	xscreensaver_role(user_r, user_t)
+ ')
+ 
+Index: refpolicy-2.20190201/policy/modules/system/xdg.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/xdg.if
++++ refpolicy-2.20190201/policy/modules/system/xdg.if
+@@ -795,6 +795,24 @@ interface(`xdg_relabel_all_data',`
+ 
+ ########################################
+ ## <summary>
++##	Allow executing the xdg data home files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`xdg_exec_data',`
++	gen_require(`
++		type xdg_data_t;
++	')
++
++	can_exec($1, xdg_data_t)
++')
++
++########################################
++## <summary>
+ ##	Create objects in the user home dir with an automatic type transition to
+ ##	the xdg_documents_t type.
+ ## </summary>
+Index: refpolicy-2.20190201/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20190201/policy/modules/system/systemd.te
+@@ -896,6 +896,8 @@ optional_policy(`
+ # Rfkill local policy
+ #
+ 
++allow systemd_rfkill_t self:netlink_kobject_uevent_socket client_stream_socket_perms;
++
+ manage_dirs_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
+ manage_files_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
+ init_var_lib_filetrans(systemd_rfkill_t, systemd_rfkill_var_lib_t, dir)
+Index: refpolicy-2.20190201/policy/modules/system/authlogin.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/authlogin.te
++++ refpolicy-2.20190201/policy/modules/system/authlogin.te
+@@ -97,12 +97,13 @@ optional_policy(`
+ 
+ allow chkpwd_t self:capability { dac_override setuid };
+ dontaudit chkpwd_t self:capability sys_tty_config;
+-allow chkpwd_t self:process { getattr signal };
++allow chkpwd_t self:process { getcap getattr signal };
+ 
+ allow chkpwd_t shadow_t:file read_file_perms;
+ files_list_etc(chkpwd_t)
+ 
+ kernel_read_crypto_sysctls(chkpwd_t)
++kernel_read_kernel_sysctls(chkpwd_t)
+ # is_selinux_enabled
+ kernel_read_system_state(chkpwd_t)
+ 
+Index: refpolicy-2.20190201/policy/modules/apps/mplayer.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/apps/mplayer.te
++++ refpolicy-2.20190201/policy/modules/apps/mplayer.te
+@@ -155,6 +155,7 @@ fs_tmpfs_filetrans(mplayer_t, mplayer_tm
+ kernel_dontaudit_list_unlabeled(mplayer_t)
+ kernel_dontaudit_getattr_unlabeled_files(mplayer_t)
+ kernel_dontaudit_read_unlabeled_files(mplayer_t)
++kernel_read_crypto_sysctls(mplayer_t)
+ kernel_read_system_state(mplayer_t)
+ kernel_read_kernel_sysctls(mplayer_t)
+ 

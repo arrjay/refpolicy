@@ -1,4 +1,4 @@
-policy_module(init, 2.5.0)
+policy_module(init, 2.6.0)
 
 gen_require(`
 	class passwd rootok;
@@ -191,6 +191,7 @@ mls_file_read_all_levels(init_t)
 mls_file_write_all_levels(init_t)
 mls_process_write_all_levels(init_t)
 mls_fd_use_all_levels(init_t)
+mls_process_set_level(init_t)
 
 # the following one is needed for libselinux:is_selinux_enabled()
 # otherwise the call fails and sysvinit tries to load the policy
@@ -384,6 +385,8 @@ ifdef(`init_systemd',`
 
 	# systemd_socket_activated policy
 	mls_socket_write_all_levels(init_t)
+	# read from systemd-journal and similar
+	mls_socket_read_to_clearance(init_t)
 
 	selinux_unmount_fs(init_t)
 	selinux_validate_context(init_t)
@@ -635,6 +638,7 @@ dev_delete_generic_symlinks(initrc_t)
 dev_getattr_all_blk_files(initrc_t)
 dev_getattr_all_chr_files(initrc_t)
 dev_rw_xserver_misc(initrc_t)
+dev_map_xserver_misc(initrc_t)
 
 domain_kill_all_domains(initrc_t)
 domain_signal_all_domains(initrc_t)
@@ -1368,7 +1372,7 @@ ifdef(`init_systemd',`
 	fs_search_cgroup_dirs(daemon)
 
 	# need write to /var/run/systemd/notify
-	init_write_pid_socket(daemon)
+	init_write_runtime_socket(daemon)
 ')
 
 tunable_policy(`init_daemons_use_tty',`

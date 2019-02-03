@@ -1,0 +1,107 @@
+Index: refpolicy-2.20190201/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20190201/policy/modules/system/userdomain.if
+@@ -68,6 +68,8 @@ template(`userdom_base_user_template',`
+ 	dontaudit $1_t user_tty_device_t:chr_file ioctl;
+ 
+ 	kernel_read_kernel_sysctls($1_t)
++	kernel_read_crypto_sysctls($1_t)
++	kernel_read_vm_overcommit_sysctl($1_t)
+ 	kernel_dontaudit_list_unlabeled($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_files($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_symlinks($1_t)
+@@ -110,11 +112,15 @@ template(`userdom_base_user_template',`
+ 
+ 	libs_exec_ld_so($1_t)
+ 
++	logging_send_syslog_msg($1_t)
++
+ 	miscfiles_read_localization($1_t)
+ 	miscfiles_read_generic_certs($1_t)
+ 
+ 	sysnet_read_config($1_t)
+ 
++	userdom_write_all_user_runtime_named_sockets($1_t)
++
+ 	# kdeinit wants systemd status
+ 	init_get_system_status($1_t)
+ 
+@@ -858,6 +864,10 @@ template(`userdom_common_user_template',
+ 	')
+ 
+ 	optional_policy(`
++		udev_read_pid_files($1_t)
++	')
++
++	optional_policy(`
+ 		usernetctl_run($1_t, $1_r)
+ 	')
+ 
+@@ -1205,6 +1215,13 @@ template(`userdom_unpriv_user_template',
+ 
+ 	optional_policy(`
+ 		systemd_dbus_chat_logind($1_t)
++		systemd_use_logind_fds($1_t)
++		systemd_dbus_chat_hostnamed($1_t)
++		# kwalletd5 inherits a socket from init
++		init_rw_inherited_stream_socket($1_t)
++		init_use_fds($1_t)
++		# for polkit-kde-auth
++		init_read_state($1_t)
+ 	')
+ ')
+ 
+@@ -3426,6 +3443,25 @@ interface(`userdom_delete_all_user_runti
+ ')
+ 
+ ########################################
++## <summary>
++##	write user runtime socket files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_write_all_user_runtime_named_sockets',`
++	gen_require(`
++		attribute user_runtime_content_type;
++	')
++
++	allow $1 user_runtime_content_type:dir list_dir_perms;
++	allow $1 user_runtime_content_type:sock_file write;
++')
++
++########################################
+ ## <summary>
+ ##	Create objects in the pid directory
+ ##	with an automatic type transition to
+Index: refpolicy-2.20190201/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20190201/policy/modules/roles/sysadm.te
+@@ -1092,6 +1092,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_dbus_chat_logind(sysadm_t)
++')
++
++optional_policy(`
+ 	tboot_run_txtstat(sysadm_t, sysadm_r)
+ ')
+ 
+Index: refpolicy-2.20190201/policy/modules/services/xserver.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20190201/policy/modules/services/xserver.if
+@@ -1251,6 +1251,7 @@ interface(`xserver_read_xkb_libs',`
+ 	allow $1 xkb_var_lib_t:dir list_dir_perms;
+ 	read_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
+ 	read_lnk_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
++	allow $1 xkb_var_lib_t:file map;
+ ')
+ 
+ ########################################

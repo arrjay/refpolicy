@@ -1,7 +1,7 @@
-Index: refpolicy-2.20180701/policy/modules/services/cron.if
+Index: refpolicy-2.20190201/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20180701.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20180701/policy/modules/services/cron.if
+--- refpolicy-2.20190201.orig/policy/modules/services/cron.if
++++ refpolicy-2.20190201/policy/modules/services/cron.if
 @@ -51,15 +51,16 @@ template(`cron_common_crontab_template',
  ## </param>
  ## <param name="domain">
@@ -100,11 +100,11 @@ Index: refpolicy-2.20180701/policy/modules/services/cron.if
  	')
  ')
  
-Index: refpolicy-2.20180701/policy/modules/roles/staff.te
+Index: refpolicy-2.20190201/policy/modules/roles/staff.te
 ===================================================================
---- refpolicy-2.20180701.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20180701/policy/modules/roles/staff.te
-@@ -82,7 +82,7 @@ ifndef(`distro_redhat',`
+--- refpolicy-2.20190201.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20190201/policy/modules/roles/staff.te
+@@ -99,7 +99,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -113,11 +113,11 @@ Index: refpolicy-2.20180701/policy/modules/roles/staff.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20180701/policy/modules/roles/unprivuser.te
+Index: refpolicy-2.20190201/policy/modules/roles/unprivuser.te
 ===================================================================
---- refpolicy-2.20180701.orig/policy/modules/roles/unprivuser.te
-+++ refpolicy-2.20180701/policy/modules/roles/unprivuser.te
-@@ -50,7 +50,7 @@ ifndef(`distro_redhat',`
+--- refpolicy-2.20190201.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20190201/policy/modules/roles/unprivuser.te
+@@ -67,7 +67,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -126,10 +126,10 @@ Index: refpolicy-2.20180701/policy/modules/roles/unprivuser.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20180701/policy/modules/system/unconfined.te
+Index: refpolicy-2.20190201/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20180701.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20180701/policy/modules/system/unconfined.te
+--- refpolicy-2.20190201.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20190201/policy/modules/system/unconfined.te
 @@ -85,7 +85,7 @@ optional_policy(`
  ')
  
@@ -139,3 +139,50 @@ Index: refpolicy-2.20180701/policy/modules/system/unconfined.te
  ')
  
  optional_policy(`
+Index: refpolicy-2.20190201/policy/modules/services/cron.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/cron.te
++++ refpolicy-2.20190201/policy/modules/services/cron.te
+@@ -442,6 +442,8 @@ optional_policy(`
+ 	init_dbus_chat(system_cronjob_t)
+ 	systemd_dbus_chat_logind(system_cronjob_t)
+ 	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
++	# for runuser
++	init_search_keys(system_cronjob_t)
+ 	# so cron jobs can restart daemons
+ 	init_stream_connect(system_cronjob_t)
+ 	init_manage_script_service(system_cronjob_t)
+@@ -517,6 +519,7 @@ corenet_tcp_sendrecv_generic_node(system
+ corenet_udp_sendrecv_generic_node(system_cronjob_t)
+ corenet_tcp_sendrecv_all_ports(system_cronjob_t)
+ corenet_udp_sendrecv_all_ports(system_cronjob_t)
++corenet_tcp_connect_tor_port(system_cronjob_t)
+ 
+ dev_getattr_all_blk_files(system_cronjob_t)
+ dev_getattr_all_chr_files(system_cronjob_t)
+Index: refpolicy-2.20190201/policy/modules/system/init.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/init.if
++++ refpolicy-2.20190201/policy/modules/system/init.if
+@@ -3204,3 +3204,21 @@ interface(`init_getrlimit',`
+ 
+ 	allow $1 init_t:process getrlimit;
+ ')
++
++########################################
++## <summary>
++##      Allow searching init_t keys
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Source domain
++##      </summary>
++## </param>
++#
++interface(`init_search_keys',`
++	gen_require(`
++		type init_t;
++	')
++
++	allow $1 init_t:key search;
++')
