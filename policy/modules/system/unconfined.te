@@ -1,4 +1,4 @@
-policy_module(unconfined, 3.11.0)
+policy_module(unconfined, 3.12.0)
 
 ########################################
 #
@@ -58,6 +58,15 @@ ifdef(`direct_sysadm_daemon',`
         ')
 ')
 
+ifdef(`init_systemd',`
+	# for systemd-analyze
+	init_service_status(unconfined_t)
+
+	optional_policy(`
+		systemd_dbus_chat_resolved(unconfined_t)
+	')
+')
+
 optional_policy(`
 	ada_domtrans(unconfined_t)
 ')
@@ -80,6 +89,7 @@ optional_policy(`
 ')
 
 optional_policy(`
+	dpkg_nnp_domtrans(unconfined_t)
 	dpkg_run(unconfined_t, unconfined_r)
 ')
 
