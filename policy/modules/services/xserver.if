@@ -82,6 +82,7 @@ interface(`xserver_restricted_role',`
 	allow $2 xserver_tmp_t:file { getattr read };
 
 	dev_rw_xserver_misc($2)
+	dev_map_xserver_misc($2)
 	dev_rw_power_management($2)
 	dev_read_input($2)
 	dev_read_misc($2)
@@ -505,17 +506,19 @@ interface(`xserver_use_user_fonts',`
 
 	# Read per user fonts
 	allow $1 user_fonts_t:dir list_dir_perms;
-	allow $1 user_fonts_t:file read_file_perms;
+	allow $1 user_fonts_t:file { map read_file_perms };
 
 	# Manipulate the global font cache
 	manage_dirs_pattern($1, user_fonts_cache_t, user_fonts_cache_t)
 	manage_files_pattern($1, user_fonts_cache_t, user_fonts_cache_t)
+	allow $1 user_fonts_cache_t:file { map read_file_perms };
 
 	# Read per user font config
 	allow $1 user_fonts_config_t:dir list_dir_perms;
 	allow $1 user_fonts_config_t:file read_file_perms;
 
 	userdom_search_user_home_dirs($1)
+	xdg_search_cache_dirs($1)
 ')
 
 ########################################
@@ -1627,6 +1630,24 @@ interface(`xserver_rw_xdm_keys',`
 	')
 
 	allow $1 xdm_t:key { read write setattr };
+')
+
+########################################
+## <summary>
+##	Manage keys for xdm.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`xserver_link_xdm_keys',`
+	gen_require(`
+		type xdm_t;
+	')
+
+	allow $1 xdm_t:key link;
 ')
 
 ########################################

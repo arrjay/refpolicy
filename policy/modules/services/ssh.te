@@ -1,4 +1,4 @@
-policy_module(ssh, 2.11.0)
+policy_module(ssh, 2.12.0)
 
 ########################################
 #
@@ -156,6 +156,7 @@ corenet_tcp_connect_ssh_port(ssh_t)
 corenet_sendrecv_ssh_client_packets(ssh_t)
 
 dev_read_urand(ssh_t)
+dev_dontaudit_read_rand(ssh_t)
 
 fs_getattr_all_fs(ssh_t)
 fs_search_auto_mountpoints(ssh_t)
@@ -177,6 +178,7 @@ logging_read_generic_logs(ssh_t)
 
 auth_use_nsswitch(ssh_t)
 
+miscfiles_read_generic_certs(ssh_t)
 miscfiles_read_localization(ssh_t)
 
 seutil_read_config(ssh_t)
@@ -247,6 +249,9 @@ optional_policy(`
 # sshd_t is the domain for the sshd program.
 #
 
+# for /run/user/UID/bus access, probably pam_systemd.so
+allow sshd_t self:capability dac_read_search;
+
 # so a tunnel can point to another ssh tunnel
 allow sshd_t self:netlink_route_socket r_netlink_socket_perms;
 allow sshd_t self:key { search link write };
@@ -274,6 +279,7 @@ ifdef(`distro_debian',`
 ')
 
 ifdef(`init_systemd',`
+	init_dbus_chat(sshd_t)
 	systemd_dbus_chat_logind(sshd_t)
 	init_rw_stream_sockets(sshd_t)
 ')
@@ -328,6 +334,7 @@ optional_policy(`
 
 optional_policy(`
 	xserver_domtrans_xauth(sshd_t)
+	xserver_link_xdm_keys(sshd_t)
 ')
 
 ########################################
@@ -352,6 +359,7 @@ fs_search_auto_mountpoints(ssh_keygen_t)
 
 dev_read_sysfs(ssh_keygen_t)
 dev_read_urand(ssh_keygen_t)
+dev_dontaudit_read_rand(ssh_keygen_t)
 
 term_dontaudit_use_console(ssh_keygen_t)
 
