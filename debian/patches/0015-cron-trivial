@@ -104,7 +104,7 @@ Index: refpolicy-2.20190201/policy/modules/roles/staff.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/roles/staff.te
 +++ refpolicy-2.20190201/policy/modules/roles/staff.te
-@@ -99,7 +99,7 @@ ifndef(`distro_redhat',`
+@@ -103,7 +103,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -117,7 +117,7 @@ Index: refpolicy-2.20190201/policy/modules/roles/unprivuser.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/roles/unprivuser.te
 +++ refpolicy-2.20190201/policy/modules/roles/unprivuser.te
-@@ -67,7 +67,7 @@ ifndef(`distro_redhat',`
+@@ -79,7 +79,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -160,6 +160,15 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  
  dev_getattr_all_blk_files(system_cronjob_t)
  dev_getattr_all_chr_files(system_cronjob_t)
+@@ -680,6 +683,8 @@ optional_policy(`
+ 
+ 	# for gpg-connect-agent to access /run/user/0
+ 	userdom_manage_user_runtime_dirs(system_cronjob_t)
++	# for /run/user/0/gnupg
++	userdom_manage_user_tmp_dirs(system_cronjob_t)
+ ')
+ 
+ ########################################
 Index: refpolicy-2.20190201/policy/modules/system/init.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/init.if

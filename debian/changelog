@@ -5,7 +5,7 @@ refpolicy (2:2.20190201-1) unstable; urgency=medium
   * New upstream Chromium/Chrome policy.
   * Add xserver_allow_dri tunable for most X server programs to get DRI access.
 
- -- Russell Coker <russell@coker.com.au>  Sat, 02 Feb 2019 12:25:48 +1100
+ -- Russell Coker <russell@coker.com.au>  Sun, 03 Feb 2019 23:28:32 +1100
 
 refpolicy (2:2.20180701-1) unstable; urgency=medium
 
