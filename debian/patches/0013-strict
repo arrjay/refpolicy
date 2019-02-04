@@ -38,12 +38,14 @@ Index: refpolicy-2.20190201/policy/modules/system/userdomain.if
  		usernetctl_run($1_t, $1_r)
  	')
  
-@@ -1205,6 +1215,13 @@ template(`userdom_unpriv_user_template',
+@@ -1205,6 +1215,15 @@ template(`userdom_unpriv_user_template',
  
  	optional_policy(`
  		systemd_dbus_chat_logind($1_t)
 +		systemd_use_logind_fds($1_t)
 +		systemd_dbus_chat_hostnamed($1_t)
++		systemd_write_inherited_logind_inhibit_pipes($1_t)
++
 +		# kwalletd5 inherits a socket from init
 +		init_rw_inherited_stream_socket($1_t)
 +		init_use_fds($1_t)
@@ -52,7 +54,7 @@ Index: refpolicy-2.20190201/policy/modules/system/userdomain.if
  	')
  ')
  
-@@ -3426,6 +3443,25 @@ interface(`userdom_delete_all_user_runti
+@@ -3426,6 +3445,25 @@ interface(`userdom_delete_all_user_runti
  ')
  
  ########################################
@@ -97,7 +99,15 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/xserver.if
 +++ refpolicy-2.20190201/policy/modules/services/xserver.if
-@@ -1251,6 +1251,7 @@ interface(`xserver_read_xkb_libs',`
+@@ -101,6 +101,7 @@ interface(`xserver_restricted_role',`
+ 	xserver_xsession_entry_type($2)
+ 	xserver_dontaudit_write_log($2)
+ 	xserver_stream_connect_xdm($2)
++	xserver_use_user_fonts($2)
+ 	# certain apps want to read xdm.pid file
+ 	xserver_read_xdm_pid($2)
+ 	# gnome-session creates socket under /tmp/.ICE-unix/
+@@ -1248,6 +1249,7 @@ interface(`xserver_read_xkb_libs',`
  	allow $1 xkb_var_lib_t:dir list_dir_perms;
  	read_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
  	read_lnk_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
@@ -105,3 +115,34 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.if
  ')
  
  ########################################
+Index: refpolicy-2.20190201/policy/modules/services/dbus.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20190201/policy/modules/services/dbus.if
+@@ -99,9 +99,14 @@ template(`dbus_role_template',`
+ 
+ 	allow $1_dbusd_t $3:process sigkill;
+ 
++	allow $1_dbusd_t self:process getcap;
++
+ 	corecmd_bin_domtrans($1_dbusd_t, $3)
+ 	corecmd_shell_domtrans($1_dbusd_t, $3)
+ 
++	dev_read_sysfs($1_dbusd_t)
++	xdg_read_data_files($1_dbusd_t)
++
+ 	auth_use_nsswitch($1_dbusd_t)
+ 
+ 	ifdef(`hide_broken_symptoms',`
+Index: refpolicy-2.20190201/policy/modules/services/ssh.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/ssh.if
++++ refpolicy-2.20190201/policy/modules/services/ssh.if
+@@ -439,6 +439,7 @@ template(`ssh_role_template',`
+ 		xserver_use_xdm_fds($1_ssh_agent_t)
+ 		xserver_rw_xdm_pipes($1_ssh_agent_t)
+ 		xserver_sigchld_xdm($1_ssh_agent_t)
++		xserver_write_inherited_xsession_log($1_ssh_agent_t)
+ 	')
+ ')
+ 
