@@ -1,3 +1,20 @@
+refpolicy (2:2.20190201-3) unstable; urgency=medium
+
+  * Added policy for apt-cacher and apt-cacher-ng
+  * Added policy for memlockd
+  * Added type alias rules so you can upgrade from Stretch policy without a
+    reboot if you manually relabel.
+  * Lots of little changes too
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 03 Mar 2019 20:44:04 +1100
+
+refpolicy (2:2.20190201-2) unstable; urgency=medium
+
+  * Lots of little changes, many for strict configuration.
+  * Added policy for certbot AKA letsencrypt.
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 22 Feb 2019 00:09:29 +1100
+
 refpolicy (2:2.20190201-1) unstable; urgency=medium
 
   * New upstream, lots of Debian patches upstreamed.

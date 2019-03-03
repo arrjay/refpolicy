@@ -62,7 +62,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  		bool cron_userdomain_transition;
  	')
  
-@@ -69,60 +81,51 @@ interface(`cron_role',`
+@@ -69,64 +81,62 @@ interface(`cron_role',`
  	# Declarations
  	#
  
@@ -96,9 +96,8 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
 +	corecmd_exec_bin($2_crontab_t)
 +	corecmd_exec_shell($2_crontab_t)
  
-+ifndef(`cronjob_domain', `
- 	tunable_policy(`cron_userdomain_transition',`
-+')
+-	tunable_policy(`cron_userdomain_transition',`
++	ifndef(`cronjob_domain', `
  		allow crond_t $2_t:process transition;
  		allow crond_t $2_t:fd use;
  		allow crond_t $2_t:key manage_key_perms;
@@ -107,10 +106,18 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
 +		allow $2_t $2_cron_spool_t:file entrypoint;
  
  		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
--
++	')
++
++	tunable_policy(`cron_userdomain_transition',`
++		allow crond_t $2_t:process transition;
++		allow crond_t $2_t:fd use;
++		allow crond_t $2_t:key manage_key_perms;
+ 
 -		allow $2_t cronjob_t:process { ptrace signal_perms };
 -		ps_process_pattern($2_t, cronjob_t)
-+ifndef(`cronjob_domain', `
++		allow $2_t $2_cron_spool_t:file entrypoint;
++
++		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
  	',`
  		dontaudit crond_t $2_t:process transition;
  		dontaudit crond_t $2_t:fd use;
@@ -134,26 +141,23 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
 -		allow cronjob_t $2_t:dbus send_msg;
  	')
  ')
-+')
  
  ########################################
  ## <summary>
-@@ -139,6 +142,7 @@ interface(`cron_role',`
- ##	</summary>
- ## </param>
- #
-+ifdef(`cronjob_domain', `
- interface(`cron_unconfined_role',`
- 	gen_require(`
- 		type unconfined_cronjob_t, crontab_t, crontab_exec_t;
-@@ -204,6 +208,7 @@ interface(`cron_unconfined_role',`
- 		allow unconfined_cronjob_t $2:dbus send_msg;
- 	')
- ')
-+')
+ ##	Role access for unconfined cron.
++##	Only used if cronjob_domain is set
+ ## </summary>
+ ## <param name="role">
+ ##	<summary>
+@@ -192,7 +202,7 @@ interface(`cron_unconfined_role',`
+ 		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
  
- ########################################
- ## <summary>
+ 		dontaudit $2 unconfined_cronjob_t:process { ptrace signal_perms };
+-')
++	')
+ 
+ 	optional_policy(`
+ 		gen_require(`
 Index: refpolicy-2.20190201/policy/modules/services/cron.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/cron.te

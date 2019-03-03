@@ -26,7 +26,7 @@ Index: refpolicy-2.20190201/policy/modules/roles/staff.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/roles/staff.te
 +++ refpolicy-2.20190201/policy/modules/roles/staff.te
-@@ -126,10 +126,6 @@ ifndef(`distro_redhat',`
+@@ -139,10 +139,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -41,7 +41,7 @@ Index: refpolicy-2.20190201/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/roles/sysadm.te
 +++ refpolicy-2.20190201/policy/modules/roles/sysadm.te
-@@ -1312,10 +1312,6 @@ ifndef(`distro_redhat',`
+@@ -1315,10 +1315,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -111,7 +111,7 @@ Index: refpolicy-2.20190201/policy/modules/roles/unprivuser.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/roles/unprivuser.te
 +++ refpolicy-2.20190201/policy/modules/roles/unprivuser.te
-@@ -165,8 +165,9 @@ ifndef(`distro_redhat',`
+@@ -186,8 +186,9 @@ ifndef(`distro_redhat',`
  		spamassassin_role(user_r, user_t)
  	')
  
@@ -126,7 +126,7 @@ Index: refpolicy-2.20190201/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/userdomain.if
 +++ refpolicy-2.20190201/policy/modules/system/userdomain.if
-@@ -2155,6 +2155,24 @@ interface(`userdom_dontaudit_append_user
+@@ -2160,6 +2160,24 @@ interface(`userdom_dontaudit_append_user
  
  ########################################
  ## <summary>
@@ -184,9 +184,9 @@ Index: refpolicy-2.20190201/policy/modules/services/dbus.if
 -	allow $3 $1_dbusd_t:unix_stream_socket connectto;
 +	allow $3 $1_dbusd_t:unix_stream_socket { connectto rw_socket_perms };
  	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
+ 	allow $1_dbusd_t $3:dbus send_msg;
  	allow $3 $1_dbusd_t:fd use;
- 
-@@ -213,7 +216,7 @@ interface(`dbus_all_session_bus_client',
+@@ -224,7 +227,7 @@ interface(`dbus_all_session_bus_client',
  	allow $1 { session_bus_type self }:dbus send_msg;
  	allow session_bus_type $1:dbus send_msg;
  
@@ -195,7 +195,7 @@ Index: refpolicy-2.20190201/policy/modules/services/dbus.if
  	allow $1 session_bus_type:fd use;
  ')
  
-@@ -246,7 +249,7 @@ interface(`dbus_spec_session_bus_client'
+@@ -257,7 +260,7 @@ interface(`dbus_spec_session_bus_client'
  	allow $2 { $1_dbusd_t self }:dbus send_msg;
  	allow $1_dbusd_t $2:dbus send_msg;
  
@@ -208,7 +208,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/cron.if
 +++ refpolicy-2.20190201/policy/modules/services/cron.if
-@@ -862,10 +862,31 @@ interface(`cron_read_system_job_tmp_file
+@@ -867,10 +867,31 @@ interface(`cron_read_system_job_tmp_file
  	')
  
  	files_search_tmp($1)
