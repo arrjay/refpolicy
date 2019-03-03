@@ -293,6 +293,13 @@ acpi = module
 apt = module
 
 # Layer: contrib
+# Module: aptcacher
+#
+# Advanced package tool.
+# 
+aptcacher = module
+
+# Layer: contrib
 # Module: arpwatch
 #
 # Ethernet activity monitor.
@@ -445,6 +452,13 @@ ccs = module
 # Record audio or data Compact Discs from a master.
 # 
 cdrecord = module
+
+# Layer: contrib
+# Module: certbot
+#
+# Certificate request daemon
+# 
+certbot = module
 
 # Layer: contrib
 # Module: certmaster
@@ -1341,6 +1355,13 @@ mediawiki = module
 # High-performance memory object caching system.
 # 
 memcached = module
+
+# Layer: contrib
+# Module: memlockd
+#
+# Daemon that locks files into RAM so they are fast when the paging thrashes
+# 
+memlockd = module
 
 # Layer: contrib
 # Module: milter

@@ -35,7 +35,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20190201/policy/modules/system/systemd.te
-@@ -350,6 +350,10 @@ optional_policy(`
+@@ -349,6 +349,10 @@ optional_policy(`
  	networkmanager_dbus_chat(systemd_hostnamed_t)
  ')
  

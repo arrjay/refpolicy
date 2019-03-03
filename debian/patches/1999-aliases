@@ -1,0 +1,56 @@
+Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20190201/policy/modules/apps/chromium.te
+@@ -50,6 +50,7 @@ type chromium_t;
+ domain_dyntrans_type(chromium_t)
+ 
+ type chromium_exec_t;
++typealias chromium_exec_t alias chrome_browser_exec_t;
+ application_domain(chromium_t, chromium_exec_t)
+ 
+ type chromium_naclhelper_t;
+@@ -58,6 +59,7 @@ application_domain(chromium_naclhelper_t
+ 
+ type chromium_sandbox_t;
+ type chromium_sandbox_exec_t;
++typealias chromium_sandbox_exec_t alias chrome_browser_sandbox_exec_t;
+ application_domain(chromium_sandbox_t, chromium_sandbox_exec_t)
+ 
+ type chromium_renderer_t;
+Index: refpolicy-2.20190201/policy/modules/kernel/devices.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/kernel/devices.te
++++ refpolicy-2.20190201/policy/modules/kernel/devices.te
+@@ -36,6 +36,7 @@ dev_node(agp_device_t)
+ # Type for /dev/apm_bios
+ #
+ type acpi_bios_t;
++typealias acpi_bios_t alias apm_bios_t;
+ dev_node(acpi_bios_t)
+ 
+ #
+Index: refpolicy-2.20190201/policy/modules/services/monit.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/monit.te
++++ refpolicy-2.20190201/policy/modules/services/monit.te
+@@ -34,6 +34,7 @@ type monit_log_t;
+ logging_log_file(monit_log_t)
+ 
+ type monit_runtime_t alias monit_pid_t;
++typealias monit_runtime_t alias monit_run_t;
+ files_pid_file(monit_runtime_t)
+ 
+ type monit_unit_t;
+Index: refpolicy-2.20190201/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20190201/policy/modules/system/systemd.te
+@@ -85,6 +85,7 @@ type systemd_hwdb_t;
+ files_type(systemd_hwdb_t);
+ 
+ type systemd_journal_t;
++typealias systemd_journal_t alias systemd_journal_log_t;
+ files_type(systemd_journal_t)
+ logging_log_file(systemd_journal_t)
+ 
