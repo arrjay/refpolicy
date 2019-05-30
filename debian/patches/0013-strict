@@ -105,6 +105,14 @@ Index: refpolicy-2.20190201/policy/modules/roles/sysadm.te
  	tboot_run_txtstat(sysadm_t, sysadm_r)
  ')
  
+@@ -1155,6 +1162,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	dev_rw_generic_usb_dev(sysadm_t)
+ 	usbmodules_run(sysadm_t, sysadm_r)
+ ')
+ 
 Index: refpolicy-2.20190201/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/xserver.if

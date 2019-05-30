@@ -165,7 +165,15 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  
  selinux_getattr_fs(systemd_coredump_t)
  
-@@ -483,6 +485,9 @@ init_stop_all_units(systemd_logind_t)
+@@ -476,6 +478,7 @@ init_dbus_send_script(systemd_logind_t)
+ init_get_all_units_status(systemd_logind_t)
+ init_get_system_status(systemd_logind_t)
+ init_read_utmp(systemd_logind_t)
++init_restart_units(systemd_logind_t)
+ init_service_start(systemd_logind_t)
+ init_service_status(systemd_logind_t)
+ init_start_all_units(systemd_logind_t)
+@@ -483,6 +486,9 @@ init_stop_all_units(systemd_logind_t)
  init_start_system(systemd_logind_t)
  init_stop_system(systemd_logind_t)
  
@@ -175,7 +183,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  locallogin_read_state(systemd_logind_t)
  
  seutil_libselinux_linked(systemd_logind_t)
-@@ -745,6 +750,7 @@ files_mounton_tmp(systemd_nspawn_t)
+@@ -745,6 +751,7 @@ files_mounton_tmp(systemd_nspawn_t)
  files_read_kernel_symbol_table(systemd_nspawn_t)
  files_setattr_pid_dirs(systemd_nspawn_t)
  
@@ -183,7 +191,30 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  fs_getattr_tmpfs(systemd_nspawn_t)
  fs_manage_tmpfs_chr_files(systemd_nspawn_t)
  fs_mount_tmpfs(systemd_nspawn_t)
-@@ -830,7 +836,7 @@ optional_policy(`
+@@ -784,8 +791,14 @@ tunable_policy(`systemd_nspawn_labeled_n
+ 	# manage etc symlinks for /etc/localtime
+ 	files_manage_etc_symlinks(systemd_nspawn_t)
+ 	files_mounton_pid_dirs(systemd_nspawn_t)
++	files_mounton_kernel_symbol_table(systemd_nspawn_t)
+ 	files_search_home(systemd_nspawn_t)
+ 
++	files_tmp_filetrans(systemd_nspawn_t, systemd_nspawn_var_run_t, fifo_file)
++	allow systemd_nspawn_t systemd_nspawn_var_run_t:fifo_file manage_fifo_file_perms;
++	fs_tmpfs_filetrans(systemd_nspawn_t, systemd_nspawn_var_run_t, sock_file)
++	allow systemd_nspawn_t systemd_nspawn_var_run_t:sock_file manage_sock_file_perms;
++
+ 	fs_getattr_cgroup(systemd_nspawn_t)
+ 	fs_manage_cgroup_dirs(systemd_nspawn_t)
+ 	fs_manage_tmpfs_dirs(systemd_nspawn_t)
+@@ -803,6 +816,7 @@ tunable_policy(`systemd_nspawn_labeled_n
+ 	selinux_getattr_fs(systemd_nspawn_t)
+ 	selinux_remount_fs(systemd_nspawn_t)
+ 	selinux_search_fs(systemd_nspawn_t)
++	selinux_mounton_fs(systemd_nspawn_t)
+ 
+ 	init_domtrans(systemd_nspawn_t)
+ 
+@@ -830,7 +844,7 @@ optional_policy(`
  # systemd_passwd_agent_t local policy
  #
  
@@ -192,7 +223,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  allow systemd_passwd_agent_t self:process { setfscreate setsockcreate signal };
  allow systemd_passwd_agent_t self:unix_dgram_socket create_socket_perms;
  
-@@ -840,14 +846,19 @@ manage_sock_files_pattern(systemd_passwd
+@@ -840,14 +854,19 @@ manage_sock_files_pattern(systemd_passwd
  manage_fifo_files_pattern(systemd_passwd_agent_t, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
  init_pid_filetrans(systemd_passwd_agent_t, systemd_passwd_var_run_t, { dir fifo_file file })
  
@@ -212,7 +243,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  files_read_etc_files(systemd_passwd_agent_t)
  
  fs_getattr_xattr_fs(systemd_passwd_agent_t)
-@@ -856,6 +867,7 @@ selinux_get_enforce_mode(systemd_passwd_
+@@ -856,6 +875,7 @@ selinux_get_enforce_mode(systemd_passwd_
  selinux_getattr_fs(systemd_passwd_agent_t)
  
  term_read_console(systemd_passwd_agent_t)
@@ -220,7 +251,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  
  auth_use_nsswitch(systemd_passwd_agent_t)
  
-@@ -892,6 +904,8 @@ optional_policy(`
+@@ -892,6 +912,8 @@ optional_policy(`
  # Rfkill local policy
  #
  
@@ -229,6 +260,15 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  manage_dirs_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
  manage_files_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
  init_var_lib_filetrans(systemd_rfkill_t, systemd_rfkill_var_lib_t, dir)
+@@ -989,6 +1011,8 @@ allow systemd_tmpfiles_t systemd_journal
+ allow systemd_tmpfiles_t systemd_tmpfiles_conf_t:dir list_dir_perms;
+ allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:file read_file_perms;
+ 
++allow systemd_tmpfiles_t systemd_nspawn_var_run_t:fifo_file unlink;
++
+ kernel_getattr_proc(systemd_tmpfiles_t)
+ kernel_read_kernel_sysctls(systemd_tmpfiles_t)
+ kernel_read_network_state(systemd_tmpfiles_t)
 Index: refpolicy-2.20190201/policy/modules/system/authlogin.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/authlogin.te
@@ -303,7 +343,7 @@ Index: refpolicy-2.20190201/policy/modules/admin/apt.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/admin/apt.te
 +++ refpolicy-2.20190201/policy/modules/admin/apt.te
-@@ -148,7 +148,7 @@ optional_policy(`
+@@ -148,11 +148,15 @@ optional_policy(`
  
  optional_policy(`
  	dpkg_read_db(apt_t)
@@ -312,6 +352,24 @@ Index: refpolicy-2.20190201/policy/modules/admin/apt.te
  	dpkg_lock_db(apt_t)
  ')
  
+ optional_policy(`
++	networkmanager_dbus_chat(apt_t)
++')
++
++optional_policy(`
+ 	nis_use_ypbind(apt_t)
+ ')
+ 
+@@ -167,5 +171,9 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_dbus_chat_logind(apt_t)
++')
++
++optional_policy(`
+ 	unconfined_domain(apt_t)
+ ')
 Index: refpolicy-2.20190201/policy/modules/kernel/corecommands.fc
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/kernel/corecommands.fc
@@ -359,7 +417,15 @@ Index: refpolicy-2.20190201/policy/modules/system/modutils.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/modutils.te
 +++ refpolicy-2.20190201/policy/modules/system/modutils.te
-@@ -138,6 +138,8 @@ optional_policy(`
+@@ -90,6 +90,7 @@ domain_signal_all_domains(kmod_t)
+ domain_use_interactive_fds(kmod_t)
+ 
+ files_read_kernel_modules(kmod_t)
++files_read_kernel_symbol_table(kmod_t)
+ files_read_etc_runtime_files(kmod_t)
+ files_read_etc_files(kmod_t)
+ files_read_usr_files(kmod_t)
+@@ -138,6 +139,8 @@ optional_policy(`
  	dpkg_manage_script_tmp_files(kmod_t)
  	dpkg_map_script_tmp_files(kmod_t)
  	dpkg_read_script_tmp_symlinks(kmod_t)
@@ -530,7 +596,15 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.te
  
  allow httpd_t httpd_suexec_exec_t:file read_file_perms;
  
-@@ -447,6 +449,7 @@ fs_tmpfs_filetrans(httpd_t, httpd_tmpfs_
+@@ -433,6 +435,7 @@ allow httpd_t httpd_sys_script_t:process
+ 
+ manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
+ manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
++allow httpd_t httpd_tmp_t:file map;
+ manage_sock_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
+ manage_lnk_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
+ files_tmp_filetrans(httpd_t, httpd_tmp_t, { file dir lnk_file sock_file })
+@@ -447,6 +450,7 @@ fs_tmpfs_filetrans(httpd_t, httpd_tmpfs_
  
  manage_dirs_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
  manage_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
@@ -538,7 +612,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.te
  manage_lnk_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
  files_var_lib_filetrans(httpd_t, httpd_var_lib_t, { dir file })
  
-@@ -468,6 +471,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
+@@ -468,6 +472,7 @@ domtrans_pattern(httpd_t, httpd_rotatelo
  domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
  
  kernel_read_kernel_sysctls(httpd_t)
@@ -546,7 +620,15 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.te
  kernel_read_vm_sysctls(httpd_t)
  kernel_read_vm_overcommit_sysctl(httpd_t)
  kernel_read_network_state(httpd_t)
-@@ -504,11 +508,13 @@ fs_search_auto_mountpoints(httpd_t)
+@@ -495,6 +500,7 @@ dev_read_sysfs(httpd_t)
+ dev_read_rand(httpd_t)
+ dev_read_urand(httpd_t)
+ dev_rw_crypto(httpd_t)
++dev_rwx_zero(httpd_t)
+ 
+ domain_use_interactive_fds(httpd_t)
+ 
+@@ -504,11 +510,13 @@ fs_search_auto_mountpoints(httpd_t)
  fs_getattr_all_fs(httpd_t)
  fs_read_anon_inodefs_files(httpd_t)
  fs_rw_inherited_hugetlbfs_files(httpd_t)
@@ -560,7 +642,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.te
  files_list_mnt(httpd_t)
  files_search_spool(httpd_t)
  files_read_var_symlinks(httpd_t)
-@@ -517,6 +523,7 @@ files_search_home(httpd_t)
+@@ -517,6 +525,7 @@ files_search_home(httpd_t)
  files_getattr_home_dir(httpd_t)
  files_read_etc_runtime_files(httpd_t)
  files_read_var_lib_symlinks(httpd_t)
@@ -568,7 +650,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.te
  
  auth_use_nsswitch(httpd_t)
  
-@@ -634,7 +641,7 @@ tunable_policy(`httpd_enable_ftp_server'
+@@ -634,7 +643,7 @@ tunable_policy(`httpd_enable_ftp_server'
  ')
  
  tunable_policy(`httpd_enable_homedirs',`
@@ -577,7 +659,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.te
  ')
  
  tunable_policy(`httpd_enable_homedirs && use_nfs_home_dirs',`
-@@ -917,6 +924,7 @@ optional_policy(`
+@@ -917,6 +926,7 @@ optional_policy(`
  #
  
  read_files_pattern(httpd_helper_t, httpd_config_t, httpd_config_t)
@@ -589,7 +671,14 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/apache.if
 +++ refpolicy-2.20190201/policy/modules/services/apache.if
-@@ -80,7 +80,7 @@ template(`apache_content_template',`
+@@ -74,13 +74,14 @@ template(`apache_content_template',`
+ 
+ 	manage_dirs_pattern(httpd_$1_script_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
+ 	manage_files_pattern(httpd_$1_script_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
++	allow httpd_$1_script_t httpd_$1_rw_content_t:file map;
+ 	manage_lnk_files_pattern(httpd_$1_script_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
+ 	manage_fifo_files_pattern(httpd_$1_script_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
+ 	manage_sock_files_pattern(httpd_$1_script_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
  	files_tmp_filetrans(httpd_$1_script_t, httpd_$1_rw_content_t, { dir file lnk_file sock_file fifo_file })
  
  	allow { httpd_t httpd_suexec_t } httpd_$1_content_t:dir list_dir_perms;
@@ -598,7 +687,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.if
  	allow { httpd_t httpd_suexec_t } httpd_$1_content_t:lnk_file read_lnk_file_perms;
  
  	tunable_policy(`allow_httpd_$1_script_anon_write',`
-@@ -90,6 +90,7 @@ template(`apache_content_template',`
+@@ -90,6 +91,7 @@ template(`apache_content_template',`
  	tunable_policy(`httpd_builtin_scripting',`
  		manage_dirs_pattern(httpd_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
  		manage_files_pattern(httpd_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
@@ -606,7 +695,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.if
  		manage_fifo_files_pattern(httpd_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
  		manage_lnk_files_pattern(httpd_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
  		manage_sock_files_pattern(httpd_t, httpd_$1_rw_content_t, httpd_$1_rw_content_t)
-@@ -1028,6 +1029,7 @@ interface(`apache_manage_sys_rw_content'
+@@ -1028,6 +1030,7 @@ interface(`apache_manage_sys_rw_content'
  	apache_search_sys_content($1)
  	manage_dirs_pattern($1, httpd_sys_rw_content_t, httpd_sys_rw_content_t)
  	manage_files_pattern($1,httpd_sys_rw_content_t, httpd_sys_rw_content_t)
@@ -614,7 +703,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.if
  	manage_lnk_files_pattern($1, httpd_sys_rw_content_t, httpd_sys_rw_content_t)
  ')
  
-@@ -1155,6 +1157,25 @@ interface(`apache_append_squirrelmail_da
+@@ -1155,6 +1158,25 @@ interface(`apache_append_squirrelmail_da
  ')
  
  ########################################
@@ -656,15 +745,16 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.fc
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/apache.fc
 +++ refpolicy-2.20190201/policy/modules/services/apache.fc
-@@ -78,6 +78,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
+@@ -78,6 +78,8 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
  /usr/sbin/httpd\.event					--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/httpd(\.worker)?				--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/lighttpd					--	gen_context(system_u:object_r:httpd_exec_t,s0)
 +/usr/sbin/php7..-fpm					--	gen_context(system_u:object_r:httpd_exec_t,s0)
++/usr/sbin/php-fpm[^/]+					--	gen_context(system_u:object_r:httpd_exec_t,s0)
  /usr/sbin/rotatelogs					--	gen_context(system_u:object_r:httpd_rotatelogs_exec_t,s0)
  /usr/sbin/suexec					--	gen_context(system_u:object_r:httpd_suexec_exec_t,s0)
  /usr/sbin/wigwam					--	gen_context(system_u:object_r:httpd_exec_t,s0)
-@@ -138,7 +139,7 @@ ifdef(`distro_suse',`
+@@ -138,7 +140,7 @@ ifdef(`distro_suse',`
  /var/lib/php/session(/.*)?					gen_context(system_u:object_r:httpd_var_run_t,s0)
  /var/lib/pootle/po(/.*)?					gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/rt3/data/RT-Shredder(/.*)?				gen_context(system_u:object_r:httpd_var_lib_t,s0)
@@ -673,7 +763,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.fc
  /var/lib/stickshift/.httpd.d(/.*)?				gen_context(system_u:object_r:httpd_config_t,s0)
  /var/lib/svn(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
  /var/lib/trac(/.*)?						gen_context(system_u:object_r:httpd_sys_content_t,s0)
-@@ -163,6 +164,7 @@ ifdef(`distro_suse',`
+@@ -163,6 +165,7 @@ ifdef(`distro_suse',`
  /var/log/roundcubemail(/.*)?					gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/suphp\.log.*					--	gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/z-push(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -681,7 +771,7 @@ Index: refpolicy-2.20190201/policy/modules/services/apache.fc
  
  /run/apache.*							gen_context(system_u:object_r:httpd_var_run_t,s0)
  /run/cherokee\.pid					--	gen_context(system_u:object_r:httpd_var_run_t,s0)
-@@ -171,6 +173,7 @@ ifdef(`distro_suse',`
+@@ -171,6 +174,7 @@ ifdef(`distro_suse',`
  /run/httpd.*							gen_context(system_u:object_r:httpd_var_run_t,s0)
  /run/lighttpd(/.*)?						gen_context(system_u:object_r:httpd_var_run_t,s0)
  /run/mod_.*							gen_context(system_u:object_r:httpd_var_run_t,s0)
@@ -823,7 +913,15 @@ Index: refpolicy-2.20190201/policy/modules/services/postfix.te
  	dbus_send_system_bus(postfix_cleanup_t)
  	dbus_system_bus_client(postfix_cleanup_t)
  	init_dbus_chat(postfix_cleanup_t)
-@@ -832,6 +837,10 @@ optional_policy(`
+@@ -653,6 +658,7 @@ mta_rw_user_mail_stream_sockets(postfix_
+ 
+ optional_policy(`
+ 	apache_dontaudit_rw_fifo_file(postfix_postdrop_t)
++	apache_use_fds(postfix_postdrop_t)
+ ')
+ 
+ optional_policy(`
+@@ -832,6 +838,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1355,7 +1453,15 @@ Index: refpolicy-2.20190201/policy/modules/services/mysql.te
  files_tmp_filetrans(mysqld_t, mysqld_tmp_t, { file dir })
  
  manage_dirs_pattern(mysqld_t, mysqld_var_run_t, mysqld_var_run_t)
-@@ -125,6 +127,7 @@ domain_use_interactive_fds(mysqld_t)
+@@ -102,6 +104,7 @@ kernel_read_kernel_sysctls(mysqld_t)
+ kernel_read_network_state(mysqld_t)
+ kernel_read_system_state(mysqld_t)
+ kernel_read_vm_sysctls(mysqld_t)
++kernel_read_vm_overcommit_sysctl(mysqld_t)
+ 
+ corenet_all_recvfrom_unlabeled(mysqld_t)
+ corenet_all_recvfrom_netlabel(mysqld_t)
+@@ -125,6 +128,7 @@ domain_use_interactive_fds(mysqld_t)
  
  fs_getattr_all_fs(mysqld_t)
  fs_search_auto_mountpoints(mysqld_t)
@@ -1363,7 +1469,7 @@ Index: refpolicy-2.20190201/policy/modules/services/mysql.te
  fs_rw_hugetlbfs_files(mysqld_t)
  
  files_read_etc_runtime_files(mysqld_t)
-@@ -134,6 +137,7 @@ auth_use_nsswitch(mysqld_t)
+@@ -134,6 +138,7 @@ auth_use_nsswitch(mysqld_t)
  
  logging_send_syslog_msg(mysqld_t)
  
@@ -1404,6 +1510,14 @@ Index: refpolicy-2.20190201/policy/modules/admin/logrotate.te
  ')
  
  optional_policy(`
+@@ -245,6 +246,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	samba_domtrans_smbcontrol(logrotate_t)
+ 	samba_exec_log(logrotate_t)
+ ')
+ 
 Index: refpolicy-2.20190201/policy/modules/services/l2tp.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/l2tp.te
@@ -1543,13 +1657,14 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/samba.te
 +++ refpolicy-2.20190201/policy/modules/services/samba.te
-@@ -202,11 +202,13 @@ files_pid_file(winbind_var_run_t)
+@@ -202,11 +202,14 @@ files_pid_file(winbind_var_run_t)
  
  allow samba_net_t self:capability { dac_override dac_read_search sys_chroot sys_nice };
  allow samba_net_t self:capability2 block_suspend;
 -allow samba_net_t self:process { getsched setsched };
 +allow samba_net_t self:process { sigkill getsched setsched };
  allow samba_net_t self:unix_stream_socket { accept listen };
++allow samba_net_t self:fifo_file rw_file_perms;
  
  allow samba_net_t samba_etc_t:file read_file_perms;
  
@@ -1558,7 +1673,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  manage_files_pattern(samba_net_t, samba_etc_t, samba_secrets_t)
  filetrans_pattern(samba_net_t, samba_etc_t, samba_secrets_t, file)
  
-@@ -216,6 +218,7 @@ files_tmp_filetrans(samba_net_t, samba_n
+@@ -216,6 +219,7 @@ files_tmp_filetrans(samba_net_t, samba_n
  
  manage_dirs_pattern(samba_net_t, samba_var_t, samba_var_t)
  manage_files_pattern(samba_net_t, samba_var_t, samba_var_t)
@@ -1566,7 +1681,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  manage_lnk_files_pattern(samba_net_t, samba_var_t, samba_var_t)
  files_var_filetrans(samba_net_t, samba_var_t, dir, "samba")
  
-@@ -303,6 +306,7 @@ allow smbd_t samba_share_t:filesystem {
+@@ -303,6 +307,7 @@ allow smbd_t samba_share_t:filesystem {
  
  manage_dirs_pattern(smbd_t, samba_var_t, samba_var_t)
  manage_files_pattern(smbd_t, samba_var_t, samba_var_t)
@@ -1574,7 +1689,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  manage_lnk_files_pattern(smbd_t, samba_var_t, samba_var_t)
  manage_sock_files_pattern(smbd_t, samba_var_t, samba_var_t)
  files_var_filetrans(smbd_t, samba_var_t, dir, "samba")
-@@ -313,6 +317,7 @@ files_tmp_filetrans(smbd_t, smbd_tmp_t,
+@@ -313,6 +318,7 @@ files_tmp_filetrans(smbd_t, smbd_tmp_t,
  
  manage_dirs_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
  manage_files_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
@@ -1582,7 +1697,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  manage_sock_files_pattern(smbd_t, samba_var_run_t, samba_var_run_t)
  files_pid_filetrans(smbd_t, samba_var_run_t, { dir file })
  
-@@ -320,6 +325,7 @@ allow smbd_t winbind_var_run_t:sock_file
+@@ -320,6 +326,7 @@ allow smbd_t winbind_var_run_t:sock_file
  stream_connect_pattern(smbd_t, winbind_var_run_t, winbind_var_run_t, winbind_t)
  
  stream_connect_pattern(smbd_t, samba_var_run_t, samba_var_run_t, nmbd_t)
@@ -1590,7 +1705,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  
  kernel_getattr_core_if(smbd_t)
  kernel_getattr_message_if(smbd_t)
-@@ -487,6 +493,11 @@ optional_policy(`
+@@ -487,6 +494,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1602,7 +1717,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  	kerberos_read_keytab(smbd_t)
  	kerberos_use(smbd_t)
  ')
-@@ -531,6 +542,7 @@ allow nmbd_t self:unix_stream_socket { a
+@@ -531,6 +543,7 @@ allow nmbd_t self:unix_stream_socket { a
  
  manage_dirs_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
  manage_files_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
@@ -1610,7 +1725,7 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  manage_sock_files_pattern(nmbd_t, samba_var_run_t, samba_var_run_t)
  files_pid_filetrans(nmbd_t, samba_var_run_t, { dir file sock_file })
  
-@@ -543,7 +555,7 @@ create_files_pattern(nmbd_t, samba_log_t
+@@ -543,7 +556,7 @@ create_files_pattern(nmbd_t, samba_log_t
  setattr_files_pattern(nmbd_t, samba_log_t, samba_log_t)
  
  manage_files_pattern(nmbd_t, samba_var_t, samba_var_t)
@@ -1619,6 +1734,15 @@ Index: refpolicy-2.20190201/policy/modules/services/samba.te
  manage_lnk_files_pattern(nmbd_t, samba_var_t, samba_var_t)
  manage_sock_files_pattern(nmbd_t, samba_var_t, samba_var_t)
  files_var_filetrans(nmbd_t, samba_var_t, dir, "nmbd")
+@@ -631,6 +644,8 @@ allow smbcontrol_t self:process { signal
+ 
+ allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
+ read_files_pattern(smbcontrol_t, samba_var_run_t, samba_var_run_t)
++allow smbcontrol_t samba_var_run_t:dir rw_dir_perms;
++init_use_fds(smbcontrol_t)
+ 
+ manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
+ 
 Index: refpolicy-2.20190201/policy/modules/services/samba.if
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/samba.if
@@ -1723,7 +1847,17 @@ Index: refpolicy-2.20190201/policy/modules/system/init.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/init.te
 +++ refpolicy-2.20190201/policy/modules/system/init.te
-@@ -990,6 +990,7 @@ ifdef(`init_systemd',`
+@@ -224,7 +224,8 @@ ifdef(`init_systemd',`
+ 	allow init_t self:unix_stream_socket { create_stream_socket_perms connectto };
+ 	allow init_t self:netlink_audit_socket { nlmsg_relay create_socket_perms };
+ 	allow init_t self:netlink_selinux_socket create_socket_perms;
+-	allow init_t self:system { status reboot halt reload };
++	# why does kernel 4.9 make it need start and stop while 4.19 does not?
++	allow init_t self:system { start stop status reboot halt reload };
+ 	# Until systemd is fixed
+ 	allow init_t self:udp_socket create_socket_perms;
+ 	allow init_t self:netlink_route_socket create_netlink_socket_perms;
+@@ -990,6 +991,7 @@ ifdef(`init_systemd',`
  	init_get_all_units_status(initrc_t)
  	init_manage_var_lib_files(initrc_t)
  	init_rw_stream_sockets(initrc_t)
@@ -1731,3 +1865,199 @@ Index: refpolicy-2.20190201/policy/modules/system/init.te
  
  	# Create /etc/audit.rules.prev after firstboot remediation
  	logging_manage_audit_config(initrc_t)
+Index: refpolicy-2.20190201/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20190201/policy/modules/roles/sysadm.te
+@@ -499,6 +499,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	init_dbus_chat(sysadm_t)
++')
++
++optional_policy(`
+ 	inn_admin(sysadm_t, sysadm_r)
+ ')
+ 
+Index: refpolicy-2.20190201/policy/modules/kernel/domain.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/kernel/domain.if
++++ refpolicy-2.20190201/policy/modules/kernel/domain.if
+@@ -631,7 +631,7 @@ interface(`domain_read_all_domains_state
+ 
+ ########################################
+ ## <summary>
+-##	Get the attributes of all domains of all domains.
++##	Get the attributes of all domains
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+Index: refpolicy-2.20190201/policy/modules/system/logging.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/logging.te
++++ refpolicy-2.20190201/policy/modules/system/logging.te
+@@ -543,6 +543,7 @@ ifdef(`init_systemd',`
+ 
+ 	domain_getattr_all_domains(syslogd_t)
+ 	domain_read_all_domains_state(syslogd_t)
++	domain_signull_all_domains(syslogd_t)
+ 
+ 	init_create_runtime_dirs(syslogd_t)
+ 	init_daemon_pid_file(syslogd_var_run_t, dir, "syslogd")
+Index: refpolicy-2.20190201/policy/modules/kernel/selinux.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/kernel/selinux.if
++++ refpolicy-2.20190201/policy/modules/kernel/selinux.if
+@@ -159,6 +159,24 @@ interface(`selinux_unmount_fs',`
+ 
+ ########################################
+ ## <summary>
++##	Mount on the selinuxfs filesystem.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`selinux_mounton_fs',`
++	gen_require(`
++		type security_t;
++	')
++
++	allow $1 security_t:dir mounton;
++')
++
++########################################
++## <summary>
+ ##	Get the attributes of the selinuxfs filesystem
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20190201/policy/modules/kernel/terminal.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/kernel/terminal.te
++++ refpolicy-2.20190201/policy/modules/kernel/terminal.te
+@@ -31,6 +31,9 @@ fs_associate_tmpfs(devpts_t)
+ fs_xattr_type(devpts_t)
+ fs_use_trans devpts gen_context(system_u:object_r:devpts_t,s0);
+ 
++# for systemd-nspawn
++allow console_device_t devpts_t:filesystem associate;
++
+ #
+ # devtty_t is the type of /dev/tty.
+ #
+Index: refpolicy-2.20190201/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20190201/policy/modules/kernel/files.if
+@@ -5265,6 +5265,25 @@ interface(`files_delete_kernel_symbol_ta
+ 
+ ########################################
+ ## <summary>
++##	Delete a system.map in the /boot directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_mounton_kernel_symbol_table',`
++	gen_require(`
++		type boot_t, system_map_t;
++	')
++
++	allow $1 boot_t:dir list_dir_perms;
++	allow $1 system_map_t:file mounton;
++')
++
++########################################
++## <summary>
+ ##	Search the contents of /var.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20190201/policy/modules/services/cups.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/cups.te
++++ refpolicy-2.20190201/policy/modules/services/cups.te
+@@ -111,11 +111,12 @@ ifdef(`enable_mls',`
+ 
+ allow cupsd_t self:capability { chown dac_override dac_override dac_read_search fowner fsetid ipc_lock kill setgid setuid sys_admin sys_rawio sys_resource sys_tty_config };
+ dontaudit cupsd_t self:capability { net_admin sys_tty_config };
+-allow cupsd_t self:capability2 block_suspend;
++allow cupsd_t self:capability2 { block_suspend wake_alarm };
+ allow cupsd_t self:process { getpgid setpgid setsched signal_perms };
+ allow cupsd_t self:fifo_file rw_fifo_file_perms;
+ allow cupsd_t self:unix_stream_socket { accept connectto listen };
+ allow cupsd_t self:netlink_selinux_socket create_socket_perms;
++allow cupsd_t self:netlink_kobject_uevent_socket { bind create getattr read setopt };
+ allow cupsd_t self:shm create_shm_perms;
+ allow cupsd_t self:sem create_sem_perms;
+ allow cupsd_t self:tcp_socket { accept listen };
+@@ -257,6 +258,7 @@ auth_use_nsswitch(cupsd_t)
+ 
+ libs_read_lib_files(cupsd_t)
+ libs_exec_lib_files(cupsd_t)
++libs_legacy_use_ld_so(cupsd_t)
+ 
+ logging_send_audit_msgs(cupsd_t)
+ logging_send_syslog_msg(cupsd_t)
+@@ -346,6 +348,8 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	udev_read_db(cupsd_t)
++	# for /run/udev/data
++	udev_read_pid_files(cupsd_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20190201/policy/modules/services/bluetooth.fc
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/bluetooth.fc
++++ refpolicy-2.20190201/policy/modules/services/bluetooth.fc
+@@ -18,6 +18,8 @@
+ # Systemd unit file
+ /usr/lib/systemd/system/[^/]*bluetooth.* -- gen_context(system_u:object_r:bluetooth_unit_t,s0)
+ 
++/usr/lib/bluetooth/bluetoothd	-- gen_context(system_u:object_r:bluetooth_exec_t,s0)
++
+ /usr/sbin/bluetoothd	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
+ /usr/sbin/hciattach	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
+ /usr/sbin/hcid	--	gen_context(system_u:object_r:bluetooth_exec_t,s0)
+Index: refpolicy-2.20190201/policy/modules/services/colord.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/colord.te
++++ refpolicy-2.20190201/policy/modules/services/colord.te
+@@ -31,6 +31,8 @@ allow colord_t self:netlink_kobject_ueve
+ allow colord_t self:tcp_socket { accept listen };
+ allow colord_t self:shm create_shm_perms;
+ 
++can_exec(colord_t, colord_exec_t)
++
+ manage_dirs_pattern(colord_t, colord_tmp_t, colord_tmp_t)
+ manage_files_pattern(colord_t, colord_tmp_t, colord_tmp_t)
+ files_tmp_filetrans(colord_t, colord_tmp_t, { file dir })
+@@ -131,6 +133,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	snmp_read_snmp_var_lib_files(colord_t)
++')
++
++optional_policy(`
+ 	sysnet_exec_ifconfig(colord_t)
+ ')
+ 
+@@ -140,6 +146,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	unconfined_dbus_send(colord_t)
++')
++
++optional_policy(`
+ 	xserver_read_xdm_lib_files(colord_t)
+ 	xserver_use_xdm_fds(colord_t)
+ ')

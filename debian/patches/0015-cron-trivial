@@ -18,11 +18,11 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
 -		type user_cron_spool_t, crond_t;
 +		type cronjob_t;
 +		type crontab_exec_t, crond_t;
-+		type crontab_t, user_cron_spool_t;
++		type crontab_t, user_cron_spool_t, crond_tmp_t;
  		bool cron_userdomain_transition;
  	')
  
-@@ -68,47 +69,48 @@ interface(`cron_role',`
+@@ -68,47 +69,49 @@ interface(`cron_role',`
  	# Declarations
  	#
  
@@ -64,6 +64,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  
 -		allow $2 user_cron_spool_t:file entrypoint;
 +		allow $2_t user_cron_spool_t:file entrypoint;
++		allow $2_t crond_tmp_t:file rw_inherited_file_perms;
  
 -		allow $2 crond_t:fifo_file rw_fifo_file_perms;
 +		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
@@ -91,7 +92,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  	')
  
  	optional_policy(`
-@@ -118,7 +120,7 @@ interface(`cron_role',`
+@@ -118,7 +121,7 @@ interface(`cron_role',`
  
  		dbus_stub(cronjob_t)
  
@@ -100,7 +101,32 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  	')
  ')
  
-@@ -878,6 +880,24 @@ interface(`cron_dontaudit_append_system_
+@@ -746,6 +749,24 @@ interface(`cron_rw_tmp_files',`
+ 
+ ########################################
+ ## <summary>
++##      Read and write inherited crond temporary files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`cron_rw_inherited_tmp_files',`
++	gen_require(`
++		type crond_tmp_t;
++	')
++
++	allow $1 crond_tmp_t:file rw_inherited_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Read system cron job lib files.
+ ## </summary>
+ ## <param name="domain">
+@@ -878,6 +899,24 @@ interface(`cron_dontaudit_append_system_
  ')
  
  ########################################

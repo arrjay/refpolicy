@@ -1,3 +1,10 @@
+refpolicy (2:2.20190201-4) unstable; urgency=medium
+
+  * Policy update, lots of little things and allows the signull access that
+    systemd-journal from the latest systemd wants.
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 30 May 2019 10:28:24 +1000
+
 refpolicy (2:2.20190201-3) unstable; urgency=medium
 
   * Added policy for apt-cacher and apt-cacher-ng

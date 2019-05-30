@@ -16,14 +16,33 @@ Index: refpolicy-2.20190201/policy/modules/services/aptcacher.if
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20190201/policy/modules/services/aptcacher.if
-@@ -0,0 +1,2 @@
+@@ -0,0 +1,21 @@
 +## <summary>apt-cacher, cache for Debian APT repositories.</summary>
 +
++######################################
++## <summary>
++##	read aptcacher config
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to read it.
++##	</summary>
++## </param>
++#
++interface(`aptcacher_read_config',`
++	gen_require(`
++		type aptcacher_etc_t;
++	')
++
++	files_search_etc($1)
++	allow $1 aptcacher_etc_t:dir list_dir_perms;
++	allow $1 aptcacher_etc_t:file mmap_read_file_perms;
++')
 Index: refpolicy-2.20190201/policy/modules/services/aptcacher.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20190201/policy/modules/services/aptcacher.te
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,70 @@
 +policy_module(aptcacher, 1.0.0)
 +
 +########################################
@@ -84,9 +103,11 @@ Index: refpolicy-2.20190201/policy/modules/services/aptcacher.te
 +allow aptcacher_t aptcacher_log_t:file manage_file_perms;
 +
 +files_search_var_lib(aptcacher_t)
-+allow aptcacher_t aptcacher_var_lib_t:dir rw_dir_perms;
++allow aptcacher_t aptcacher_var_lib_t:dir manage_dir_perms;
 +allow aptcacher_t aptcacher_var_lib_t:file { map manage_file_perms };
 +allow aptcacher_t aptcacher_var_lib_t:lnk_file manage_lnk_file_perms;
++
++kernel_search_fs_sysctls(aptcacher_t)
 +
 +miscfiles_read_generic_certs(aptcacher_t)
 +miscfiles_read_localization(aptcacher_t)
@@ -104,3 +125,19 @@ Index: refpolicy-2.20190201/policy/modules/kernel/corenetwork.te.in
  network_port(armtechdaemon, tcp,9292,s0, udp,9292,s0)
  network_port(asterisk, tcp,1720,s0, udp,2427,s0, udp,2727,s0, udp,4569,s0)
  network_port(audit, tcp,60,s0)
+Index: refpolicy-2.20190201/policy/modules/services/cron.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/cron.te
++++ refpolicy-2.20190201/policy/modules/services/cron.te
+@@ -344,6 +344,11 @@ ifdef(`distro_debian',`
+ 	')
+ 
+ 	optional_policy(`
++		aptcacher_read_config(system_cronjob_t)
++		corenet_tcp_connect_aptcacher_port(system_cronjob_t)
++	')
++
++	optional_policy(`
+ 		logwatch_search_cache_dir(crond_t)
+ 	')
+ ')

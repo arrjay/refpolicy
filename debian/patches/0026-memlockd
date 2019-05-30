@@ -15,7 +15,7 @@ Index: refpolicy-2.20190201/policy/modules/services/memlockd.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20190201/policy/modules/services/memlockd.te
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,42 @@
 +policy_module(memlockd, 1.0.0)
 +
 +########################################
@@ -32,12 +32,13 @@ Index: refpolicy-2.20190201/policy/modules/services/memlockd.te
 +# Local policy
 +#
 +
-+allow memlockd_t self:capability { setgid setuid };
++allow memlockd_t self:capability { setgid setuid ipc_lock };
 +allow memlockd_t self:fifo_file rw_file_perms;
 +allow memlockd_t self:unix_dgram_socket { create connect };
 +
 +# cache /etc/shadow too
 +auth_read_shadow(memlockd_t)
++auth_map_shadow(memlockd_t)
 +
 +sysnet_map_config(memlockd_t)
 +files_read_etc_files(memlockd_t)
@@ -93,3 +94,31 @@ Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.if
  ##	Do not audit attempts to read network config files.
  ## </summary>
  ## <param name="domain">
+Index: refpolicy-2.20190201/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20190201/policy/modules/system/authlogin.if
+@@ -552,6 +552,23 @@ interface(`auth_read_shadow',`
+ 
+ ########################################
+ ## <summary>
++##	Map the shadow passwords file (/etc/shadow)
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_map_shadow',`
++	gen_require(`
++		type shadow_t;
++	')
++	allow $1 shadow_t:file map;
++')
++
++########################################
++## <summary>
+ ##	Pass shadow assertion for reading.
+ ## </summary>
+ ## <desc>
