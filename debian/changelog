@@ -2,8 +2,10 @@ refpolicy (2:2.20190201-5) UNRELEASED; urgency=medium
 
   * Team upload.
   * Bump Standards-Version to 4.4.0 (no further changes)
+  * debian/control: Remove the package (-1) revision from the
+    {build-}dependencies, to please lintian
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 14:55:10 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 14:56:51 +0200
 
 refpolicy (2:2.20190201-4) unstable; urgency=medium
 
