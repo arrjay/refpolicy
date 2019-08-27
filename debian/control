@@ -6,7 +6,7 @@ Section: admin
 Homepage: https://github.com/SELinuxProject/refpolicy/releases
 Maintainer: Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>
 Uploaders: Russell Coker <russell@coker.com.au>
-Standards-Version: 4.1.4
+Standards-Version: 4.4.0
 Build-Depends: debhelper (>= 11)
 Build-Depends-Indep: bzip2,
                      checkpolicy (>= 2.8-1),
