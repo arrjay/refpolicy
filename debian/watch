@@ -1,5 +1,4 @@
-version=3
+version=4
 
-opts="uversionmangle=s/^2./2./" \
-https://github.com/TresysTechnology/refpolicy/wiki/DownloadRelease \
- (?:.*)/refpolicy/files/refpolicy-(.*)\.tar\.bz2
+https://github.com/SELinuxProject/refpolicy/releases \
+ /SELinuxProject/refpolicy/releases/download/(?:.*)/@PACKAGE@@ANY_VERSION@@ARCHIVE_EXT@

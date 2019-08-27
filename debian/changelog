@@ -8,8 +8,9 @@ refpolicy (2:2.20190201-5) UNRELEASED; urgency=medium
     for a long time, not sure why these overrides were reintroduced
   * debian/rules: Do not call dpkg-parsechangelog explicitly to get a
     reproductible build time but rely on SOURCE_DATE_EPOCH variable
+  * debian/watch: Fix the URL now that the project has been relocated
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:10:05 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:50:12 +0200
 
 refpolicy (2:2.20190201-4) unstable; urgency=medium
 
