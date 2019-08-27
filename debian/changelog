@@ -4,8 +4,10 @@ refpolicy (2:2.20190201-5) UNRELEASED; urgency=medium
   * Bump Standards-Version to 4.4.0 (no further changes)
   * debian/control: Remove the package (-1) revision from the
     {build-}dependencies, to please lintian
+  * Drop debian/source/lintian-overrides, the postrm perl scripts are gone
+    for a long time, not sure why these overrides were reintroduced
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 14:56:51 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:03:01 +0200
 
 refpolicy (2:2.20190201-4) unstable; urgency=medium
 
