@@ -1,4 +1,4 @@
-policy_module(udev, 1.23.0)
+policy_module(udev, 1.25.0)
 
 ########################################
 #
@@ -96,9 +96,11 @@ kernel_rw_unix_dgram_sockets(udev_t)
 kernel_dgram_send(udev_t)
 kernel_signal(udev_t)
 kernel_search_debugfs(udev_t)
+kernel_search_key(udev_t)
 
 #https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235182
 kernel_rw_net_sysctls(udev_t)
+kernel_read_crypto_sysctls(udev_t)
 kernel_read_network_state(udev_t)
 kernel_read_software_raid_state(udev_t)
 kernel_dontaudit_search_unlabeled(udev_t)
@@ -246,6 +248,7 @@ ifdef(`init_systemd',`
 	init_get_generic_units_status(udev_t)
 	init_stream_connect(udev_t)
 
+	systemd_read_hwdb(udev_t)
 	systemd_read_logind_sessions_files(udev_t)
 	systemd_read_logind_pids(udev_t)
 
@@ -303,10 +306,6 @@ optional_policy(`
 ')
 
 optional_policy(`
-	lvm_domtrans(udev_t)
-')
-
-optional_policy(`
 	fstools_domtrans(udev_t)
 ')
 
@@ -322,6 +321,10 @@ optional_policy(`
 	hotplug_read_config(udev_t)
 	# usb.agent searches /var/run/usb
 	hotplug_search_pids(udev_t)
+')
+
+optional_policy(`
+	iptables_domtrans(udev_t)
 ')
 
 optional_policy(`

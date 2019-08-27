@@ -1,4 +1,4 @@
-policy_module(logging, 1.27.0)
+policy_module(logging, 1.29.0)
 
 ########################################
 #
@@ -31,7 +31,7 @@ type auditd_initrc_exec_t;
 init_script_file(auditd_initrc_exec_t)
 
 type auditd_unit_t;
-init_unit_file(auditd_unit_t);
+init_unit_file(auditd_unit_t)
 
 type auditd_var_run_t;
 files_pid_file(auditd_var_run_t)
@@ -106,6 +106,8 @@ allow auditctl_t self:netlink_audit_socket nlmsg_readpriv;
 read_files_pattern(auditctl_t, auditd_etc_t, auditd_etc_t)
 allow auditctl_t auditd_etc_t:dir list_dir_perms;
 dontaudit auditctl_t auditd_etc_t:file map;
+
+corecmd_search_bin(auditctl_t)
 
 # Needed for adding watches
 files_getattr_all_dirs(auditctl_t)
@@ -257,6 +259,7 @@ corecmd_exec_shell(audisp_t)
 
 domain_use_interactive_fds(audisp_t)
 
+files_map_etc_files(audisp_t)
 files_read_etc_files(audisp_t)
 files_read_etc_runtime_files(audisp_t)
 
@@ -418,6 +421,8 @@ files_pid_filetrans(syslogd_t, syslogd_tmp_t, dir, "log")
 # manage temporary files
 manage_dirs_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
 manage_files_pattern(syslogd_t, syslogd_tmp_t, syslogd_tmp_t)
+allow syslogd_t syslogd_tmp_t:file map;
+
 files_tmp_filetrans(syslogd_t, syslogd_tmp_t, { dir file })
 
 manage_files_pattern(syslogd_t, syslogd_var_lib_t, syslogd_var_lib_t)
@@ -426,9 +431,12 @@ files_search_var_lib(syslogd_t)
 
 # manage pid file
 manage_files_pattern(syslogd_t, syslogd_var_run_t, syslogd_var_run_t)
+allow syslogd_t syslogd_var_run_t:file map;
+
 files_pid_filetrans(syslogd_t, syslogd_var_run_t, file)
 allow syslogd_t syslogd_var_run_t:dir create_dir_perms;
 
+kernel_read_crypto_sysctls(syslogd_t)
 kernel_read_system_state(syslogd_t)
 kernel_read_network_state(syslogd_t)
 kernel_read_kernel_sysctls(syslogd_t)
@@ -533,14 +541,17 @@ ifdef(`init_systemd',`
 	dev_read_urand(syslogd_t)
 	dev_write_kmsg(syslogd_t)
 
+	domain_getattr_all_domains(syslogd_t)
 	domain_read_all_domains_state(syslogd_t)
 
-	init_create_pid_dirs(syslogd_t)
+	init_create_runtime_dirs(syslogd_t)
 	init_daemon_pid_file(syslogd_var_run_t, dir, "syslogd")
-	init_rename_pid_files(syslogd_t)
-	init_delete_pid_files(syslogd_t)
+	init_getattr(syslogd_t)
+	init_rename_runtime_files(syslogd_t)
+	init_delete_runtime_files(syslogd_t)
 	init_dgram_send(syslogd_t)
-	init_read_pid_pipes(syslogd_t)
+	init_read_runtime_pipes(syslogd_t)
+	init_read_runtime_symlinks(syslogd_t)
 	init_read_state(syslogd_t)
 
 	systemd_manage_journal_files(syslogd_t)

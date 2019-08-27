@@ -765,7 +765,7 @@ class key
 
 class context
 {
-	translate
+	unused_perm
 	contains
 }
 
@@ -985,6 +985,8 @@ class sctp_socket
 inherits socket
 {
 	node_bind
+	name_connect
+	association
 }
 
 class icmp_socket
@@ -1078,4 +1080,16 @@ class qipcrtr_socket
 inherits socket
 
 class smc_socket
+inherits socket
+
+class bpf
+{
+	map_create
+	map_read
+	map_write
+	prog_load
+	prog_run
+}
+
+class xdp_socket
 inherits socket
