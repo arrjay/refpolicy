@@ -6,8 +6,10 @@ refpolicy (2:2.20190201-5) UNRELEASED; urgency=medium
     {build-}dependencies, to please lintian
   * Drop debian/source/lintian-overrides, the postrm perl scripts are gone
     for a long time, not sure why these overrides were reintroduced
+  * debian/rules: Do not call dpkg-parsechangelog explicitly to get a
+    reproductible build time but rely on SOURCE_DATE_EPOCH variable
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:03:01 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:10:05 +0200
 
 refpolicy (2:2.20190201-4) unstable; urgency=medium
 

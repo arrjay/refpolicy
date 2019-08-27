@@ -10,7 +10,7 @@ TYPE_mls = mls
 UBAC_mls = n
 UNK_PERMS_mls = deny
 
-BUILD_DATE := $(shell dpkg-parsechangelog --show-field Date)
+BUILD_DATE := $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" "+%Y-%m-%d %H:%M:%S" 2>/dev/null)
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
