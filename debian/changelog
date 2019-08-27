@@ -1,4 +1,4 @@
-refpolicy (2:2.20190201-5) UNRELEASED; urgency=medium
+refpolicy (2:2.20190201-5) unstable; urgency=medium
 
   * Team upload.
   * Bump Standards-Version to 4.4.0 (no further changes)
@@ -10,7 +10,7 @@ refpolicy (2:2.20190201-5) UNRELEASED; urgency=medium
     reproductible build time but rely on SOURCE_DATE_EPOCH variable
   * debian/watch: Fix the URL now that the project has been relocated
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:50:12 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 27 Aug 2019 15:54:34 +0200
 
 refpolicy (2:2.20190201-4) unstable; urgency=medium
 
