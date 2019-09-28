@@ -60,6 +60,7 @@ override_dh_clean:
 	rm -f install-default-dev;
 	rm -rf $(CURDIR)/debian/build-docs;
 	rm -rf $(CURDIR)/debian/build-src;
+	rm -rf support/__pycache__/;
 	rm -f support/pyplate.pyc conf-docs install-docs conf-src install-src
 
 override_dh_auto_build: $(patsubst %, build-%-policy, $(FLAVOURS))
@@ -164,6 +165,7 @@ install-src: conf-src
 	install -p -o root -g root -m 644      debian/build.conf.default                   \
 	                     $(CURDIR)/debian/tmp/etc/selinux/default/src/policy/build.conf
 	(cd $(CURDIR)/debian/tmp/etc/selinux/default/src/; mv policy selinux-policy-src;   \
+	  rm -rf selinux-policy-src/support/__pycache__/; \
 	  rm selinux-policy-src/support/pyplate.pyc; \
 	  find selinux-policy-src -type f -print0 | xargs -0r chmod 0644; \
 	  find selinux-policy-src -type d -print0 | xargs -0r chmod 0755; \

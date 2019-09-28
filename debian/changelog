@@ -1,3 +1,10 @@
+refpolicy (2:2.20190201-6) UNRELEASED; urgency=medium
+
+  * debian/rules: Cleanup the support/__pycache__ directory when building the
+    selinux-policy-src package
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 28 Sep 2019 09:37:00 +0200
+
 refpolicy (2:2.20190201-5) unstable; urgency=medium
 
   * Team upload.
