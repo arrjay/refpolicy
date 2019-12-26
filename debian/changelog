@@ -2,8 +2,10 @@ refpolicy (2:2.20190201-6) UNRELEASED; urgency=medium
 
   * debian/rules: Cleanup the support/__pycache__ directory when building the
     selinux-policy-src package
+  * debian/rules: Set the timezone to UTC before creating the
+    selinux-policy-src tarball, that should make it reproductible
 
- -- Laurent Bigonville <bigon@debian.org>  Sat, 28 Sep 2019 09:37:00 +0200
+ -- Laurent Bigonville <bigon@debian.org>  Thu, 26 Dec 2019 13:34:05 +0100
 
 refpolicy (2:2.20190201-5) unstable; urgency=medium
 
