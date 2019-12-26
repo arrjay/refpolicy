@@ -1,5 +1,6 @@
 refpolicy (2:2.20190201-6) unstable; urgency=medium
 
+  * Team upload.
   * debian/rules: Cleanup the support/__pycache__ directory when building the
     selinux-policy-src package
   * debian/rules: Set the timezone to UTC before creating the
