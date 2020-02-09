@@ -66,7 +66,7 @@ Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/sysnetwork.te
 +++ refpolicy-2.20190201/policy/modules/system/sysnetwork.te
-@@ -340,6 +340,11 @@ files_dontaudit_read_root_files(ifconfig
+@@ -357,6 +357,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
  
@@ -78,3 +78,15 @@ Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.te
  logging_send_syslog_msg(ifconfig_t)
  
  miscfiles_read_localization(ifconfig_t)
+Index: refpolicy-2.20190201/policy/constraints
+===================================================================
+--- refpolicy-2.20190201.orig/policy/constraints
++++ refpolicy-2.20190201/policy/constraints
+@@ -28,6 +28,7 @@
+ define(`basic_ubac_conditions',`
+ 	ifdef(`enable_ubac',`
+ 		u1 == u2
++		or r1 == sysadm_r
+ 		or u1 == system_u
+ 		or u2 == system_u
+ 		or t1 != ubac_constrained_type

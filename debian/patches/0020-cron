@@ -62,7 +62,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  		bool cron_userdomain_transition;
  	')
  
-@@ -69,65 +81,60 @@ interface(`cron_role',`
+@@ -69,65 +81,61 @@ interface(`cron_role',`
  	# Declarations
  	#
  
@@ -107,6 +107,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  		allow $2_t crond_tmp_t:file rw_inherited_file_perms;
  
  		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
++		cron_rw_inherited_tmp_files($2_t)
 +	')
  
 -		allow $2_t cronjob_t:process { ptrace signal_perms };
@@ -147,7 +148,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  ## </summary>
  ## <param name="role">
  ##	<summary>
-@@ -193,7 +200,7 @@ interface(`cron_unconfined_role',`
+@@ -193,7 +201,7 @@ interface(`cron_unconfined_role',`
  		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
  
  		dontaudit $2 unconfined_cronjob_t:process { ptrace signal_perms };

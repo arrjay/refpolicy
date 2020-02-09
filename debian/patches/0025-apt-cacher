@@ -2,8 +2,9 @@ Index: refpolicy-2.20190201/policy/modules/services/aptcacher.fc
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20190201/policy/modules/services/aptcacher.fc
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
 +/usr/sbin/apt-cacher.*	--	gen_context(system_u:object_r:aptcacher_exec_t,s0)
++/usr/lib/apt-cacher-ng/acngtool	-- gen_context(system_u:object_r:aptcacher_exec_t,s0)
 +/var/log/apt-cacher(/.*)?	gen_context(system_u:object_r:aptcacher_log_t,s0)
 +/var/log/apt-cacher-ng(/.*)?	gen_context(system_u:object_r:aptcacher_log_t,s0)
 +/var/lib/apt-cacher-ng(/.*)?	gen_context(system_u:object_r:aptcacher_var_lib_t,s0)
@@ -141,3 +142,16 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  		logwatch_search_cache_dir(crond_t)
  	')
  ')
+Index: refpolicy-2.20190201/policy/modules/admin/apt.fc
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/admin/apt.fc
++++ refpolicy-2.20190201/policy/modules/admin/apt.fc
+@@ -5,6 +5,8 @@
+ /usr/bin/apt-shell	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/aptitude	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/sbin/update-apt-xapian-index -- gen_context(system_u:object_r:apt_exec_t,s0)
++/usr/share/unattended-upgrades/unattended-upgrade-shutdown -- gen_context(system_u:object_r:apt_exec_t,s0)
++/usr/bin/unattended-upgrade --	gen_context(system_u:object_r:apt_exec_t,s0)
+ 
+ ifndef(`distro_redhat',`
+ /usr/sbin/synaptic	--	gen_context(system_u:object_r:apt_exec_t,s0)

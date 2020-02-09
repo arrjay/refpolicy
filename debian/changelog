@@ -1,3 +1,11 @@
+refpolicy (2:2.20190201-7) unstable; urgency=medium
+
+  * Allow sysadm_r to bypass UBAC checks (experimental)
+  * Make cron work for sysadm_t
+  * Minor policy changes
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 15 Jan 2020 18:53:25 +1100
+
 refpolicy (2:2.20190201-6) unstable; urgency=medium
 
   * Team upload.

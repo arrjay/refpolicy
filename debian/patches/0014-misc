@@ -183,7 +183,27 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  locallogin_read_state(systemd_logind_t)
  
  seutil_libselinux_linked(systemd_logind_t)
-@@ -745,6 +751,7 @@ files_mounton_tmp(systemd_nspawn_t)
+@@ -695,6 +701,9 @@ allow systemd_nspawn_t self:capability {
+ allow systemd_nspawn_t self:capability2 wake_alarm;
+ allow systemd_nspawn_t self:unix_dgram_socket connected_socket_perms;
+ allow systemd_nspawn_t self:unix_stream_socket create_stream_socket_perms;
++allow systemd_nspawn_t self:netlink_route_socket create_netlink_socket_perms;
++allow systemd_nspawn_t self:netlink_generic_socket create_socket_perms;
++allow systemd_nspawn_t self:udp_socket { create ioctl };
+ 
+ allow systemd_nspawn_t systemd_journal_t:dir search;
+ 
+@@ -733,6 +742,9 @@ dev_getattr_fs(systemd_nspawn_t)
+ dev_manage_sysfs_dirs(systemd_nspawn_t)
+ dev_mounton_sysfs_dirs(systemd_nspawn_t)
+ dev_mount_sysfs(systemd_nspawn_t)
++dev_remount_sysfs(systemd_nspawn_t)
++dev_unmount_sysfs(systemd_nspawn_t)
++dev_read_sysfs(systemd_nspawn_t)
+ dev_read_rand(systemd_nspawn_t)
+ dev_read_urand(systemd_nspawn_t)
+ 
+@@ -745,6 +757,7 @@ files_mounton_tmp(systemd_nspawn_t)
  files_read_kernel_symbol_table(systemd_nspawn_t)
  files_setattr_pid_dirs(systemd_nspawn_t)
  
@@ -191,7 +211,15 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  fs_getattr_tmpfs(systemd_nspawn_t)
  fs_manage_tmpfs_chr_files(systemd_nspawn_t)
  fs_mount_tmpfs(systemd_nspawn_t)
-@@ -784,8 +791,14 @@ tunable_policy(`systemd_nspawn_labeled_n
+@@ -768,6 +781,7 @@ init_write_runtime_socket(systemd_nspawn
+ init_spec_domtrans_script(systemd_nspawn_t)
+ 
+ miscfiles_manage_localization(systemd_nspawn_t)
++udev_read_pid_files(systemd_nspawn_t)
+ 
+ # for writing inside chroot
+ sysnet_manage_config(systemd_nspawn_t)
+@@ -784,8 +798,14 @@ tunable_policy(`systemd_nspawn_labeled_n
  	# manage etc symlinks for /etc/localtime
  	files_manage_etc_symlinks(systemd_nspawn_t)
  	files_mounton_pid_dirs(systemd_nspawn_t)
@@ -206,7 +234,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  	fs_getattr_cgroup(systemd_nspawn_t)
  	fs_manage_cgroup_dirs(systemd_nspawn_t)
  	fs_manage_tmpfs_dirs(systemd_nspawn_t)
-@@ -803,6 +816,7 @@ tunable_policy(`systemd_nspawn_labeled_n
+@@ -803,6 +823,7 @@ tunable_policy(`systemd_nspawn_labeled_n
  	selinux_getattr_fs(systemd_nspawn_t)
  	selinux_remount_fs(systemd_nspawn_t)
  	selinux_search_fs(systemd_nspawn_t)
@@ -214,7 +242,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  
  	init_domtrans(systemd_nspawn_t)
  
-@@ -830,7 +844,7 @@ optional_policy(`
+@@ -830,7 +851,7 @@ optional_policy(`
  # systemd_passwd_agent_t local policy
  #
  
@@ -223,7 +251,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  allow systemd_passwd_agent_t self:process { setfscreate setsockcreate signal };
  allow systemd_passwd_agent_t self:unix_dgram_socket create_socket_perms;
  
-@@ -840,14 +854,19 @@ manage_sock_files_pattern(systemd_passwd
+@@ -840,14 +861,19 @@ manage_sock_files_pattern(systemd_passwd
  manage_fifo_files_pattern(systemd_passwd_agent_t, systemd_passwd_var_run_t, systemd_passwd_var_run_t)
  init_pid_filetrans(systemd_passwd_agent_t, systemd_passwd_var_run_t, { dir fifo_file file })
  
@@ -243,7 +271,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  files_read_etc_files(systemd_passwd_agent_t)
  
  fs_getattr_xattr_fs(systemd_passwd_agent_t)
-@@ -856,6 +875,7 @@ selinux_get_enforce_mode(systemd_passwd_
+@@ -856,6 +882,7 @@ selinux_get_enforce_mode(systemd_passwd_
  selinux_getattr_fs(systemd_passwd_agent_t)
  
  term_read_console(systemd_passwd_agent_t)
@@ -251,7 +279,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  
  auth_use_nsswitch(systemd_passwd_agent_t)
  
-@@ -892,6 +912,8 @@ optional_policy(`
+@@ -892,6 +919,8 @@ optional_policy(`
  # Rfkill local policy
  #
  
@@ -260,7 +288,7 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  manage_dirs_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
  manage_files_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
  init_var_lib_filetrans(systemd_rfkill_t, systemd_rfkill_var_lib_t, dir)
-@@ -989,6 +1011,8 @@ allow systemd_tmpfiles_t systemd_journal
+@@ -989,6 +1018,8 @@ allow systemd_tmpfiles_t systemd_journal
  allow systemd_tmpfiles_t systemd_tmpfiles_conf_t:dir list_dir_perms;
  allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:file read_file_perms;
  
@@ -1424,6 +1452,16 @@ Index: refpolicy-2.20190201/policy/modules/services/mon.te
  ########################################
  #
  # Local policy
+@@ -159,7 +164,8 @@ optional_policy(`
+ # try not to use dontaudit rules for this
+ #
+ 
+-allow mon_local_test_t self:capability sys_admin;
++# sys_ptrace is for reading /proc/1/maps etc
++allow mon_local_test_t self:capability { sys_ptrace sys_admin };
+ allow mon_local_test_t self:fifo_file rw_file_perms;
+ allow mon_local_test_t self:process getsched;
+ 
 Index: refpolicy-2.20190201/policy/modules/services/mysql.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/services/mysql.te
@@ -2061,3 +2099,138 @@ Index: refpolicy-2.20190201/policy/modules/services/colord.te
  	xserver_read_xdm_lib_files(colord_t)
  	xserver_use_xdm_fds(colord_t)
  ')
+Index: refpolicy-2.20190201/policy/modules/admin/alsa.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/admin/alsa.te
++++ refpolicy-2.20190201/policy/modules/admin/alsa.te
+@@ -44,6 +44,7 @@ files_lock_file(alsa_var_lock_t)
+ allow alsa_t self:capability { dac_override dac_read_search ipc_owner setgid setuid };
+ # kill : kill pulseaudio
+ dontaudit alsa_t self:capability { kill sys_admin };
++allow alsa_t self:process { signal getsched setsched };
+ allow alsa_t self:sem create_sem_perms;
+ allow alsa_t self:shm create_shm_perms;
+ allow alsa_t self:unix_stream_socket { accept listen };
+@@ -59,7 +60,9 @@ can_exec(alsa_t, alsa_exec_t)
+ 
+ allow alsa_t alsa_runtime_t:dir manage_dir_perms;
+ allow alsa_t alsa_runtime_t:lnk_file manage_lnk_file_perms;
+-files_pid_filetrans(alsa_t, alsa_runtime_t, dir)
++files_pid_filetrans(alsa_t, alsa_runtime_t, { dir file })
++allow alsa_t alsa_runtime_t:file manage_file_perms;
++
+ 
+ manage_dirs_pattern(alsa_t, alsa_tmp_t, alsa_tmp_t)
+ manage_files_pattern(alsa_t, alsa_tmp_t, alsa_tmp_t)
+Index: refpolicy-2.20190201/policy/modules/system/locallogin.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20190201/policy/modules/system/locallogin.te
+@@ -123,7 +123,8 @@ auth_manage_pam_pid(local_login_t)
+ auth_manage_pam_console_data(local_login_t)
+ auth_domtrans_pam_console(local_login_t)
+ 
+-init_dontaudit_use_fds(local_login_t)
++# if local_login_t can not inherit fd from init it takes ages to login
++init_use_fds(local_login_t)
+ 
+ miscfiles_read_localization(local_login_t)
+ 
+Index: refpolicy-2.20190201/policy/modules/apps/games.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/apps/games.te
++++ refpolicy-2.20190201/policy/modules/apps/games.te
+@@ -125,9 +125,11 @@ fs_tmpfs_filetrans(games_t, games_tmpfs_
+ 
+ can_exec(games_t, games_exec_t)
+ 
++kernel_read_kernel_sysctls(games_t)
+ kernel_read_system_state(games_t)
+ 
+ corecmd_exec_bin(games_t)
++corecmd_exec_shell(games_t)
+ 
+ corenet_all_recvfrom_unlabeled(games_t)
+ corenet_all_recvfrom_netlabel(games_t)
+@@ -162,6 +164,7 @@ init_dontaudit_rw_utmp(games_t)
+ 
+ logging_dontaudit_search_logs(games_t)
+ 
++miscfiles_read_generic_certs(games_t)
+ miscfiles_read_man_pages(games_t)
+ miscfiles_read_localization(games_t)
+ 
+@@ -178,8 +181,14 @@ tunable_policy(`allow_execmem',`
+ ')
+ 
+ optional_policy(`
++	alsa_read_config(games_t)
++')
++
++optional_policy(`
+ 	dbus_all_session_bus_client(games_t)
+ 	dbus_connect_all_session_bus(games_t)
++	dbus_read_lib_files(games_t)
++	dbus_system_bus_client(games_t)
+ ')
+ 
+ optional_policy(`
+@@ -191,6 +200,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	xdg_read_config_files(games_t)
++	xdg_read_data_files(games_t)
++')
++
++optional_policy(`
+ 	xserver_user_x_domain_template(games, games_t, games_tmpfs_t)
+ 	xserver_create_xdm_tmp_sockets(games_t)
+ 	xserver_read_xdm_lib_files(games_t)
+Index: refpolicy-2.20190201/policy/modules/kernel/devices.if
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/kernel/devices.if
++++ refpolicy-2.20190201/policy/modules/kernel/devices.if
+@@ -4027,6 +4027,42 @@ interface(`dev_mount_sysfs',`
+ 
+ ########################################
+ ## <summary>
++##     remount a sysfs filesystem
++## </summary>
++## <param name="domain">
++##     <summary>
++##     Domain allowed access.
++##     </summary>
++## </param>
++#
++interface(`dev_remount_sysfs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	allow $1 sysfs_t:filesystem remount;
++')
++
++########################################
++## <summary>
++##     unmount a sysfs filesystem
++## </summary>
++## <param name="domain">
++##     <summary>
++##     Domain allowed access.
++##     </summary>
++## </param>
++#
++interface(`dev_unmount_sysfs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	allow $1 sysfs_t:filesystem unmount;
++')
++
++########################################
++## <summary>
+ ##	Do not audit getting the attributes of sysfs filesystem
+ ## </summary>
+ ## <param name="domain">

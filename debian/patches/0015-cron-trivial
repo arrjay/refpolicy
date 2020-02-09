@@ -279,3 +279,16 @@ Index: refpolicy-2.20190201/policy/modules/services/mta.te
  	')
  ')
  
+Index: refpolicy-2.20190201/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20190201/policy/modules/roles/sysadm.te
+@@ -1288,7 +1288,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		cron_admin_role(sysadm_r, sysadm_t)
++		cron_role(sysadm_r, sysadm)
+ 	')
+ 
+ 	optional_policy(`
