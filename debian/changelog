@@ -1,3 +1,10 @@
+refpolicy (2:2.20190201-7.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * source only upload to enable migration (Closes: #954018)
+
+ -- Paul Gevers <elbrus@debian.org>  Sun, 15 Mar 2020 20:28:12 +0100
+
 refpolicy (2:2.20190201-7) unstable; urgency=medium
 
   * Allow sysadm_r to bypass UBAC checks (experimental)
