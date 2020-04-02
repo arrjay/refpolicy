@@ -1,0 +1,40 @@
+commit 0bfd1387acdde8e39e2bcfb4525285ad5e70e795
+Author: Chris PeBenito <pebenito@ieee.org>
+Date:   Sat Nov 23 10:12:53 2019 -0500
+
+    Remove incorrect usages of "is" operator from Python scripts.
+    
+    Closes #128
+    
+    Signed-off-by: Chris PeBenito <pebenito@ieee.org>
+
+diff --git a/support/genhomedircon.py b/support/genhomedircon.py
+index 3503fb4a..a565af2a 100644
+--- a/support/genhomedircon.py
++++ b/support/genhomedircon.py
+@@ -46,10 +46,10 @@ EXCLUDE_LOGINS=["/sbin/nologin", "/bin/false"]
+ 
+ # Python 2/3 wrapper
+ def getstatusoutput_wrapper(cmd):
+-    if sys.version_info.major is 2:
++    if sys.version_info.major == 2:
+         import commands
+         return commands.getstatusoutput(cmd)
+-    elif sys.version_info.major is 3:
++    elif sys.version_info.major == 3:
+         import subprocess
+         return subprocess.getstatusoutput(cmd)
+     else:
+diff --git a/support/sedoctool.py b/support/sedoctool.py
+index de848631..3fddc39a 100644
+--- a/support/sedoctool.py
++++ b/support/sedoctool.py
+@@ -266,7 +266,7 @@ def format_html_desc(node):
+ 	desc_buf = ''
+ 	for desc in node.childNodes:
+ 		if desc.nodeName == "#text":
+-			if desc.data is not '':
++			if desc.data:
+ 				if desc.parentNode.nodeName != "p":
+ 					desc_buf += "<p>" + desc.data + "</p>"
+ 				else:
