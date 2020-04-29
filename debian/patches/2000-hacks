@@ -46,6 +46,17 @@ Index: refpolicy-2.20190201/policy/modules/system/systemd.te
  #########################################
  #
  # hw local policy
+@@ -1110,6 +1114,10 @@ tunable_policy(`systemd_tmpfiles_manage_
+ ')
+ 
+ optional_policy(`
++	colord_read_lib_files(systemd_tmpfiles_t)
++')
++
++optional_policy(`
+ 	dbus_read_lib_files(systemd_tmpfiles_t)
+ 	dbus_relabel_lib_dirs(systemd_tmpfiles_t)
+ ')
 Index: refpolicy-2.20190201/policy/modules/system/fstools.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/fstools.te
@@ -66,6 +77,15 @@ Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.te
 ===================================================================
 --- refpolicy-2.20190201.orig/policy/modules/system/sysnetwork.te
 +++ refpolicy-2.20190201/policy/modules/system/sysnetwork.te
+@@ -59,7 +59,7 @@ allow dhcpc_t self:capability { dac_over
+ dontaudit dhcpc_t self:capability { sys_ptrace sys_tty_config };
+ # for access("/etc/bashrc", X_OK) on Red Hat
+ dontaudit dhcpc_t self:capability { dac_read_search sys_module };
+-allow dhcpc_t self:process { getsched getcap setcap setfscreate ptrace signal_perms };
++allow dhcpc_t self:process { setrlimit getsched getcap setcap setfscreate ptrace signal_perms };
+ 
+ allow dhcpc_t self:fifo_file rw_fifo_file_perms;
+ allow dhcpc_t self:tcp_socket create_stream_socket_perms;
 @@ -357,6 +357,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
@@ -90,3 +110,70 @@ Index: refpolicy-2.20190201/policy/constraints
  		or u1 == system_u
  		or u2 == system_u
  		or t1 != ubac_constrained_type
+Index: refpolicy-2.20190201/policy/modules/services/accountsd.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/accountsd.te
++++ refpolicy-2.20190201/policy/modules/services/accountsd.te
+@@ -49,6 +49,8 @@ auth_use_nsswitch(accountsd_t)
+ auth_read_login_records(accountsd_t)
+ auth_read_shadow(accountsd_t)
+ 
++init_dbus_chat(accountsd_t)
++
+ miscfiles_read_localization(accountsd_t)
+ 
+ logging_list_logs(accountsd_t)
+Index: refpolicy-2.20190201/policy/modules/services/bluetooth.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/bluetooth.te
++++ refpolicy-2.20190201/policy/modules/services/bluetooth.te
+@@ -66,6 +66,7 @@ allow bluetooth_t self:socket create_str
+ allow bluetooth_t self:unix_stream_socket { accept connectto listen };
+ allow bluetooth_t self:tcp_socket { accept listen };
+ allow bluetooth_t self:netlink_kobject_uevent_socket create_socket_perms;
++allow bluetooth_t self:bluetooth_socket create;
+ 
+ read_files_pattern(bluetooth_t, bluetooth_conf_t, bluetooth_conf_t)
+ 
+Index: refpolicy-2.20190201/policy/modules/services/cups.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/cups.te
++++ refpolicy-2.20190201/policy/modules/services/cups.te
+@@ -131,6 +131,7 @@ manage_files_pattern(cupsd_t, cupsd_inte
+ 
+ manage_dirs_pattern(cupsd_t, cupsd_etc_t, cupsd_rw_etc_t)
+ manage_files_pattern(cupsd_t, cupsd_etc_t, cupsd_rw_etc_t)
++manage_lnk_files_pattern(cupsd_t, cupsd_etc_t, cupsd_rw_etc_t)
+ filetrans_pattern(cupsd_t, cupsd_etc_t, cupsd_rw_etc_t, file)
+ files_var_filetrans(cupsd_t, cupsd_rw_etc_t, { dir file })
+ 
+@@ -219,7 +220,9 @@ files_read_usr_files(cupsd_t)
+ files_exec_usr_files(cupsd_t)
+ # for /var/lib/defoma
+ files_read_var_lib_files(cupsd_t)
++files_read_var_lib_symlinks(cupsd_t)
+ files_list_world_readable(cupsd_t)
++files_map_etc_files(cupsd_t)
+ files_read_world_readable_files(cupsd_t)
+ files_read_world_readable_symlinks(cupsd_t)
+ files_read_var_files(cupsd_t)
+Index: refpolicy-2.20190201/policy/modules/services/clamav.te
+===================================================================
+--- refpolicy-2.20190201.orig/policy/modules/services/clamav.te
++++ refpolicy-2.20190201/policy/modules/services/clamav.te
+@@ -203,6 +203,7 @@ stream_connect_pattern(freshclam_t, clam
+ read_files_pattern(freshclam_t, clamd_var_log_t, clamd_var_log_t)
+ 
+ kernel_dontaudit_list_proc(freshclam_t)
++kernel_read_crypto_sysctls(freshclam_t)
+ kernel_read_kernel_sysctls(freshclam_t)
+ kernel_read_network_state(freshclam_t)
+ kernel_read_system_state(freshclam_t)
+@@ -234,6 +235,7 @@ dev_read_urand(freshclam_t)
+ domain_use_interactive_fds(freshclam_t)
+ 
+ files_read_etc_runtime_files(freshclam_t)
++files_read_usr_files(freshclam_t)
+ files_search_var_lib(freshclam_t)
+ 
+ auth_use_nsswitch(freshclam_t)

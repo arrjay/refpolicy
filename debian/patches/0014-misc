@@ -1069,7 +1069,30 @@ Index: refpolicy-2.20190201/policy/modules/services/spamassassin.te
  type spamd_home_t;
  userdom_user_home_content(spamd_home_t)
  
-@@ -365,6 +363,7 @@ corenet_udp_bind_imaze_port(spamd_t)
+@@ -211,11 +209,13 @@ corenet_all_recvfrom_netlabel(spamc_t)
+ corenet_tcp_sendrecv_generic_if(spamc_t)
+ corenet_tcp_sendrecv_generic_node(spamc_t)
+ corenet_tcp_sendrecv_all_ports(spamc_t)
++corenet_udp_bind_generic_node(spamc_t)
+ 
+ corenet_sendrecv_all_client_packets(spamc_t)
+ corenet_tcp_connect_all_ports(spamc_t)
+ 
+ corecmd_exec_bin(spamc_t)
++corecmd_exec_shell(spamc_t)
+ 
+ dev_read_rand(spamc_t)
+ dev_read_urand(spamc_t)
+@@ -270,6 +270,8 @@ optional_policy(`
+ 	mta_send_mail(spamc_t)
+ 	mta_read_config(spamc_t)
+ 	mta_read_queue(spamc_t)
++	mta_getattr_spool(spamc_t)
++	mta_read_spool_files(spamc_t)
+ 	sendmail_rw_pipes(spamc_t)
+ 	sendmail_stub(spamc_t)
+ ')
+@@ -365,6 +367,7 @@ corenet_udp_bind_imaze_port(spamd_t)
  
  corenet_dontaudit_udp_bind_all_ports(spamd_t)
  
@@ -1077,7 +1100,7 @@ Index: refpolicy-2.20190201/policy/modules/services/spamassassin.te
  corecmd_exec_bin(spamd_t)
  
  dev_read_sysfs(spamd_t)
-@@ -372,6 +371,7 @@ dev_read_urand(spamd_t)
+@@ -372,6 +375,7 @@ dev_read_urand(spamd_t)
  
  domain_use_interactive_fds(spamd_t)
  
@@ -1085,7 +1108,7 @@ Index: refpolicy-2.20190201/policy/modules/services/spamassassin.te
  files_read_usr_files(spamd_t)
  files_read_etc_runtime_files(spamd_t)
  
-@@ -386,6 +386,7 @@ libs_use_shared_libs(spamd_t)
+@@ -386,6 +390,7 @@ libs_use_shared_libs(spamd_t)
  
  logging_send_syslog_msg(spamd_t)
  
@@ -1093,7 +1116,7 @@ Index: refpolicy-2.20190201/policy/modules/services/spamassassin.te
  miscfiles_read_localization(spamd_t)
  
  sysnet_use_ldap(spamd_t)
-@@ -501,6 +502,8 @@ manage_dirs_pattern(spamd_update_t, spam
+@@ -501,6 +506,8 @@ manage_dirs_pattern(spamd_update_t, spam
  manage_files_pattern(spamd_update_t, spamd_var_lib_t, spamd_var_lib_t)
  manage_lnk_files_pattern(spamd_update_t, spamd_var_lib_t, spamd_var_lib_t)
  
@@ -1102,7 +1125,7 @@ Index: refpolicy-2.20190201/policy/modules/services/spamassassin.te
  kernel_read_system_state(spamd_update_t)
  
  corecmd_exec_bin(spamd_update_t)
-@@ -528,6 +531,7 @@ fs_getattr_xattr_fs(spamd_update_t)
+@@ -528,6 +535,7 @@ fs_getattr_xattr_fs(spamd_update_t)
  auth_use_nsswitch(spamd_update_t)
  auth_dontaudit_read_shadow(spamd_update_t)
  
@@ -1110,7 +1133,7 @@ Index: refpolicy-2.20190201/policy/modules/services/spamassassin.te
  miscfiles_read_localization(spamd_update_t)
  
  userdom_use_inherited_user_terminals(spamd_update_t)
-@@ -539,35 +543,5 @@ optional_policy(`
+@@ -539,35 +547,5 @@ optional_policy(`
  ')
  
  optional_policy(`

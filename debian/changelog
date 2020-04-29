@@ -1,3 +1,9 @@
+refpolicy (2:2.20190201-9) unstable; urgency=medium
+
+  * Some more small policy fixes
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 29 Apr 2020 19:32:04 +1000
+
 refpolicy (2:2.20190201-8) unstable; urgency=medium
 
   * Team upload.

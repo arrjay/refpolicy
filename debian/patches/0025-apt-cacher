@@ -43,7 +43,7 @@ Index: refpolicy-2.20190201/policy/modules/services/aptcacher.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20190201/policy/modules/services/aptcacher.te
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,78 @@
 +policy_module(aptcacher, 1.0.0)
 +
 +########################################
@@ -107,6 +107,14 @@ Index: refpolicy-2.20190201/policy/modules/services/aptcacher.te
 +allow aptcacher_t aptcacher_var_lib_t:dir manage_dir_perms;
 +allow aptcacher_t aptcacher_var_lib_t:file { map manage_file_perms };
 +allow aptcacher_t aptcacher_var_lib_t:lnk_file manage_lnk_file_perms;
++
++corecmd_exec_shell(aptcacher_t)
++kernel_read_system_state(aptcacher_t)
++can_exec(aptcacher_t, aptcacher_exec_t)
++cron_use_system_job_fds(aptcacher_t)
++cron_rw_system_job_pipes(aptcacher_t)
++allow aptcacher_t aptcacher_port_t:tcp_socket name_connect;
++kernel_search_vm_sysctl(aptcacher_t)
 +
 +kernel_search_fs_sysctls(aptcacher_t)
 +
