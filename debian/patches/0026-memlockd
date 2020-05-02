@@ -1,21 +1,21 @@
-Index: refpolicy-2.20190201/policy/modules/services/memlockd.fc
+Index: refpolicy-2.20200415/policy/modules/services/memlockd.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20190201/policy/modules/services/memlockd.fc
++++ refpolicy-2.20200415/policy/modules/services/memlockd.fc
 @@ -0,0 +1 @@
 +/usr/sbin/memlockd	--	gen_context(system_u:object_r:memlockd_exec_t,s0)
-Index: refpolicy-2.20190201/policy/modules/services/memlockd.if
+Index: refpolicy-2.20200415/policy/modules/services/memlockd.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20190201/policy/modules/services/memlockd.if
++++ refpolicy-2.20200415/policy/modules/services/memlockd.if
 @@ -0,0 +1,2 @@
 +## <summary>memory lock daemon, keeps important files in RAM.</summary>
 +
-Index: refpolicy-2.20190201/policy/modules/services/memlockd.te
+Index: refpolicy-2.20200415/policy/modules/services/memlockd.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20190201/policy/modules/services/memlockd.te
-@@ -0,0 +1,42 @@
++++ refpolicy-2.20200415/policy/modules/services/memlockd.te
+@@ -0,0 +1,39 @@
 +policy_module(memlockd, 1.0.0)
 +
 +########################################
@@ -33,36 +33,33 @@ Index: refpolicy-2.20190201/policy/modules/services/memlockd.te
 +#
 +
 +allow memlockd_t self:capability { setgid setuid ipc_lock };
++ifndef(`distro_debian', `
++allow memlockd_t self:capability dac_read_search;
++')
 +allow memlockd_t self:fifo_file rw_file_perms;
-+allow memlockd_t self:unix_dgram_socket { create connect };
 +
 +# cache /etc/shadow too
 +auth_read_shadow(memlockd_t)
 +auth_map_shadow(memlockd_t)
 +
-+sysnet_map_config(memlockd_t)
-+files_read_etc_files(memlockd_t)
-+
-+# for ldd
++corecmd_exec_all_executables(memlockd_t)
 +corecmd_exec_bin(memlockd_t)
 +corecmd_exec_shell(memlockd_t)
-+libs_exec_ld_so(memlockd_t)
-+
-+corecmd_search_bin(memlockd_t)
-+files_map_etc_files(memlockd_t)
-+# has to exec for ldd
-+corecmd_exec_all_executables(memlockd_t)
 +corecmd_read_all_executables(memlockd_t)
++corecmd_search_bin(memlockd_t)
++files_read_etc_files(memlockd_t)
++libs_exec_ld_so(memlockd_t)
++files_map_etc_files(memlockd_t)
 +
 +logging_send_syslog_msg(memlockd_t)
-+
 +miscfiles_read_localization(memlockd_t)
 +
-Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.if
++sysnet_mmap_read_config(memlockd_t)
+Index: refpolicy-2.20200415/policy/modules/system/sysnetwork.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/system/sysnetwork.if
-+++ refpolicy-2.20190201/policy/modules/system/sysnetwork.if
-@@ -366,6 +366,31 @@ interface(`sysnet_read_config',`
+--- refpolicy-2.20200415.orig/policy/modules/system/sysnetwork.if
++++ refpolicy-2.20200415/policy/modules/system/sysnetwork.if
+@@ -391,6 +391,31 @@ interface(`sysnet_mmap_config_files',`
  
  #######################################
  ## <summary>
@@ -80,13 +77,13 @@ Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.if
 +##	</summary>
 +## </param>
 +#
-+interface(`sysnet_map_config',`
++interface(`sysnet_mmap_read_config',`
 +	gen_require(`
 +		type net_conf_t;
 +	')
 +
 +	files_search_etc($1)
-+	allow $1 net_conf_t:file { read_file_perms map };
++	allow $1 net_conf_t:file mmap_read_file_perms;
 +')
 +
 +#######################################
@@ -94,11 +91,11 @@ Index: refpolicy-2.20190201/policy/modules/system/sysnetwork.if
  ##	Do not audit attempts to read network config files.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20190201/policy/modules/system/authlogin.if
+Index: refpolicy-2.20200415/policy/modules/system/authlogin.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/system/authlogin.if
-+++ refpolicy-2.20190201/policy/modules/system/authlogin.if
-@@ -552,6 +552,23 @@ interface(`auth_read_shadow',`
+--- refpolicy-2.20200415.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20200415/policy/modules/system/authlogin.if
+@@ -577,6 +577,23 @@ interface(`auth_read_shadow',`
  
  ########################################
  ## <summary>

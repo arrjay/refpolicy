@@ -1,24 +1,10 @@
-Chromium and DRI policy
+Chromium policy tweaks and DRI policy
 
-Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
+Index: refpolicy-2.20200427/policy/modules/apps/chromium.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/apps/chromium.te
-+++ refpolicy-2.20190201/policy/modules/apps/chromium.te
-@@ -39,6 +39,13 @@ gen_tunable(chromium_bind_tcp_unreserved
- ## </desc>
- gen_tunable(chromium_rw_usb_dev, false)
- 
-+## <desc>
-+## <p>
-+## Allow chromium to execute it's config (for plugins like Flash)
-+## </p>
-+## </desc>
-+gen_tunable(chromium_exec_plugins, false)
-+
- type chromium_t;
- domain_dyntrans_type(chromium_t)
- 
-@@ -63,6 +70,9 @@ type chromium_tmpfs_t;
+--- refpolicy-2.20200427.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20200427/policy/modules/apps/chromium.te
+@@ -63,6 +63,9 @@ type chromium_tmpfs_t;
  userdom_user_tmpfs_file(chromium_tmpfs_t)
  optional_policy(`
  	pulseaudio_tmpfs_content(chromium_tmpfs_t)
@@ -28,18 +14,7 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  ')
  
  type chromium_xdg_config_t;
-@@ -77,7 +87,9 @@ xdg_cache_content(chromium_xdg_cache_t)
- #
- 
- # execmem for load in plugins
--allow chromium_t self:process { execmem getsched getcap setcap setrlimit setsched sigkill signal };
-+allow chromium_t self:process { execmem getsched getcap setcap setrlimit setsched sigkill signal signull };
-+allow chromium_t self:dir { write add_name };
-+allow chromium_t self:file create;
- allow chromium_t self:fifo_file rw_fifo_file_perms;
- allow chromium_t self:sem create_sem_perms;
- allow chromium_t self:netlink_kobject_uevent_socket client_stream_socket_perms;
-@@ -96,6 +108,7 @@ allow chromium_t chromium_renderer_t:uni
+@@ -96,6 +99,7 @@ allow chromium_t chromium_renderer_t:uni
  
  allow chromium_t chromium_sandbox_t:unix_dgram_socket { getattr read write };
  allow chromium_t chromium_sandbox_t:unix_stream_socket { getattr read write };
@@ -47,7 +22,7 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  
  allow chromium_t chromium_naclhelper_t:process { share };
  
-@@ -108,6 +121,9 @@ manage_sock_files_pattern(chromium_t, ch
+@@ -108,6 +112,9 @@ manage_sock_files_pattern(chromium_t, ch
  manage_fifo_files_pattern(chromium_t, chromium_tmp_t, chromium_tmp_t)
  files_tmp_filetrans(chromium_t, chromium_tmp_t, { file dir sock_file })
  
@@ -57,19 +32,16 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  manage_files_pattern(chromium_t, chromium_tmpfs_t, chromium_tmpfs_t)
  allow chromium_t chromium_tmpfs_t:file map;
  fs_tmpfs_filetrans(chromium_t, chromium_tmpfs_t, file)
-@@ -128,7 +144,11 @@ dyntrans_pattern(chromium_t, chromium_re
- domtrans_pattern(chromium_t, chromium_sandbox_exec_t, chromium_sandbox_t)
+@@ -129,6 +136,8 @@ domtrans_pattern(chromium_t, chromium_sa
  domtrans_pattern(chromium_t, chromium_naclhelper_exec_t, chromium_naclhelper_t)
  
-+# for self:file create
-+kernel_associate_proc(chromium_t)
-+
  kernel_list_proc(chromium_t)
++kernel_read_fs_sysctls(chromium_t)
 +kernel_read_kernel_sysctls(chromium_t)
  kernel_read_net_sysctls(chromium_t)
  
  corecmd_exec_bin(chromium_t)
-@@ -145,6 +165,9 @@ dev_read_sound(chromium_t)
+@@ -145,6 +154,9 @@ dev_read_sound(chromium_t)
  dev_write_sound(chromium_t)
  dev_read_urand(chromium_t)
  dev_read_rand(chromium_t)
@@ -79,19 +51,8 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  dev_rw_xserver_misc(chromium_t)
  dev_map_xserver_misc(chromium_t)
  
-@@ -178,14 +201,15 @@ userdom_use_user_terminals(chromium_t)
- userdom_manage_user_certs(chromium_t)
- userdom_user_home_dir_filetrans_user_cert(chromium_t, dir, ".pki")
- 
--xdg_create_cache_dirs(chromium_t)
--xdg_create_config_dirs(chromium_t)
--xdg_create_data_dirs(chromium_t)
-+xdg_manage_cache(chromium_t)
-+xdg_manage_config(chromium_t)
-+xdg_manage_data(chromium_t)
- xdg_manage_downloads(chromium_t)
--xdg_read_config_files(chromium_t)
--xdg_read_data_files(chromium_t)
+@@ -187,6 +199,9 @@ xdg_read_config_files(chromium_t)
+ xdg_read_data_files(chromium_t)
  
  xserver_user_x_domain_template(chromium, chromium_t, chromium_tmpfs_t)
 +xserver_stream_connect_xdm(chromium_t)
@@ -100,19 +61,7 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  
  tunable_policy(`chromium_bind_tcp_unreserved_ports',`
  	corenet_tcp_bind_generic_node(chromium_t)
-@@ -198,6 +222,11 @@ tunable_policy(`chromium_rw_usb_dev',`
- 	udev_read_db(chromium_t)
- ')
- 
-+tunable_policy(`chromium_exec_plugins',`
-+	# sometimes .config/google-chrome/PepperFlash/32.0.0.142/libpepflashplayer.so gets chromium_tmp_t
-+	can_exec(chromium_t, { chromium_xdg_config_t chromium_tmp_t })
-+')
-+
- tunable_policy(`chromium_read_system_info',`
- 	kernel_read_kernel_sysctls(chromium_t)
- 	# Memory optimizations & optimizations based on OS/version
-@@ -229,6 +258,10 @@ optional_policy(`
+@@ -230,6 +245,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -123,7 +72,7 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  	dbus_all_session_bus_client(chromium_t)
  	dbus_system_bus_client(chromium_t)
  
-@@ -241,8 +274,13 @@ optional_policy(`
+@@ -242,8 +261,13 @@ optional_policy(`
  	')
  
  	optional_policy(`
@@ -137,7 +86,7 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  ')
  
  optional_policy(`
-@@ -252,6 +290,10 @@ optional_policy(`
+@@ -253,6 +277,10 @@ optional_policy(`
  	dpkg_read_db(chromium_t)
  ')
  
@@ -148,7 +97,7 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  ifdef(`use_alsa',`
  	optional_policy(`
  		alsa_domain(chromium_t, chromium_tmpfs_t)
-@@ -259,6 +301,7 @@ ifdef(`use_alsa',`
+@@ -260,6 +288,7 @@ ifdef(`use_alsa',`
  
  	optional_policy(`
  		pulseaudio_domtrans(chromium_t)
@@ -156,56 +105,17 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.te
  	')
  ')
  
-@@ -299,6 +342,9 @@ userdom_use_user_terminals(chromium_rend
- 
- xdg_read_config_files(chromium_renderer_t)
- 
-+# should we have a tunable for this?
-+xdg_read_pictures(chromium_t)
-+
- xserver_user_x_domain_template(chromium_renderer, chromium_renderer_t, chromium_tmpfs_t)
- 
- tunable_policy(`chromium_read_system_info',`
-@@ -360,3 +406,6 @@ tunable_policy(`chromium_read_system_inf
+@@ -361,3 +390,6 @@ tunable_policy(`chromium_read_system_inf
  
  dev_read_sysfs(chromium_naclhelper_t)
  dev_read_urand(chromium_naclhelper_t)
 +kernel_list_proc(chromium_naclhelper_t)
 +
 +miscfiles_read_localization(chromium_naclhelper_t)
-Index: refpolicy-2.20190201/policy/modules/kernel/kernel.if
+Index: refpolicy-2.20200427/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/kernel/kernel.if
-+++ refpolicy-2.20190201/policy/modules/kernel/kernel.if
-@@ -2364,6 +2364,24 @@ interface(`kernel_rw_all_sysctls',`
- 
- ########################################
- ## <summary>
-+##	Associate a file to proc_t (/proc)
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+## <rolecap/>
-+#
-+interface(`kernel_associate_proc',`
-+	gen_require(`
-+		type proc_t;
-+	')
-+	allow $1 proc_t:filesystem associate;
-+')
-+
-+########################################
-+## <summary>
- ##	Send a kill signal to unlabeled processes.
- ## </summary>
- ## <param name="domain">
-Index: refpolicy-2.20190201/policy/modules/services/xserver.te
-===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20190201/policy/modules/services/xserver.te
+--- refpolicy-2.20200427.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20200427/policy/modules/services/xserver.te
 @@ -55,6 +55,13 @@ gen_tunable(xserver_gnome_xdm, false)
  ## </desc>
  gen_tunable(xserver_object_manager, false)
@@ -220,11 +130,11 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.te
  attribute x_domain;
  
  # X Events
-Index: refpolicy-2.20190201/policy/modules/services/xserver.if
+Index: refpolicy-2.20200427/policy/modules/services/xserver.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/xserver.if
-+++ refpolicy-2.20190201/policy/modules/services/xserver.if
-@@ -47,8 +47,9 @@ interface(`xserver_restricted_role',`
+--- refpolicy-2.20200427.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20200427/policy/modules/services/xserver.if
+@@ -48,8 +48,9 @@ interface(`xserver_restricted_role',`
  	files_search_tmp($2)
  
  	# Communicate via System V shared memory.
@@ -235,7 +145,7 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.if
  
  	# allow ps to show iceauth
  	ps_process_pattern($2, iceauth_t)
-@@ -74,10 +75,6 @@ interface(`xserver_restricted_role',`
+@@ -75,10 +76,6 @@ interface(`xserver_restricted_role',`
  	allow $2 xdm_tmp_t:sock_file { read write };
  	dontaudit $2 xdm_t:tcp_socket { read write };
  
@@ -246,7 +156,7 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.if
  	# Read /tmp/.X0-lock
  	allow $2 xserver_tmp_t:file { getattr read };
  
-@@ -90,6 +87,9 @@ interface(`xserver_restricted_role',`
+@@ -91,6 +88,9 @@ interface(`xserver_restricted_role',`
  	# open office is looking for the following
  	dev_getattr_agp_dev($2)
  	dev_dontaudit_rw_dri($2)
@@ -256,7 +166,7 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.if
  	# GNOME checks for usb and other devices:
  	dev_rw_usbfs($2)
  
-@@ -1667,6 +1667,26 @@ interface(`xserver_rw_mesa_shader_cache'
+@@ -1670,6 +1670,26 @@ interface(`xserver_rw_mesa_shader_cache'
  
  	rw_dirs_pattern($1, mesa_shader_cache_t, mesa_shader_cache_t)
  	rw_files_pattern($1, mesa_shader_cache_t, mesa_shader_cache_t)
@@ -283,19 +193,11 @@ Index: refpolicy-2.20190201/policy/modules/services/xserver.if
  	allow $1 mesa_shader_cache_t:file map;
  
  	xdg_search_cache_dirs($1)
-Index: refpolicy-2.20190201/policy/modules/apps/chromium.if
+Index: refpolicy-2.20200427/policy/modules/apps/chromium.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/apps/chromium.if
-+++ refpolicy-2.20190201/policy/modules/apps/chromium.if
-@@ -22,6 +22,7 @@ interface(`chromium_role',`
- 		type chromium_sandbox_t;
- 		type chromium_naclhelper_t;
- 		type chromium_exec_t;
-+		class dbus send_msg;
- 	')
- 
- 	role $1 types chromium_t;
-@@ -38,10 +39,21 @@ interface(`chromium_role',`
+--- refpolicy-2.20200427.orig/policy/modules/apps/chromium.if
++++ refpolicy-2.20200427/policy/modules/apps/chromium.if
+@@ -38,7 +38,15 @@ interface(`chromium_role',`
  
  	allow $2 chromium_t:process signal_perms;
  	allow $2 chromium_renderer_t:process signal_perms;
@@ -311,17 +213,19 @@ Index: refpolicy-2.20190201/policy/modules/apps/chromium.if
  
  	allow chromium_sandbox_t $2:fd use;
  	allow chromium_naclhelper_t $2:fd use;
-+
-+	allow $2 chromium_t:dbus send_msg;
-+	allow chromium_t $2:dbus send_msg;
- ')
+@@ -109,6 +117,7 @@ interface(`chromium_domtrans',`
+ 	gen_require(`
+ 		type chromium_t;
+ 		type chromium_exec_t;
++		class dbus send_msg;
+ 	')
  
- #######################################
-Index: refpolicy-2.20190201/policy/modules/services/ssh.if
+ 	corecmd_search_bin($1)
+Index: refpolicy-2.20200427/policy/modules/services/ssh.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/ssh.if
-+++ refpolicy-2.20190201/policy/modules/services/ssh.if
-@@ -774,3 +774,21 @@ interface(`ssh_delete_tmp',`
+--- refpolicy-2.20200427.orig/policy/modules/services/ssh.if
++++ refpolicy-2.20200427/policy/modules/services/ssh.if
+@@ -776,3 +776,21 @@ interface(`ssh_delete_tmp',`
  	files_search_tmp($1)
  	delete_files_pattern($1, sshd_tmp_t, sshd_tmp_t)
  ')

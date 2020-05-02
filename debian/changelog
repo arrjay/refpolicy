@@ -1,3 +1,16 @@
+refpolicy (2:2.20200502-1) unstable; urgency=medium
+
+  * New archive taken from upstream git.  Will base it mostly on git for the
+    development leading to Buster and then take the latest upstream release
+    shortly before release.
+  * Lots of new policy patches.
+  * Make it depend and build depend on version 3.0 of all libraries
+  * Makde the default_contexts have sysadm_r with a higher preference than
+    staff_r for sshd_t
+  * Made dbus a base module
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 02 May 2020 19:20:27 +1000
+
 refpolicy (2:2.20190201-9) unstable; urgency=medium
 
   * Some more small policy fixes

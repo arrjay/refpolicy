@@ -1,7 +1,7 @@
-Index: refpolicy-2.20190201/policy/modules/services/cron.if
+Index: refpolicy-2.20200409/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20190201/policy/modules/services/cron.if
+--- refpolicy-2.20200409.orig/policy/modules/services/cron.if
++++ refpolicy-2.20200409/policy/modules/services/cron.if
 @@ -51,15 +51,16 @@ template(`cron_common_crontab_template',
  ## </param>
  ## <param name="domain">
@@ -151,10 +151,10 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  ## <summary>
  ##	Read and write to inherited system cron job temporary files.
  ## </summary>
-Index: refpolicy-2.20190201/policy/modules/roles/staff.te
+Index: refpolicy-2.20200409/policy/modules/roles/staff.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20190201/policy/modules/roles/staff.te
+--- refpolicy-2.20200409.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20200409/policy/modules/roles/staff.te
 @@ -103,7 +103,7 @@ ifndef(`distro_redhat',`
  	')
  
@@ -164,10 +164,10 @@ Index: refpolicy-2.20190201/policy/modules/roles/staff.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20190201/policy/modules/roles/unprivuser.te
+Index: refpolicy-2.20200409/policy/modules/roles/unprivuser.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/roles/unprivuser.te
-+++ refpolicy-2.20190201/policy/modules/roles/unprivuser.te
+--- refpolicy-2.20200409.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20200409/policy/modules/roles/unprivuser.te
 @@ -79,7 +79,7 @@ ifndef(`distro_redhat',`
  	')
  
@@ -177,11 +177,11 @@ Index: refpolicy-2.20190201/policy/modules/roles/unprivuser.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20190201/policy/modules/system/unconfined.te
+Index: refpolicy-2.20200409/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20190201/policy/modules/system/unconfined.te
-@@ -89,7 +89,7 @@ optional_policy(`
+--- refpolicy-2.20200409.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20200409/policy/modules/system/unconfined.te
+@@ -91,7 +91,7 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -190,11 +190,11 @@ Index: refpolicy-2.20190201/policy/modules/system/unconfined.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20190201/policy/modules/services/cron.te
+Index: refpolicy-2.20200409/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20190201/policy/modules/services/cron.te
-@@ -443,6 +443,8 @@ optional_policy(`
+--- refpolicy-2.20200409.orig/policy/modules/services/cron.te
++++ refpolicy-2.20200409/policy/modules/services/cron.te
+@@ -444,6 +444,8 @@ optional_policy(`
  	systemd_dbus_chat_logind(system_cronjob_t)
  	systemd_read_journal_files(system_cronjob_t)
  	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
@@ -203,9 +203,9 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  	# so cron jobs can restart daemons
  	init_stream_connect(system_cronjob_t)
  	init_manage_script_service(system_cronjob_t)
-@@ -519,6 +521,7 @@ corenet_udp_sendrecv_generic_node(system
- corenet_tcp_sendrecv_all_ports(system_cronjob_t)
- corenet_udp_sendrecv_all_ports(system_cronjob_t)
+@@ -519,6 +521,7 @@ corenet_udp_sendrecv_generic_if(system_c
+ corenet_tcp_sendrecv_generic_node(system_cronjob_t)
+ corenet_udp_sendrecv_generic_node(system_cronjob_t)
  corenet_udp_bind_generic_node(system_cronjob_t)
 +corenet_tcp_connect_tor_port(system_cronjob_t)
  
@@ -219,7 +219,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  miscfiles_read_localization(system_cronjob_t)
  
  seutil_read_config(system_cronjob_t)
-@@ -680,10 +684,16 @@ optional_policy(`
+@@ -681,10 +685,16 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -236,11 +236,11 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  ')
  
  ########################################
-Index: refpolicy-2.20190201/policy/modules/system/init.if
+Index: refpolicy-2.20200409/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/system/init.if
-+++ refpolicy-2.20190201/policy/modules/system/init.if
-@@ -3222,3 +3222,21 @@ interface(`init_getrlimit',`
+--- refpolicy-2.20200409.orig/policy/modules/system/init.if
++++ refpolicy-2.20200409/policy/modules/system/init.if
+@@ -3467,3 +3467,21 @@ interface(`init_getrlimit',`
  
  	allow $1 init_t:process getrlimit;
  ')
@@ -262,11 +262,11 @@ Index: refpolicy-2.20190201/policy/modules/system/init.if
 +
 +	allow $1 init_t:key search;
 +')
-Index: refpolicy-2.20190201/policy/modules/services/mta.te
+Index: refpolicy-2.20200409/policy/modules/services/mta.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/mta.te
-+++ refpolicy-2.20190201/policy/modules/services/mta.te
-@@ -292,7 +292,12 @@ optional_policy(`
+--- refpolicy-2.20200409.orig/policy/modules/services/mta.te
++++ refpolicy-2.20200409/policy/modules/services/mta.te
+@@ -287,7 +287,12 @@ optional_policy(`
  	userdom_dontaudit_use_user_ptys(system_mail_t)
  
  	optional_policy(`
@@ -279,11 +279,11 @@ Index: refpolicy-2.20190201/policy/modules/services/mta.te
  	')
  ')
  
-Index: refpolicy-2.20190201/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20200409/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20190201/policy/modules/roles/sysadm.te
-@@ -1288,7 +1288,7 @@ ifndef(`distro_redhat',`
+--- refpolicy-2.20200409.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20200409/policy/modules/roles/sysadm.te
+@@ -1324,7 +1324,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`

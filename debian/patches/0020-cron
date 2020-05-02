@@ -2,10 +2,10 @@ Description: cron patches
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2017-02-21
 
-Index: refpolicy-2.20190201/policy/modules/services/cron.if
+Index: refpolicy-2.20200219/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20190201/policy/modules/services/cron.if
+--- refpolicy-2.20200219.orig/policy/modules/services/cron.if
++++ refpolicy-2.20200219/policy/modules/services/cron.if
 @@ -21,23 +21,33 @@ template(`cron_common_crontab_template',
  	# Declarations
  	#
@@ -157,10 +157,10 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.if
  
  	optional_policy(`
  		gen_require(`
-Index: refpolicy-2.20190201/policy/modules/services/cron.te
+Index: refpolicy-2.20200219/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20190201.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20190201/policy/modules/services/cron.te
+--- refpolicy-2.20200219.orig/policy/modules/services/cron.te
++++ refpolicy-2.20200219/policy/modules/services/cron.te
 @@ -25,7 +25,9 @@ gen_tunable(cron_can_relabel, false)
  ##	the generic cronjob domain.
  ##	</p>
@@ -172,46 +172,48 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  
  ## <desc>
  ##	<p>
-@@ -83,15 +85,16 @@ files_pid_file(crond_var_run_t)
+@@ -81,9 +83,11 @@ init_unit_file(crond_unit_t)
  type crontab_exec_t;
  application_executable_file(crontab_exec_t)
  
 -cron_common_crontab_template(admin_crontab)
--typealias admin_crontab_t alias sysadm_crontab_t;
--typealias admin_crontab_tmp_t alias sysadm_crontab_tmp_t;
 -
 -cron_common_crontab_template(crontab)
--typealias crontab_t alias { user_crontab_t staff_crontab_t };
--typealias crontab_t alias { auditadm_crontab_t secadm_crontab_t };
--typealias crontab_tmp_t alias { user_crontab_tmp_t staff_crontab_tmp_t };
--typealias crontab_tmp_t alias { auditadm_crontab_tmp_t secadm_crontab_tmp_t };
-+cron_common_crontab_template(sysadm)
-+typealias sysadm_crontab_t alias admin_crontab_t;
-+typealias sysadm_crontab_tmp_t alias admin_crontab_tmp_t;
-+
 +cron_common_crontab_template(user)
 +cron_common_crontab_template(staff)
 +cron_common_crontab_template(unconfined)
++cron_common_crontab_template(sysadm)
 +typealias user_crontab_t alias { crontab_t };
-+typealias sysadm_crontab_t alias { auditadm_crontab_t secadm_crontab_t };
-+typealias sysadm_crontab_tmp_t alias { auditadm_crontab_tmp_t secadm_crontab_tmp_t };
  
  type system_cron_spool_t, cron_spool_type;
  files_type(system_cron_spool_t)
-@@ -113,11 +116,7 @@ files_type(system_cronjob_var_lib_t)
- type system_cronjob_var_run_t;
- files_pid_file(system_cronjob_var_run_t)
+@@ -105,25 +109,13 @@ files_tmp_file(system_cronjob_tmp_t)
+ type system_cronjob_var_lib_t;
+ files_type(system_cronjob_var_lib_t)
  
 -type user_cron_spool_t, cron_spool_type;
--typealias user_cron_spool_t alias { staff_cron_spool_t sysadm_cron_spool_t unconfined_cron_spool_t };
--typealias user_cron_spool_t alias { auditadm_cron_spool_t secadm_cron_spool_t };
 -files_type(user_cron_spool_t)
 -ubac_constrained(user_cron_spool_t)
-+typealias sysadm_cron_spool_t alias { auditadm_cron_spool_t secadm_cron_spool_t };
+-
+-type user_cron_spool_log_t;
+-logging_log_file(user_cron_spool_log_t)
+-ubac_constrained(user_cron_spool_log_t)
+-
+ ifdef(`enable_mcs',`
+ 	init_ranged_daemon_domain(crond_t, crond_exec_t, s0 - mcs_systemhigh)
+ ')
  
- type user_cron_spool_log_t;
- logging_log_file(user_cron_spool_log_t)
-@@ -145,9 +144,6 @@ allow crontab_domain self:capability { c
+ optional_policy(`
+-	mta_system_content(cron_spool_t)
+ 	mta_system_content(crond_tmp_t)
+ 	mta_system_content(crond_runtime_t)
+-	mta_system_content(system_cron_spool_t)
+-	mta_system_content(user_cron_spool_t)
+-	mta_system_content(user_cron_spool_log_t)
+ ')
+ 
+ ##############################
+@@ -135,9 +127,6 @@ allow crontab_domain self:capability { c
  allow crontab_domain self:process { getcap setsched signal_perms };
  allow crontab_domain self:fifo_file rw_fifo_file_perms;
  
@@ -221,7 +223,29 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  allow crontab_domain cron_spool_t:dir setattr_dir_perms;
  
  allow crontab_domain crond_t:process signal;
-@@ -216,8 +212,8 @@ tunable_policy(`fcron_crond',`
+@@ -184,30 +173,11 @@ tunable_policy(`fcron_crond',`
+ 
+ ########################################
+ #
+-# Admin local policy
+-#
+-
+-allow admin_crontab_t self:capability fsetid;
+-allow admin_crontab_t crond_t:process signal;
+-
+-selinux_get_fs_mount(admin_crontab_t)
+-selinux_validate_context(admin_crontab_t)
+-selinux_compute_access_vector(admin_crontab_t)
+-selinux_compute_create_context(admin_crontab_t)
+-selinux_compute_relabel_context(admin_crontab_t)
+-selinux_compute_user_contexts(admin_crontab_t)
+-
+-tunable_policy(`fcron_crond',`
+-	allow admin_crontab_t self:process setfscreate;
+-')
+-
+-########################################
+-#
  # Daemon local policy
  #
  
@@ -232,7 +256,7 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  
  allow crond_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
  allow crond_t self:fd use;
-@@ -231,6 +227,7 @@ allow crond_t self:msg { send receive };
+@@ -221,6 +191,7 @@ allow crond_t self:msg { send receive };
  allow crond_t self:key { search write link };
  dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
  
@@ -240,3 +264,26 @@ Index: refpolicy-2.20190201/policy/modules/services/cron.te
  allow crond_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
  logging_log_filetrans(crond_t, cron_log_t, file)
  
+@@ -244,8 +215,6 @@ manage_files_pattern(crond_t, user_cron_
+ manage_lnk_files_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
+ allow crond_t user_cron_spool_t:dir watch;
+ 
+-manage_files_pattern(crond_t, user_cron_spool_log_t, user_cron_spool_log_t)
+-
+ allow crond_t system_cronjob_t:process transition;
+ allow crond_t system_cronjob_t:fd use;
+ allow crond_t system_cronjob_t:key manage_key_perms;
+Index: refpolicy-2.20200219/policy/modules/services/cron.fc
+===================================================================
+--- refpolicy-2.20200219.orig/policy/modules/services/cron.fc
++++ refpolicy-2.20200219/policy/modules/services/cron.fc
+@@ -38,8 +38,7 @@
+ /run/.*cron.*	--	gen_context(system_u:object_r:crond_runtime_t,s0)
+ 
+ /var/spool/anacron(/.*)?	gen_context(system_u:object_r:system_cron_spool_t,s0)
+-/var/spool/at(/.*)?	gen_context(system_u:object_r:user_cron_spool_t,s0)
+-/var/spool/at/atspool(/.*)?	gen_context(system_u:object_r:user_cron_spool_log_t,s0)
++/var/spool/at(/.*)?	gen_context(system_u:object_r:system_cron_spool_t,s0)
+ 
+ /var/spool/cron	-d	gen_context(system_u:object_r:cron_spool_t,s0)
+ #/var/spool/cron/root	--	gen_context(system_u:object_r:sysadm_cron_spool_t,s0)

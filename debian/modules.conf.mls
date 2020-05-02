@@ -696,7 +696,7 @@ dbskk = module
 #
 # Desktop messaging bus.
 # 
-dbus = module
+dbus = base
 
 # Layer: contrib
 # Module: dcc
