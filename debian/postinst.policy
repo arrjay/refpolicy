@@ -19,7 +19,7 @@ priority=100
 
 # modules which are not enabled by default, because they are usually
 # not needed on a debian system
-notdefault="abrt certwatch clockspeed clogd cmirrord cobbler consoletype cyphesis dnssectrigger firewallgui firstboot howl imaze jockey keyboardd ksmtuned ktalk likewise livecd nessus numad oav oddjob podsleuth resmgr rhsmcertd ricci rpm sambagui soundserver updfstab usernetctl"
+notdefault="amtu bugzilla cobbler condor cyphesis ksmtuned likewise livecd nessus numad oddjob openca soundserver updfstab usernetctl"
 
 . /etc/selinux/config
 

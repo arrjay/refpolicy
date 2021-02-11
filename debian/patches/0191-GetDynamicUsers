@@ -1,20 +1,19 @@
-Index: refpolicy-2.20200424/policy/modules/services/dictd.te
+Index: refpolicy-2.20210126/policy/modules/services/dictd.te
 ===================================================================
---- refpolicy-2.20200424.orig/policy/modules/services/dictd.te
-+++ refpolicy-2.20200424/policy/modules/services/dictd.te
-@@ -83,3 +83,7 @@ optional_policy(`
- optional_policy(`
- 	udev_read_db(dictd_t)
+--- refpolicy-2.20210126.orig/policy/modules/services/dictd.te
++++ refpolicy-2.20210126/policy/modules/services/dictd.te
+@@ -79,3 +79,6 @@ optional_policy(`
+ 	seutil_sigchld_newrole(dictd_t)
  ')
-+
+ 
 +ifdef(`init_systemd',`
 +	init_dbus_chat(dictd_t)
 +')
-Index: refpolicy-2.20200424/policy/modules/services/postfix.te
+Index: refpolicy-2.20210126/policy/modules/services/postfix.te
 ===================================================================
---- refpolicy-2.20200424.orig/policy/modules/services/postfix.te
-+++ refpolicy-2.20200424/policy/modules/services/postfix.te
-@@ -382,9 +382,6 @@ manage_lnk_files_pattern(postfix_bounce_
+--- refpolicy-2.20210126.orig/policy/modules/services/postfix.te
++++ refpolicy-2.20210126/policy/modules/services/postfix.te
+@@ -377,9 +377,6 @@ manage_lnk_files_pattern(postfix_bounce_
  
  optional_policy(`
  	init_dbus_chat(postfix_bounce_t)
