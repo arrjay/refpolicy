@@ -30,7 +30,15 @@ Index: refpolicy-2.20210203/policy/modules/admin/bootloader.te
  kernel_read_network_state(bootloader_t)
  kernel_read_system_state(bootloader_t)
  kernel_read_software_raid_state(bootloader_t)
-@@ -152,8 +154,12 @@ miscfiles_read_localization(bootloader_t
+@@ -106,6 +108,7 @@ domain_use_interactive_fds(bootloader_t)
+ 
+ files_create_boot_dirs(bootloader_t)
+ files_getattr_default_dirs(bootloader_t)
++files_getattr_lost_found_dirs(bootloader_t)
+ files_manage_boot_files(bootloader_t)
+ files_manage_boot_symlinks(bootloader_t)
+ files_read_etc_files(bootloader_t)
+@@ -152,8 +155,12 @@ miscfiles_read_localization(bootloader_t
  
  mount_rw_runtime_files(bootloader_t)
  

@@ -144,7 +144,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  kernel_read_crypto_sysctls(mailman_cgi_t)
 +kernel_read_net_sysctls(mailman_cgi_t)
  kernel_read_system_state(mailman_cgi_t)
-+kernel_search_vm_sysctl(mailman_cgi_t)
++kernel_read_vm_overcommit_sysctl(mailman_cgi_t)
  
 +corecmd_bin_entry_type(mailman_cgi_t)
  corecmd_exec_bin(mailman_cgi_t)
@@ -258,7 +258,15 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  allow mailman_queue_t self:fifo_file rw_fifo_file_perms;
  
  allow mailman_queue_t mailman_archive_t:dir manage_dir_perms;
-@@ -251,14 +300,14 @@ seutil_dontaudit_search_config(mailman_q
+@@ -240,6 +289,7 @@ auth_domtrans_chk_passwd(mailman_queue_t
+ 
+ corecmd_read_bin_files(mailman_queue_t)
+ corenet_sendrecv_innd_client_packets(mailman_queue_t)
++corenet_tcp_bind_generic_node(mailman_queue_t)
+ corenet_tcp_connect_innd_port(mailman_queue_t)
+ 
+ files_dontaudit_search_runtime(mailman_queue_t)
+@@ -251,14 +301,19 @@ seutil_dontaudit_search_config(mailman_q
  
  userdom_search_user_home_dirs(mailman_queue_t)
  
@@ -272,6 +280,11 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
 +	cron_rw_tmp_files(mailman_queue_t)
  	cron_system_entry(mailman_queue_t, mailman_queue_exec_t)
 +	cron_use_fds(mailman_queue_t)
++')
++
++optional_policy(`
++	mysql_stream_connect(mailman_queue_t)
++	mysql_tcp_connect(mailman_queue_t)
  ')
  
  optional_policy(`
@@ -319,3 +332,15 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
  	xfs_create_tmp_dirs(systemd_tmpfiles_t)
  ')
  
+Index: refpolicy-2.20210203/policy/modules/services/mailman.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/mailman.fc
++++ refpolicy-2.20210203/policy/modules/services/mailman.fc
+@@ -20,6 +20,7 @@
+ 
+ /usr/lib/cgi-bin/mailman/.*	--	gen_context(system_u:object_r:mailman_cgi_exec_t,s0)
+ /usr/lib/mailman/bin/qrunner	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
++/usr/lib/mailman3/bin/.*	--	gen_context(system_u:object_r:mailman_queue_exec_t,s0)
+ /usr/lib/mailman/cgi-bin/.*	--	gen_context(system_u:object_r:mailman_cgi_exec_t,s0)
+ /usr/lib/mailman/mail/mailman	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)
+ /usr/lib/mailman/mail/wrapper	--	gen_context(system_u:object_r:mailman_mail_exec_t,s0)

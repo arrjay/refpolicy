@@ -1,3 +1,9 @@
+refpolicy (2:2.20210203-2) unstable; urgency=medium
+
+  * lots of little policy changes
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 12 Feb 2021 10:24:33 +1100
+
 refpolicy (2:2.20210203-1) unstable; urgency=medium
 
   * Allow unconfined_u and sysadm_u to access other identities.

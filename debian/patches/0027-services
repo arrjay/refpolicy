@@ -54,7 +54,15 @@ Index: refpolicy-2.20210203/policy/modules/services/apache.fc
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/apache.fc
 +++ refpolicy-2.20210203/policy/modules/services/apache.fc
-@@ -172,7 +172,7 @@ ifdef(`distro_suse',`
+@@ -164,6 +164,7 @@ ifdef(`distro_suse',`
+ /var/log/glpi(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
+ /var/log/hiawatha(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
+ /var/log/mlogc(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
++/var/log/pagespeed(/.*)?					gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
+ /var/log/httpd(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
+ /var/log/horde2(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
+ /var/log/lighttpd(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
+@@ -172,7 +173,7 @@ ifdef(`distro_suse',`
  /var/log/roundcubemail(/.*)?					gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/suphp\.log.*					--	gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/z-push(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -175,7 +183,14 @@ Index: refpolicy-2.20210203/policy/modules/services/certbot.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/certbot.te
 +++ refpolicy-2.20210203/policy/modules/services/certbot.te
-@@ -85,6 +85,8 @@ domain_use_interactive_fds(certbot_t)
+@@ -80,11 +80,15 @@ corenet_tcp_connect_dns_port(certbot_t)
+ # bind to http port for standalone mode
+ corenet_tcp_bind_http_port(certbot_t)
+ 
++dev_read_urand(certbot_t)
++
+ domain_use_interactive_fds(certbot_t)
+ 
  files_read_etc_files(certbot_t)
  files_read_usr_files(certbot_t)
  
@@ -234,7 +249,7 @@ Index: refpolicy-2.20210203/policy/modules/services/cups.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/cups.te
 +++ refpolicy-2.20210203/policy/modules/services/cups.te
-@@ -5,6 +5,13 @@ policy_module(cups, 1.25.3)
+@@ -5,6 +5,13 @@ policy_module(cups, 1.26.0)
  # Declarations
  #
  
@@ -311,7 +326,7 @@ Index: refpolicy-2.20210203/policy/modules/services/devicekit.te
  miscfiles_read_localization(devicekit_disk_t)
  
  userdom_read_all_users_state(devicekit_disk_t)
-@@ -210,7 +213,7 @@ optional_policy(`
+@@ -214,7 +217,7 @@ optional_policy(`
  
  allow devicekit_power_t self:capability { dac_override net_admin sys_admin sys_nice sys_ptrace sys_tty_config };
  allow devicekit_power_t self:capability2 wake_alarm;
@@ -469,7 +484,18 @@ Index: refpolicy-2.20210203/policy/modules/services/mon.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/mon.te
 +++ refpolicy-2.20210203/policy/modules/services/mon.te
-@@ -164,9 +164,10 @@ optional_policy(`
+@@ -154,6 +154,10 @@ optional_policy(`
+ 	mysql_stream_connect(mon_net_test_t)
+ ')
+ 
++optional_policy(`
++	snmp_read_snmp_var_lib_files(mon_net_test_t)
++')
++
+ ########################################
+ #
+ # Local policy
+@@ -164,9 +168,10 @@ optional_policy(`
  #
  
  # sys_ptrace is for reading /proc/1/maps etc
@@ -481,7 +507,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mon.te
  
  can_exec(mon_local_test_t, mon_local_test_exec_t)
  
-@@ -197,8 +198,11 @@ files_list_boot(mon_local_test_t)
+@@ -197,8 +202,11 @@ files_list_boot(mon_local_test_t)
  fs_search_auto_mountpoints(mon_local_test_t)
  fs_getattr_nfs(mon_local_test_t)
  fs_getattr_xattr_fs(mon_local_test_t)
@@ -493,7 +519,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mon.te
  fs_search_nfs(mon_local_test_t)
  
  storage_getattr_fixed_disk_dev(mon_local_test_t)
-@@ -211,12 +215,14 @@ application_exec_all(mon_local_test_t)
+@@ -211,12 +219,14 @@ application_exec_all(mon_local_test_t)
  
  auth_use_nsswitch(mon_local_test_t)
  
@@ -613,7 +639,7 @@ Index: refpolicy-2.20210203/policy/modules/services/postfix.te
  optional_policy(`
  	locallogin_dontaudit_use_fds(postfix_map_t)
  ')
-@@ -745,12 +750,17 @@ allow postfix_showq_t postfix_spool_mail
+@@ -747,12 +752,17 @@ allow postfix_showq_t postfix_spool_mail
  allow postfix_showq_t postfix_spool_maildrop_t:lnk_file read_lnk_file_perms;
  
  allow postfix_showq_t postfix_spool_t:file read_file_perms;
@@ -990,3 +1016,15 @@ Index: refpolicy-2.20210203/policy/modules/kernel/filesystem.if
 +
 +	allow $1 bpf_t:dir search;
 +')
+Index: refpolicy-2.20210203/policy/modules/services/acpi.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/acpi.fc
++++ refpolicy-2.20210203/policy/modules/services/acpi.fc
+@@ -8,6 +8,7 @@
+ /usr/lib/systemd/system/apmd.*\.service -- gen_context(system_u:object_r:acpid_unit_t,s0)
+ 
+ /usr/sbin/acpid	--	gen_context(system_u:object_r:acpid_exec_t,s0)
++/usr/sbin/acpi_fakekeyd	--	gen_context(system_u:object_r:acpid_exec_t,s0)
+ /usr/sbin/apmd	--	gen_context(system_u:object_r:acpid_exec_t,s0)
+ /usr/sbin/powersaved	--	gen_context(system_u:object_r:acpid_exec_t,s0)
+ 
