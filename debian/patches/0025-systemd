@@ -1,0 +1,612 @@
+Index: refpolicy-2.20210203/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20210203/policy/modules/system/systemd.if
+@@ -84,6 +84,8 @@ template(`systemd_role_template',`
+ 	seutil_read_file_contexts($1_systemd_t)
+ 	seutil_search_default_contexts($1_systemd_t)
+ 
++	userdom_search_user_home_dirs($1_systemd_t)
++
+ 	# for machinectl shell
+ 	term_user_pty($1_systemd_t, user_devpts_t)
+ 	allow $1_systemd_t user_devpts_t:chr_file rw_file_perms;
+@@ -296,6 +298,24 @@ interface(`systemd_write_logind_runtime_
+ 
+ ######################################
+ ## <summary>
++##     Watch systemd-logind runtime dirs
++## </summary>
++## <param name="domain">
++##     <summary>
++##     Domain allowed access.
++##     </summary>
++## </param>
++#
++interface(`systemd_watch_logind_runtime_dir',`
++	gen_require(`
++		type systemd_logind_runtime_t;
++	')
++
++	allow $1 systemd_logind_runtime_t:dir watch;
++')
++
++######################################
++## <summary>
+ ##   Use inherited systemd
+ ##   logind file descriptors.
+ ## </summary>
+@@ -356,6 +376,24 @@ interface(`systemd_write_inherited_login
+ 
+ ######################################
+ ## <summary>
++##      Watch logind sessions dirs.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`systemd_watch_logind_sessions_dir',`
++	gen_require(`
++		type systemd_sessions_runtime_t;
++	')
++
++	allow $1 systemd_sessions_runtime_t:dir watch;
++')
++
++######################################
++## <summary>
+ ##      Write inherited logind inhibit pipes.
+ ## </summary>
+ ## <param name="domain">
+@@ -528,6 +566,24 @@ interface(`systemd_connect_machined',`
+ 
+ ########################################
+ ## <summary>
++##	Allow watching /run/systemd/machines
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain that can watch the machines files
++##	</summary>
++## </param>
++#
++interface(`systemd_watch_machines_dir',`
++	gen_require(`
++		type systemd_machined_runtime_t;
++	')
++
++	allow $1 systemd_machined_runtime_t:dir watch;
++')
++
++########################################
++## <summary>
+ ##   Send and receive messages from
+ ##   systemd hostnamed over dbus.
+ ## </summary>
+@@ -585,7 +641,7 @@ interface(`systemd_run_passwd_agent',`
+ 		type systemd_passwd_agent_t, systemd_passwd_agent_exec_t;
+ 	')
+ 
+-	domtrans_pattern($1, systemd_passwd_agent_exec_t, systemd_passwd_agent_t)
++	domain_auto_transition_pattern($1, systemd_passwd_agent_exec_t, systemd_passwd_agent_t)
+ 	allow systemd_passwd_agent_t $1:fd use;
+ 	role $2 types systemd_passwd_agent_t;
+ ')
+@@ -673,6 +729,24 @@ interface(`systemd_manage_passwd_runtime
+ ')
+ 
+ ########################################
++## <summary>
++##      watch systemd_passwd_runtime_t dirs
++## </summary>
++## <param name="domain">
++##  <summary>
++##  Domain allowed access.
++##  </summary>
++## </param>
++#
++interface(`systemd_watch_passwd_runtime_dirs',`
++	gen_require(`
++		type systemd_passwd_runtime_t;
++	')
++
++	allow $1 systemd_passwd_runtime_t:dir watch;
++')
++
++########################################
+ ## <summary>
+ ##      manage systemd unit dirs and the files in them  (Deprecated)
+ ## </summary>
+Index: refpolicy-2.20210203/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20210203/policy/modules/system/systemd.te
+@@ -129,6 +129,7 @@ type systemd_logind_t;
+ type systemd_logind_exec_t;
+ init_daemon_domain(systemd_logind_t, systemd_logind_exec_t)
+ init_named_socket_activation(systemd_logind_t, systemd_logind_runtime_t)
++init_stream_connect(systemd_logind_t)
+ 
+ type systemd_logind_inhibit_runtime_t alias systemd_logind_inhibit_var_run_t;
+ files_runtime_file(systemd_logind_inhibit_runtime_t)
+@@ -295,6 +296,8 @@ allow systemd_backlight_t systemd_backli
+ init_var_lib_filetrans(systemd_backlight_t, systemd_backlight_var_lib_t, dir)
+ manage_files_pattern(systemd_backlight_t, systemd_backlight_var_lib_t, systemd_backlight_var_lib_t)
+ 
++kernel_read_kernel_sysctls(systemd_backlight_t)
++
+ systemd_log_parse_environment(systemd_backlight_t)
+ 
+ # Allow systemd-backlight to write to /sys/class/backlight/*/brightness
+@@ -358,13 +361,15 @@ ifdef(`enable_mls',`
+ #
+ 
+ allow systemd_coredump_t self:unix_dgram_socket { create write connect getopt setopt };
+-allow systemd_coredump_t self:capability { dac_override dac_read_search setgid setuid setpcap sys_ptrace };
++allow systemd_coredump_t self:unix_stream_socket connectto;
++allow systemd_coredump_t self:capability { dac_override dac_read_search setgid setuid setpcap net_admin sys_ptrace };
+ allow systemd_coredump_t self:process { getcap setcap setfscreate };
+ 
+ manage_files_pattern(systemd_coredump_t, systemd_coredump_var_lib_t, systemd_coredump_var_lib_t)
+ allow systemd_coredump_t systemd_coredump_var_lib_t:file map;
+ 
+ kernel_domtrans_to(systemd_coredump_t, systemd_coredump_exec_t)
++kernel_read_crypto_sysctls(systemd_coredump_t)
+ kernel_read_kernel_sysctls(systemd_coredump_t)
+ kernel_read_system_state(systemd_coredump_t)
+ kernel_rw_pipes(systemd_coredump_t)
+@@ -375,11 +380,16 @@ corecmd_read_all_executables(systemd_cor
+ 
+ dev_write_kmsg(systemd_coredump_t)
+ 
++domain_read_all_domains_state(systemd_coredump_t)
++
+ files_getattr_all_mountpoints(systemd_coredump_t)
+ files_read_etc_files(systemd_coredump_t)
+ files_search_var_lib(systemd_coredump_t)
+ 
++fs_getattr_cgroup(systemd_coredump_t)
++fs_getattr_tmpfs(systemd_coredump_t)
+ fs_getattr_xattr_fs(systemd_coredump_t)
++fs_search_cgroup_dirs(systemd_coredump_t)
+ fs_search_tmpfs(systemd_coredump_t)
+ 
+ selinux_getattr_fs(systemd_coredump_t)
+@@ -393,6 +403,32 @@ logging_send_syslog_msg(systemd_coredump
+ 
+ seutil_search_default_contexts(systemd_coredump_t)
+ 
++allow systemd_generator_t self:fifo_file rw_file_perms;
++allow systemd_generator_t self:process setfscreate;
++
++allow systemd_generator_t self:capability dac_override;
++allow systemd_generator_t self:tcp_socket create;
++allow systemd_generator_t self:netlink_route_socket { create read bind getattr write nlmsg_read };
++
++corecmd_exec_bin(systemd_generator_t)
++corecmd_exec_shell(systemd_generator_t)
++files_exec_etc_files(systemd_generator_t)
++fs_getattr_cgroup(systemd_generator_t)
++fs_getattr_tmpfs(systemd_generator_t)
++fs_rw_tmpfs_files(systemd_generator_t)
++miscfiles_read_localization(systemd_generator_t)
++
++optional_policy(`
++	# for /lib/systemd/system-generators/openvpn-generator
++	openvpn_read_config(systemd_generator_t)
++')
++
++optional_policy(`
++	# it runs postconf
++	# maybe /lib/systemd/system-generators/postfix-instance-generator
++	postfix_read_config(systemd_generator_t)
++')
++
+ #######################################
+ #
+ # Systemd generator local policy
+@@ -404,12 +440,17 @@ allow systemd_generator_t self:process s
+ 
+ allow systemd_generator_t systemd_unit_t:file getattr;
+ 
++allow systemd_generator_t self:udp_socket create;
++
+ corecmd_getattr_bin_files(systemd_generator_t)
+ 
+ dev_read_sysfs(systemd_generator_t)
++dev_read_urand(systemd_generator_t)
+ dev_write_kmsg(systemd_generator_t)
+ dev_write_sysfs_dirs(systemd_generator_t)
+ 
++application_exec(systemd_generator_t)
++domain_read_all_entry_files(systemd_generator_t)
+ files_read_etc_files(systemd_generator_t)
+ files_search_runtime(systemd_generator_t)
+ files_list_boot(systemd_generator_t)
+@@ -417,9 +458,11 @@ files_read_boot_files(systemd_generator_
+ files_read_config_files(systemd_generator_t)
+ files_search_all_mountpoints(systemd_generator_t)
+ files_list_usr(systemd_generator_t)
++files_getattr_usr_files(systemd_generator_t)
+ 
+ fs_list_efivars(systemd_generator_t)
+ fs_getattr_xattr_fs(systemd_generator_t)
++fs_search_nfs(systemd_generator_t)
+ 
+ init_create_runtime_files(systemd_generator_t)
+ init_read_all_script_files(systemd_generator_t)
+@@ -439,6 +482,11 @@ init_read_script_files(systemd_generator
+ kernel_use_fds(systemd_generator_t)
+ kernel_read_system_state(systemd_generator_t)
+ kernel_read_kernel_sysctls(systemd_generator_t)
++kernel_read_network_state(systemd_generator_t)
++kernel_search_network_sysctl(systemd_generator_t)
++
++selinux_getattr_fs(systemd_generator_t)
++seutil_search_default_contexts(systemd_generator_t)
+ 
+ storage_raw_read_fixed_disk(systemd_generator_t)
+ 
+@@ -446,6 +494,8 @@ systemd_log_parse_environment(systemd_ge
+ 
+ term_use_unallocated_ttys(systemd_generator_t)
+ 
++udev_search_runtime(systemd_generator_t)
++
+ optional_policy(`
+ 	fstools_exec(systemd_generator_t)
+ ')
+@@ -457,6 +507,10 @@ optional_policy(`
+ 	miscfiles_read_localization(systemd_generator_t)
+ ')
+ 
++optional_policy(`
++	tmpreaper_exec(systemd_generator_t)
++')
++
+ #######################################
+ #
+ # Hostnamed policy
+@@ -489,6 +543,10 @@ optional_policy(`
+ 	networkmanager_dbus_chat(systemd_hostnamed_t)
+ ')
+ 
++optional_policy(`
++	unconfined_dbus_send(systemd_hostnamed_t)
++')
++
+ #########################################
+ #
+ # hw local policy
+@@ -557,6 +615,7 @@ logging_send_syslog_msg(systemd_log_pars
+ #
+ 
+ allow systemd_logind_t self:capability { chown dac_override dac_read_search fowner sys_admin sys_tty_config };
++allow systemd_logind_t self:lockdown integrity;
+ allow systemd_logind_t self:process { getcap setfscreate };
+ allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
+ allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
+@@ -583,6 +642,8 @@ allow systemd_logind_t systemd_sessions_
+ 
+ kernel_read_kernel_sysctls(systemd_logind_t)
+ 
++auth_read_shadow(systemd_logind_t)
++
+ dev_getattr_dri_dev(systemd_logind_t)
+ dev_getattr_generic_usb_dev(systemd_logind_t)
+ dev_getattr_kvm_dev(systemd_logind_t)
+@@ -602,11 +663,13 @@ dev_setattr_video_dev(systemd_logind_t)
+ 
+ domain_obj_id_change_exemption(systemd_logind_t)
+ 
++files_search_boot(systemd_logind_t)
+ files_search_runtime(systemd_logind_t)
+ 
+ fs_getattr_cgroup(systemd_logind_t)
+ fs_getattr_tmpfs(systemd_logind_t)
+ fs_getattr_tmpfs_dirs(systemd_logind_t)
++fs_getattr_xattr_fs(systemd_logind_t)
+ fs_list_tmpfs(systemd_logind_t)
+ fs_mount_tmpfs(systemd_logind_t)
+ fs_read_cgroup_files(systemd_logind_t)
+@@ -637,6 +700,7 @@ init_start_all_units(systemd_logind_t)
+ init_stop_all_units(systemd_logind_t)
+ init_start_system(systemd_logind_t)
+ init_stop_system(systemd_logind_t)
++init_stream_connect(systemd_logind_t)
+ init_watch_utmp(systemd_logind_t)
+ 
+ # for /run/systemd/transient/*
+@@ -701,6 +765,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	dpkg_dbus_chat(systemd_logind_t)
++	dpkg_read_state(systemd_logind_t)
++')
++
++optional_policy(`
+ 	devicekit_dbus_chat_disk(systemd_logind_t)
+ 	devicekit_dbus_chat_power(systemd_logind_t)
+ ')
+@@ -743,6 +812,9 @@ allow systemd_machined_t systemd_machine
+ manage_files_pattern(systemd_machined_t, systemd_machined_runtime_t, systemd_machined_runtime_t)
+ allow systemd_machined_t systemd_machined_runtime_t:lnk_file manage_lnk_file_perms;
+ 
++allow systemd_machined_t systemd_userdb_runtime_t:dir manage_dir_perms;
++allow systemd_machined_t systemd_userdb_runtime_t:sock_file { create unlink };
++
+ kernel_read_kernel_sysctls(systemd_machined_t)
+ kernel_read_system_state(systemd_machined_t)
+ 
+@@ -859,6 +931,10 @@ sysnet_read_config(systemd_networkd_t)
+ systemd_log_parse_environment(systemd_networkd_t)
+ 
+ optional_policy(`
++	bluetooth_dbus_chat(systemd_hostnamed_t)
++')
++
++optional_policy(`
+ 	dbus_system_bus_client(systemd_networkd_t)
+ 	dbus_connect_system_bus(systemd_networkd_t)
+ 	dbus_watch_system_bus_runtime_dirs(systemd_networkd_t)
+@@ -899,7 +975,7 @@ miscfiles_read_localization(systemd_noti
+ # Nspawn local policy
+ #
+ 
+-allow systemd_nspawn_t self:process { signal getcap setcap setfscreate setrlimit sigkill };
++allow systemd_nspawn_t self:process { signal getsched setsched getcap setcap setfscreate setrlimit sigkill };
+ allow systemd_nspawn_t self:capability { dac_override dac_read_search fsetid mknod net_admin setgid setuid setpcap sys_admin sys_chroot };
+ allow systemd_nspawn_t self:capability2 wake_alarm;
+ allow systemd_nspawn_t self:unix_dgram_socket connected_socket_perms;
+@@ -925,14 +1001,26 @@ allow systemd_nspawn_t systemd_nspawn_tm
+ # for /run/systemd/nspawn/incoming in chroot
+ allow systemd_nspawn_t systemd_nspawn_runtime_t:dir mounton;
+ 
++kernel_getattr_core_if(systemd_nspawn_t)
++kernel_getattr_proc(systemd_nspawn_t)
++kernel_getattr_unlabeled_dirs(systemd_nspawn_t)
++
+ kernel_mount_proc(systemd_nspawn_t)
+ kernel_mounton_sysctl_dirs(systemd_nspawn_t)
+ kernel_mounton_kernel_sysctl_files(systemd_nspawn_t)
+ kernel_mounton_message_if(systemd_nspawn_t)
+ kernel_mounton_proc(systemd_nspawn_t)
++kernel_mounton_sysctl_files(systemd_nspawn_t)
++kernel_mounton_unlabeled_dirs(systemd_nspawn_t)
++
++kernel_read_irq_sysctls(systemd_nspawn_t)
++kernel_read_network_state(systemd_nspawn_t)
+ kernel_read_kernel_sysctls(systemd_nspawn_t)
++kernel_read_sysctl(systemd_nspawn_t)
+ kernel_read_system_state(systemd_nspawn_t)
+ kernel_remount_proc(systemd_nspawn_t)
++kernel_request_load_module(systemd_nspawn_t)
++kernel_search_network_sysctl(systemd_nspawn_t)
+ 
+ corecmd_exec_shell(systemd_nspawn_t)
+ corecmd_search_bin(systemd_nspawn_t)
+@@ -949,6 +1037,7 @@ dev_read_sysfs(systemd_nspawn_t)
+ dev_read_rand(systemd_nspawn_t)
+ dev_read_urand(systemd_nspawn_t)
+ 
++files_getattr_default_dirs(systemd_nspawn_t)
+ files_getattr_tmp_dirs(systemd_nspawn_t)
+ files_manage_etc_files(systemd_nspawn_t)
+ files_manage_mnt_dirs(systemd_nspawn_t)
+@@ -960,11 +1049,17 @@ files_setattr_runtime_dirs(systemd_nspaw
+ 
+ fs_getattr_cgroup(systemd_nspawn_t)
+ fs_getattr_tmpfs(systemd_nspawn_t)
++fs_getattr_xattr_fs(systemd_nspawn_t)
++fs_manage_cgroup_dirs(systemd_nspawn_t)
++fs_manage_cgroup_files(systemd_nspawn_t)
++fs_manage_tmpfs_blk_files(systemd_nspawn_t)
+ fs_manage_tmpfs_chr_files(systemd_nspawn_t)
++fs_mount_cgroup(systemd_nspawn_t)
+ fs_mount_tmpfs(systemd_nspawn_t)
++fs_mounton_cgroup(systemd_nspawn_t)
++fs_read_nsfs_files(systemd_nspawn_t)
+ fs_remount_tmpfs(systemd_nspawn_t)
+ fs_remount_xattr_fs(systemd_nspawn_t)
+-fs_read_cgroup_files(systemd_nspawn_t)
+ 
+ term_getattr_generic_ptys(systemd_nspawn_t)
+ term_getattr_pty_fs(systemd_nspawn_t)
+@@ -972,6 +1067,7 @@ term_mount_devpts(systemd_nspawn_t)
+ term_search_ptys(systemd_nspawn_t)
+ term_setattr_generic_ptys(systemd_nspawn_t)
+ term_use_ptmx(systemd_nspawn_t)
++term_use_generic_ptys(systemd_nspawn_t)
+ 
+ init_domtrans_script(systemd_nspawn_t)
+ init_getrlimit(systemd_nspawn_t)
+@@ -982,8 +1078,12 @@ init_write_runtime_socket(systemd_nspawn
+ init_spec_domtrans_script(systemd_nspawn_t)
+ 
+ miscfiles_manage_localization(systemd_nspawn_t)
++mount_exec(systemd_nspawn_t)
++
+ udev_read_runtime_files(systemd_nspawn_t)
+ 
++sysnet_exec_ifconfig(systemd_nspawn_t)
++
+ # for writing inside chroot
+ sysnet_manage_config(systemd_nspawn_t)
+ 
+@@ -1006,6 +1106,7 @@ tunable_policy(`systemd_nspawn_labeled_n
+ 	allow systemd_nspawn_t systemd_nspawn_runtime_t:fifo_file manage_fifo_file_perms;
+ 	fs_tmpfs_filetrans(systemd_nspawn_t, systemd_nspawn_runtime_t, sock_file)
+ 	allow systemd_nspawn_t systemd_nspawn_runtime_t:sock_file manage_sock_file_perms;
++	fs_tmpfs_filetrans(systemd_nspawn_t, systemd_nspawn_runtime_t, fifo_file)
+ 
+ 	fs_getattr_cgroup(systemd_nspawn_t)
+ 	fs_manage_cgroup_dirs(systemd_nspawn_t)
+@@ -1030,6 +1131,7 @@ tunable_policy(`systemd_nspawn_labeled_n
+ 
+ 	logging_search_logs(systemd_nspawn_t)
+ 
++	seutil_exec_setfiles(systemd_nspawn_t)
+ 	seutil_search_default_contexts(systemd_nspawn_t)
+ ')
+ 
+@@ -1056,7 +1158,7 @@ allow systemd_passwd_agent_t self:capabi
+ allow systemd_passwd_agent_t self:process { setfscreate setsockcreate signal };
+ allow systemd_passwd_agent_t self:unix_dgram_socket create_socket_perms;
+ 
+-allow systemd_passwd_agent_t systemd_passwd_var_run_t:{ dir file } watch;
++allow systemd_passwd_agent_t systemd_passwd_runtime_t:{ dir file } watch;
+ manage_dirs_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
+ manage_files_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
+ manage_sock_files_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
+@@ -1066,6 +1168,7 @@ init_runtime_filetrans(systemd_passwd_ag
+ can_exec(systemd_passwd_agent_t, systemd_passwd_agent_exec_t)
+ 
+ kernel_read_system_state(systemd_passwd_agent_t)
++kernel_search_fs_sysctls(systemd_passwd_agent_t)
+ kernel_stream_connect(systemd_passwd_agent_t)
+ 
+ dev_create_generic_dirs(systemd_passwd_agent_t)
+@@ -1092,6 +1195,7 @@ init_create_runtime_dirs(systemd_passwd_
+ init_read_runtime_pipes(systemd_passwd_agent_t)
+ init_read_state(systemd_passwd_agent_t)
+ init_read_utmp(systemd_passwd_agent_t)
++init_use_script_ptys(systemd_passwd_agent_t)
+ init_stream_connect(systemd_passwd_agent_t)
+ 
+ logging_send_syslog_msg(systemd_passwd_agent_t)
+@@ -1404,6 +1508,10 @@ tunable_policy(`systemd_tmpfiles_manage_
+ ')
+ 
+ optional_policy(`
++	colord_read_lib_files(systemd_tmpfiles_t)
++')
++
++optional_policy(`
+ 	dbus_manage_lib_files(systemd_tmpfiles_t)
+ 	dbus_read_lib_files(systemd_tmpfiles_t)
+ 	dbus_relabel_lib_dirs(systemd_tmpfiles_t)
+@@ -1519,11 +1627,15 @@ seutil_libselinux_linked(systemd_user_se
+ # systemd-user-runtime-dir local policy
+ #
+ 
+-allow systemd_user_runtime_dir_t self:capability { fowner chown sys_admin dac_read_search dac_override };
++allow systemd_user_runtime_dir_t self:capability { chown dac_override dac_read_search dac_override fowner sys_admin mknod };
+ allow systemd_user_runtime_dir_t self:process setfscreate;
+ 
+ domain_obj_id_change_exemption(systemd_user_runtime_dir_t)
+ 
++allow systemd_user_runtime_dir_t systemd_user_runtime_t:dir manage_dir_perms;
++allow systemd_user_runtime_dir_t systemd_user_runtime_t:sock_file unlink;
++allow systemd_user_runtime_dir_t systemd_user_runtime_notify_t:sock_file unlink;
++
+ files_read_etc_files(systemd_user_runtime_dir_t)
+ 
+ fs_mount_tmpfs(systemd_user_runtime_dir_t)
+@@ -1543,7 +1655,10 @@ seutil_read_file_contexts(systemd_user_r
+ seutil_libselinux_linked(systemd_user_runtime_dir_t)
+ 
+ userdom_delete_user_tmp_dirs(systemd_user_runtime_dir_t)
++userdom_delete_user_tmp_files(systemd_user_runtime_dir_t)
+ userdom_delete_user_tmp_named_pipes(systemd_user_runtime_dir_t)
++userdom_delete_user_tmp_named_sockets(systemd_user_runtime_dir_t)
++userdom_list_user_tmp(systemd_user_runtime_dir_t)
+ userdom_search_user_runtime_root(systemd_user_runtime_dir_t)
+ userdom_user_runtime_root_filetrans_user_runtime(systemd_user_runtime_dir_t, dir)
+ userdom_manage_user_runtime_dirs(systemd_user_runtime_dir_t)
+Index: refpolicy-2.20210203/policy/modules/admin/dpkg.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/admin/dpkg.if
++++ refpolicy-2.20210203/policy/modules/admin/dpkg.if
+@@ -356,3 +356,40 @@ interface(`dpkg_read_script_tmp_symlinks
+ 
+ 	allow $1 dpkg_script_tmp_t:lnk_file read_lnk_file_perms;
+ ')
++
++########################################
++## <summary>
++##	send dbus messages to dpkg_t
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dpkg_dbus_chat',`
++	gen_require(`
++		type dpkg_t;
++	')
++
++	allow $1 dpkg_t:dbus send_msg;
++')
++
++########################################
++## <summary>
++##	read dpkg_t process state
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dpkg_read_state',`
++	gen_require(`
++		type dpkg_t;
++	')
++
++	allow $1 dpkg_t:dir search;
++	allow $1 dpkg_t:file read_file_perms;
++')
+Index: refpolicy-2.20210203/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20210203/policy/modules/roles/sysadm.te
+@@ -95,6 +95,9 @@ ifdef(`init_systemd',`
+ 	# Allow sysadm to resolve the username of dynamic users by calling
+ 	# LookupDynamicUserByUID on org.freedesktop.systemd1.
+ 	init_dbus_chat(sysadm_t)
++
++	systemd_run_passwd_agent(sysadm_t, sysadm_r)
++	systemd_watch_passwd_runtime_dirs(sysadm_t)
+ ')
+ 
+ tunable_policy(`allow_ptrace',`
+Index: refpolicy-2.20210203/policy/modules/services/networkmanager.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/networkmanager.te
++++ refpolicy-2.20210203/policy/modules/services/networkmanager.te
+@@ -340,6 +340,9 @@ optional_policy(`
+ optional_policy(`
+ 	systemd_read_logind_runtime_files(NetworkManager_t)
+ 	systemd_read_logind_sessions_files(NetworkManager_t)
++	systemd_watch_logind_runtime_dir(NetworkManager_t)
++	systemd_watch_logind_sessions_dir(NetworkManager_t)
++	systemd_watch_machines_dir(NetworkManager_t)
+ 	systemd_write_inherited_logind_inhibit_pipes(NetworkManager_t)
+ ')
+ 
+Index: refpolicy-2.20210203/policy/modules/services/policykit.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/policykit.te
++++ refpolicy-2.20210203/policy/modules/services/policykit.te
+@@ -134,12 +134,15 @@ optional_policy(`
+ optional_policy(`
+ 	# for /run/systemd/machines
+ 	systemd_read_machines(policykit_t)
++	systemd_watch_machines_dir(policykit_t)
+ 
+ 	# for /run/systemd/seats/seat*
+ 	systemd_read_logind_sessions_files(policykit_t)
++	systemd_watch_logind_sessions_dir(policykit_t)
+ 
+ 	# for /run/systemd/users/*
+ 	systemd_read_logind_runtime_files(policykit_t)
++	systemd_watch_logind_runtime_dir(policykit_t)
+ ')
+ 
+ ########################################

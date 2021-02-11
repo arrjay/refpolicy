@@ -1,0 +1,113 @@
+Index: refpolicy-2.20210203/policy/modules/system/init.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/init.if
++++ refpolicy-2.20210203/policy/modules/system/init.if
+@@ -3290,6 +3290,24 @@ interface(`init_list_unit_dirs',`
+ 	init_search_units($1)
+ ')
+ 
++######################################
++## <summary>
++##	restart systemd units, for /run/systemd/transient/*
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_restart_units',`
++	gen_require(`
++		type init_var_run_t;
++	')
++
++	allow $1 init_var_run_t:service { start status stop };
++')
++
+ ########################################
+ ## <summary>
+ ##	Read systemd unit links
+Index: refpolicy-2.20210203/policy/modules/system/locallogin.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20210203/policy/modules/system/locallogin.te
+@@ -125,7 +125,8 @@ auth_manage_pam_runtime_files(local_logi
+ auth_manage_pam_console_data(local_login_t)
+ auth_domtrans_pam_console(local_login_t)
+ 
+-init_dontaudit_use_fds(local_login_t)
++# if local_login_t can not inherit fd from init it takes ages to login
++init_use_fds(local_login_t)
+ 
+ miscfiles_read_localization(local_login_t)
+ 
+Index: refpolicy-2.20210203/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20210203/policy/modules/system/systemd.te
+@@ -639,6 +639,9 @@ init_start_system(systemd_logind_t)
+ init_stop_system(systemd_logind_t)
+ init_watch_utmp(systemd_logind_t)
+ 
++# for /run/systemd/transient/*
++init_restart_units(systemd_logind_t)
++
+ locallogin_read_state(systemd_logind_t)
+ 
+ seutil_libselinux_linked(systemd_logind_t)
+Index: refpolicy-2.20210203/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20210203/policy/modules/system/systemd.if
+@@ -19,17 +19,13 @@
+ ##	The user domain for the role.
+ ##	</summary>
+ ## </param>
+-## <param name="pty_type">
+-##	<summary>
+-##	The type for the user pty
+-##	</summary>
+-## </param>
+ #
+ template(`systemd_role_template',`
+ 	gen_require(`
+ 		attribute systemd_user_session_type, systemd_log_parse_env_type;
+ 		type systemd_user_runtime_t, systemd_user_runtime_notify_t;
+-		type systemd_run_exec_t, systemd_analyze_exec_t;
++		type systemd_run_exec_t, systemd_analyze_exec_t, user_devpts_t;
++		type systemd_machined_t;
+ 	')
+ 
+ 	#################################
+@@ -61,6 +57,7 @@ template(`systemd_role_template',`
+ 	allow $1_systemd_t $3:process { setsched rlimitinh };
+ 	corecmd_shell_domtrans($1_systemd_t, $3)
+ 	corecmd_bin_domtrans($1_systemd_t, $3)
++	corecmd_shell_entry_type($1_systemd_t)
+ 	allow $1_systemd_t self:process signal;
+ 
+ 	files_search_home($1_systemd_t)
+@@ -69,6 +66,12 @@ template(`systemd_role_template',`
+ 	allow $3 $1_systemd_t:fd use;
+ 	allow $3 $1_systemd_t:fifo_file rw_inherited_fifo_file_perms;
+ 
++	# for "machinectl shell"
++	allow $1_systemd_t systemd_machined_t:fd use;
++	allow $3 systemd_machined_t:fd use;
++	allow $3 systemd_machined_t:dbus send_msg;
++	allow systemd_machined_t $3:dbus send_msg;
++
+ 	# systemctl --user
+ 	stream_connect_pattern($3, systemd_user_runtime_t, systemd_user_runtime_t, $1_systemd_t)
+ 
+@@ -80,6 +83,10 @@ template(`systemd_role_template',`
+ 
+ 	seutil_read_file_contexts($1_systemd_t)
+ 	seutil_search_default_contexts($1_systemd_t)
++
++	# for machinectl shell
++	term_user_pty($1_systemd_t, user_devpts_t)
++	allow $1_systemd_t user_devpts_t:chr_file rw_file_perms;
+ ')
+ 
+ ######################################
