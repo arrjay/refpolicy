@@ -179,7 +179,7 @@ interface(`rhsmcertd_manage_lib_dirs',`
 
 ########################################
 ## <summary>
-##	Read rhsmcertd pid files.
+##	Read rhsmcertd pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -188,12 +188,7 @@ interface(`rhsmcertd_manage_lib_dirs',`
 ## </param>
 #
 interface(`rhsmcertd_read_pid_files',`
-	gen_require(`
-		type rhsmcertd_var_run_t;
-	')
-
-	files_search_pids($1)
-	allow $1 rhsmcertd_var_run_t:file read_file_perms;
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ####################################
@@ -209,11 +204,11 @@ interface(`rhsmcertd_read_pid_files',`
 #
 interface(`rhsmcertd_stream_connect',`
 	gen_require(`
-		type rhsmcertd_t, rhsmcertd_var_run_t;
+		type rhsmcertd_t, rhsmcertd_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, rhsmcertd_var_run_t, rhsmcertd_var_run_t, rhsmcertd_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, rhsmcertd_runtime_t, rhsmcertd_runtime_t, rhsmcertd_t)
 ')
 
 #######################################
@@ -279,7 +274,7 @@ interface(`rhsmcertd_dontaudit_dbus_chat',`
 interface(`rhsmcertd_admin',`
 	gen_require(`
 		type rhsmcertd_t, rhsmcertd_initrc_exec_t, rhsmcertd_log_t;
-		type rhsmcertd_var_lib_t, rhsmcertd_var_run_t, rhsmcertd_lock_t;
+		type rhsmcertd_var_lib_t, rhsmcertd_runtime_t, rhsmcertd_lock_t;
 	')
 
 	allow $1 rhsmcertd_t:process { ptrace signal_perms };
@@ -293,8 +288,8 @@ interface(`rhsmcertd_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, rhsmcertd_var_lib_t)
 
-	files_search_pids($1)
-	admin_pattern($1, rhsmcertd_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, rhsmcertd_runtime_t)
 
 	files_search_locks($1)
 	admin_pattern($1, rhsmcertd_lock_t)

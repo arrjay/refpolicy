@@ -57,7 +57,7 @@ interface(`ksmtuned_initrc_domtrans',`
 #
 interface(`ksmtuned_admin',`
 	gen_require(`
-		type ksmtuned_t, ksmtuned_var_run_t;
+		type ksmtuned_t, ksmtuned_runtime_t;
 		type ksmtuned_initrc_exec_t, ksmtuned_log_t;
 	')
 
@@ -66,8 +66,8 @@ interface(`ksmtuned_admin',`
 	allow $1 ksmtuned_t:process { ptrace signal_perms };
 	ps_process_pattern($1, ksmtuned_t)
 
-	files_list_pids($1)
-	admin_pattern($1, ksmtuned_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, ksmtuned_runtime_t)
 
 	logging_search_logs($1)
 	admin_pattern($1, ksmtuned_log_t)

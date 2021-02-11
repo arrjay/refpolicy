@@ -20,7 +20,7 @@
 interface(`mongodb_admin',`
 	gen_require(`
 		type mongod_t, mongod_initrc_exec_t, mongod_log_t;
-		type mongod_var_lib_t, mongod_var_run_t;
+		type mongod_var_lib_t, mongod_runtime_t;
 	')
 
 	allow $1 mongod_t:process { ptrace signal_perms };
@@ -34,6 +34,6 @@ interface(`mongodb_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, mongod_var_lib_t)
 
-	files_search_pids($1)
-	admin_pattern($1, mongod_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, mongod_runtime_t)
 ')

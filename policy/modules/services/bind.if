@@ -256,7 +256,7 @@ interface(`bind_manage_cache',`
 
 ########################################
 ## <summary>
-##	Set attributes of bind pid directories.
+##	Set attributes of bind pid directories.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -265,11 +265,7 @@ interface(`bind_manage_cache',`
 ## </param>
 #
 interface(`bind_setattr_pid_dirs',`
-	gen_require(`
-		type named_var_run_t;
-	')
-
-	allow $1 named_var_run_t:dir setattr_dir_perms;
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################
@@ -350,7 +346,7 @@ interface(`bind_admin',`
 	gen_require(`
 		type named_t, named_tmp_t, named_log_t;
 		type named_cache_t, named_zone_t, named_initrc_exec_t;
-		type dnssec_t, ndc_t, named_conf_t, named_var_run_t;
+		type dnssec_t, ndc_t, named_conf_t, named_runtime_t;
 		type named_keytab_t;
 	')
 
@@ -371,6 +367,6 @@ interface(`bind_admin',`
 	files_list_var($1)
 	admin_pattern($1, { dnssec_t named_cache_t named_zone_t })
 
-	files_list_pids($1)
-	admin_pattern($1, named_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, named_runtime_t)
 ')

@@ -66,7 +66,7 @@ interface(`portage_compile_domain',`
 	gen_require(`
 		class dbus send_msg;
 		type portage_devpts_t, portage_log_t, portage_srcrepo_t, portage_tmp_t;
-		type portage_tmpfs_t;
+		type portage_tmpfs_t, portage_sandbox_t;
 	')
 
 	allow $1 self:capability { chown dac_override fowner fsetid mknod net_raw setgid setuid };
@@ -134,7 +134,6 @@ interface(`portage_compile_domain',`
 	# really shouldnt need this but some packages test
 	# network access, such as during configure
 	# also distcc--need to reinvestigate confining distcc client
-	corenet_all_recvfrom_unlabeled($1)
 	corenet_all_recvfrom_netlabel($1)
 	corenet_tcp_sendrecv_generic_if($1)
 	corenet_udp_sendrecv_generic_if($1)
@@ -142,8 +141,6 @@ interface(`portage_compile_domain',`
 	corenet_tcp_sendrecv_generic_node($1)
 	corenet_udp_sendrecv_generic_node($1)
 	corenet_raw_sendrecv_generic_node($1)
-	corenet_tcp_sendrecv_all_ports($1)
-	corenet_udp_sendrecv_all_ports($1)
 	corenet_tcp_connect_all_reserved_ports($1)
 	corenet_tcp_connect_distccd_port($1)
 	corenet_tcp_connect_git_port($1)
@@ -197,14 +194,6 @@ interface(`portage_compile_domain',`
 		fs_manage_nfs_files($1)
 		fs_manage_nfs_symlinks($1)
 	')
-
-	ifdef(`TODO',`
-	# some gui ebuilds want to interact with X server, like xawtv
-	optional_policy(`
-		allow $1 xdm_xserver_tmp_t:dir { add_entry_dir_perms del_entry_dir_perms };
-		allow $1 xdm_xserver_tmp_t:sock_file { create_file_perms delete_file_perms write_file_perms };
-	')
-	') dnl end TODO
 ')
 
 ########################################

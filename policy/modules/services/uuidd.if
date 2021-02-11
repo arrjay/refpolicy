@@ -118,7 +118,7 @@ interface(`uuidd_manage_lib_dirs',`
 
 ########################################
 ## <summary>
-##	Read uuidd pid files.
+##	Read uuidd pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -127,12 +127,7 @@ interface(`uuidd_manage_lib_dirs',`
 ## </param>
 #
 interface(`uuidd_read_pid_files',`
-	gen_require(`
-		type uuidd_var_run_t;
-	')
-
-	files_search_pids($1)
-	allow $1 uuidd_var_run_t:file read_file_perms;
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################
@@ -148,11 +143,11 @@ interface(`uuidd_read_pid_files',`
 #
 interface(`uuidd_stream_connect_manager',`
 	gen_require(`
-		type uuidd_t, uuidd_var_run_t;
+		type uuidd_t, uuidd_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, uuidd_var_run_t, uuidd_var_run_t, uuidd_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, uuidd_runtime_t, uuidd_runtime_t, uuidd_t)
 ')
 
 ########################################
@@ -175,7 +170,7 @@ interface(`uuidd_stream_connect_manager',`
 interface(`uuidd_admin',`
 	gen_require(`
 		type uuidd_t, uuidd_initrc_exec_t;
-		type uuidd_var_run_t, uuidd_var_lib_t;
+		type uuidd_runtime_t, uuidd_var_lib_t;
 	')
 
 	allow $1 uuidd_t:process signal_perms;
@@ -186,6 +181,6 @@ interface(`uuidd_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, uuidd_var_lib_t)
 
-	files_search_pids($1)
-	admin_pattern($1, uuidd_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, uuidd_runtime_t)
 ')

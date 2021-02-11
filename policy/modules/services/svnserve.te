@@ -1,4 +1,4 @@
-policy_module(svnserve, 1.4.0)
+policy_module(svnserve, 1.6.0)
 
 ########################################
 #
@@ -15,8 +15,8 @@ init_script_file(svnserve_initrc_exec_t)
 type svnserve_content_t;
 files_type(svnserve_content_t)
 
-type svnserve_var_run_t;
-files_pid_file(svnserve_var_run_t)
+type svnserve_runtime_t alias svnserve_var_run_t;
+files_runtime_file(svnserve_runtime_t)
 
 ########################################
 #
@@ -30,14 +30,13 @@ allow svnserve_t self:unix_stream_socket { listen accept };
 manage_dirs_pattern(svnserve_t, svnserve_content_t, svnserve_content_t)
 manage_files_pattern(svnserve_t, svnserve_content_t, svnserve_content_t)
 
-manage_dirs_pattern(svnserve_t, svnserve_var_run_t, svnserve_var_run_t)
-manage_files_pattern(svnserve_t, svnserve_var_run_t, svnserve_var_run_t)
-files_pid_filetrans(svnserve_t, svnserve_var_run_t, { dir file })
+manage_dirs_pattern(svnserve_t, svnserve_runtime_t, svnserve_runtime_t)
+manage_files_pattern(svnserve_t, svnserve_runtime_t, svnserve_runtime_t)
+files_runtime_filetrans(svnserve_t, svnserve_runtime_t, { dir file })
 
 files_read_etc_files(svnserve_t)
 files_read_usr_files(svnserve_t)
 
-corenet_all_recvfrom_unlabeled(svnserve_t)
 corenet_all_recvfrom_netlabel(svnserve_t)
 corenet_tcp_sendrecv_generic_if(svnserve_t)
 corenet_udp_sendrecv_generic_if(svnserve_t)
@@ -48,9 +47,7 @@ corenet_udp_bind_generic_node(svnserve_t)
 
 corenet_sendrecv_svn_server_packets(svnserve_t)
 corenet_tcp_bind_svn_port(svnserve_t)
-corenet_tcp_sendrecv_svn_port(svnserve_t)
 corenet_udp_bind_svn_port(svnserve_t)
-corenet_udp_sendrecv_svn_port(svnserve_t)
 
 logging_send_syslog_msg(svnserve_t)
 

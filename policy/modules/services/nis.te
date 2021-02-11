@@ -1,4 +1,4 @@
-policy_module(nis, 1.16.0)
+policy_module(nis, 1.19.0)
 
 ########################################
 #
@@ -24,22 +24,22 @@ role ypbind_roles types ypbind_t;
 type ypbind_initrc_exec_t;
 init_script_file(ypbind_initrc_exec_t)
 
+type ypbind_runtime_t alias ypbind_var_run_t;
+files_runtime_file(ypbind_runtime_t)
+
 type ypbind_tmp_t;
 files_tmp_file(ypbind_tmp_t)
 
 type ypbind_unit_t;
 init_unit_file(ypbind_unit_t)
 
-type ypbind_var_run_t;
-files_pid_file(ypbind_var_run_t)
-
 type yppasswdd_t;
 type yppasswdd_exec_t;
 init_daemon_domain(yppasswdd_t, yppasswdd_exec_t)
 domain_obj_id_change_exemption(yppasswdd_t)
 
-type yppasswdd_var_run_t;
-files_pid_file(yppasswdd_var_run_t)
+type yppasswdd_runtime_t alias yppasswdd_var_run_t;
+files_runtime_file(yppasswdd_runtime_t)
 
 type ypserv_t;
 type ypserv_exec_t;
@@ -48,18 +48,18 @@ init_daemon_domain(ypserv_t, ypserv_exec_t)
 type ypserv_conf_t;
 files_type(ypserv_conf_t)
 
+type ypserv_runtime_t alias ypserv_var_run_t;
+files_runtime_file(ypserv_runtime_t)
+
 type ypserv_tmp_t;
 files_tmp_file(ypserv_tmp_t)
-
-type ypserv_var_run_t;
-files_pid_file(ypserv_var_run_t)
 
 type ypxfr_t;
 type ypxfr_exec_t;
 init_daemon_domain(ypxfr_t, ypxfr_exec_t)
 
-type ypxfr_var_run_t;
-files_pid_file(ypxfr_var_run_t)
+type ypxfr_runtime_t alias ypxfr_var_run_t;
+files_runtime_file(ypxfr_runtime_t)
 
 ########################################
 #
@@ -76,22 +76,19 @@ manage_dirs_pattern(ypbind_t, ypbind_tmp_t, ypbind_tmp_t)
 manage_files_pattern(ypbind_t, ypbind_tmp_t, ypbind_tmp_t)
 files_tmp_filetrans(ypbind_t, ypbind_tmp_t, { file dir })
 
-manage_files_pattern(ypbind_t, ypbind_var_run_t, ypbind_var_run_t)
-files_pid_filetrans(ypbind_t, ypbind_var_run_t, file)
+manage_files_pattern(ypbind_t, ypbind_runtime_t, ypbind_runtime_t)
+files_runtime_filetrans(ypbind_t, ypbind_runtime_t, file)
 
 manage_files_pattern(ypbind_t, var_yp_t, var_yp_t)
 
 kernel_read_system_state(ypbind_t)
 kernel_read_kernel_sysctls(ypbind_t)
 
-corenet_all_recvfrom_unlabeled(ypbind_t)
 corenet_all_recvfrom_netlabel(ypbind_t)
 corenet_tcp_sendrecv_generic_if(ypbind_t)
 corenet_udp_sendrecv_generic_if(ypbind_t)
 corenet_tcp_sendrecv_generic_node(ypbind_t)
 corenet_udp_sendrecv_generic_node(ypbind_t)
-corenet_tcp_sendrecv_all_ports(ypbind_t)
-corenet_udp_sendrecv_all_ports(ypbind_t)
 corenet_tcp_bind_generic_node(ypbind_t)
 corenet_udp_bind_generic_node(ypbind_t)
 
@@ -142,10 +139,6 @@ optional_policy(`
 	seutil_sigchld_newrole(ypbind_t)
 ')
 
-optional_policy(`
-	udev_read_db(ypbind_t)
-')
-
 ########################################
 #
 # yppasswdd local policy
@@ -160,8 +153,8 @@ allow yppasswdd_t self:netlink_route_socket r_netlink_socket_perms;
 allow yppasswdd_t self:tcp_socket create_stream_socket_perms;
 allow yppasswdd_t self:udp_socket create_socket_perms;
 
-manage_files_pattern(yppasswdd_t, yppasswdd_var_run_t, yppasswdd_var_run_t)
-files_pid_filetrans(yppasswdd_t, yppasswdd_var_run_t, file)
+manage_files_pattern(yppasswdd_t, yppasswdd_runtime_t, yppasswdd_runtime_t)
+files_runtime_filetrans(yppasswdd_t, yppasswdd_runtime_t, file)
 
 manage_files_pattern(yppasswdd_t, var_yp_t, var_yp_t)
 manage_lnk_files_pattern(yppasswdd_t, var_yp_t, var_yp_t)
@@ -173,14 +166,11 @@ kernel_read_proc_symlinks(yppasswdd_t)
 kernel_getattr_proc_files(yppasswdd_t)
 kernel_read_kernel_sysctls(yppasswdd_t)
 
-corenet_all_recvfrom_unlabeled(yppasswdd_t)
 corenet_all_recvfrom_netlabel(yppasswdd_t)
 corenet_tcp_sendrecv_generic_if(yppasswdd_t)
 corenet_udp_sendrecv_generic_if(yppasswdd_t)
 corenet_tcp_sendrecv_generic_node(yppasswdd_t)
 corenet_udp_sendrecv_generic_node(yppasswdd_t)
-corenet_tcp_sendrecv_all_ports(yppasswdd_t)
-corenet_udp_sendrecv_all_ports(yppasswdd_t)
 corenet_tcp_bind_generic_node(yppasswdd_t)
 corenet_udp_bind_generic_node(yppasswdd_t)
 
@@ -228,10 +218,6 @@ optional_policy(`
 	seutil_sigchld_newrole(yppasswdd_t)
 ')
 
-optional_policy(`
-	udev_read_db(yppasswdd_t)
-')
-
 ########################################
 #
 # ypserv local policy
@@ -253,21 +239,18 @@ manage_dirs_pattern(ypserv_t, ypserv_tmp_t, ypserv_tmp_t)
 manage_files_pattern(ypserv_t, ypserv_tmp_t, ypserv_tmp_t)
 files_tmp_filetrans(ypserv_t, ypserv_tmp_t, { file dir })
 
-manage_files_pattern(ypserv_t, ypserv_var_run_t, ypserv_var_run_t)
-files_pid_filetrans(ypserv_t, ypserv_var_run_t, file)
+manage_files_pattern(ypserv_t, ypserv_runtime_t, ypserv_runtime_t)
+files_runtime_filetrans(ypserv_t, ypserv_runtime_t, file)
 
 kernel_read_kernel_sysctls(ypserv_t)
 kernel_list_proc(ypserv_t)
 kernel_read_proc_symlinks(ypserv_t)
 
-corenet_all_recvfrom_unlabeled(ypserv_t)
 corenet_all_recvfrom_netlabel(ypserv_t)
 corenet_tcp_sendrecv_generic_if(ypserv_t)
 corenet_udp_sendrecv_generic_if(ypserv_t)
 corenet_tcp_sendrecv_generic_node(ypserv_t)
 corenet_udp_sendrecv_generic_node(ypserv_t)
-corenet_tcp_sendrecv_all_ports(ypserv_t)
-corenet_udp_sendrecv_all_ports(ypserv_t)
 corenet_tcp_bind_generic_node(ypserv_t)
 corenet_udp_bind_generic_node(ypserv_t)
 
@@ -307,10 +290,6 @@ optional_policy(`
 	seutil_sigchld_newrole(ypserv_t)
 ')
 
-optional_policy(`
-	udev_read_db(ypserv_t)
-')
-
 ########################################
 #
 # ypxfr local policy
@@ -329,17 +308,14 @@ allow ypxfr_t ypserv_t:udp_socket { read write };
 
 allow ypxfr_t ypserv_conf_t:file read_file_perms;
 
-manage_files_pattern(ypxfr_t, ypxfr_var_run_t, ypxfr_var_run_t)
-files_pid_filetrans(ypxfr_t, ypxfr_var_run_t, file)
+manage_files_pattern(ypxfr_t, ypxfr_runtime_t, ypxfr_runtime_t)
+files_runtime_filetrans(ypxfr_t, ypxfr_runtime_t, file)
 
-corenet_all_recvfrom_unlabeled(ypxfr_t)
 corenet_all_recvfrom_netlabel(ypxfr_t)
 corenet_tcp_sendrecv_generic_if(ypxfr_t)
 corenet_udp_sendrecv_generic_if(ypxfr_t)
 corenet_tcp_sendrecv_generic_node(ypxfr_t)
 corenet_udp_sendrecv_generic_node(ypxfr_t)
-corenet_tcp_sendrecv_all_ports(ypxfr_t)
-corenet_udp_sendrecv_all_ports(ypxfr_t)
 corenet_tcp_bind_generic_node(ypxfr_t)
 corenet_udp_bind_generic_node(ypxfr_t)
 

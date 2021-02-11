@@ -1,4 +1,4 @@
-policy_module(aiccu, 1.4.0)
+policy_module(aiccu, 1.6.0)
 
 ########################################
 #
@@ -15,8 +15,8 @@ init_script_file(aiccu_initrc_exec_t)
 type aiccu_etc_t;
 files_config_file(aiccu_etc_t)
 
-type aiccu_var_run_t;
-files_pid_file(aiccu_var_run_t)
+type aiccu_runtime_t alias aiccu_var_run_t;
+files_runtime_file(aiccu_runtime_t)
 
 ########################################
 #
@@ -35,23 +35,21 @@ allow aiccu_t self:unix_stream_socket { accept listen };
 
 allow aiccu_t aiccu_etc_t:file read_file_perms;
 
-manage_dirs_pattern(aiccu_t, aiccu_var_run_t, aiccu_var_run_t)
-manage_files_pattern(aiccu_t, aiccu_var_run_t, aiccu_var_run_t)
-files_pid_filetrans(aiccu_t, aiccu_var_run_t, { file dir })
+manage_dirs_pattern(aiccu_t, aiccu_runtime_t, aiccu_runtime_t)
+manage_files_pattern(aiccu_t, aiccu_runtime_t, aiccu_runtime_t)
+files_runtime_filetrans(aiccu_t, aiccu_runtime_t, { file dir })
 
 kernel_read_system_state(aiccu_t)
 
 corecmd_exec_shell(aiccu_t)
 
 corenet_all_recvfrom_netlabel(aiccu_t)
-corenet_all_recvfrom_unlabeled(aiccu_t)
 corenet_tcp_bind_generic_node(aiccu_t)
 corenet_tcp_sendrecv_generic_if(aiccu_t)
 corenet_tcp_sendrecv_generic_node(aiccu_t)
 
 corenet_sendrecv_sixxsconfig_client_packets(aiccu_t)
 corenet_tcp_connect_sixxsconfig_port(aiccu_t)
-corenet_tcp_sendrecv_sixxsconfig_port(aiccu_t)
 
 corenet_rw_tun_tap_dev(aiccu_t)
 

@@ -64,6 +64,7 @@ template(`postfix_domain_template',`
 #
 template(`postfix_server_domain_template',`
 	gen_require(`
+		type postfix_master_t;
 		attribute postfix_server_domain, postfix_server_tmp_content;
 	')
 
@@ -258,7 +259,7 @@ interface(`postfix_rw_inherited_master_pipes',`
 	')
 
 	allow $1 postfix_master_t:fd use;
-	allow $1 postfix_master_t:fifo_file { getattr write append lock ioctl read };
+	allow $1 postfix_master_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ########################################
@@ -680,9 +681,9 @@ interface(`postfix_admin',`
 	gen_require(`
 		attribute postfix_domain, postfix_spool_type, postfix_server_tmp_content;
 		type postfix_initrc_exec_t, postfix_prng_t, postfix_etc_t;
-		type postfix_data_t, postfix_var_run_t, postfix_public_t;
+		type postfix_data_t, postfix_runtime_t, postfix_public_t;
 		type postfix_private_t, postfix_map_tmp_t, postfix_exec_t;
-		type postfix_keytab_t;
+		type postfix_keytab_t, postfix_t;
 	')
 
 	allow $1 postfix_domain:process { ptrace signal_perms };
@@ -699,8 +700,8 @@ interface(`postfix_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, postfix_data_t)
 
-	files_search_pids($1)
-	admin_pattern($1, postfix_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, postfix_runtime_t)
 
 	files_search_tmp($1)
 	admin_pattern($1, { postfix_server_tmp_content postfix_map_tmp_t })

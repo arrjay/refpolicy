@@ -35,11 +35,11 @@ interface(`zebra_read_config',`
 #
 interface(`zebra_stream_connect',`
 	gen_require(`
-		type zebra_t, zebra_var_run_t;
+		type zebra_t, zebra_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, zebra_var_run_t, zebra_var_run_t, zebra_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, zebra_runtime_t, zebra_runtime_t, zebra_t)
 ')
 
 ########################################
@@ -62,7 +62,7 @@ interface(`zebra_stream_connect',`
 interface(`zebra_admin',`
 	gen_require(`
 		type zebra_t, zebra_tmp_t, zebra_log_t;
-		type zebra_conf_t, zebra_var_run_t;
+		type zebra_conf_t, zebra_runtime_t;
 		type zebra_initrc_exec_t;
 	')
 
@@ -80,6 +80,6 @@ interface(`zebra_admin',`
 	files_list_tmp($1)
 	admin_pattern($1, zebra_tmp_t)
 
-	files_list_pids($1)
-	admin_pattern($1, zebra_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, zebra_runtime_t)
 ')

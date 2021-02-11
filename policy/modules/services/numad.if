@@ -20,7 +20,7 @@
 interface(`numad_admin',`
 	gen_require(`
 		type numad_t, numad_initrc_exec_t, numad_log_t;
-		type numad_var_run_t;
+		type numad_runtime_t;
 	')
 
 	allow $1 numad_t:process { ptrace signal_perms };
@@ -31,6 +31,6 @@ interface(`numad_admin',`
 	logging_search_logs($1)
 	admin_pattern($1, numad_log_t)
 
-	files_search_pids($1)
-	admin_pattern($1, numad_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, numad_runtime_t)
 ')

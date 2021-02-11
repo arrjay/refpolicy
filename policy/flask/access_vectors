@@ -25,9 +25,16 @@ common file
 	link
 	rename
 	execute
-	swapon
 	quotaon
 	mounton
+	audit_access
+	open
+	execmod
+	watch
+	watch_mount
+	watch_sb
+	watch_with_perm
+	watch_reads
 }
 
 
@@ -59,8 +66,6 @@ common socket
 	shutdown
 	recvfrom
 	sendto
-	recv_msg
-	send_msg
 	name_bind
 }
 
@@ -127,7 +132,7 @@ common x_device
 #
 common cap
 {
-	# The capabilities are defined in include/linux/capability.h
+	# The capabilities are defined in include/uapi/linux/capability.h
 	# Capabilities >= 32 are defined in the cap2 common.
 	# Care should be taken to ensure that these are consistent with
 	# those definitions. (Order matters)
@@ -169,11 +174,14 @@ common cap
 common cap2
 {
 	mac_override	# unused by SELinux
-	mac_admin	# unused by SELinux
+	mac_admin
 	syslog
 	wake_alarm
 	block_suspend
 	audit_read
+	perfmon
+	bpf
+	checkpoint_restore
 }
 
 #
@@ -194,10 +202,10 @@ class filesystem
 	getattr
 	relabelfrom
 	relabelto
-	transition
 	associate
 	quotamod
 	quotaget
+	watch
 }
 
 class dir
@@ -208,9 +216,6 @@ inherits file
 	reparent
 	search
 	rmdir
-	open
-	audit_access
-	execmod
 }
 
 class file
@@ -218,52 +223,22 @@ inherits file
 {
 	execute_no_trans
 	entrypoint
-	execmod
-	open
-	audit_access
 }
 
 class lnk_file
 inherits file
-{
-	open
-	audit_access
-	execmod
-}
 
 class chr_file
 inherits file
-{
-	execute_no_trans
-	entrypoint
-	execmod
-	open
-	audit_access
-}
 
 class blk_file
 inherits file
-{
-	open
-	audit_access
-	execmod
-}
 
 class sock_file
 inherits file
-{
-	open
-	audit_access
-	execmod
-}
 
 class fifo_file
 inherits file
-{
-	open
-	audit_access
-	execmod
-}
 
 class fd
 {
@@ -281,9 +256,6 @@ inherits socket
 class tcp_socket
 inherits socket
 {
-	connectto
-	newconn
-	acceptfrom
 	node_bind
 	name_connect
 }
@@ -302,29 +274,12 @@ inherits socket
 
 class node
 {
-	tcp_recv
-	tcp_send
-	udp_recv
-	udp_send
-	rawip_recv
-	rawip_send
-	enforce_dest
-	dccp_recv
-	dccp_send
 	recvfrom
 	sendto
 }
 
 class netif
 {
-	tcp_recv
-	tcp_send
-	udp_recv
-	udp_send
-	rawip_recv
-	rawip_send
-	dccp_recv
-	dccp_send
 	ingress
 	egress
 }
@@ -342,8 +297,6 @@ class unix_stream_socket
 inherits socket
 {
 	connectto
-	newconn
-	acceptfrom
 }
 
 class unix_dgram_socket
@@ -649,7 +602,7 @@ inherits socket
 	nlmsg_write
 }
 
-class netlink_firewall_socket
+class obsolete_netlink_firewall_socket
 inherits socket
 {
 	nlmsg_read
@@ -686,7 +639,7 @@ inherits socket
 	nlmsg_tty_audit
 }
 
-class netlink_ip6fw_socket
+class obsolete_netlink_ip6fw_socket
 inherits socket
 {
 	nlmsg_read
@@ -746,8 +699,6 @@ class packet
 	send
 	recv
 	relabelto
-	flow_in		# deprecated
-	flow_out	# deprecated
 	forward_in
 	forward_out
 }
@@ -1093,3 +1044,19 @@ class bpf
 
 class xdp_socket
 inherits socket
+
+class perf_event
+{
+	open
+	cpu
+	kernel
+	tracepoint
+	read
+	write
+}
+
+class lockdown
+{
+    integrity
+    confidentiality
+}

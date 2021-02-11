@@ -1,4 +1,4 @@
-policy_module(soundserver, 1.12.0)
+policy_module(soundserver, 1.15.0)
 
 ########################################
 #
@@ -9,11 +9,14 @@ type soundd_t;
 type soundd_exec_t;
 init_daemon_domain(soundd_t, soundd_exec_t)
 
-type soundd_etc_t alias etc_soundd_t;
+type soundd_etc_t;
 files_config_file(soundd_etc_t)
 
 type soundd_initrc_exec_t;
 init_script_file(soundd_initrc_exec_t)
+
+type soundd_runtime_t alias soundd_var_run_t;
+files_runtime_file(soundd_runtime_t)
 
 type soundd_state_t;
 files_type(soundd_state_t)
@@ -23,9 +26,6 @@ files_tmp_file(soundd_tmp_t)
 
 type soundd_tmpfs_t;
 files_tmpfs_file(soundd_tmpfs_t)
-
-type soundd_var_run_t;
-files_pid_file(soundd_var_run_t)
 
 ########################################
 #
@@ -56,16 +56,15 @@ manage_fifo_files_pattern(soundd_t, soundd_tmpfs_t, soundd_tmpfs_t)
 manage_sock_files_pattern(soundd_t, soundd_tmpfs_t, soundd_tmpfs_t)
 fs_tmpfs_filetrans(soundd_t, soundd_tmpfs_t, { dir file lnk_file sock_file fifo_file })
 
-manage_files_pattern(soundd_t, soundd_var_run_t, soundd_var_run_t)
-manage_dirs_pattern(soundd_t, soundd_var_run_t, soundd_var_run_t)
-manage_sock_files_pattern(soundd_t, soundd_var_run_t, soundd_var_run_t)
-files_pid_filetrans(soundd_t, soundd_var_run_t, { file dir })
+manage_files_pattern(soundd_t, soundd_runtime_t, soundd_runtime_t)
+manage_dirs_pattern(soundd_t, soundd_runtime_t, soundd_runtime_t)
+manage_sock_files_pattern(soundd_t, soundd_runtime_t, soundd_runtime_t)
+files_runtime_filetrans(soundd_t, soundd_runtime_t, { file dir })
 
 kernel_read_kernel_sysctls(soundd_t)
 kernel_list_proc(soundd_t)
 kernel_read_proc_symlinks(soundd_t)
 
-corenet_all_recvfrom_unlabeled(soundd_t)
 corenet_all_recvfrom_netlabel(soundd_t)
 corenet_tcp_sendrecv_generic_if(soundd_t)
 corenet_tcp_sendrecv_generic_node(soundd_t)
@@ -73,7 +72,6 @@ corenet_tcp_bind_generic_node(soundd_t)
 
 corenet_sendrecv_soundd_server_packets(soundd_t)
 corenet_tcp_bind_soundd_port(soundd_t)
-corenet_tcp_sendrecv_soundd_port(soundd_t)
 
 dev_read_sysfs(soundd_t)
 dev_read_sound(soundd_t)
@@ -104,6 +102,3 @@ optional_policy(`
 	seutil_sigchld_newrole(soundd_t)
 ')
 
-optional_policy(`
-	udev_read_db(soundd_t)
-')

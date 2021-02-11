@@ -1,4 +1,4 @@
-policy_module(spamassassin, 2.12.0)
+policy_module(spamassassin, 2.15.0)
 
 ########################################
 #
@@ -21,7 +21,16 @@ gen_tunable(spamassassin_can_network, false)
 ## </desc>
 gen_tunable(spamd_enable_home_dirs, false)
 
+## <desc>
+##	<p>
+##	Determine whether extra rules should
+##	be enabled to support rspamd.
+##	</p>
+## </desc>
+gen_tunable(rspamd_spamd, false)
+
 type spamd_update_t;
+typealias spamd_update_t alias spamd_gpg_t;
 type spamd_update_exec_t;
 init_system_domain(spamd_update_t, spamd_update_exec_t)
 
@@ -30,21 +39,15 @@ files_tmp_file(spamd_update_tmp_t)
 
 type spamassassin_t;
 type spamassassin_exec_t;
-typealias spamassassin_t alias { user_spamassassin_t staff_spamassassin_t sysadm_spamassassin_t };
-typealias spamassassin_t alias { auditadm_spamassassin_t secadm_spamassassin_t };
 userdom_user_application_domain(spamassassin_t, spamassassin_exec_t)
 
 type spamassassin_home_t;
-typealias spamassassin_home_t alias { user_spamassassin_home_t staff_spamassassin_home_t sysadm_spamassassin_home_t };
-typealias spamassassin_home_t alias { auditadm_spamassassin_home_t secadm_spamassassin_home_t };
 userdom_user_home_content(spamassassin_home_t)
 
 type spamassassin_initrc_exec_t;
 init_script_file(spamassassin_initrc_exec_t)
 
 type spamassassin_tmp_t;
-typealias spamassassin_tmp_t alias { user_spamassassin_tmp_t staff_spamassassin_tmp_t sysadm_spamassassin_tmp_t };
-typealias spamassassin_tmp_t alias { auditadm_spamassassin_tmp_t secadm_spamassassin_tmp_t };
 userdom_user_tmp_file(spamassassin_tmp_t)
 
 type spamassassin_unit_t;
@@ -52,14 +55,10 @@ init_unit_file(spamassassin_unit_t)
 
 type spamc_t;
 type spamc_exec_t;
-typealias spamc_t alias { user_spamc_t staff_spamc_t sysadm_spamc_t };
-typealias spamc_t alias { auditadm_spamc_t secadm_spamc_t };
 userdom_user_application_domain(spamc_t, spamc_exec_t)
 role system_r types spamc_t;
 
 type spamc_tmp_t;
-typealias spamc_tmp_t alias { user_spamc_tmp_t staff_spamc_tmp_t sysadm_spamc_tmp_t };
-typealias spamc_tmp_t alias { auditadm_spamc_tmp_t secadm_spamc_tmp_t };
 userdom_user_tmp_file(spamc_tmp_t)
 
 type spamd_t;
@@ -72,9 +71,6 @@ files_type(spamd_compiled_t)
 type spamd_etc_t;
 files_config_file(spamd_etc_t)
 
-type spamd_gpg_t;
-domain_type(spamd_gpg_t)
-
 type spamd_home_t;
 userdom_user_home_content(spamd_home_t)
 
@@ -84,17 +80,20 @@ init_script_file(spamd_initrc_exec_t)
 type spamd_log_t;
 logging_log_file(spamd_log_t)
 
+type spamd_runtime_t alias spamd_var_run_t;
+files_runtime_file(spamd_runtime_t)
+
 type spamd_spool_t;
 files_type(spamd_spool_t)
 
 type spamd_tmp_t;
 files_tmp_file(spamd_tmp_t)
 
+type spamd_tmpfs_t;
+files_tmpfs_file(spamd_tmpfs_t)
+
 type spamd_var_lib_t;
 files_type(spamd_var_lib_t)
-
-type spamd_var_run_t;
-files_pid_file(spamd_var_run_t)
 
 ########################################
 #
@@ -141,11 +140,9 @@ sysnet_dns_name_resolve(spamassassin_t)
 tunable_policy(`spamassassin_can_network',`
 	allow spamassassin_t self:tcp_socket { accept listen };
 
-	corenet_all_recvfrom_unlabeled(spamassassin_t)
 	corenet_all_recvfrom_netlabel(spamassassin_t)
 	corenet_tcp_sendrecv_generic_if(spamassassin_t)
 	corenet_tcp_sendrecv_generic_node(spamassassin_t)
-	corenet_tcp_sendrecv_all_ports(spamassassin_t)
 
 	corenet_tcp_connect_all_ports(spamassassin_t)
 	corenet_sendrecv_all_client_packets(spamassassin_t)
@@ -201,21 +198,21 @@ userdom_user_home_dir_filetrans(spamc_t, spamassassin_home_t, dir, ".spamassassi
 list_dirs_pattern(spamc_t, spamd_var_lib_t, spamd_var_lib_t)
 read_files_pattern(spamc_t, spamd_var_lib_t, spamd_var_lib_t)
 
-stream_connect_pattern(spamc_t, { spamd_var_run_t spamd_tmp_t }, { spamd_var_run_t spamd_tmp_t }, spamd_t)
+stream_connect_pattern(spamc_t, { spamd_runtime_t spamd_tmp_t }, { spamd_runtime_t spamd_tmp_t }, spamd_t)
 
 kernel_read_kernel_sysctls(spamc_t)
 kernel_read_system_state(spamc_t)
 
-corenet_all_recvfrom_unlabeled(spamc_t)
 corenet_all_recvfrom_netlabel(spamc_t)
 corenet_tcp_sendrecv_generic_if(spamc_t)
 corenet_tcp_sendrecv_generic_node(spamc_t)
-corenet_tcp_sendrecv_all_ports(spamc_t)
+corenet_udp_bind_generic_node(spamc_t)
 
 corenet_sendrecv_all_client_packets(spamc_t)
 corenet_tcp_connect_all_ports(spamc_t)
 
 corecmd_exec_bin(spamc_t)
+corecmd_exec_shell(spamc_t)
 
 dev_read_rand(spamc_t)
 dev_read_urand(spamc_t)
@@ -268,6 +265,8 @@ optional_policy(`
 
 optional_policy(`
 	mta_send_mail(spamc_t)
+	mta_getattr_spool(spamc_t)
+	mta_read_spool_files(spamc_t)
 	mta_read_config(spamc_t)
 	mta_read_queue(spamc_t)
 	sendmail_rw_pipes(spamc_t)
@@ -327,24 +326,21 @@ allow spamd_t spamd_var_lib_t:dir list_dir_perms;
 manage_files_pattern(spamd_t, spamd_var_lib_t, spamd_var_lib_t)
 manage_lnk_files_pattern(spamd_t, spamd_var_lib_t, spamd_var_lib_t)
 
-manage_dirs_pattern(spamd_t, spamd_var_run_t, spamd_var_run_t)
-manage_files_pattern(spamd_t, spamd_var_run_t, spamd_var_run_t)
-manage_sock_files_pattern(spamd_t, spamd_var_run_t, spamd_var_run_t)
-files_pid_filetrans(spamd_t, spamd_var_run_t, { file dir })
+manage_dirs_pattern(spamd_t, spamd_runtime_t, spamd_runtime_t)
+manage_files_pattern(spamd_t, spamd_runtime_t, spamd_runtime_t)
+manage_sock_files_pattern(spamd_t, spamd_runtime_t, spamd_runtime_t)
+files_runtime_filetrans(spamd_t, spamd_runtime_t, { file dir })
 
 can_exec(spamd_t, { spamd_exec_t spamd_compiled_t })
 
 kernel_read_all_sysctls(spamd_t)
 kernel_read_system_state(spamd_t)
 
-corenet_all_recvfrom_unlabeled(spamd_t)
 corenet_all_recvfrom_netlabel(spamd_t)
 corenet_tcp_sendrecv_generic_if(spamd_t)
 corenet_udp_sendrecv_generic_if(spamd_t)
 corenet_tcp_sendrecv_generic_node(spamd_t)
 corenet_udp_sendrecv_generic_node(spamd_t)
-corenet_tcp_sendrecv_all_ports(spamd_t)
-corenet_udp_sendrecv_all_ports(spamd_t)
 corenet_tcp_bind_generic_node(spamd_t)
 corenet_udp_bind_generic_node(spamd_t)
 
@@ -365,6 +361,7 @@ corenet_udp_bind_imaze_port(spamd_t)
 
 corenet_dontaudit_udp_bind_all_ports(spamd_t)
 
+corecmd_exec_shell(spamd_t)
 corecmd_exec_bin(spamd_t)
 
 dev_read_sysfs(spamd_t)
@@ -372,6 +369,7 @@ dev_read_urand(spamd_t)
 
 domain_use_interactive_fds(spamd_t)
 
+files_map_etc_files(spamd_t)
 files_read_usr_files(spamd_t)
 files_read_etc_runtime_files(spamd_t)
 
@@ -386,6 +384,7 @@ libs_use_shared_libs(spamd_t)
 
 logging_send_syslog_msg(spamd_t)
 
+miscfiles_read_generic_certs(spamd_t)
 miscfiles_read_localization(spamd_t)
 
 sysnet_use_ldap(spamd_t)
@@ -394,6 +393,30 @@ tunable_policy(`spamd_enable_home_dirs',`
 	userdom_manage_user_home_content_dirs(spamd_t)
 	userdom_manage_user_home_content_files(spamd_t)
 	userdom_manage_user_home_content_symlinks(spamd_t)
+')
+
+tunable_policy(`rspamd_spamd',`
+	allow spamd_t self:process setrlimit;
+	allow spamc_t self:process setrlimit;
+
+	list_dirs_pattern(spamd_t, spamd_etc_t, spamd_etc_t)
+	mmap_read_files_pattern(spamd_t, spamd_etc_t, spamd_etc_t)
+	allow spamd_t spamd_etc_t:dir watch;
+
+	mmap_read_files_pattern(spamd_t, spamd_var_lib_t, spamd_var_lib_t)
+	allow spamd_t spamd_var_lib_t:dir watch;
+	filetrans_pattern(spamd_t, spamd_var_lib_t, spamd_runtime_t, sock_file)
+
+	search_dirs_pattern(spamd_t, spamd_log_t, spamd_log_t)
+
+	fs_search_tmpfs(spamd_t)
+	manage_dirs_pattern(spamd_t, spamd_tmpfs_t, spamd_tmpfs_t)
+	manage_files_pattern(spamd_t, spamd_tmpfs_t, spamd_tmpfs_t)
+	mmap_read_files_pattern(spamd_t, spamd_tmpfs_t, spamd_tmpfs_t)
+	fs_tmpfs_filetrans(spamd_t, spamd_tmpfs_t, { dir file })
+
+	corenet_tcp_connect_http_port(spamd_t)
+	corenet_tcp_connect_redis_port(spamd_t)
 ')
 
 tunable_policy(`use_nfs_home_dirs',`
@@ -479,10 +502,6 @@ optional_policy(`
 	mta_send_mail(spamd_t)
 ')
 
-optional_policy(`
-	udev_read_db(spamd_t)
-')
-
 ########################################
 #
 # Update local policy
@@ -501,19 +520,18 @@ manage_dirs_pattern(spamd_update_t, spamd_var_lib_t, spamd_var_lib_t)
 manage_files_pattern(spamd_update_t, spamd_var_lib_t, spamd_var_lib_t)
 manage_lnk_files_pattern(spamd_update_t, spamd_var_lib_t, spamd_var_lib_t)
 
+kernel_read_crypto_sysctls(spamd_update_t)
+kernel_search_fs_sysctls(spamd_update_t)
 kernel_read_system_state(spamd_update_t)
 
 corecmd_exec_bin(spamd_update_t)
 corecmd_exec_shell(spamd_update_t)
 
-corenet_all_recvfrom_unlabeled(spamd_update_t)
 corenet_all_recvfrom_netlabel(spamd_update_t)
 corenet_tcp_sendrecv_generic_if(spamd_update_t)
 corenet_tcp_sendrecv_generic_node(spamd_update_t)
-corenet_tcp_sendrecv_all_ports(spamd_update_t)
 corenet_sendrecv_http_client_packets(spamd_update_t)
 corenet_tcp_connect_http_port(spamd_update_t)
-corenet_tcp_sendrecv_http_port(spamd_update_t)
 corenet_tcp_bind_generic_node(spamd_update_t)
 corenet_udp_bind_generic_node(spamd_update_t)
 
@@ -528,6 +546,7 @@ fs_getattr_xattr_fs(spamd_update_t)
 auth_use_nsswitch(spamd_update_t)
 auth_dontaudit_read_shadow(spamd_update_t)
 
+miscfiles_read_generic_certs(spamd_update_t)
 miscfiles_read_localization(spamd_update_t)
 
 userdom_use_inherited_user_terminals(spamd_update_t)
@@ -539,35 +558,5 @@ optional_policy(`
 ')
 
 optional_policy(`
-	gpg_spec_domtrans(spamd_update_t, spamd_gpg_t)
-	gpg_entry_type(spamd_gpg_t)
-	role system_r types spamd_gpg_t;
-
-	allow spamd_gpg_t self:capability { dac_override dac_read_search };
-	allow spamd_gpg_t self:unix_stream_socket { connect create };
-
-	allow spamd_gpg_t spamd_update_t:fd use;
-	allow spamd_gpg_t spamd_update_t:process sigchld;
-	allow spamd_gpg_t spamd_update_t:fifo_file { getattr write };
-	allow spamd_gpg_t spamd_var_lib_t:dir rw_dir_perms;
-	allow spamd_gpg_t spamd_var_lib_t:file manage_file_perms;
-	allow spamd_gpg_t spamd_update_tmp_t:file read_file_perms;
-
-	# fips
-	kernel_read_crypto_sysctls(spamd_gpg_t)
-
-	domain_use_interactive_fds(spamd_gpg_t)
-
-	files_read_etc_files(spamd_gpg_t)
-	files_read_usr_files(spamd_gpg_t)
-	files_search_var_lib(spamd_gpg_t)
-	files_search_pids(spamd_gpg_t)
-	files_search_tmp(spamd_gpg_t)
-
-	init_use_fds(spamd_gpg_t)
-	init_rw_inherited_stream_socket(spamd_gpg_t)
-
-	miscfiles_read_localization(spamd_gpg_t)
-
-	userdom_use_inherited_user_terminals(spamd_gpg_t)
+	gpg_exec(spamd_update_t)
 ')

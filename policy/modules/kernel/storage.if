@@ -106,6 +106,39 @@ interface(`storage_raw_read_fixed_disk',`
 
 ########################################
 ## <summary>
+##	Allow the caller to directly read from a fixed disk
+##	if a tunable is set.
+##	This is extremely dangerous as it can bypass the
+##	SELinux protections for filesystem objects, and
+##	should only be used by trusted domains.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="tunable">
+##	<summary>
+##	Tunable to depend on
+##	</summary>
+## </param>
+#
+interface(`storage_raw_read_fixed_disk_cond',`
+	gen_require(`
+		attribute fixed_disk_raw_read;
+		type fixed_disk_device_t;
+	')
+
+	typeattribute $1 fixed_disk_raw_read;
+	tunable_policy(`$2', `
+		dev_list_all_dev_nodes($1)
+		allow $1 fixed_disk_device_t:blk_file read_blk_file_perms;
+		allow $1 fixed_disk_device_t:chr_file read_chr_file_perms;
+	')
+')
+
+########################################
+## <summary>
 ##	Do not audit attempts made by the caller to read
 ##	fixed disk device nodes.
 ## </summary>
@@ -328,7 +361,27 @@ interface(`storage_swapon_fixed_disk',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	allow $1 fixed_disk_device_t:blk_file { getattr swapon };
+	allow $1 fixed_disk_device_t:blk_file getattr;
+')
+
+########################################
+## <summary>
+##	Watch fixed disk device nodes.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`storage_watch_fixed_disk',`
+	gen_require(`
+		type fixed_disk_device_t;
+	')
+
+	dev_list_all_dev_nodes($1)
+	allow $1 fixed_disk_device_t:blk_file watch;
+	allow $1 fixed_disk_device_t:chr_file watch;
 ')
 
 ########################################
@@ -366,7 +419,7 @@ interface(`storage_rw_fuse',`
 		type fuse_device_t;
 	')
 
-	allow $1 fuse_device_t:chr_file rw_file_perms;
+	allow $1 fuse_device_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -385,7 +438,7 @@ interface(`storage_dontaudit_rw_fuse',`
 		type fuse_device_t;
 	')
 
-	dontaudit $1 fuse_device_t:chr_file rw_file_perms;
+	dontaudit $1 fuse_device_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -481,7 +534,7 @@ interface(`storage_write_scsi_generic',`
 ########################################
 ## <summary>
 ##	Set attributes of the device nodes
-##	for the SCSI generic inerface.
+##	for the SCSI generic interface.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -514,7 +567,7 @@ interface(`storage_dontaudit_rw_scsi_generic',`
 		type scsi_generic_device_t;
 	')
 
-	dontaudit $1 scsi_generic_device_t:chr_file rw_file_perms;
+	dontaudit $1 scsi_generic_device_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################

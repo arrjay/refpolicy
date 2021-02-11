@@ -86,11 +86,11 @@ interface(`abrt_read_state',`
 #
 interface(`abrt_stream_connect',`
 	gen_require(`
-		type abrt_t, abrt_var_run_t;
+		type abrt_t, abrt_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, abrt_var_run_t, abrt_var_run_t, abrt_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, abrt_runtime_t, abrt_runtime_t, abrt_t)
 ')
 
 ########################################
@@ -223,7 +223,7 @@ interface(`abrt_read_log',`
 
 ######################################
 ## <summary>
-##	Read abrt PID files.
+##	Read abrt PID files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -232,18 +232,13 @@ interface(`abrt_read_log',`
 ## </param>
 #
 interface(`abrt_read_pid_files',`
-	gen_require(`
-		type abrt_var_run_t;
-	')
-
-	files_search_pids($1)
-	read_files_pattern($1, abrt_var_run_t, abrt_var_run_t)
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ######################################
 ## <summary>
 ##	Create, read, write, and delete
-##	abrt PID files.
+##	abrt PID files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -252,12 +247,28 @@ interface(`abrt_read_pid_files',`
 ## </param>
 #
 interface(`abrt_manage_pid_files',`
+	refpolicywarn(`$0($*) has been deprecated, please use abrt_manage_runtime_files() instead.')
+	abrt_manage_runtime_files($1)
+')
+
+######################################
+## <summary>
+##	Create, read, write, and delete
+##	abrt runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`abrt_manage_runtime_files',`
 	gen_require(`
-		type abrt_var_run_t;
+		type abrt_runtime_t;
 	')
 
-	files_search_pids($1)
-	manage_files_pattern($1, abrt_var_run_t, abrt_var_run_t)
+	files_search_runtime($1)
+	manage_files_pattern($1, abrt_runtime_t, abrt_runtime_t)
 ')
 
 #####################################
@@ -282,7 +293,7 @@ interface(`abrt_admin',`
 		attribute abrt_domain;
 		type abrt_t, abrt_etc_t, abrt_initrc_exec_t;
 		type abrt_var_cache_t, abrt_var_log_t, abrt_retrace_cache_t;
-		type abrt_var_run_t, abrt_tmp_t, abrt_retrace_spool_t;
+		type abrt_runtime_t, abrt_tmp_t, abrt_retrace_spool_t;
 	')
 
 	allow $1 abrt_domain:process { ptrace signal_perms };
@@ -299,8 +310,8 @@ interface(`abrt_admin',`
 	files_search_var($1)
 	admin_pattern($1, { abrt_retrace_cache_t abrt_var_cache_t abrt_retrace_spool_t })
 
-	files_search_pids($1)
-	admin_pattern($1, abrt_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, abrt_runtime_t)
 
 	files_search_tmp($1)
 	admin_pattern($1, abrt_tmp_t)

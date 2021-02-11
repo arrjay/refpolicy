@@ -1,4 +1,4 @@
-policy_module(dspam, 1.4.0)
+policy_module(dspam, 1.6.0)
 
 ########################################
 #
@@ -15,11 +15,11 @@ init_script_file(dspam_initrc_exec_t)
 type dspam_log_t;
 logging_log_file(dspam_log_t)
 
+type dspam_runtime_t alias dspam_var_run_t;
+files_runtime_file(dspam_runtime_t)
+
 type dspam_var_lib_t;
 files_type(dspam_var_lib_t)
-
-type dspam_var_run_t;
-files_pid_file(dspam_var_run_t)
 
 ########################################
 #
@@ -41,12 +41,11 @@ manage_dirs_pattern(dspam_t, dspam_var_lib_t, dspam_var_lib_t)
 manage_files_pattern(dspam_t, dspam_var_lib_t, dspam_var_lib_t)
 files_var_lib_filetrans(dspam_t, dspam_var_lib_t, dir)
 
-manage_dirs_pattern(dspam_t, dspam_var_run_t, dspam_var_run_t)
-manage_files_pattern(dspam_t, dspam_var_run_t, dspam_var_run_t)
-manage_sock_files_pattern(dspam_t, dspam_var_run_t, dspam_var_run_t)
-files_pid_filetrans(dspam_t, dspam_var_run_t, dir)
+manage_dirs_pattern(dspam_t, dspam_runtime_t, dspam_runtime_t)
+manage_files_pattern(dspam_t, dspam_runtime_t, dspam_runtime_t)
+manage_sock_files_pattern(dspam_t, dspam_runtime_t, dspam_runtime_t)
+files_runtime_filetrans(dspam_t, dspam_runtime_t, dir)
 
-corenet_all_recvfrom_unlabeled(dspam_t)
 corenet_all_recvfrom_netlabel(dspam_t)
 corenet_tcp_sendrecv_generic_if(dspam_t)
 corenet_tcp_sendrecv_generic_node(dspam_t)
@@ -56,7 +55,6 @@ corenet_sendrecv_spamd_client_packets(dspam_t)
 corenet_sendrecv_spamd_server_packets(dspam_t)
 corenet_tcp_bind_spamd_port(dspam_t)
 corenet_tcp_connect_spamd_port(dspam_t)
-corenet_tcp_sendrecv_spamd_port(dspam_t)
 
 files_search_spool(dspam_t)
 

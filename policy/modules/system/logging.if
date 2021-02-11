@@ -315,11 +315,11 @@ interface(`logging_dispatcher_domain',`
 #
 interface(`logging_stream_connect_dispatcher',`
 	gen_require(`
-		type audisp_t, audisp_var_run_t;
+		type audisp_t, audisp_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, audisp_var_run_t, audisp_var_run_t, audisp_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, audisp_runtime_t, audisp_runtime_t, audisp_t)
 ')
 
 ########################################
@@ -429,6 +429,44 @@ interface(`logging_domtrans_syslog',`
 
 ########################################
 ## <summary>
+##	Allow specified domain to start/stop syslog units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_startstop_syslog',`
+	gen_require(`
+		type syslogd_unit_t;
+		class service { start stop };
+	')
+
+	allow $1 syslogd_unit_t:service { start stop };
+')
+
+########################################
+## <summary>
+##	Allow specified domain to check status of syslog unit
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_status_syslog',`
+	gen_require(`
+		type syslogd_unit_t;
+		class service status;
+	')
+
+	allow $1 syslogd_unit_t:service status;
+')
+
+########################################
+## <summary>
 ##	Set the attributes of syslog temporary files.
 ## </summary>
 ## <param name="domain">
@@ -448,6 +486,25 @@ interface(`logging_setattr_syslogd_tmp_files',`
 
 ########################################
 ## <summary>
+##  Allow the domain to create the audit socket
+##  for syslogd.
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`logging_audit_socket_activation', `
+	gen_require(`
+		type syslogd_t;
+	')
+
+	allow $1 syslogd_t:netlink_audit_socket create_socket_perms;
+')
+
+########################################
+## <summary>
 ##	Relabel to and from syslog temporary file type.
 ## </summary>
 ## <param name="domain">
@@ -462,7 +519,7 @@ interface(`logging_relabel_syslogd_tmp_files',`
 		type syslogd_tmp_t;
 	')
 
-	allow $1 syslogd_tmp_t:file { relabelfrom relabelto };
+	allow $1 syslogd_tmp_t:file relabel_file_perms;
 ')
 
 ########################################
@@ -500,7 +557,7 @@ interface(`logging_relabel_syslogd_tmp_dirs',`
 		type syslogd_tmp_t;
 	')
 
-	allow $1 syslogd_tmp_t:dir { relabelfrom relabelto };
+	allow $1 syslogd_tmp_t:dir relabel_dir_perms;
 ')
 
 ########################################
@@ -600,14 +657,14 @@ interface(`logging_log_filetrans',`
 #
 interface(`logging_send_syslog_msg',`
 	gen_require(`
-		type syslogd_t, syslogd_var_run_t, devlog_t;
+		type syslogd_t, syslogd_runtime_t, devlog_t;
 	')
 
 	allow $1 devlog_t:sock_file write_sock_file_perms;
 
 	# systemd journal socket is in /run/systemd/journal/dev-log
 	init_search_run($1)
-	allow $1 syslogd_var_run_t:dir search_dir_perms;
+	allow $1 syslogd_runtime_t:dir search_dir_perms;
 
 	# the type of socket depends on the syslog daemon
 	allow $1 syslogd_t:unix_dgram_socket sendto;
@@ -619,6 +676,34 @@ interface(`logging_send_syslog_msg',`
 	# will write to the console.
 	term_write_console($1)
 	term_dontaudit_read_console($1)
+
+	ifdef(`init_systemd',`
+		# Allow systemd-journald to check whether the process died
+		allow syslogd_t $1:process signull;
+
+		ifdef(`distro_redhat',`
+			kernel_dgram_send($1)
+		')
+	')
+')
+
+########################################
+## <summary>
+##  Allow domain to use a file descriptor
+##  from syslogd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_use_syslogd_fd', `
+	gen_require(`
+		type syslogd_t;
+	')
+
+	allow $1 syslogd_t:fd use;
 ')
 
 ########################################
@@ -657,7 +742,7 @@ interface(`logging_create_devlog',`
 
 	allow $1 devlog_t:sock_file manage_sock_file_perms;
 	dev_filetrans($1, devlog_t, sock_file)
-	init_pid_filetrans($1, devlog_t, sock_file, "syslog")
+	init_runtime_filetrans($1, devlog_t, sock_file, "syslog")
 ')
 
 ########################################
@@ -723,7 +808,25 @@ interface(`logging_read_syslog_config',`
 
 ########################################
 ## <summary>
-##	Create, read, write, and delete syslog PID sockets.
+##	Watch syslog runtime dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_watch_runtime_dirs',`
+	gen_require(`
+		type syslogd_runtime_t;
+	')
+
+	allow $1 syslogd_runtime_t:dir watch;
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete syslog PID sockets.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -732,12 +835,27 @@ interface(`logging_read_syslog_config',`
 ## </param>
 #
 interface(`logging_manage_pid_sockets',`
+	refpolicywarn(`$0($*) has been deprecated, please use logging_manage_runtime_sockets() instead.')
+	logging_manage_runtime_sockets($1)
+')
+
+########################################
+## <summary>
+##	Create, read, write, and delete syslog PID sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_manage_runtime_sockets',`
 	gen_require(`
-		type syslogd_var_run_t;
+		type syslogd_runtime_t;
 	')
 
-	manage_sock_files_pattern($1, syslogd_var_run_t, syslogd_var_run_t)
-	files_search_pids($1)
+	manage_sock_files_pattern($1, syslogd_runtime_t, syslogd_runtime_t)
+	files_search_runtime($1)
 ')
 
 ########################################
@@ -879,7 +997,7 @@ interface(`logging_dontaudit_getattr_all_logs',`
 
 ########################################
 ## <summary>
-##	Read the atttributes of any log file
+##	Read the attributes of any log file
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -1054,7 +1172,7 @@ interface(`logging_relabel_generic_log_dirs',`
 	')
 
 	files_search_var($1)
-	allow $1 var_log_t:dir { relabelfrom relabelto };
+	allow $1 var_log_t:dir relabel_dir_perms;
 ')
 
 ########################################
@@ -1180,6 +1298,24 @@ interface(`logging_manage_generic_logs',`
 
 ########################################
 ## <summary>
+##	Watch generic log dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`logging_watch_generic_logs_dir',`
+	gen_require(`
+		type var_log_t;
+	')
+
+	allow $1 var_log_t:dir watch;
+')
+
+########################################
+## <summary>
 ##	All of the rules required to administrate
 ##	the audit environment
 ## </summary>
@@ -1198,7 +1334,7 @@ interface(`logging_manage_generic_logs',`
 interface(`logging_admin_audit',`
 	gen_require(`
 		type auditd_t, auditd_etc_t, auditd_log_t;
-		type auditd_var_run_t;
+		type auditd_runtime_t;
 		type auditd_initrc_exec_t, auditd_unit_t;
 	')
 
@@ -1211,8 +1347,8 @@ interface(`logging_admin_audit',`
 	manage_dirs_pattern($1, auditd_log_t, auditd_log_t)
 	manage_files_pattern($1, auditd_log_t, auditd_log_t)
 
-	manage_dirs_pattern($1, auditd_var_run_t, auditd_var_run_t)
-	manage_files_pattern($1, auditd_var_run_t, auditd_var_run_t)
+	manage_dirs_pattern($1, auditd_runtime_t, auditd_runtime_t)
+	manage_files_pattern($1, auditd_runtime_t, auditd_runtime_t)
 
 	logging_run_auditctl($1, $2)
 
@@ -1243,8 +1379,8 @@ interface(`logging_admin_syslog',`
 	gen_require(`
 		type syslogd_t, klogd_t, syslog_conf_t;
 		type syslogd_tmp_t, syslogd_var_lib_t;
-		type syslogd_var_run_t, klogd_var_run_t;
-		type klogd_tmp_t, var_log_t;
+		type syslogd_runtime_t, klogd_runtime_t;
+		type klogd_tmp_t;
 		type syslogd_initrc_exec_t, syslogd_unit_t;
 	')
 
@@ -1253,8 +1389,8 @@ interface(`logging_admin_syslog',`
 	ps_process_pattern($1, syslogd_t)
 	ps_process_pattern($1, klogd_t)
 
-	manage_dirs_pattern($1, klogd_var_run_t, klogd_var_run_t)
-	manage_files_pattern($1, klogd_var_run_t, klogd_var_run_t)
+	manage_dirs_pattern($1, klogd_runtime_t, klogd_runtime_t)
+	manage_files_pattern($1, klogd_runtime_t, klogd_runtime_t)
 
 	manage_dirs_pattern($1, klogd_tmp_t, klogd_tmp_t)
 	manage_files_pattern($1, klogd_tmp_t, klogd_tmp_t)
@@ -1270,8 +1406,8 @@ interface(`logging_admin_syslog',`
 	manage_dirs_pattern($1, syslogd_var_lib_t, syslogd_var_lib_t)
 	manage_files_pattern($1, syslogd_var_lib_t, syslogd_var_lib_t)
 
-	manage_dirs_pattern($1, syslogd_var_run_t, syslogd_var_run_t)
-	manage_files_pattern($1, syslogd_var_run_t, syslogd_var_run_t)
+	manage_dirs_pattern($1, syslogd_runtime_t, syslogd_runtime_t)
+	manage_files_pattern($1, syslogd_runtime_t, syslogd_runtime_t)
 
 	logging_manage_all_logs($1)
 
@@ -1312,8 +1448,8 @@ interface(`logging_admin',`
 #
 interface(`logging_mmap_journal',`
 	gen_require(`
-		type syslogd_var_run_t;
+		type syslogd_runtime_t;
 	')
 
-	allow $1 syslogd_var_run_t:file map;
+	allow $1 syslogd_runtime_t:file map;
 ')

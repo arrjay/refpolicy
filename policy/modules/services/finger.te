@@ -1,4 +1,4 @@
-policy_module(finger, 1.13.0)
+policy_module(finger, 1.16.0)
 
 ########################################
 #
@@ -16,8 +16,8 @@ files_config_file(fingerd_etc_t)
 type fingerd_log_t;
 logging_log_file(fingerd_log_t)
 
-type fingerd_var_run_t;
-files_pid_file(fingerd_var_run_t)
+type fingerd_runtime_t alias fingerd_var_run_t;
+files_runtime_file(fingerd_runtime_t)
 
 ########################################
 #
@@ -30,8 +30,8 @@ allow fingerd_t self:process signal_perms;
 allow fingerd_t self:fifo_file rw_fifo_file_perms;
 allow fingerd_t self:tcp_socket connected_stream_socket_perms;
 
-manage_files_pattern(fingerd_t, fingerd_var_run_t, fingerd_var_run_t)
-files_pid_filetrans(fingerd_t, fingerd_var_run_t, file)
+manage_files_pattern(fingerd_t, fingerd_runtime_t, fingerd_runtime_t)
+files_runtime_filetrans(fingerd_t, fingerd_runtime_t, file)
 
 allow fingerd_t fingerd_etc_t:dir list_dir_perms;
 read_files_pattern(fingerd_t, fingerd_etc_t, fingerd_etc_t)
@@ -45,7 +45,6 @@ logging_log_filetrans(fingerd_t, fingerd_log_t, file)
 kernel_read_kernel_sysctls(fingerd_t)
 kernel_read_system_state(fingerd_t)
 
-corenet_all_recvfrom_unlabeled(fingerd_t)
 corenet_all_recvfrom_netlabel(fingerd_t)
 corenet_tcp_sendrecv_generic_if(fingerd_t)
 corenet_tcp_sendrecv_generic_node(fingerd_t)
@@ -53,7 +52,6 @@ corenet_tcp_bind_generic_node(fingerd_t)
 
 corenet_sendrecv_fingerd_server_packets(fingerd_t)
 corenet_tcp_bind_fingerd_port(fingerd_t)
-corenet_tcp_sendrecv_fingerd_port(fingerd_t)
 
 corecmd_exec_bin(fingerd_t)
 corecmd_exec_shell(fingerd_t)
@@ -99,6 +97,3 @@ optional_policy(`
 	tcpd_wrapped_domain(fingerd_t, fingerd_exec_t)
 ')
 
-optional_policy(`
-	udev_read_db(fingerd_t)
-')

@@ -1,4 +1,4 @@
-policy_module(clamav, 1.16.0)
+policy_module(clamav, 1.20.0)
 
 ## <desc>
 ##	<p>
@@ -39,6 +39,10 @@ files_config_file(clamd_etc_t)
 type clamd_initrc_exec_t;
 init_script_file(clamd_initrc_exec_t)
 
+type clamd_runtime_t;
+files_runtime_file(clamd_runtime_t)
+typealias clamd_runtime_t alias clamd_var_run_t;
+
 type clamd_tmp_t;
 files_tmp_file(clamd_tmp_t)
 
@@ -50,10 +54,6 @@ logging_log_file(clamd_var_log_t)
 
 type clamd_var_lib_t;
 files_type(clamd_var_lib_t)
-
-type clamd_var_run_t;
-files_pid_file(clamd_var_run_t)
-typealias clamd_var_run_t alias clamd_sock_t;
 
 type clamscan_t;
 type clamscan_exec_t;
@@ -99,10 +99,10 @@ create_files_pattern(clamd_t, clamd_var_log_t, clamd_var_log_t)
 setattr_files_pattern(clamd_t, clamd_var_log_t, clamd_var_log_t)
 logging_log_filetrans(clamd_t, clamd_var_log_t, { dir file })
 
-manage_dirs_pattern(clamd_t, clamd_var_run_t, clamd_var_run_t)
-manage_files_pattern(clamd_t, clamd_var_run_t, clamd_var_run_t)
-manage_sock_files_pattern(clamd_t, clamd_var_run_t, clamd_var_run_t)
-files_pid_filetrans(clamd_t, clamd_var_run_t, { dir file sock_file })
+manage_dirs_pattern(clamd_t, clamd_runtime_t, clamd_runtime_t)
+manage_files_pattern(clamd_t, clamd_runtime_t, clamd_runtime_t)
+manage_sock_files_pattern(clamd_t, clamd_runtime_t, clamd_runtime_t)
+files_runtime_filetrans(clamd_t, clamd_runtime_t, { dir file sock_file })
 
 read_files_pattern(clamd_t, clam_scannable_type, clam_scannable_type)
 read_lnk_files_pattern(clamd_t, clam_scannable_type, clam_scannable_type)
@@ -118,11 +118,9 @@ kernel_read_vm_overcommit_sysctl(clamd_t)
 
 corecmd_exec_shell(clamd_t)
 
-corenet_all_recvfrom_unlabeled(clamd_t)
 corenet_all_recvfrom_netlabel(clamd_t)
 corenet_tcp_sendrecv_generic_if(clamd_t)
 corenet_tcp_sendrecv_generic_node(clamd_t)
-corenet_tcp_sendrecv_all_ports(clamd_t)
 corenet_tcp_bind_generic_node(clamd_t)
 
 corenet_sendrecv_generic_server_packets(clamd_t)
@@ -147,6 +145,7 @@ auth_use_nsswitch(clamd_t)
 
 logging_send_syslog_msg(clamd_t)
 
+miscfiles_read_generic_certs(clamd_t)
 miscfiles_read_localization(clamd_t)
 
 tunable_policy(`clamd_use_jit',`
@@ -157,8 +156,8 @@ tunable_policy(`clamd_use_jit',`
 
 optional_policy(`
 	amavis_read_lib_files(clamd_t)
-	amavis_spool_filetrans(clamd_t, clamd_var_run_t, sock_file)
-	amavis_create_pid_files(clamd_t)
+	amavis_spool_filetrans(clamd_t, clamd_runtime_t, sock_file)
+	amavis_create_runtime_files(clamd_t)
 ')
 
 optional_policy(`
@@ -189,43 +188,39 @@ read_lnk_files_pattern(freshclam_t, clamd_etc_t, clamd_etc_t)
 manage_dirs_pattern(freshclam_t, clamd_var_lib_t, clamd_var_lib_t)
 manage_files_pattern(freshclam_t, clamd_var_lib_t, clamd_var_lib_t)
 
-manage_files_pattern(freshclam_t, clamd_var_run_t, clamd_var_run_t)
-files_pid_filetrans(freshclam_t, clamd_var_run_t, file)
+manage_files_pattern(freshclam_t, clamd_runtime_t, clamd_runtime_t)
+files_runtime_filetrans(freshclam_t, clamd_runtime_t, file)
 
 append_files_pattern(freshclam_t, freshclam_var_log_t, freshclam_var_log_t)
 create_files_pattern(freshclam_t, freshclam_var_log_t, freshclam_var_log_t)
 setattr_files_pattern(freshclam_t, freshclam_var_log_t, freshclam_var_log_t)
 logging_log_filetrans(freshclam_t, freshclam_var_log_t, file)
 
-stream_connect_pattern(freshclam_t, clamd_var_run_t, clamd_var_run_t, clamd_t)
+stream_connect_pattern(freshclam_t, clamd_runtime_t, clamd_runtime_t, clamd_t)
 
 read_files_pattern(freshclam_t, clamd_var_log_t, clamd_var_log_t)
 
 kernel_dontaudit_list_proc(freshclam_t)
+kernel_read_crypto_sysctls(freshclam_t)
 kernel_read_kernel_sysctls(freshclam_t)
 kernel_read_network_state(freshclam_t)
 kernel_read_system_state(freshclam_t)
 
-corenet_all_recvfrom_unlabeled(freshclam_t)
 corenet_all_recvfrom_netlabel(freshclam_t)
 corenet_tcp_sendrecv_generic_if(freshclam_t)
 corenet_tcp_sendrecv_generic_node(freshclam_t)
 
 corenet_sendrecv_clamd_client_packets(freshclam_t)
 corenet_tcp_connect_clamd_port(freshclam_t)
-corenet_tcp_sendrecv_clamd_port(freshclam_t)
 
 corenet_sendrecv_http_client_packets(freshclam_t)
 corenet_tcp_connect_http_port(freshclam_t)
-corenet_tcp_sendrecv_http_port(freshclam_t)
 
 corenet_sendrecv_http_cache_client_packets(freshclam_t)
 corenet_tcp_connect_http_cache_port(freshclam_t)
-corenet_tcp_sendrecv_http_cache_port(freshclam_t)
 
 corenet_sendrecv_squid_client_packets(freshclam_t)
 corenet_tcp_connect_squid_port(freshclam_t)
-corenet_tcp_sendrecv_squid_port(freshclam_t)
 
 dev_read_rand(freshclam_t)
 dev_read_urand(freshclam_t)
@@ -239,6 +234,7 @@ auth_use_nsswitch(freshclam_t)
 
 logging_send_syslog_msg(freshclam_t)
 
+miscfiles_read_generic_certs(freshclam_t)
 miscfiles_read_localization(freshclam_t)
 
 tunable_policy(`clamd_use_jit',`
@@ -281,23 +277,21 @@ list_dirs_pattern(clamscan_t, clam_scannable_type, clam_scannable_type)
 allow clamscan_t clamd_var_lib_t:dir list_dir_perms;
 manage_files_pattern(clamscan_t, clamd_var_lib_t, clamd_var_lib_t)
 
-allow clamscan_t clamd_var_run_t:dir list_dir_perms;
-read_files_pattern(clamscan_t, clamd_var_run_t, clamd_var_run_t)
+allow clamscan_t clamd_runtime_t:dir list_dir_perms;
+read_files_pattern(clamscan_t, clamd_runtime_t, clamd_runtime_t)
 
-stream_connect_pattern(clamscan_t, clamd_var_run_t, clamd_var_run_t, clamd_t)
+stream_connect_pattern(clamscan_t, clamd_runtime_t, clamd_runtime_t, clamd_t)
 
 kernel_dontaudit_list_proc(clamscan_t)
 kernel_read_kernel_sysctls(clamscan_t)
 kernel_read_system_state(clamscan_t)
 
-corenet_all_recvfrom_unlabeled(clamscan_t)
 corenet_all_recvfrom_netlabel(clamscan_t)
 corenet_tcp_sendrecv_generic_if(clamscan_t)
 corenet_tcp_sendrecv_generic_node(clamscan_t)
 
 corenet_sendrecv_clamd_client_packets(clamscan_t)
 corenet_tcp_connect_clamd_port(clamscan_t)
-corenet_tcp_sendrecv_clamd_port(clamscan_t)
 
 corecmd_read_all_executables(clamscan_t)
 

@@ -1,4 +1,4 @@
-policy_module(pyzor, 2.5.0)
+policy_module(pyzor, 2.7.0)
 
 ########################################
 #
@@ -10,8 +10,6 @@ roleattribute system_r pyzor_roles;
 
 type pyzor_t;
 type pyzor_exec_t;
-typealias pyzor_t alias { user_pyzor_t staff_pyzor_t sysadm_pyzor_t };
-typealias pyzor_t alias { auditadm_pyzor_t secadm_pyzor_t };
 userdom_user_application_domain(pyzor_t, pyzor_exec_t)
 role pyzor_roles types pyzor_t;
 
@@ -19,18 +17,12 @@ type pyzor_etc_t;
 files_type(pyzor_etc_t)
 
 type pyzor_home_t;
-typealias pyzor_home_t alias { user_pyzor_home_t staff_pyzor_home_t sysadm_pyzor_home_t };
-typealias pyzor_home_t alias { auditadm_pyzor_home_t secadm_pyzor_home_t };
 userdom_user_home_content(pyzor_home_t)
 
 type pyzor_tmp_t;
-typealias pyzor_tmp_t alias { user_pyzor_tmp_t staff_pyzor_tmp_t sysadm_pyzor_tmp_t };
-typealias pyzor_tmp_t alias { auditadm_pyzor_tmp_t secadm_pyzor_tmp_t };
 userdom_user_tmp_file(pyzor_tmp_t)
 
 type pyzor_var_lib_t;
-typealias pyzor_var_lib_t alias { user_pyzor_var_lib_t staff_pyzor_var_lib_t sysadm_pyzor_var_lib_t };
-typealias pyzor_var_lib_t alias { auditadm_pyzor_var_lib_t secadm_pyzor_var_lib_t };
 files_type(pyzor_var_lib_t)
 ubac_constrained(pyzor_var_lib_t)
 
@@ -67,14 +59,12 @@ kernel_read_system_state(pyzor_t)
 corecmd_list_bin(pyzor_t)
 corecmd_getattr_bin_files(pyzor_t)
 
-corenet_all_recvfrom_unlabeled(pyzor_t)
 corenet_all_recvfrom_netlabel(pyzor_t)
 corenet_tcp_sendrecv_generic_if(pyzor_t)
 corenet_tcp_sendrecv_generic_node(pyzor_t)
 
 corenet_sendrecv_http_client_packets(pyzor_t)
 corenet_tcp_connect_http_port(pyzor_t)
-corenet_tcp_sendrecv_http_port(pyzor_t)
 
 dev_read_urand(pyzor_t)
 
@@ -137,7 +127,6 @@ dev_read_urand(pyzord_t)
 
 corecmd_exec_bin(pyzord_t)
 
-corenet_all_recvfrom_unlabeled(pyzord_t)
 corenet_all_recvfrom_netlabel(pyzord_t)
 corenet_udp_sendrecv_generic_if(pyzord_t)
 corenet_udp_sendrecv_generic_node(pyzord_t)
@@ -145,7 +134,6 @@ corenet_udp_bind_generic_node(pyzord_t)
 
 corenet_sendrecv_pyzor_server_packets(pyzord_t)
 corenet_udp_bind_pyzor_port(pyzord_t)
-corenet_udp_sendrecv_pyzor_port(pyzord_t)
 
 auth_use_nsswitch(pyzord_t)
 

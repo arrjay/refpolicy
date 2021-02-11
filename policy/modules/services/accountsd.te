@@ -1,4 +1,4 @@
-policy_module(accountsd, 1.3.0)
+policy_module(accountsd, 1.5.0)
 
 gen_require(`
 	class passwd all_passwd_perms;
@@ -40,6 +40,7 @@ dev_read_sysfs(accountsd_t)
 
 files_read_mnt_files(accountsd_t)
 files_read_usr_files(accountsd_t)
+files_watch_etc_dirs(accountsd_t)
 
 fs_getattr_xattr_fs(accountsd_t)
 fs_list_inotifyfs(accountsd_t)
@@ -54,17 +55,13 @@ miscfiles_read_localization(accountsd_t)
 logging_list_logs(accountsd_t)
 logging_send_syslog_msg(accountsd_t)
 logging_set_loginuid(accountsd_t)
+logging_watch_generic_logs_dir(accountsd_t)
 
 userdom_read_user_tmp_files(accountsd_t)
 userdom_read_user_home_content_files(accountsd_t)
 
 usermanage_domtrans_useradd(accountsd_t)
 usermanage_domtrans_passwd(accountsd_t)
-
-optional_policy(`
-	consolekit_dbus_chat(accountsd_t)
-	consolekit_read_log(accountsd_t)
-')
 
 optional_policy(`
 	policykit_dbus_chat(accountsd_t)

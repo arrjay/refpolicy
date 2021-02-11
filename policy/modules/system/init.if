@@ -1,5 +1,46 @@
 ## <summary>System initialization programs (init and init scripts).</summary>
 
+######################################
+## <summary>
+##	Make the specified type usable as a mountpoint.
+## </summary>
+## <desc>
+##	Make the specified type usable as a mountpoint.
+##	This is normally used for systemd BindPaths options.
+## </desc>
+## <param name="file_type">
+##   <summary>
+##     Type to be used as a mountpoint.
+##   </summary>
+## </param>
+#
+interface(`init_mountpoint',`
+	gen_require(`
+		attribute init_mountpoint_type;
+	')
+
+	typeattribute $1 init_mountpoint_type;
+')
+
+########################################
+## <summary>
+##	Create a file type monitored by a systemd path unit.
+## </summary>
+## <param name="script_file">
+##	<summary>
+##	Type to be used for a path unit monitored location.
+##	</summary>
+## </param>
+#
+interface(`init_path_unit_location_file',`
+	gen_require(`
+		attribute init_path_unit_loc_type;
+	')
+
+	typeattribute $1 init_path_unit_loc_type;
+	files_type($1)
+')
+
 ########################################
 ## <summary>
 ##	Create a file type used for init scripts.
@@ -99,6 +140,16 @@ interface(`init_script_domain',`
 	role system_r types $1;
 
 	domtrans_pattern(init_run_all_scripts_domain, $2, $1)
+
+	ifdef(`init_systemd',`
+		gen_require(`
+			type init_t;
+		')
+
+		allow $1 init_t:unix_stream_socket { getattr read write ioctl };
+
+		allow init_t $1:process2 { nnp_transition nosuid_transition };
+	')
 ')
 
 ########################################
@@ -306,16 +357,17 @@ interface(`init_daemon_domain',`
 
 	ifdef(`init_systemd',`
 		init_domain($1, $2)
-		# this may be because of late labelling
-		kernel_dgram_send($1)
 
 		allow $1 init_t:unix_dgram_socket sendto;
+
+		optional_policy(`
+			systemd_stream_connect_socket_proxyd($1)
+		')
 	')
 
 	optional_policy(`
 		nscd_use($1)
 	')
-
 ')
 
 ########################################
@@ -571,7 +623,7 @@ interface(`init_dyntrans',`
 ########################################
 ## <summary>
 ##	Mark the file type as a daemon pid file, allowing initrc_t
-##	to create it
+##	to create it  (Deprecated)
 ## </summary>
 ## <param name="filetype">
 ##	<summary>
@@ -590,6 +642,33 @@ interface(`init_dyntrans',`
 ## </param>
 #
 interface(`init_daemon_pid_file',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_daemon_runtime_file() instead.')
+	init_daemon_runtime_file($1, $2, $3)
+
+')
+
+########################################
+## <summary>
+##	Mark the file type as a daemon runtime file, allowing initrc_t
+##	to create it
+## </summary>
+## <param name="filetype">
+##	<summary>
+##	Type to mark as a daemon pid file
+##	</summary>
+## </param>
+## <param name="class">
+##	<summary>
+##	Class on which the type is applied
+##	</summary>
+## </param>
+## <param name="filename">
+##	<summary>
+##	Filename of the file that the init script creates
+##	</summary>
+## </param>
+#
+interface(`init_daemon_runtime_file',`
 	gen_require(`
 		attribute daemonpidfile;
 		type initrc_t;
@@ -597,8 +676,8 @@ interface(`init_daemon_pid_file',`
 
 	typeattribute $1 daemonpidfile;
 
-	files_pid_file($1)
-	files_pid_filetrans(initrc_t, $1, $2, $3)
+	files_runtime_file($1)
+	files_runtime_filetrans(initrc_t, $1, $2, $3)
 ')
 
 ########################################
@@ -654,6 +733,39 @@ interface(`init_domtrans',`
 
 ########################################
 ## <summary>
+##	Execute init (/sbin/init) with a domain transition
+##	to the provided domain.
+## </summary>
+## <desc>
+##	Execute init (/sbin/init) with a domain transition
+##	to the provided domain.  This is used by systemd
+##	to execute the systemd user session.
+## </desc>
+## <param name="domain">
+##	<summary>
+##	The type to be used as a systemd --user domain.
+##	</summary>
+## </param>
+#
+interface(`init_pgm_spec_user_daemon_domain',`
+	gen_require(`
+		type init_t, init_exec_t;
+	')
+
+	domain_type($1)
+	domain_entry_file($1, init_exec_t)
+
+	spec_domtrans_pattern(init_t, init_exec_t, $1)
+
+	allow init_t $1:process { setsched rlimitinh noatsecure };
+
+	ifdef(`init_systemd',`
+		allow $1 init_t:unix_stream_socket { getattr read write ioctl };
+	')
+')
+
+########################################
+## <summary>
 ##	Execute the init program in the caller domain.
 ## </summary>
 ## <param name="domain">
@@ -670,6 +782,26 @@ interface(`init_exec',`
 
 	corecmd_search_bin($1)
 	can_exec($1, init_exec_t)
+')
+
+########################################
+## <summary>
+##	Allow the init program to be an entrypoint
+##	for the specified domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`init_pgm_entrypoint',`
+	gen_require(`
+		type init_exec_t;
+	')
+
+	allow $1 init_exec_t:file entrypoint;
 ')
 
 ########################################
@@ -786,12 +918,31 @@ interface(`init_sigchld',`
 #
 interface(`init_stream_connect',`
 	gen_require(`
-		type init_t, init_var_run_t;
+		type init_t, init_runtime_t;
 	')
 
-	stream_connect_pattern($1, init_var_run_t, init_var_run_t, init_t)
-	files_search_pids($1)
+	stream_connect_pattern($1, init_runtime_t, init_runtime_t, init_t)
+	files_search_runtime($1)
 	allow $1 init_t:unix_stream_socket getattr;
+')
+
+########################################
+## <summary>
+##	Connect to init with a unix socket.
+##  Without any additional permissions.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_unix_stream_socket_connectto',`
+	gen_require(`
+		type init_t;
+	')
+
+	allow $1 init_t:unix_stream_socket connectto;
 ')
 
 ########################################
@@ -884,11 +1035,11 @@ interface(`init_dontaudit_use_fds',`
 #
 interface(`init_dgram_send',`
 	gen_require(`
-		type init_t, init_var_run_t;
+		type init_t, init_runtime_t;
 	')
 
-	dgram_send_pattern($1, init_var_run_t, init_var_run_t, init_t)
-	files_search_pids($1)
+	dgram_send_pattern($1, init_runtime_t, init_runtime_t, init_t)
+	files_search_runtime($1)
 	allow $1 init_t:unix_stream_socket getattr;
 ')
 
@@ -1184,7 +1335,7 @@ interface(`init_relabel_var_lib_dirs',`
 		type init_var_lib_t;
 	')
 
-	allow $1 init_var_lib_t:dir { relabelfrom relabelto };
+	allow $1 init_var_lib_t:dir relabel_dir_perms;
 ')
 
 ########################################
@@ -1243,7 +1394,7 @@ interface(`init_var_lib_filetrans',`
 
 ######################################
 ## <summary>
-##	Allow search  directory in the /run/systemd directory.
+##	Allow search  directory in the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -1252,16 +1403,13 @@ interface(`init_var_lib_filetrans',`
 ## </param>
 #
 interface(`init_search_pids',`
-	gen_require(`
-		type init_var_run_t;
-	')
-
-	allow $1 init_var_run_t:dir search_dir_perms;
+	refpolicywarn(`$0($*) has been deprecated, please use init_search_runtime() instead.')
+	init_search_runtime($1)
 ')
 
 ######################################
 ## <summary>
-##  Allow listing of the /run/systemd directory.
+##  Allow listing of the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##  <summary>
@@ -1270,17 +1418,74 @@ interface(`init_search_pids',`
 ## </param>
 #
 interface(`init_list_pids',`
-	gen_require(`
-		type init_var_run_t;
-	')
+	refpolicywarn(`$0($*) has been deprecated, please use init_list_runtime() instead.')
+	init_list_runtime($1)
+')
 
-	allow $1 init_var_run_t:dir list_dir_perms;
-	files_search_pids($1)
+######################################
+## <summary>
+##  Create symbolic links in the /run/systemd directory.  (Deprecated)
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_manage_pid_symlinks', `
+	refpolicywarn(`$0($*) has been deprecated, please use init_manage_runtime_symlinks() instead.')
+	init_manage_runtime_symlinks($1)
+')
+
+######################################
+## <summary>
+##  Create files in the /run/systemd directory.  (Deprecated)
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_create_pid_files', `
+	refpolicywarn(`$0($*) has been deprecated, please use init_create_runtime_files() instead.')
+	init_create_runtime_files($1)
+')
+
+######################################
+## <summary>
+##  Write files in the /run/systemd directory.  (Deprecated)
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_write_pid_files', `
+	refpolicywarn(`$0($*) has been deprecated, please use init_write_runtime_files() instead.')
+	init_write_runtime_files($1)
+')
+
+######################################
+## <summary>
+##  Create, read, write, and delete
+##  directories in the /run/systemd directory.  (Deprecated)
+## </summary>
+## <param name="domain">
+##  <summary>
+##  Domain allowed access.
+##  </summary>
+## </param>
+#
+interface(`init_manage_pid_dirs', `
+	refpolicywarn(`$0($*) has been deprecated, please use init_manage_runtime_dirs() instead.')
+	init_manage_runtime_dirs($1)
 ')
 
 ########################################
 ## <summary>
-##	Create files in an init PID directory.
+##	Create files in an init PID directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -1304,12 +1509,152 @@ interface(`init_list_pids',`
 ## </param>
 #
 interface(`init_pid_filetrans',`
+	refpolicywarn(`$0($*) has been deprecated, please use init_runtime_filetrans() instead.')
+	init_runtime_filetrans($*)
+')
+
+######################################
+## <summary>
+##	Search init runtime directories, e.g. /run/systemd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_search_runtime',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	files_search_pids($1)
-	filetrans_pattern($1, init_var_run_t, $2, $3, $4)
+	allow $1 init_runtime_t:dir search_dir_perms;
+')
+
+######################################
+## <summary>
+##	List init runtime directories, e.g. /run/systemd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_list_runtime',`
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	allow $1 init_runtime_t:dir list_dir_perms;
+	files_search_runtime($1)
+')
+
+######################################
+## <summary>
+## 	Create, read, write, and delete
+##	directories in the /run/systemd directory.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_manage_runtime_dirs', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	manage_dirs_pattern($1, init_runtime_t, init_runtime_t)
+')
+
+########################################
+## <summary>
+##	Create files in an init runtime directory with a private type.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="file_type">
+##	<summary>
+##	The type of the object to be created
+##	</summary>
+## </param>
+## <param name="object_class">
+##	<summary>
+##	The object class.
+##	</summary>
+## </param>
+## <param name="name" optional="true">
+##	<summary>
+##	The name of the object being created.
+##	</summary>
+## </param>
+#
+interface(`init_runtime_filetrans',`
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	files_search_runtime($1)
+	filetrans_pattern($1, init_runtime_t, $2, $3, $4)
+')
+
+######################################
+## <summary>
+##	Write init runtime files, e.g. in /run/systemd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_write_runtime_files', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	allow $1 init_runtime_t:file write_file_perms;
+')
+
+######################################
+## <summary>
+##	Create init runtime files, e.g. in /run/systemd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_create_runtime_files', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	allow $1 init_runtime_t:file create_file_perms;
+')
+
+######################################
+## <summary>
+##	Create init runtime symbolic links, e.g. in /run/systemd.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_manage_runtime_symlinks', `
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	manage_lnk_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
@@ -1327,7 +1672,7 @@ interface(`init_getattr_initctl',`
 		type initctl_t;
 	')
 
-	files_search_pids($1)
+	files_search_runtime($1)
 	dev_list_all_dev_nodes($1)
 	allow $1 initctl_t:fifo_file getattr;
 ')
@@ -1367,7 +1712,7 @@ interface(`init_write_initctl',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	files_search_pids($1)
+	files_search_runtime($1)
 	allow $1 initctl_t:fifo_file write;
 ')
 
@@ -1400,7 +1745,7 @@ interface(`init_telinit',`
 	corecmd_exec_bin($1)
 
 	dev_list_all_dev_nodes($1)
-	files_search_pids($1)
+	files_search_runtime($1)
 
 	init_exec($1)
 ')
@@ -1421,7 +1766,7 @@ interface(`init_rw_initctl',`
 	')
 
 	dev_list_all_dev_nodes($1)
-	files_search_pids($1)
+	files_search_runtime($1)
 	allow $1 initctl_t:fifo_file rw_fifo_file_perms;
 ')
 
@@ -1724,32 +2069,35 @@ interface(`init_get_script_status',`
 ## </param>
 #
 interface(`init_startstop_service',`
-	gen_require(`
-		role system_r;
-	')
+	ifelse(`init_systemd',`true',`
+		# This ifelse condition is temporary, until
+		# all callers are updated to provide unit files.
+		ifelse(`$5',`',`',`
+			gen_require(`
+				class service { start status stop };
+			')
 
-	ifndef(`direct_sysadm_daemon',`
-		ifdef(`distro_gentoo',`
-			# for OpenRC
-			seutil_labeled_init_script_run_runinit($1, $2, $4)
-		',`
-			# rules for sysvinit / upstart
-			init_labeled_script_domtrans($1, $4)
-			domain_system_change_exemption($1)
-			role_transition $2 $4 system_r;
-			allow $2 system_r;
+			allow $1 $5:service { start status stop };
 		')
 
-		ifdef(`init_systemd',`
-			# This ifelse condition is temporary, until
-			# all callers are updated to provide unit files.
-			ifelse(`$5',`',`',`
-				gen_require(`
-					class service { start status stop };
-				')
+	',`distro_gentoo',`true',`
+		# for OpenRC
+		seutil_labeled_init_script_run_runinit($1, $2, $4)
 
-				allow $1 $5:service { start status stop };
-			')
+	',`direct_sysadm_daemon',`true',`
+		gen_require(`
+			role system_r;
+		')
+
+		# rules for sysvinit / upstart
+		init_labeled_script_domtrans($1, $4)
+		domain_system_change_exemption($1)
+		role_transition $2 $4 system_r;
+		allow $2 system_r;
+
+	',` dnl else
+		optional_policy(`
+			seutil_run_runinit($1, $2)
 		')
 	')
 ')
@@ -2196,7 +2544,7 @@ interface(`init_rw_script_pipes',`
 		type initrc_t;
 	')
 
-	allow $1 initrc_t:fifo_file { read write };
+	allow $1 initrc_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ########################################
@@ -2320,7 +2668,7 @@ interface(`init_use_script_ptys',`
 	')
 
 	term_list_ptys($1)
-	allow $1 initrc_devpts_t:chr_file { rw_term_perms lock append };
+	allow $1 initrc_devpts_t:chr_file rw_chr_file_perms;
 ')
 
 ########################################
@@ -2339,7 +2687,7 @@ interface(`init_use_inherited_script_ptys',`
 	')
 
 	term_list_ptys($1)
-	allow $1 initrc_devpts_t:chr_file { getattr read write ioctl };
+	allow $1 initrc_devpts_t:chr_file rw_inherited_term_perms;
 
 	init_use_fds($1)
 ')
@@ -2414,11 +2762,11 @@ interface(`init_dontaudit_read_script_status_files',`
 #
 interface(`init_search_run',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	files_search_pids($1)
-	allow $1 init_var_run_t:dir search_dir_perms;
+	files_search_runtime($1)
+	allow $1 init_runtime_t:dir search_dir_perms;
 ')
 
 ########################################
@@ -2524,10 +2872,10 @@ interface(`init_script_tmp_filetrans',`
 #
 interface(`init_getattr_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	allow $1 initrc_var_run_t:file getattr;
+	allow $1 initrc_runtime_t:file getattr;
 ')
 
 ########################################
@@ -2542,11 +2890,11 @@ interface(`init_getattr_utmp',`
 #
 interface(`init_read_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	files_list_pids($1)
-	allow $1 initrc_var_run_t:file read_file_perms;
+	files_list_runtime($1)
+	allow $1 initrc_runtime_t:file read_file_perms;
 ')
 
 ########################################
@@ -2561,10 +2909,10 @@ interface(`init_read_utmp',`
 #
 interface(`init_dontaudit_write_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	dontaudit $1 initrc_var_run_t:file { write lock };
+	dontaudit $1 initrc_runtime_t:file { write lock };
 ')
 
 ########################################
@@ -2579,11 +2927,11 @@ interface(`init_dontaudit_write_utmp',`
 #
 interface(`init_write_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	files_list_pids($1)
-	allow $1 initrc_var_run_t:file { getattr open write };
+	files_list_runtime($1)
+	allow $1 initrc_runtime_t:file write_file_perms;
 ')
 
 ########################################
@@ -2599,10 +2947,10 @@ interface(`init_write_utmp',`
 #
 interface(`init_dontaudit_lock_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	dontaudit $1 initrc_var_run_t:file lock;
+	dontaudit $1 initrc_runtime_t:file lock;
 ')
 
 ########################################
@@ -2617,11 +2965,11 @@ interface(`init_dontaudit_lock_utmp',`
 #
 interface(`init_rw_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	files_list_pids($1)
-	allow $1 initrc_var_run_t:file rw_file_perms;
+	files_list_runtime($1)
+	allow $1 initrc_runtime_t:file rw_file_perms;
 ')
 
 ########################################
@@ -2636,10 +2984,10 @@ interface(`init_rw_utmp',`
 #
 interface(`init_dontaudit_rw_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	dontaudit $1 initrc_var_run_t:file rw_file_perms;
+	dontaudit $1 initrc_runtime_t:file rw_file_perms;
 ')
 
 ########################################
@@ -2654,11 +3002,11 @@ interface(`init_dontaudit_rw_utmp',`
 #
 interface(`init_manage_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	files_search_pids($1)
-	allow $1 initrc_var_run_t:file manage_file_perms;
+	files_search_runtime($1)
+	allow $1 initrc_runtime_t:file manage_file_perms;
 ')
 
 ########################################
@@ -2673,26 +3021,10 @@ interface(`init_manage_utmp',`
 #
 interface(`init_relabel_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	allow $1 initrc_var_run_t:file { relabelfrom relabelto };
-')
-
-########################################
-## <summary>
-##	Create files in /var/run with the
-##	utmp file type.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`init_pid_filetrans_utmp',`
-	refpolicywarn(`$0($*) has been deprecated, please use init_runtime_filetrans_utmp() instead.')
-	init_runtime_filetrans_utmp($1)
+	allow $1 initrc_runtime_t:file relabel_file_perms;
 ')
 
 ########################################
@@ -2708,25 +3040,10 @@ interface(`init_pid_filetrans_utmp',`
 #
 interface(`init_runtime_filetrans_utmp',`
 	gen_require(`
-		type initrc_var_run_t;
+		type initrc_runtime_t;
 	')
 
-	files_pid_filetrans($1, initrc_var_run_t, file, "utmp")
-')
-
-#######################################
-## <summary>
-##	Create a directory in the /run/systemd directory.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`init_create_pid_dirs',`
-	refpolicywarn(`$0($*) has been deprecated, please use init_create_runtime_dirs() instead.')
-	init_create_runtime_dirs($1)
+	files_runtime_filetrans($1, initrc_runtime_t, file, "utmp")
 ')
 
 #######################################
@@ -2741,16 +3058,16 @@ interface(`init_create_pid_dirs',`
 #
 interface(`init_create_runtime_dirs',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	allow $1 init_var_run_t:dir list_dir_perms;
-	create_dirs_pattern($1, init_var_run_t, init_var_run_t)
+	allow $1 init_runtime_t:dir list_dir_perms;
+	create_dirs_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
 ## <summary>
-##      Rename init_var_run_t files
+##      Read init_runtime_t files
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -2758,14 +3075,17 @@ interface(`init_create_runtime_dirs',`
 ##      </summary>
 ## </param>
 #
-interface(`init_rename_pid_files',`
-	refpolicywarn(`$0($*) has been deprecated, please use init_rename_runtime_files() instead.')
-	init_rename_runtime_files($1)
+interface(`init_read_runtime_files',`
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	read_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
 ## <summary>
-##      Rename init_var_run_t files
+##      Rename init_runtime_t files
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -2775,15 +3095,15 @@ interface(`init_rename_pid_files',`
 #
 interface(`init_rename_runtime_files',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	rename_files_pattern($1, init_var_run_t, init_var_run_t)
+	rename_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
 ## <summary>
-##      Delete init_var_run_t files
+##      Setattr init_runtime_t files
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -2791,14 +3111,17 @@ interface(`init_rename_runtime_files',`
 ##      </summary>
 ## </param>
 #
-interface(`init_delete_pid_files',`
-	refpolicywarn(`$0($*) has been deprecated, please use init_delete_runtime_files() instead.')
-	init_delete_runtime_files($1)
+interface(`init_setattr_runtime_files',`
+	gen_require(`
+		type init_runtime_t;
+	')
+
+	setattr_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
 ## <summary>
-##      Delete init_var_run_t files
+##      Delete init_runtime_t files
 ## </summary>
 ## <param name="domain">
 ##      <summary>
@@ -2808,26 +3131,10 @@ interface(`init_delete_pid_files',`
 #
 interface(`init_delete_runtime_files',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	delete_files_pattern($1, init_var_run_t, init_var_run_t)
-')
-
-#######################################
-## <summary>
-##  Allow the specified domain to write to
-##  init sock file.
-## </summary>
-## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
-## </param>
-#
-interface(`init_write_pid_socket',`
-	refpolicywarn(`$0($*) has been deprecated, please use init_write_runtime_socket() instead.')
-	init_write_runtime_socket($1)
+	delete_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 #######################################
@@ -2843,25 +3150,10 @@ interface(`init_write_pid_socket',`
 #
 interface(`init_write_runtime_socket',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	allow $1 init_var_run_t:sock_file write;
-')
-
-########################################
-## <summary>
-##	Read init unnamed pipes.
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`init_read_pid_pipes',`
-	refpolicywarn(`$0($*) has been deprecated, please use init_read_runtime_pipes() instead.')
-	init_read_runtime_pipes($1)
+	allow $1 init_runtime_t:sock_file write;
 ')
 
 ########################################
@@ -2876,10 +3168,10 @@ interface(`init_read_pid_pipes',`
 #
 interface(`init_read_runtime_pipes',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	read_fifo_files_pattern($1, init_var_run_t, init_var_run_t)
+	read_fifo_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ######################################
@@ -2894,10 +3186,10 @@ interface(`init_read_runtime_pipes',`
 #
 interface(`init_read_runtime_symlinks',`
 	gen_require(`
-		type init_var_run_t;
+		type init_runtime_t;
 	')
 
-	read_lnk_files_pattern($1, init_var_run_t, init_var_run_t)
+	read_lnk_files_pattern($1, init_runtime_t, init_runtime_t)
 ')
 
 ########################################
@@ -2947,10 +3239,10 @@ interface(`init_udp_recvfrom_all_daemons',`
 #
 interface(`init_search_units',`
 	gen_require(`
-		type init_var_run_t, systemd_unit_t;
+		type init_runtime_t, systemd_unit_t;
 	')
 
-	search_dirs_pattern($1, init_var_run_t, systemd_unit_t)
+	search_dirs_pattern($1, init_runtime_t, systemd_unit_t)
 
 	# Units are in /etc/systemd/system, /usr/lib/systemd/system and /run/systemd
 	files_search_etc($1)
@@ -2958,6 +3250,26 @@ interface(`init_search_units',`
 	libs_search_lib($1)
 
 	fs_search_tmpfs($1)
+')
+
+######################################
+## <summary>
+##	List systemd unit dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_list_unit_dirs',`
+	gen_require(`
+		type systemd_unit_t;
+	')
+
+	allow $1 systemd_unit_t:dir list_dir_perms;
+
+	init_search_units($1)
 ')
 
 ########################################
@@ -3152,6 +3464,26 @@ interface(`init_reload_all_units',`
 
 ########################################
 ## <summary>
+##	Manage systemd unit dirs and the files in them
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_manage_all_unit_files',`
+	gen_require(`
+		attribute systemdunit;
+	')
+
+	manage_dirs_pattern($1, systemdunit, systemdunit)
+	manage_files_pattern($1, systemdunit, systemdunit)
+	manage_lnk_files_pattern($1, systemdunit, systemdunit)
+')
+
+########################################
+## <summary>
 ##      Allow unconfined access to send instructions to init
 ## </summary>
 ## <param name="domain">
@@ -3161,11 +3493,6 @@ interface(`init_reload_all_units',`
 ## </param>
 #
 interface(`init_admin',`
-	gen_require(`
-		type initrc_exec_t;
-		class service status;
-	')
-
 	dev_manage_null_service($1)
 	init_disable($1)
 	init_enable($1)

@@ -1,4 +1,4 @@
-policy_module(openhpi, 1.4.0)
+policy_module(openhpi, 1.6.0)
 
 ########################################
 #
@@ -12,11 +12,11 @@ init_daemon_domain(openhpid_t, openhpid_exec_t)
 type openhpid_initrc_exec_t;
 init_script_file(openhpid_initrc_exec_t)
 
+type openhpid_runtime_t alias openhpid_var_run_t;
+files_runtime_file(openhpid_runtime_t)
+
 type openhpid_var_lib_t;
 files_type(openhpid_var_lib_t)
-
-type openhpid_var_run_t;
-files_pid_file(openhpid_var_run_t)
 
 ########################################
 #
@@ -35,10 +35,9 @@ manage_dirs_pattern(openhpid_t, openhpid_var_lib_t, openhpid_var_lib_t)
 manage_files_pattern(openhpid_t, openhpid_var_lib_t, openhpid_var_lib_t)
 files_var_lib_filetrans(openhpid_t, openhpid_var_lib_t, dir)
 
-manage_files_pattern(openhpid_t, openhpid_var_run_t, openhpid_var_run_t)
-files_pid_filetrans(openhpid_t, openhpid_var_run_t, file)
+manage_files_pattern(openhpid_t, openhpid_runtime_t, openhpid_runtime_t)
+files_runtime_filetrans(openhpid_t, openhpid_runtime_t, file)
 
-corenet_all_recvfrom_unlabeled(openhpid_t)
 corenet_all_recvfrom_netlabel(openhpid_t)
 corenet_tcp_sendrecv_generic_if(openhpid_t)
 corenet_tcp_sendrecv_generic_node(openhpid_t)
@@ -46,7 +45,6 @@ corenet_tcp_bind_generic_node(openhpid_t)
 
 corenet_sendrecv_openhpid_server_packets(openhpid_t)
 corenet_tcp_bind_openhpid_port(openhpid_t)
-corenet_tcp_sendrecv_openhpid_port(openhpid_t)
 
 dev_read_urand(openhpid_t)
 

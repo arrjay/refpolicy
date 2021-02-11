@@ -270,7 +270,7 @@ interface(`kernel_rw_pipes',`
 		type kernel_t;
 	')
 
-	allow $1 kernel_t:fifo_file { read write };
+	allow $1 kernel_t:fifo_file rw_inherited_fifo_file_perms;
 ')
 
 ########################################
@@ -489,6 +489,24 @@ interface(`kernel_dontaudit_view_key',`
 	')
 
 	dontaudit $1 kernel_t:key view;
+')
+
+########################################
+## <summary>
+##	allow write access to the kernel key ring.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to allow.
+##	</summary>
+## </param>
+#
+interface(`kernel_write_key',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	allow $1 kernel_t:key write;
 ')
 
 ########################################
@@ -894,6 +912,24 @@ interface(`kernel_getattr_proc',`
 
 ########################################
 ## <summary>
+##	Do not audit attempts to get the attributes of the proc filesystem.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`kernel_dontaudit_getattr_proc',`
+	gen_require(`
+		type proc_t;
+	')
+
+	dontaudit $1 proc_t:filesystem getattr;
+')
+
+########################################
+## <summary>
 ##	Mount on proc directories.
 ## </summary>
 ## <param name="domain">
@@ -1233,7 +1269,7 @@ interface(`kernel_rw_software_raid_state',`
 
 ########################################
 ## <summary>
-##	Allows caller to get attribues of core kernel interface.
+##	Allows caller to get attributes of core kernel interface.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -1347,7 +1383,7 @@ interface(`kernel_getattr_message_if',`
 #
 interface(`kernel_dontaudit_getattr_message_if',`
 	gen_require(`
-		type proc_kmsg_t, proc_t;
+		type proc_kmsg_t;
 	')
 
 	dontaudit $1 proc_kmsg_t:file getattr;
@@ -1406,7 +1442,7 @@ interface(`kernel_dontaudit_search_network_state',`
 #
 interface(`kernel_search_network_state',`
 	gen_require(`
-		type proc_net_t;
+		type proc_t, proc_net_t;
 	')
 
 	search_dirs_pattern($1, proc_t, proc_net_t)
@@ -2152,6 +2188,66 @@ interface(`kernel_mounton_kernel_sysctl_files',`
 
 ########################################
 ## <summary>
+##	Read kernel ns lastpid sysctls.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_read_kernel_ns_lastpid_sysctls',`
+	gen_require(`
+		type proc_t, sysctl_t, sysctl_kernel_ns_last_pid_t;
+	')
+
+	read_files_pattern($1, { proc_t sysctl_t sysctl_kernel_ns_last_pid_t }, sysctl_kernel_ns_last_pid_t)
+
+	list_dirs_pattern($1, { proc_t sysctl_t }, sysctl_kernel_ns_last_pid_t)
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to write kernel ns lastpid sysctls.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`kernel_dontaudit_write_kernel_ns_lastpid_sysctl',`
+	gen_require(`
+		type sysctl_kernel_ns_last_pid_t;
+	')
+
+	dontaudit $1 sysctl_kernel_ns_last_pid_t:file write;
+')
+
+########################################
+## <summary>
+##	Read and write kernel ns lastpid sysctls.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_rw_kernel_ns_lastpid_sysctl',`
+	gen_require(`
+		type proc_t, sysctl_t, sysctl_kernel_ns_last_pid_t;
+	')
+
+	rw_files_pattern($1, { proc_t sysctl_t sysctl_kernel_ns_last_pid_t }, sysctl_kernel_ns_last_pid_t)
+
+	list_dirs_pattern($1, { proc_t sysctl_t }, sysctl_kernel_ns_last_pid_t)
+')
+
+########################################
+## <summary>
 ##	Search filesystem sysctl directories.
 ## </summary>
 ## <param name="domain">
@@ -2192,7 +2288,7 @@ interface(`kernel_read_fs_sysctls',`
 
 ########################################
 ## <summary>
-##	Read and write fileystem sysctls.
+##	Read and write filesystem sysctls.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -2360,6 +2456,24 @@ interface(`kernel_rw_all_sysctls',`
 	allow $1 sysctl_type:dir list_dir_perms;
 	# why is setattr needed?
 	allow $1 sysctl_type:file setattr;
+')
+
+########################################
+## <summary>
+##	Associate a file to proc_t (/proc)
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_associate_proc',`
+	gen_require(`
+		type proc_t;
+	')
+	allow $1 proc_t:filesystem associate;
 ')
 
 ########################################
@@ -3037,7 +3151,7 @@ interface(`kernel_relabelfrom_unlabeled_files',`
 	')
 
 	kernel_list_unlabeled($1)
-	allow $1 unlabeled_t:file { getattr relabelfrom };
+	allow $1 unlabeled_t:file relabelfrom_file_perms;
 ')
 
 ########################################
@@ -3056,7 +3170,7 @@ interface(`kernel_relabelfrom_unlabeled_symlinks',`
 	')
 
 	kernel_list_unlabeled($1)
-	allow $1 unlabeled_t:lnk_file { getattr relabelfrom };
+	allow $1 unlabeled_t:lnk_file relabelfrom_lnk_file_perms;
 ')
 
 ########################################
@@ -3075,7 +3189,7 @@ interface(`kernel_relabelfrom_unlabeled_pipes',`
 	')
 
 	kernel_list_unlabeled($1)
-	allow $1 unlabeled_t:fifo_file { getattr relabelfrom };
+	allow $1 unlabeled_t:fifo_file relabelfrom_fifo_file_perms;
 ')
 
 ########################################
@@ -3112,7 +3226,7 @@ interface(`kernel_relabelfrom_unlabeled_sockets',`
 	')
 
 	kernel_list_unlabeled($1)
-	allow $1 unlabeled_t:sock_file { getattr relabelfrom };
+	allow $1 unlabeled_t:sock_file relabelfrom_sock_file_perms;
 ')
 
 ########################################
@@ -3132,6 +3246,43 @@ interface(`kernel_delete_unlabeled_sockets',`
 
 	delete_sock_files_pattern($1, unlabeled_t, unlabeled_t)
 ')
+
+########################################
+## <summary>
+##	Allow caller to relabel from unlabeled block devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_relabelfrom_unlabeled_blk_devs',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	allow $1 unlabeled_t:blk_file relabelfrom_blk_file_perms;
+')
+
+########################################
+## <summary>
+##	Allow caller to relabel from unlabeled character devices.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_relabelfrom_unlabeled_chr_devs',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	allow $1 unlabeled_t:chr_file relabelfrom_chr_file_perms;
+')
+
 ########################################
 ## <summary>
 ##	Send and receive messages from an
@@ -3143,7 +3294,7 @@ interface(`kernel_delete_unlabeled_sockets',`
 ##	unlabeled IPSEC association.  Network
 ##	connections that are not protected
 ##	by IPSEC have use an unlabeled
-##	assocation.
+##	association.
 ##	</p>
 ##	<p>
 ##	The corenetwork interface
@@ -3176,7 +3327,7 @@ interface(`kernel_sendrecv_unlabeled_association',`
 ##	from an	unlabeled IPSEC association.  Network
 ##	connections that are not protected
 ##	by IPSEC have use an unlabeled
-##	assocation.
+##	association.
 ##	</p>
 ##	<p>
 ##	The corenetwork interface
@@ -3583,4 +3734,3 @@ interface(`kernel_ib_manage_subnet_unlabeled_endports',`
 
 	allow $1 unlabeled_t:infiniband_endport manage_subnet;
 ')
-

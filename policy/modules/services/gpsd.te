@@ -1,4 +1,4 @@
-policy_module(gpsd, 1.5.0)
+policy_module(gpsd, 1.7.0)
 
 ########################################
 #
@@ -16,11 +16,11 @@ role gpsd_roles types gpsd_t;
 type gpsd_initrc_exec_t;
 init_script_file(gpsd_initrc_exec_t)
 
+type gpsd_runtime_t alias gpsd_var_run_t;
+files_runtime_file(gpsd_runtime_t)
+
 type gpsd_tmpfs_t;
 files_tmpfs_file(gpsd_tmpfs_t)
-
-type gpsd_var_run_t;
-files_pid_file(gpsd_var_run_t)
 
 ########################################
 #
@@ -38,14 +38,13 @@ manage_dirs_pattern(gpsd_t, gpsd_tmpfs_t, gpsd_tmpfs_t)
 manage_files_pattern(gpsd_t, gpsd_tmpfs_t, gpsd_tmpfs_t)
 fs_tmpfs_filetrans(gpsd_t, gpsd_tmpfs_t, { dir file })
 
-manage_files_pattern(gpsd_t, gpsd_var_run_t, gpsd_var_run_t)
-manage_sock_files_pattern(gpsd_t, gpsd_var_run_t, gpsd_var_run_t)
-files_pid_filetrans(gpsd_t, gpsd_var_run_t, { file sock_file })
+manage_files_pattern(gpsd_t, gpsd_runtime_t, gpsd_runtime_t)
+manage_sock_files_pattern(gpsd_t, gpsd_runtime_t, gpsd_runtime_t)
+files_runtime_filetrans(gpsd_t, gpsd_runtime_t, { file sock_file })
 
 kernel_list_proc(gpsd_t)
 kernel_request_load_module(gpsd_t)
 
-corenet_all_recvfrom_unlabeled(gpsd_t)
 corenet_all_recvfrom_netlabel(gpsd_t)
 corenet_tcp_sendrecv_generic_if(gpsd_t)
 corenet_tcp_sendrecv_generic_node(gpsd_t)
@@ -53,7 +52,6 @@ corenet_tcp_bind_all_nodes(gpsd_t)
 
 corenet_sendrecv_gpsd_server_packets(gpsd_t)
 corenet_tcp_bind_gpsd_port(gpsd_t)
-corenet_tcp_sendrecv_gpsd_port(gpsd_t)
 
 dev_read_sysfs(gpsd_t)
 dev_rw_realtime_clock(gpsd_t)

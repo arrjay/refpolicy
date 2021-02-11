@@ -1,4 +1,4 @@
-policy_module(apache, 2.16.0)
+policy_module(apache, 2.20.0)
 
 ########################################
 #
@@ -108,7 +108,7 @@ gen_tunable(httpd_dbus_avahi, false)
 
 ## <desc>
 ##	<p>
-##	Determine wether httpd can use support.
+##	Determine whether httpd can use support.
 ##	</p>
 ## </desc>
 gen_tunable(httpd_enable_cgi, false)
@@ -258,6 +258,7 @@ attribute httpd_htaccess_type;
 attribute httpd_exec_scripts;
 
 attribute httpd_ra_content;
+attribute httpd_ro_content;
 attribute httpd_rw_content;
 
 attribute httpd_script_exec_type;
@@ -302,6 +303,9 @@ type httpd_rotatelogs_t;
 type httpd_rotatelogs_exec_t;
 init_daemon_domain(httpd_rotatelogs_t, httpd_rotatelogs_exec_t)
 
+type httpd_runtime_t alias httpd_var_run_t;
+files_runtime_file(httpd_runtime_t)
+
 type httpd_squirrelmail_t;
 files_type(httpd_squirrelmail_t)
 
@@ -319,7 +323,6 @@ files_tmp_file(httpd_suexec_tmp_t)
 
 apache_content_template(sys)
 corecmd_shell_entry_type(httpd_sys_script_t)
-typealias httpd_sys_content_t alias ntop_http_content_t;
 
 type httpd_tmp_t;
 files_tmp_file(httpd_tmp_t)
@@ -337,26 +340,9 @@ userdom_user_home_content(httpd_user_htaccess_t)
 userdom_user_home_content(httpd_user_script_exec_t)
 userdom_user_home_content(httpd_user_ra_content_t)
 userdom_user_home_content(httpd_user_rw_content_t)
-typealias httpd_user_content_t alias { httpd_staff_content_t httpd_sysadm_content_t };
-typealias httpd_user_content_t alias { httpd_auditadm_content_t httpd_secadm_content_t };
-typealias httpd_user_content_t alias { httpd_staff_script_ro_t httpd_sysadm_script_ro_t };
-typealias httpd_user_content_t alias { httpd_auditadm_script_ro_t httpd_secadm_script_ro_t };
-typealias httpd_user_htaccess_t alias { httpd_staff_htaccess_t httpd_sysadm_htaccess_t };
-typealias httpd_user_htaccess_t alias { httpd_auditadm_htaccess_t httpd_secadm_htaccess_t };
-typealias httpd_user_script_t alias { httpd_staff_script_t httpd_sysadm_script_t };
-typealias httpd_user_script_t alias { httpd_auditadm_script_t httpd_secadm_script_t };
-typealias httpd_user_script_exec_t alias { httpd_staff_script_exec_t httpd_sysadm_script_exec_t };
-typealias httpd_user_script_exec_t alias { httpd_auditadm_script_exec_t httpd_secadm_script_exec_t };
-typealias httpd_user_rw_content_t alias { httpd_staff_script_rw_t httpd_sysadm_script_rw_t };
-typealias httpd_user_rw_content_t alias { httpd_auditadm_script_rw_t httpd_secadm_script_rw_t };
-typealias httpd_user_ra_content_t alias { httpd_staff_script_ra_t httpd_sysadm_script_ra_t };
-typealias httpd_user_ra_content_t alias { httpd_auditadm_script_ra_t httpd_secadm_script_ra_t };
 
 type httpd_var_lib_t;
 files_type(httpd_var_lib_t)
-
-type httpd_var_run_t;
-files_pid_file(httpd_var_run_t)
 
 type httpd_passwd_t;
 type httpd_passwd_exec_t;
@@ -392,13 +378,19 @@ allow httpd_t self:unix_stream_socket { accept connectto listen };
 allow httpd_t self:tcp_socket { accept listen };
 
 manage_dirs_pattern(httpd_t, httpd_cache_t, httpd_cache_t)
-manage_files_pattern(httpd_t, httpd_cache_t, httpd_cache_t)
+mmap_manage_files_pattern(httpd_t, httpd_cache_t, httpd_cache_t)
 manage_lnk_files_pattern(httpd_t, httpd_cache_t, httpd_cache_t)
 files_var_filetrans(httpd_t, httpd_cache_t, dir)
 
 allow httpd_t httpd_config_t:dir list_dir_perms;
 read_files_pattern(httpd_t, httpd_config_t, httpd_config_t)
 read_lnk_files_pattern(httpd_t, httpd_config_t, httpd_config_t)
+
+allow httpd_t httpd_htaccess_type:file read_file_perms;
+
+allow httpd_t httpd_ro_content:dir list_dir_perms;
+allow httpd_t httpd_ro_content:file { map read_file_perms };
+allow httpd_t httpd_ro_content:lnk_file read_lnk_file_perms;
 
 allow httpd_t httpd_keytab_t:file read_file_perms;
 
@@ -422,7 +414,7 @@ read_lnk_files_pattern(httpd_t, httpd_modules_t, httpd_modules_t)
 allow httpd_t httpd_rotatelogs_t:process signal_perms;
 
 manage_dirs_pattern(httpd_t, httpd_squirrelmail_t, httpd_squirrelmail_t)
-manage_files_pattern(httpd_t, httpd_squirrelmail_t, httpd_squirrelmail_t)
+mmap_manage_files_pattern(httpd_t, httpd_squirrelmail_t, httpd_squirrelmail_t)
 manage_lnk_files_pattern(httpd_t, httpd_squirrelmail_t, httpd_squirrelmail_t)
 
 allow httpd_t httpd_suexec_exec_t:file read_file_perms;
@@ -433,6 +425,7 @@ allow httpd_t httpd_sys_script_t:process signull;
 
 manage_dirs_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
 manage_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
+allow httpd_t httpd_tmp_t:file map;
 manage_sock_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
 manage_lnk_files_pattern(httpd_t, httpd_tmp_t, httpd_tmp_t)
 files_tmp_filetrans(httpd_t, httpd_tmp_t, { file dir lnk_file sock_file })
@@ -446,15 +439,15 @@ manage_sock_files_pattern(httpd_t, httpd_tmpfs_t, httpd_tmpfs_t)
 fs_tmpfs_filetrans(httpd_t, httpd_tmpfs_t, { dir file lnk_file sock_file fifo_file })
 
 manage_dirs_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
-manage_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
+mmap_manage_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
 manage_lnk_files_pattern(httpd_t, httpd_var_lib_t, httpd_var_lib_t)
 files_var_lib_filetrans(httpd_t, httpd_var_lib_t, { dir file })
 
-setattr_dirs_pattern(httpd_t, httpd_var_run_t, httpd_var_run_t)
-manage_dirs_pattern(httpd_t, httpd_var_run_t, httpd_var_run_t)
-manage_files_pattern(httpd_t, httpd_var_run_t, httpd_var_run_t)
-manage_sock_files_pattern(httpd_t, httpd_var_run_t, httpd_var_run_t)
-files_pid_filetrans(httpd_t, httpd_var_run_t, { file sock_file dir })
+setattr_dirs_pattern(httpd_t, httpd_runtime_t, httpd_runtime_t)
+manage_dirs_pattern(httpd_t, httpd_runtime_t, httpd_runtime_t)
+manage_files_pattern(httpd_t, httpd_runtime_t, httpd_runtime_t)
+manage_sock_files_pattern(httpd_t, httpd_runtime_t, httpd_runtime_t)
+files_runtime_filetrans(httpd_t, httpd_runtime_t, { file sock_file dir })
 
 manage_dirs_pattern(httpd_t, squirrelmail_spool_t, squirrelmail_spool_t)
 manage_files_pattern(httpd_t, squirrelmail_spool_t, squirrelmail_spool_t)
@@ -468,13 +461,13 @@ domtrans_pattern(httpd_t, httpd_rotatelogs_exec_t, httpd_rotatelogs_t)
 domtrans_pattern(httpd_t, httpd_suexec_exec_t, httpd_suexec_t)
 
 kernel_read_kernel_sysctls(httpd_t)
+kernel_read_crypto_sysctls(httpd_t)
 kernel_read_vm_sysctls(httpd_t)
 kernel_read_vm_overcommit_sysctl(httpd_t)
 kernel_read_network_state(httpd_t)
 kernel_read_system_state(httpd_t)
 kernel_search_network_sysctl(httpd_t)
 
-corenet_all_recvfrom_unlabeled(httpd_t)
 corenet_all_recvfrom_netlabel(httpd_t)
 corenet_tcp_sendrecv_generic_if(httpd_t)
 corenet_tcp_sendrecv_generic_node(httpd_t)
@@ -482,11 +475,9 @@ corenet_tcp_bind_generic_node(httpd_t)
 
 corenet_sendrecv_http_server_packets(httpd_t)
 corenet_tcp_bind_http_port(httpd_t)
-corenet_tcp_sendrecv_http_port(httpd_t)
 
 corenet_sendrecv_http_cache_server_packets(httpd_t)
 corenet_tcp_bind_http_cache_port(httpd_t)
-corenet_tcp_sendrecv_http_cache_port(httpd_t)
 
 corecmd_exec_bin(httpd_t)
 corecmd_exec_shell(httpd_t)
@@ -495,20 +486,21 @@ dev_read_sysfs(httpd_t)
 dev_read_rand(httpd_t)
 dev_read_urand(httpd_t)
 dev_rw_crypto(httpd_t)
+dev_rwx_zero(httpd_t)
 
 domain_use_interactive_fds(httpd_t)
 
 fs_getattr_all_fs(httpd_t)
 fs_search_auto_mountpoints(httpd_t)
 
-fs_getattr_all_fs(httpd_t)
 fs_read_anon_inodefs_files(httpd_t)
 fs_rw_inherited_hugetlbfs_files(httpd_t)
+fs_mmap_rw_hugetlbfs_files(httpd_t)
 fs_read_iso9660_files(httpd_t)
-fs_search_auto_mountpoints(httpd_t)
 
-files_dontaudit_getattr_all_pids(httpd_t)
+files_dontaudit_getattr_all_runtime_files(httpd_t)
 files_read_usr_files(httpd_t)
+files_map_usr_files(httpd_t)
 files_list_mnt(httpd_t)
 files_search_spool(httpd_t)
 files_read_var_symlinks(httpd_t)
@@ -517,6 +509,7 @@ files_search_home(httpd_t)
 files_getattr_home_dir(httpd_t)
 files_read_etc_runtime_files(httpd_t)
 files_read_var_lib_symlinks(httpd_t)
+files_map_etc_files(httpd_t)
 
 auth_use_nsswitch(httpd_t)
 
@@ -558,45 +551,50 @@ tunable_policy(`allow_httpd_anon_write',`
 tunable_policy(`httpd_can_network_connect',`
 	corenet_sendrecv_all_client_packets(httpd_t)
 	corenet_tcp_connect_all_ports(httpd_t)
-	corenet_tcp_sendrecv_all_ports(httpd_t)
 ')
 
 tunable_policy(`httpd_can_network_connect_db',`
 	corenet_sendrecv_gds_db_client_packets(httpd_t)
 	corenet_tcp_connect_gds_db_port(httpd_t)
-	corenet_tcp_sendrecv_gds_db_port(httpd_t)
 	corenet_sendrecv_mssql_client_packets(httpd_t)
 	corenet_tcp_connect_mssql_port(httpd_t)
-	corenet_tcp_sendrecv_mssql_port(httpd_t)
 	corenet_sendrecv_oracledb_client_packets(httpd_t)
 	corenet_tcp_connect_oracledb_port(httpd_t)
-	corenet_tcp_sendrecv_oracledb_port(httpd_t)
 ')
 
 tunable_policy(`httpd_can_network_relay',`
 	corenet_sendrecv_gopher_client_packets(httpd_t)
 	corenet_tcp_connect_gopher_port(httpd_t)
-	corenet_tcp_sendrecv_gopher_port(httpd_t)
 	corenet_sendrecv_ftp_client_packets(httpd_t)
 	corenet_tcp_connect_ftp_port(httpd_t)
-	corenet_tcp_sendrecv_ftp_port(httpd_t)
 	corenet_sendrecv_http_client_packets(httpd_t)
 	corenet_tcp_connect_http_port(httpd_t)
-	corenet_tcp_sendrecv_http_port(httpd_t)
 	corenet_sendrecv_http_cache_client_packets(httpd_t)
 	corenet_tcp_connect_http_cache_port(httpd_t)
-	corenet_tcp_sendrecv_http_cache_port(httpd_t)
 	corenet_sendrecv_squid_client_packets(httpd_t)
 	corenet_tcp_connect_squid_port(httpd_t)
-	corenet_tcp_sendrecv_squid_port(httpd_t)
 ')
 
 tunable_policy(`httpd_builtin_scripting',`
 	exec_files_pattern(httpd_t, httpd_script_exec_type, httpd_script_exec_type)
 
 	allow httpd_t httpdcontent:dir list_dir_perms;
-	allow httpd_t httpdcontent:file read_file_perms;
+	allow httpd_t httpdcontent:file { map read_file_perms };
 	allow httpd_t httpdcontent:lnk_file read_lnk_file_perms;
+
+	allow httpd_t httpd_ra_content:dir { list_dir_perms add_entry_dir_perms setattr_dir_perms };
+	allow httpd_t httpd_ra_content:file { append_file_perms read_file_perms create_file_perms setattr_file_perms };
+	allow httpd_t httpd_ra_content:lnk_file read_lnk_file_perms;
+
+	manage_dirs_pattern(httpd_t, httpd_rw_content, httpd_rw_content)
+	manage_files_pattern(httpd_t, httpd_rw_content, httpd_rw_content)
+	manage_fifo_files_pattern(httpd_t, httpd_rw_content, httpd_rw_content)
+	manage_lnk_files_pattern(httpd_t, httpd_rw_content, httpd_rw_content)
+	manage_sock_files_pattern(httpd_t, httpd_rw_content, httpd_rw_content)
+')
+
+tunable_policy(`httpd_builtin_scripting && httpd_tmp_exec',`
+	can_exec(httpd_t, httpd_rw_content)
 ')
 
 tunable_policy(`httpd_enable_cgi',`
@@ -621,7 +619,7 @@ tunable_policy(`httpd_enable_cgi && httpd_unified && httpd_builtin_scripting',`
 	domtrans_pattern(httpd_t, httpdcontent, httpd_sys_script_t)
 
 	manage_dirs_pattern(httpd_t, httpdcontent, httpdcontent)
-	manage_files_pattern(httpd_t, httpdcontent, httpdcontent)
+	mmap_manage_files_pattern(httpd_t, httpdcontent, httpdcontent)
 	manage_fifo_files_pattern(httpd_t, httpdcontent, httpdcontent)
 	manage_lnk_files_pattern(httpd_t, httpdcontent, httpdcontent)
 	manage_sock_files_pattern(httpd_t, httpdcontent, httpdcontent)
@@ -630,7 +628,6 @@ tunable_policy(`httpd_enable_cgi && httpd_unified && httpd_builtin_scripting',`
 tunable_policy(`httpd_enable_ftp_server',`
 	corenet_sendrecv_ftp_server_packets(httpd_t)
 	corenet_tcp_bind_ftp_port(httpd_t)
-	corenet_tcp_sendrecv_ftp_port(httpd_t)
 ')
 
 tunable_policy(`httpd_enable_homedirs',`
@@ -663,16 +660,16 @@ tunable_policy(`httpd_execmem',`
 	dontaudit httpd_t self:process { execmem execstack };
 ')
 
-tunable_policy(`httpd_can_sendmail',`
-	corenet_sendrecv_smtp_client_packets(httpd_t)
-	corenet_tcp_connect_smtp_port(httpd_t)
-	corenet_tcp_sendrecv_smtp_port(httpd_t)
-	corenet_sendrecv_pop_client_packets(httpd_t)
-	corenet_tcp_connect_pop_port(httpd_t)
-	corenet_tcp_sendrecv_pop_port(httpd_t)
+optional_policy(`
+	tunable_policy(`httpd_can_sendmail',`
+		corenet_sendrecv_smtp_client_packets(httpd_t)
+		corenet_tcp_connect_smtp_port(httpd_t)
+		corenet_sendrecv_pop_client_packets(httpd_t)
+		corenet_tcp_connect_pop_port(httpd_t)
 
-	mta_send_mail(httpd_t)
-	mta_signal_system_mail(httpd_t)
+		mta_send_mail(httpd_t)
+		mta_signal_system_mail(httpd_t)
+	')
 ')
 
 optional_policy(`
@@ -690,7 +687,6 @@ optional_policy(`
 tunable_policy(`httpd_graceful_shutdown',`
 	corenet_sendrecv_http_client_packets(httpd_t)
 	corenet_tcp_connect_http_port(httpd_t)
-	corenet_tcp_sendrecv_http_port(httpd_t)
 ')
 
 optional_policy(`
@@ -834,7 +830,7 @@ optional_policy(`
 	')
 
 	tunable_policy(`httpd_manage_ipa',`
-		memcached_manage_pid_files(httpd_t)
+		memcached_manage_runtime_files(httpd_t)
 	')
 ')
 
@@ -859,7 +855,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	pcscd_read_pid_files(httpd_t)
+	pcscd_read_runtime_files(httpd_t)
 ')
 
 optional_policy(`
@@ -903,20 +899,12 @@ optional_policy(`
 	snmp_dontaudit_write_snmp_var_lib_files(httpd_t)
 ')
 
-optional_policy(`
-	udev_read_db(httpd_t)
-')
-
-optional_policy(`
-	yam_read_content(httpd_t)
-')
-
 ########################################
 #
 # Helper local policy
 #
 
-read_files_pattern(httpd_helper_t, httpd_config_t, httpd_config_t)
+mmap_read_files_pattern(httpd_helper_t, httpd_config_t, httpd_config_t)
 
 append_files_pattern(httpd_helper_t, httpd_log_t, httpd_log_t)
 read_lnk_files_pattern(httpd_helper_t, httpd_log_t, httpd_log_t)
@@ -943,6 +931,12 @@ allow httpd_suexec_t self:fifo_file rw_fifo_file_perms;
 allow httpd_suexec_t self:tcp_socket { accept listen };
 allow httpd_suexec_t self:unix_stream_socket { accept listen };
 
+allow httpd_suexec_t httpd_htaccess_type:file read_file_perms;
+
+allow httpd_suexec_t httpd_ro_content:dir list_dir_perms;
+allow httpd_suexec_t httpd_ro_content:file read_file_perms;
+allow httpd_suexec_t httpd_ro_content:lnk_file read_lnk_file_perms;
+
 create_files_pattern(httpd_suexec_t, httpd_log_t, httpd_log_t)
 append_files_pattern(httpd_suexec_t, httpd_log_t, httpd_log_t)
 read_files_pattern(httpd_suexec_t, httpd_log_t, httpd_log_t)
@@ -956,7 +950,6 @@ kernel_read_kernel_sysctls(httpd_suexec_t)
 kernel_list_proc(httpd_suexec_t)
 kernel_read_proc_symlinks(httpd_suexec_t)
 
-corenet_all_recvfrom_unlabeled(httpd_suexec_t)
 corenet_all_recvfrom_netlabel(httpd_suexec_t)
 corenet_tcp_sendrecv_generic_if(httpd_suexec_t)
 corenet_tcp_sendrecv_generic_node(httpd_suexec_t)
@@ -970,7 +963,7 @@ fs_read_iso9660_files(httpd_suexec_t)
 fs_search_auto_mountpoints(httpd_suexec_t)
 
 files_read_usr_files(httpd_suexec_t)
-files_dontaudit_search_pids(httpd_suexec_t)
+files_dontaudit_search_runtime(httpd_suexec_t)
 files_search_home(httpd_suexec_t)
 
 auth_use_nsswitch(httpd_suexec_t)
@@ -992,30 +985,15 @@ tunable_policy(`httpd_builtin_scripting',`
 tunable_policy(`httpd_can_network_connect',`
 	corenet_tcp_connect_all_ports(httpd_suexec_t)
 	corenet_sendrecv_all_client_packets(httpd_suexec_t)
-	corenet_tcp_sendrecv_all_ports(httpd_suexec_t)
 ')
 
 tunable_policy(`httpd_can_network_connect_db',`
 	corenet_sendrecv_gds_db_client_packets(httpd_suexec_t)
 	corenet_tcp_connect_gds_db_port(httpd_suexec_t)
-	corenet_tcp_sendrecv_gds_db_port(httpd_suexec_t)
 	corenet_sendrecv_mssql_client_packets(httpd_suexec_t)
 	corenet_tcp_connect_mssql_port(httpd_suexec_t)
-	corenet_tcp_sendrecv_mssql_port(httpd_suexec_t)
 	corenet_sendrecv_oracledb_client_packets(httpd_suexec_t)
 	corenet_tcp_connect_oracledb_port(httpd_suexec_t)
-	corenet_tcp_sendrecv_oracledb_port(httpd_suexec_t)
-')
-
-tunable_policy(`httpd_can_sendmail',`
-	corenet_sendrecv_smtp_client_packets(httpd_suexec_t)
-	corenet_tcp_connect_smtp_port(httpd_suexec_t)
-	corenet_tcp_sendrecv_smtp_port(httpd_suexec_t)
-	corenet_sendrecv_pop_client_packets(httpd_suexec_t)
-	corenet_tcp_connect_pop_port(httpd_suexec_t)
-	corenet_tcp_sendrecv_pop_port(httpd_suexec_t)
-	mta_send_mail(httpd_suexec_t)
-	mta_signal_system_mail(httpd_suexec_t)
 ')
 
 tunable_policy(`httpd_enable_cgi && httpd_unified',`
@@ -1095,6 +1073,17 @@ optional_policy(`
 ')
 
 optional_policy(`
+	tunable_policy(`httpd_can_sendmail',`
+		corenet_sendrecv_smtp_client_packets(httpd_suexec_t)
+		corenet_tcp_connect_smtp_port(httpd_suexec_t)
+		corenet_sendrecv_pop_client_packets(httpd_suexec_t)
+		corenet_tcp_connect_pop_port(httpd_suexec_t)
+		mta_send_mail(httpd_suexec_t)
+		mta_signal_system_mail(httpd_suexec_t)
+	')
+')
+
+optional_policy(`
 	mysql_stream_connect(httpd_suexec_t)
 	mysql_read_config(httpd_suexec_t)
 
@@ -1125,7 +1114,7 @@ optional_policy(`
 # Common script local policy
 #
 
-allow httpd_script_domains self:fifo_file rw_file_perms;
+allow httpd_script_domains self:fifo_file rw_fifo_file_perms;
 allow httpd_script_domains self:unix_stream_socket connectto;
 
 allow httpd_script_domains httpd_sys_content_t:dir search_dir_perms;
@@ -1136,7 +1125,6 @@ read_lnk_files_pattern(httpd_script_domains, httpd_log_t, httpd_log_t)
 kernel_dontaudit_search_sysctl(httpd_script_domains)
 kernel_dontaudit_search_kernel_sysctl(httpd_script_domains)
 
-corenet_all_recvfrom_unlabeled(httpd_script_domains)
 corenet_all_recvfrom_netlabel(httpd_script_domains)
 corenet_tcp_sendrecv_generic_if(httpd_script_domains)
 corenet_tcp_sendrecv_generic_node(httpd_script_domains)
@@ -1195,13 +1183,10 @@ optional_policy(`
 tunable_policy(`httpd_enable_cgi && httpd_can_network_connect_db',`
 	corenet_sendrecv_gds_db_client_packets(httpd_script_domains)
 	corenet_tcp_connect_gds_db_port(httpd_script_domains)
-	corenet_tcp_sendrecv_gds_db_port(httpd_script_domains)
 	corenet_sendrecv_mssql_client_packets(httpd_script_domains)
 	corenet_tcp_connect_mssql_port(httpd_script_domains)
-	corenet_tcp_sendrecv_mssql_port(httpd_script_domains)
 	corenet_sendrecv_oracledb_client_packets(httpd_script_domains)
 	corenet_tcp_connect_oracledb_port(httpd_script_domains)
-	corenet_tcp_sendrecv_oracledb_port(httpd_script_domains)
 ')
 
 optional_policy(`
@@ -1262,19 +1247,7 @@ auth_use_nsswitch(httpd_sys_script_t)
 logging_send_syslog_msg(httpd_sys_script_t)
 
 ifdef(`init_systemd', `
-	init_search_pids(httpd_sys_script_t)
-')
-
-tunable_policy(`httpd_can_sendmail',`
-	corenet_sendrecv_smtp_client_packets(httpd_sys_script_t)
-	corenet_tcp_connect_smtp_port(httpd_sys_script_t)
-	corenet_tcp_sendrecv_smtp_port(httpd_sys_script_t)
-	corenet_sendrecv_pop_client_packets(httpd_sys_script_t)
-	corenet_tcp_connect_pop_port(httpd_sys_script_t)
-	corenet_tcp_sendrecv_pop_port(httpd_sys_script_t)
-
-	mta_send_mail(httpd_sys_script_t)
-	mta_signal_system_mail(httpd_sys_script_t)
+	init_search_runtime(httpd_sys_script_t)
 ')
 
 tunable_policy(`httpd_enable_homedirs',`
@@ -1284,7 +1257,6 @@ tunable_policy(`httpd_enable_homedirs',`
 tunable_policy(`httpd_enable_cgi && httpd_can_network_connect',`
 	corenet_tcp_connect_all_ports(httpd_sys_script_t)
 	corenet_sendrecv_all_client_packets(httpd_sys_script_t)
-	corenet_tcp_sendrecv_all_ports(httpd_sys_script_t)
 ')
 
 tunable_policy(`httpd_execmem',`
@@ -1324,6 +1296,18 @@ tunable_policy(`httpd_use_nfs && httpd_builtin_scripting',`
 optional_policy(`
 	clamav_domtrans_clamscan(httpd_sys_script_t)
 	clamav_scannable_files(httpd_sys_content_t)
+')
+
+optional_policy(`
+	tunable_policy(`httpd_can_sendmail',`
+		corenet_sendrecv_smtp_client_packets(httpd_sys_script_t)
+		corenet_tcp_connect_smtp_port(httpd_sys_script_t)
+		corenet_sendrecv_pop_client_packets(httpd_sys_script_t)
+		corenet_tcp_connect_pop_port(httpd_sys_script_t)
+
+		mta_send_mail(httpd_sys_script_t)
+		mta_signal_system_mail(httpd_sys_script_t)
+	')
 ')
 
 optional_policy(`

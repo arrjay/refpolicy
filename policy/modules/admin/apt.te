@@ -1,4 +1,4 @@
-policy_module(apt, 1.13.0)
+policy_module(apt, 1.16.0)
 
 ########################################
 #
@@ -25,10 +25,10 @@ files_tmp_file(apt_tmp_t)
 type apt_tmpfs_t;
 files_tmpfs_file(apt_tmpfs_t)
 
-type apt_var_cache_t alias var_cache_apt_t;
+type apt_var_cache_t;
 files_type(apt_var_cache_t)
 
-type apt_var_lib_t alias var_lib_apt_t;
+type apt_var_lib_t;
 files_type(apt_var_lib_t)
 
 type apt_var_log_t;
@@ -87,11 +87,9 @@ kernel_read_kernel_sysctls(apt_t)
 corecmd_exec_bin(apt_t)
 corecmd_exec_shell(apt_t)
 
-corenet_all_recvfrom_unlabeled(apt_t)
 corenet_all_recvfrom_netlabel(apt_t)
 corenet_tcp_sendrecv_generic_if(apt_t)
 corenet_tcp_sendrecv_generic_node(apt_t)
-corenet_tcp_sendrecv_all_ports(apt_t)
 
 corenet_sendrecv_all_client_packets(apt_t)
 corenet_tcp_connect_all_ports(apt_t)
@@ -142,14 +140,22 @@ optional_policy(`
 	')
 
 	optional_policy(`
+		systemd_dbus_chat_logind(apt_t)
+	')
+
+	optional_policy(`
 		unconfined_dbus_send(apt_t)
 	')
 ')
 
 optional_policy(`
 	dpkg_read_db(apt_t)
-	dpkg_domtrans(apt_t)
+	dpkg_nnp_domtrans(apt_t)
 	dpkg_lock_db(apt_t)
+')
+
+optional_policy(`
+	networkmanager_dbus_chat(apt_t)
 ')
 
 optional_policy(`
@@ -164,6 +170,10 @@ optional_policy(`
 optional_policy(`
 	rpm_read_db(apt_t)
 	rpm_domtrans(apt_t)
+')
+
+optional_policy(`
+	systemd_dbus_chat_logind(apt_t)
 ')
 
 optional_policy(`

@@ -15,6 +15,7 @@ interface(`mount_domtrans',`
 		type mount_t, mount_exec_t;
 	')
 
+	corecmd_search_bin($1)
 	domtrans_pattern($1, mount_exec_t, mount_t)
 ')
 
@@ -64,6 +65,7 @@ interface(`mount_exec',`
 	allow $1 mount_exec_t:dir list_dir_perms;
 
 	allow $1 mount_exec_t:lnk_file read_lnk_file_perms;
+	corecmd_search_bin($1)
 	can_exec($1, mount_exec_t)
 ')
 
@@ -186,7 +188,43 @@ interface(`mount_rw_loopback_files',`
 
 ########################################
 ## <summary>
-##     Getattr on mount_var_run_t files
+##	List mount runtime files.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`mount_list_runtime',`
+	gen_require(`
+		type mount_runtime_t;
+	')
+
+	allow $1 mount_runtime_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Watch mount runtime dirs.
+## </summary>
+## <param name="domain">
+##     <summary>
+##     Domain allowed access.
+##     </summary>
+## </param>
+#
+interface(`mount_watch_runtime_dirs',`
+	gen_require(`
+		type mount_runtime_t;
+	')
+
+	allow $1 mount_runtime_t:dir watch;
+')
+
+########################################
+## <summary>
+##     Getattr on mount_runtime_t files
 ## </summary>
 ## <param name="domain">
 ##     <summary>
@@ -219,4 +257,3 @@ interface(`mount_rw_runtime_files',`
 
 	rw_files_pattern($1, mount_runtime_t, mount_runtime_t)
 ')
-

@@ -1,4 +1,4 @@
-policy_module(hadoop, 1.5.0)
+policy_module(hadoop, 1.7.0)
 
 ########################################
 #
@@ -35,14 +35,14 @@ corenet_spd_type(hadoop_lan_t)
 type hadoop_log_t, hadoop_log_file;
 logging_log_file(hadoop_log_t)
 
+type hadoop_runtime_t, hadoop_pid_file;
+files_runtime_file(hadoop_runtime_t)
+
 type hadoop_tmp_t, hadoop_tmp_file;
 userdom_user_tmp_file(hadoop_tmp_t)
 
 type hadoop_var_lib_t, hadoop_var_lib_file;
 files_type(hadoop_var_lib_t)
-
-type hadoop_var_run_t, hadoop_pid_file;
-files_pid_file(hadoop_var_run_t)
 
 type hadoop_hsperfdata_t;
 userdom_user_tmp_file(hadoop_hsperfdata_t)
@@ -71,14 +71,14 @@ init_daemon_domain(zookeeper_server_t, zookeeper_server_exec_t)
 type zookeeper_server_initrc_exec_t, hadoop_init_script_file;
 init_script_file(zookeeper_server_initrc_exec_t)
 
+type zookeeper_server_runtime_t alias zookeeper_server_var_run_t, hadoop_pid_file;
+files_runtime_file(zookeeper_server_runtime_t)
+
 type zookeeper_server_tmp_t, hadoop_tmp_file;
 files_tmp_file(zookeeper_server_tmp_t)
 
 type zookeeper_server_var_t;
 files_type(zookeeper_server_var_t)
-
-type zookeeper_server_var_run_t, hadoop_pid_file;
-files_pid_file(zookeeper_server_var_run_t)
 
 type zookeeper_tmp_t, hadoop_tmp_file;
 userdom_user_tmp_file(zookeeper_tmp_t)
@@ -119,7 +119,7 @@ manage_dirs_pattern(hadoop_t, hadoop_var_lib_t, hadoop_var_lib_t)
 manage_files_pattern(hadoop_t, hadoop_var_lib_t, hadoop_var_lib_t)
 files_search_var_lib(hadoop_t)
 
-getattr_dirs_pattern(hadoop_t, hadoop_var_run_t, hadoop_var_run_t)
+getattr_dirs_pattern(hadoop_t, hadoop_runtime_t, hadoop_runtime_t)
 
 kernel_read_network_state(hadoop_t)
 kernel_read_system_state(hadoop_t)
@@ -127,11 +127,9 @@ kernel_read_system_state(hadoop_t)
 corecmd_exec_bin(hadoop_t)
 corecmd_exec_shell(hadoop_t)
 
-corenet_all_recvfrom_unlabeled(hadoop_t)
 corenet_all_recvfrom_netlabel(hadoop_t)
 corenet_tcp_sendrecv_generic_if(hadoop_t)
 corenet_tcp_sendrecv_generic_node(hadoop_t)
-corenet_tcp_sendrecv_all_ports(hadoop_t)
 
 corenet_sendrecv_hadoop_namenode_client_packets(hadoop_t)
 corenet_tcp_connect_hadoop_namenode_port(hadoop_t)
@@ -203,12 +201,10 @@ kernel_read_system_state(hadoop_domain)
 corecmd_exec_bin(hadoop_domain)
 corecmd_exec_shell(hadoop_domain)
 
-corenet_all_recvfrom_unlabeled(hadoop_domain)
 corenet_all_recvfrom_netlabel(hadoop_domain)
 corenet_tcp_bind_all_nodes(hadoop_domain)
 corenet_tcp_sendrecv_generic_if(hadoop_domain)
 corenet_tcp_sendrecv_generic_node(hadoop_domain)
-corenet_tcp_sendrecv_all_ports(hadoop_domain)
 
 corenet_sendrecv_generic_client_packets(hadoop_domain)
 corenet_tcp_connect_generic_port(hadoop_domain)
@@ -217,7 +213,7 @@ dev_read_rand(hadoop_domain)
 dev_read_urand(hadoop_domain)
 dev_read_sysfs(hadoop_domain)
 
-files_search_pids(hadoop_domain)
+files_search_runtime(hadoop_domain)
 files_search_var_lib(hadoop_domain)
 
 auth_domtrans_chkpwd(hadoop_domain)
@@ -251,8 +247,8 @@ dontaudit hadoop_initrc_domain self:capability sys_tty_config;
 allow hadoop_initrc_domain self:process setsched;
 allow hadoop_initrc_domain self:fifo_file rw_fifo_file_perms;
 
-manage_dirs_pattern(hadoop_initrc_domain, hadoop_var_run_t, hadoop_var_run_t)
-manage_files_pattern(hadoop_initrc_domain, hadoop_var_run_t, hadoop_var_run_t)
+manage_dirs_pattern(hadoop_initrc_domain, hadoop_runtime_t, hadoop_runtime_t)
+manage_files_pattern(hadoop_initrc_domain, hadoop_runtime_t, hadoop_runtime_t)
 
 hadoop_exec_config(hadoop_initrc_domain)
 
@@ -266,7 +262,7 @@ corecmd_exec_shell(hadoop_initrc_domain)
 files_read_etc_files(hadoop_initrc_domain)
 files_read_usr_files(hadoop_initrc_domain)
 files_search_locks(hadoop_initrc_domain)
-files_search_pids(hadoop_initrc_domain)
+files_search_runtime(hadoop_initrc_domain)
 
 fs_getattr_xattr_fs(hadoop_initrc_domain)
 fs_search_cgroup_dirs(hadoop_initrc_domain)
@@ -435,11 +431,9 @@ kernel_read_system_state(zookeeper_t)
 corecmd_exec_bin(zookeeper_t)
 corecmd_exec_shell(zookeeper_t)
 
-corenet_all_recvfrom_unlabeled(zookeeper_t)
 corenet_all_recvfrom_netlabel(zookeeper_t)
 corenet_tcp_sendrecv_generic_if(zookeeper_t)
 corenet_tcp_sendrecv_generic_node(zookeeper_t)
-corenet_tcp_sendrecv_all_ports(zookeeper_t)
 
 corenet_sendrecv_zookeeper_client_client_packets(zookeeper_t)
 corenet_tcp_connect_zookeeper_client_port(zookeeper_t)
@@ -497,8 +491,8 @@ logging_log_filetrans(zookeeper_server_t, zookeeper_log_t, file)
 manage_files_pattern(zookeeper_server_t, zookeeper_server_tmp_t, zookeeper_server_tmp_t)
 filetrans_pattern(zookeeper_server_t, hadoop_hsperfdata_t, zookeeper_server_tmp_t, file)
 
-manage_files_pattern(zookeeper_server_t, zookeeper_server_var_run_t, zookeeper_server_var_run_t)
-files_pid_filetrans(zookeeper_server_t, zookeeper_server_var_run_t, file)
+manage_files_pattern(zookeeper_server_t, zookeeper_server_runtime_t, zookeeper_server_runtime_t)
+files_runtime_filetrans(zookeeper_server_t, zookeeper_server_runtime_t, file)
 
 can_exec(zookeeper_server_t, zookeeper_server_exec_t)
 
@@ -508,11 +502,9 @@ kernel_read_system_state(zookeeper_server_t)
 corecmd_exec_bin(zookeeper_server_t)
 corecmd_exec_shell(zookeeper_server_t)
 
-corenet_all_recvfrom_unlabeled(zookeeper_server_t)
 corenet_all_recvfrom_netlabel(zookeeper_server_t)
 corenet_tcp_sendrecv_generic_if(zookeeper_server_t)
 corenet_tcp_sendrecv_generic_node(zookeeper_server_t)
-corenet_tcp_sendrecv_all_ports(zookeeper_server_t)
 corenet_tcp_bind_generic_node(zookeeper_server_t)
 
 corenet_sendrecv_zookeeper_client_server_packets(zookeeper_server_t)

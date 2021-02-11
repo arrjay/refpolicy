@@ -176,7 +176,7 @@ interface(`samhain_manage_log_files',`
 ########################################
 ## <summary>
 ##	Create, read, write, and delete
-##	samhain pid files.
+##	samhain pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -185,12 +185,7 @@ interface(`samhain_manage_log_files',`
 ## </param>
 #
 interface(`samhain_manage_pid_files',`
-	gen_require(`
-		type samhain_var_run_t;
-	')
-
-	files_search_pids($1)
-	manage_files_pattern($1, samhain_var_run_t, samhain_var_run_t)
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 #######################################
@@ -214,7 +209,7 @@ interface(`samhain_admin',`
 	gen_require(`
 		attribute samhain_domain;
 		type samhain_db_t, samhain_etc_t;
-		type samhain_initrc_exec_t, samhain_log_t, samhain_var_run_t;
+		type samhain_initrc_exec_t, samhain_log_t, samhain_runtime_t;
 	')
 
 	allow $1 samhain_domain:process { ptrace signal_perms };
@@ -232,6 +227,6 @@ interface(`samhain_admin',`
 	logging_list_logs($1)
 	admin_pattern($1, samhain_log_t)
 
-	files_list_pids($1)
-	admin_pattern($1, samhain_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, samhain_runtime_t)
 ')

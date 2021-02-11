@@ -109,7 +109,7 @@ template(`dbus_role_template',`
 	')
 
 	optional_policy(`
-		systemd_read_logind_pids($1_dbusd_t)
+		systemd_read_logind_runtime_files($1_dbusd_t)
 	')
 ')
 
@@ -127,7 +127,7 @@ template(`dbus_role_template',`
 interface(`dbus_system_bus_client',`
 	gen_require(`
 		attribute dbusd_system_bus_client;
-		type system_dbusd_t, system_dbusd_var_run_t, system_dbusd_var_lib_t;
+		type system_dbusd_t, system_dbusd_runtime_t, system_dbusd_var_lib_t;
 		class dbus send_msg;
 	')
 
@@ -139,10 +139,12 @@ interface(`dbus_system_bus_client',`
 	files_search_var_lib($1)
 	read_files_pattern($1, system_dbusd_var_lib_t, system_dbusd_var_lib_t)
 
-	files_search_pids($1)
-	stream_connect_pattern($1, system_dbusd_var_run_t, system_dbusd_var_run_t, system_dbusd_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, system_dbusd_runtime_t, system_dbusd_runtime_t, system_dbusd_t)
 
 	dbus_read_config($1)
+	dbus_list_system_bus_runtime($1)
+	dbus_read_system_bus_runtime_named_sockets($1)
 ')
 
 #######################################
@@ -351,7 +353,7 @@ interface(`dbus_relabel_lib_dirs',`
 	')
 
 	files_search_var_lib($1)
-	allow $1 system_dbusd_var_lib_t:dir { relabelfrom relabelto };
+	allow $1 system_dbusd_var_lib_t:dir relabel_dir_perms;
 ')
 
 ########################################
@@ -574,6 +576,78 @@ interface(`dbus_dontaudit_system_bus_rw_tcp_sockets',`
 	')
 
 	dontaudit $1 system_dbusd_t:tcp_socket { read write };
+')
+
+########################################
+## <summary>
+##	Watch system bus runtime directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_watch_system_bus_runtime_dirs',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+	')
+
+	allow $1 system_dbusd_runtime_t:dir watch;
+')
+
+########################################
+## <summary>
+##	List system bus runtime directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_list_system_bus_runtime',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+	')
+
+	allow $1 system_dbusd_runtime_t:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Watch system bus runtime named sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_watch_system_bus_runtime_named_sockets',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+	')
+
+	allow $1 system_dbusd_runtime_t:sock_file watch;
+')
+
+########################################
+## <summary>
+##	Read system bus runtime named sockets.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`dbus_read_system_bus_runtime_named_sockets',`
+	gen_require(`
+		type system_dbusd_runtime_t;
+	')
+
+	allow $1 system_dbusd_runtime_t:sock_file read;
 ')
 
 ########################################

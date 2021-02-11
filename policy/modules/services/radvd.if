@@ -20,7 +20,7 @@
 interface(`radvd_admin',`
 	gen_require(`
 		type radvd_t, radvd_etc_t, radvd_initrc_exec_t;
-		type radvd_var_run_t;
+		type radvd_runtime_t;
 	')
 
 	allow $1 radvd_t:process { ptrace signal_perms };
@@ -31,6 +31,6 @@ interface(`radvd_admin',`
 	files_list_etc($1)
 	admin_pattern($1, radvd_etc_t)
 
-	files_list_pids($1)
-	admin_pattern($1, radvd_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, radvd_runtime_t)
 ')

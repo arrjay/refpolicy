@@ -1,4 +1,4 @@
-policy_module(vmware, 2.9.0)
+policy_module(vmware, 2.12.0)
 
 ########################################
 #
@@ -7,18 +7,12 @@ policy_module(vmware, 2.9.0)
 
 type vmware_t;
 type vmware_exec_t;
-typealias vmware_t alias { user_vmware_t staff_vmware_t sysadm_vmware_t };
-typealias vmware_t alias { auditadm_vmware_t secadm_vmware_t };
 userdom_user_application_domain(vmware_t, vmware_exec_t)
 
 type vmware_conf_t;
-typealias vmware_conf_t alias { user_vmware_conf_t staff_vmware_conf_t sysadm_vmware_conf_t };
-typealias vmware_conf_t alias { auditadm_vmware_conf_t secadm_vmware_conf_t };
 userdom_user_home_content(vmware_conf_t)
 
 type vmware_file_t;
-typealias vmware_file_t alias { user_vmware_file_t staff_vmware_file_t sysadm_vmware_file_t };
-typealias vmware_file_t alias { auditadm_vmware_file_t secadm_vmware_file_t };
 userdom_user_home_content(vmware_file_t)
 
 type vmware_host_t;
@@ -26,34 +20,26 @@ type vmware_host_exec_t;
 init_daemon_domain(vmware_host_t, vmware_host_exec_t)
 
 type vmware_host_pid_t alias vmware_var_run_t;
-files_pid_file(vmware_host_pid_t)
+files_runtime_file(vmware_host_pid_t)
 
 type vmware_host_tmp_t;
 userdom_user_tmp_file(vmware_host_tmp_t)
 
 type vmware_log_t;
-typealias vmware_log_t alias { user_vmware_log_t staff_vmware_log_t sysadm_vmware_log_t };
-typealias vmware_log_t alias { auditadm_vmware_log_t secadm_vmware_log_t };
 logging_log_file(vmware_log_t)
 ubac_constrained(vmware_log_t)
 
 type vmware_pid_t;
-typealias vmware_pid_t alias { user_vmware_pid_t staff_vmware_pid_t sysadm_vmware_pid_t };
-typealias vmware_pid_t alias { auditadm_vmware_pid_t secadm_vmware_pid_t };
-files_pid_file(vmware_pid_t)
+files_runtime_file(vmware_pid_t)
 ubac_constrained(vmware_pid_t)
 
 type vmware_sys_conf_t;
 files_config_file(vmware_sys_conf_t)
 
 type vmware_tmp_t;
-typealias vmware_tmp_t alias { user_vmware_tmp_t staff_vmware_tmp_t sysadm_vmware_tmp_t };
-typealias vmware_tmp_t alias { auditadm_vmware_tmp_t secadm_vmware_tmp_t };
 userdom_user_tmp_file(vmware_tmp_t)
 
 type vmware_tmpfs_t;
-typealias vmware_tmpfs_t alias { user_vmware_tmpfs_t staff_vmware_tmpfs_t sysadm_vmware_tmpfs_t };
-typealias vmware_tmpfs_t alias { auditadm_vmware_tmpfs_t secadm_vmware_tmpfs_t };
 userdom_user_tmpfs_file(vmware_tmpfs_t)
 
 ifdef(`enable_mcs',`
@@ -86,7 +72,7 @@ files_tmp_filetrans(vmware_host_t, vmware_host_tmp_t, { file dir })
 
 manage_files_pattern(vmware_host_t, vmware_var_run_t, vmware_var_run_t)
 manage_sock_files_pattern(vmware_host_t, vmware_var_run_t, vmware_var_run_t)
-files_pid_filetrans(vmware_host_t, vmware_var_run_t, { file sock_file })
+files_runtime_filetrans(vmware_host_t, vmware_var_run_t, { file sock_file })
 
 append_files_pattern(vmware_host_t, vmware_log_t, vmware_log_t)
 create_files_pattern(vmware_host_t, vmware_log_t, vmware_log_t)
@@ -99,7 +85,6 @@ kernel_read_kernel_sysctls(vmware_host_t)
 kernel_read_system_state(vmware_host_t)
 kernel_read_network_state(vmware_host_t)
 
-corenet_all_recvfrom_unlabeled(vmware_host_t)
 corenet_all_recvfrom_netlabel(vmware_host_t)
 corenet_tcp_sendrecv_generic_if(vmware_host_t)
 corenet_udp_sendrecv_generic_if(vmware_host_t)
@@ -107,7 +92,6 @@ corenet_raw_sendrecv_generic_if(vmware_host_t)
 corenet_tcp_sendrecv_generic_node(vmware_host_t)
 corenet_udp_sendrecv_generic_node(vmware_host_t)
 corenet_raw_sendrecv_generic_node(vmware_host_t)
-corenet_tcp_sendrecv_all_ports(vmware_host_t)
 
 corenet_sendrecv_all_client_packets(vmware_host_t)
 corenet_tcp_connect_all_ports(vmware_host_t)
@@ -173,12 +157,8 @@ optional_policy(`
 ')
 
 optional_policy(`
-	udev_read_db(vmware_host_t)
-')
-
-optional_policy(`
 	xserver_read_tmp_files(vmware_host_t)
-	xserver_read_xdm_pid(vmware_host_t)
+	xserver_read_xdm_runtime_files(vmware_host_t)
 ')
 
 ########################################
@@ -225,7 +205,7 @@ manage_dirs_pattern(vmware_t, vmware_pid_t, vmware_pid_t)
 manage_files_pattern(vmware_t, vmware_pid_t, vmware_pid_t)
 manage_lnk_files_pattern(vmware_t, vmware_pid_t, vmware_pid_t)
 manage_sock_files_pattern(vmware_t, vmware_pid_t, vmware_pid_t)
-files_pid_filetrans(vmware_t, vmware_pid_t, { dir file lnk_file })
+files_runtime_filetrans(vmware_t, vmware_pid_t, { dir file lnk_file })
 
 can_exec(vmware_t, { vmware_tmp_t vmware_exec_t })
 
@@ -236,8 +216,8 @@ kernel_read_kernel_sysctls(vmware_t)
 corecmd_exec_bin(vmware_t)
 corecmd_exec_shell(vmware_t)
 
-dev_read_raw_memory(vmware_t)
-dev_write_raw_memory(vmware_t)
+dev_read_raw_memory_cond(vmware_t, allow_raw_memory_access)
+dev_write_raw_memory_cond(vmware_t, allow_raw_memory_access)
 dev_read_mouse(vmware_t)
 dev_write_sound(vmware_t)
 dev_read_realtime_clock(vmware_t)

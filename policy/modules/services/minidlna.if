@@ -19,7 +19,7 @@
 #
 interface(`minidlna_admin',`
 	gen_require(`
-		type minidlna_t, minidlna_var_run_t, minidlna_initrc_exec_t;
+		type minidlna_t, minidlna_runtime_t, minidlna_initrc_exec_t;
 		type minidlna_conf_t, minidlna_log_t, minidlna_db_t;
 	')
 
@@ -37,8 +37,8 @@ interface(`minidlna_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, minidlna_db_t)
 
-	files_search_pids($1)
-	admin_pattern($1, minidlna_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, minidlna_runtime_t)
 ')
 
 ########################################

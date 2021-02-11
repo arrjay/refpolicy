@@ -1,4 +1,4 @@
-policy_module(cron, 2.15.0)
+policy_module(cron, 2.19.0)
 
 gen_require(`
 	class passwd rootok;
@@ -41,21 +41,19 @@ attribute crontab_domain;
 type anacron_exec_t;
 application_executable_file(anacron_exec_t)
 
+type cron_runtime_t alias cron_var_run_t;
+files_runtime_file(cron_runtime_t)
+
 type cron_spool_t;
 files_type(cron_spool_t)
 
 type cron_var_lib_t;
 files_type(cron_var_lib_t)
 
-type cron_var_run_t;
-files_pid_file(cron_var_run_t)
-
 type cron_log_t;
 logging_log_file(cron_log_t)
 
 type cronjob_t;
-typealias cronjob_t alias { user_crond_t staff_crond_t sysadm_crond_t };
-typealias cronjob_t alias { auditadm_crond_t secadm_crond_t };
 domain_type(cronjob_t)
 domain_cron_exemption_target(cronjob_t)
 corecmd_shell_entry_type(cronjob_t)
@@ -70,6 +68,9 @@ domain_cron_exemption_source(crond_t)
 type crond_initrc_exec_t;
 init_script_file(crond_initrc_exec_t)
 
+type crond_runtime_t alias crond_var_run_t;
+files_runtime_file(crond_runtime_t)
+
 type crond_tmp_t;
 files_tmp_file(crond_tmp_t)
 files_poly_parent(crond_tmp_t)
@@ -77,21 +78,12 @@ files_poly_parent(crond_tmp_t)
 type crond_unit_t;
 init_unit_file(crond_unit_t)
 
-type crond_var_run_t;
-files_pid_file(crond_var_run_t)
-
 type crontab_exec_t;
 application_executable_file(crontab_exec_t)
 
 cron_common_crontab_template(admin_crontab)
-typealias admin_crontab_t alias sysadm_crontab_t;
-typealias admin_crontab_tmp_t alias sysadm_crontab_tmp_t;
 
 cron_common_crontab_template(crontab)
-typealias crontab_t alias { user_crontab_t staff_crontab_t };
-typealias crontab_t alias { auditadm_crontab_t secadm_crontab_t };
-typealias crontab_tmp_t alias { user_crontab_tmp_t staff_crontab_tmp_t };
-typealias crontab_tmp_t alias { auditadm_crontab_tmp_t secadm_crontab_tmp_t };
 
 type system_cron_spool_t, cron_spool_type;
 files_type(system_cron_spool_t)
@@ -104,18 +96,16 @@ domain_entry_file(system_cronjob_t, system_cron_spool_t)
 type system_cronjob_lock_t alias system_crond_lock_t;
 files_lock_file(system_cronjob_lock_t)
 
+type system_cronjob_runtime_t alias system_cronjob_var_run_t;
+files_runtime_file(system_cronjob_runtime_t)
+
 type system_cronjob_tmp_t alias system_crond_tmp_t;
 files_tmp_file(system_cronjob_tmp_t)
 
 type system_cronjob_var_lib_t;
 files_type(system_cronjob_var_lib_t)
 
-type system_cronjob_var_run_t;
-files_pid_file(system_cronjob_var_run_t)
-
 type user_cron_spool_t, cron_spool_type;
-typealias user_cron_spool_t alias { staff_cron_spool_t sysadm_cron_spool_t unconfined_cron_spool_t };
-typealias user_cron_spool_t alias { auditadm_cron_spool_t secadm_cron_spool_t };
 files_type(user_cron_spool_t)
 ubac_constrained(user_cron_spool_t)
 
@@ -130,7 +120,7 @@ ifdef(`enable_mcs',`
 optional_policy(`
 	mta_system_content(cron_spool_t)
 	mta_system_content(crond_tmp_t)
-	mta_system_content(crond_var_run_t)
+	mta_system_content(crond_runtime_t)
 	mta_system_content(system_cron_spool_t)
 	mta_system_content(user_cron_spool_t)
 	mta_system_content(user_cron_spool_log_t)
@@ -151,7 +141,7 @@ filetrans_pattern(crontab_domain, cron_spool_t, user_cron_spool_t, file)
 allow crontab_domain cron_spool_t:dir setattr_dir_perms;
 
 allow crontab_domain crond_t:process signal;
-allow crontab_domain crond_var_run_t:file read_file_perms;
+allow crontab_domain crond_runtime_t:file read_file_perms;
 
 kernel_read_system_state(crontab_domain)
 
@@ -160,7 +150,7 @@ selinux_dontaudit_search_fs(crontab_domain)
 files_list_spool(crontab_domain)
 files_read_etc_files(crontab_domain)
 files_read_usr_files(crontab_domain)
-files_search_pids(crontab_domain)
+files_search_runtime(crontab_domain)
 
 fs_getattr_xattr_fs(crontab_domain)
 fs_manage_cgroup_dirs(crontab_domain)
@@ -234,10 +224,11 @@ dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
 allow crond_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
 logging_log_filetrans(crond_t, cron_log_t, file)
 
-manage_files_pattern(crond_t, crond_var_run_t, crond_var_run_t)
-files_pid_filetrans(crond_t, crond_var_run_t, file)
+manage_files_pattern(crond_t, crond_runtime_t, crond_runtime_t)
+files_runtime_filetrans(crond_t, crond_runtime_t, file)
 
 manage_files_pattern(crond_t, cron_spool_t, cron_spool_t)
+allow crond_t cron_spool_t:dir watch;
 
 manage_dirs_pattern(crond_t, crond_tmp_t, crond_tmp_t)
 manage_files_pattern(crond_t, crond_tmp_t, crond_tmp_t)
@@ -245,10 +236,13 @@ files_tmp_filetrans(crond_t, crond_tmp_t, { dir file })
 
 list_dirs_pattern(crond_t, system_cron_spool_t, system_cron_spool_t)
 read_files_pattern(crond_t, system_cron_spool_t, system_cron_spool_t)
+allow crond_t system_cron_spool_t:dir watch;
+allow crond_t system_cron_spool_t:file watch;
 
 rw_dirs_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
 manage_files_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
 manage_lnk_files_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
+allow crond_t user_cron_spool_t:dir watch;
 
 manage_files_pattern(crond_t, user_cron_spool_log_t, user_cron_spool_log_t)
 
@@ -310,9 +304,8 @@ init_start_all_units(system_cronjob_t)
 init_get_generic_units_status(system_cronjob_t)
 init_get_system_status(system_cronjob_t)
 
-auth_domtrans_chk_passwd(crond_t)
 auth_manage_var_auth(crond_t)
-auth_use_nsswitch(crond_t)
+auth_use_pam(crond_t)
 
 logging_send_audit_msgs(crond_t)
 logging_send_syslog_msg(crond_t)
@@ -363,8 +356,8 @@ tunable_policy(`allow_polyinstantiation',`
 
 tunable_policy(`fcron_crond',`
 	allow crond_t { system_cron_spool_t user_cron_spool_t }:file manage_file_perms;
-	allow crond_t crond_var_run_t:sock_file manage_sock_file_perms;
-	files_pid_filetrans(crond_t, crond_var_run_t, sock_file)
+	allow crond_t crond_runtime_t:sock_file manage_sock_file_perms;
+	files_runtime_filetrans(crond_t, crond_runtime_t, sock_file)
 ')
 
 optional_policy(`
@@ -373,10 +366,6 @@ optional_policy(`
 
 optional_policy(`
 	dbus_system_bus_client(crond_t)
-
-	optional_policy(`
-		hal_dbus_chat(crond_t)
-	')
 
 	optional_policy(`
 		init_dbus_chat(crond_t)
@@ -396,12 +385,12 @@ optional_policy(`
 ')
 
 optional_policy(`
-	djbdns_search_tinydns_keys(crond_t)
-	djbdns_link_tinydns_keys(crond_t)
+	backup_manage_store_files(system_cronjob_t)
 ')
 
 optional_policy(`
-	hal_write_log(crond_t)
+	djbdns_search_tinydns_keys(crond_t)
+	djbdns_link_tinydns_keys(crond_t)
 ')
 
 optional_policy(`
@@ -434,6 +423,7 @@ optional_policy(`
 ')
 
 optional_policy(`
+	systemd_dbus_chat_logind(crond_t)
 	systemd_write_inherited_logind_sessions_pipes(crond_t)
 ')
 
@@ -441,14 +431,11 @@ optional_policy(`
 	init_dbus_chat(crond_t)
 	init_dbus_chat(system_cronjob_t)
 	systemd_dbus_chat_logind(system_cronjob_t)
+	systemd_read_journal_files(system_cronjob_t)
 	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
 	# so cron jobs can restart daemons
 	init_stream_connect(system_cronjob_t)
 	init_manage_script_service(system_cronjob_t)
-')
-
-optional_policy(`
-	udev_read_db(crond_t)
 ')
 
 ########################################
@@ -468,8 +455,8 @@ logging_log_filetrans(system_cronjob_t, cron_log_t, file)
 allow system_cronjob_t cron_var_lib_t:file { manage_file_perms relabel_file_perms };
 files_var_lib_filetrans(system_cronjob_t, cron_var_lib_t, file)
 
-allow system_cronjob_t cron_var_run_t:file manage_file_perms;
-files_pid_filetrans(system_cronjob_t, cron_var_run_t, file)
+allow system_cronjob_t cron_runtime_t:file manage_file_perms;
+files_runtime_filetrans(system_cronjob_t, cron_runtime_t, file)
 
 manage_files_pattern(system_cronjob_t, system_cron_spool_t, system_cron_spool_t)
 
@@ -509,14 +496,12 @@ files_dontaudit_search_boot(system_cronjob_t)
 
 corecmd_exec_all_executables(system_cronjob_t)
 
-corenet_all_recvfrom_unlabeled(system_cronjob_t)
 corenet_all_recvfrom_netlabel(system_cronjob_t)
 corenet_tcp_sendrecv_generic_if(system_cronjob_t)
 corenet_udp_sendrecv_generic_if(system_cronjob_t)
 corenet_tcp_sendrecv_generic_node(system_cronjob_t)
 corenet_udp_sendrecv_generic_node(system_cronjob_t)
-corenet_tcp_sendrecv_all_ports(system_cronjob_t)
-corenet_udp_sendrecv_all_ports(system_cronjob_t)
+corenet_udp_bind_generic_node(system_cronjob_t)
 
 dev_getattr_all_blk_files(system_cronjob_t)
 dev_getattr_all_chr_files(system_cronjob_t)
@@ -546,7 +531,7 @@ files_getattr_all_pipes(system_cronjob_t)
 files_getattr_all_sockets(system_cronjob_t)
 files_read_usr_files(system_cronjob_t)
 files_read_var_files(system_cronjob_t)
-files_dontaudit_search_pids(system_cronjob_t)
+files_dontaudit_search_runtime(system_cronjob_t)
 files_manage_generic_spool(system_cronjob_t)
 files_create_boot_flag(system_cronjob_t)
 files_read_var_lib_symlinks(system_cronjob_t)
@@ -599,6 +584,7 @@ optional_policy(`
 	apache_read_log(system_cronjob_t)
 	apache_read_sys_content(system_cronjob_t)
 	apache_delete_lib_files(system_cronjob_t)
+	apache_delete_squirrelmail_spool(system_cronjob_t)
 ')
 
 optional_policy(`
@@ -614,7 +600,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	devicekit_read_pid_files(system_cronjob_t)
+	devicekit_read_runtime_files(system_cronjob_t)
 	devicekit_append_inherited_log_files(system_cronjob_t)
 ')
 
@@ -632,7 +618,9 @@ optional_policy(`
 
 optional_policy(`
 	inn_manage_log(system_cronjob_t)
-	inn_manage_pid(system_cronjob_t)
+	inn_manage_runtime_dirs(system_cronjob_t)
+	inn_manage_runtime_files(system_cronjob_t)
+	inn_manage_runtime_sockets(system_cronjob_t)
 	inn_read_config(system_cronjob_t)
 ')
 
@@ -669,6 +657,8 @@ optional_policy(`
 
 optional_policy(`
 	spamassassin_manage_lib_files(system_cronjob_t)
+	spamassassin_status(system_cronjob_t)
+	spamassassin_reload(system_cronjob_t)
 ')
 
 optional_policy(`
@@ -699,14 +689,11 @@ kernel_read_kernel_sysctls(cronjob_t)
 
 files_dontaudit_search_boot(cronjob_t)
 
-corenet_all_recvfrom_unlabeled(cronjob_t)
 corenet_all_recvfrom_netlabel(cronjob_t)
 corenet_tcp_sendrecv_generic_if(cronjob_t)
 corenet_udp_sendrecv_generic_if(cronjob_t)
 corenet_tcp_sendrecv_generic_node(cronjob_t)
 corenet_udp_sendrecv_generic_node(cronjob_t)
-corenet_tcp_sendrecv_all_ports(cronjob_t)
-corenet_udp_sendrecv_all_ports(cronjob_t)
 
 corenet_sendrecv_all_client_packets(cronjob_t)
 corenet_tcp_connect_all_ports(cronjob_t)
@@ -725,7 +712,7 @@ files_read_etc_runtime_files(cronjob_t)
 files_read_var_files(cronjob_t)
 files_read_usr_files(cronjob_t)
 files_search_spool(cronjob_t)
-files_dontaudit_search_pids(cronjob_t)
+files_dontaudit_search_runtime(cronjob_t)
 
 libs_exec_lib_files(cronjob_t)
 libs_exec_ld_so(cronjob_t)

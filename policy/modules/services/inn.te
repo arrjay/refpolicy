@@ -1,4 +1,4 @@
-policy_module(inn, 1.14.0)
+policy_module(inn, 1.17.0)
 
 ########################################
 #
@@ -18,11 +18,11 @@ init_script_file(innd_initrc_exec_t)
 type innd_log_t;
 logging_log_file(innd_log_t)
 
+type innd_runtime_t alias innd_var_run_t;
+files_runtime_file(innd_runtime_t)
+
 type innd_var_lib_t;
 files_type(innd_var_lib_t)
-
-type innd_var_run_t;
-files_pid_file(innd_var_run_t)
 
 type news_spool_t;
 files_mountpoint(news_spool_t)
@@ -51,10 +51,10 @@ setattr_files_pattern(innd_t, innd_log_t, innd_log_t)
 manage_dirs_pattern(innd_t, innd_var_lib_t, innd_var_lib_t)
 manage_files_pattern(innd_t, innd_var_lib_t, innd_var_lib_t)
 
-manage_dirs_pattern(innd_t, innd_var_run_t, innd_var_run_t)
-manage_files_pattern(innd_t, innd_var_run_t, innd_var_run_t)
-manage_sock_files_pattern(innd_t, innd_var_run_t, innd_var_run_t)
-files_pid_filetrans(innd_t, innd_var_run_t, file)
+manage_dirs_pattern(innd_t, innd_runtime_t, innd_runtime_t)
+manage_files_pattern(innd_t, innd_runtime_t, innd_runtime_t)
+manage_sock_files_pattern(innd_t, innd_runtime_t, innd_runtime_t)
+files_runtime_filetrans(innd_t, innd_runtime_t, file)
 
 manage_dirs_pattern(innd_t, news_spool_t, news_spool_t)
 manage_files_pattern(innd_t, news_spool_t, news_spool_t)
@@ -65,11 +65,9 @@ can_exec(innd_t, innd_exec_t)
 kernel_read_kernel_sysctls(innd_t)
 kernel_read_system_state(innd_t)
 
-corenet_all_recvfrom_unlabeled(innd_t)
 corenet_all_recvfrom_netlabel(innd_t)
 corenet_tcp_sendrecv_generic_if(innd_t)
 corenet_tcp_sendrecv_generic_node(innd_t)
-corenet_tcp_sendrecv_all_ports(innd_t)
 corenet_tcp_bind_generic_node(innd_t)
 
 corenet_sendrecv_innd_server_packets(innd_t)
@@ -118,6 +116,3 @@ optional_policy(`
 	seutil_sigchld_newrole(innd_t)
 ')
 
-optional_policy(`
-	udev_read_db(innd_t)
-')

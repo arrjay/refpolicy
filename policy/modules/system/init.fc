@@ -44,8 +44,13 @@ ifdef(`distro_gentoo',`
 /usr/sbin/upstart	--	gen_context(system_u:object_r:init_exec_t,s0)
 
 ifdef(`distro_gentoo', `
+/usr/lib/rc/cache(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
+/usr/lib/rc/console(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
 /usr/lib/rc/init\.d(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
-/usr/sbin/rc		--	gen_context(system_u:object_r:rc_exec_t,s0)
+/usr/sbin/rc			--	gen_context(system_u:object_r:rc_exec_t,s0)
+/usr/sbin/openrc		--	gen_context(system_u:object_r:rc_exec_t,s0)
+/usr/sbin/openrc-init		--	gen_context(system_u:object_r:init_exec_t,s0)
+/usr/sbin/openrc-shutdown	--	gen_context(system_u:object_r:init_exec_t,s0)
 ')
 
 ifdef(`distro_redhat',`
@@ -58,19 +63,17 @@ ifdef(`distro_redhat',`
 /var/lib/systemd(/.*)?		gen_context(system_u:object_r:init_var_lib_t,s0)
 
 /run/initctl	-p	gen_context(system_u:object_r:initctl_t,s0)
-/run/kerneloops\.pid	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/utmp		--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/runlevel\.dir		gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/random-seed	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/setmixer_flag	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/systemd(/.*)?		gen_context(system_u:object_r:init_var_run_t,s0)
-/run/wd_keepalive\.pid	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
+/run/kerneloops\.pid	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/utmp		--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/runlevel\.dir		gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/random-seed	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/setmixer_flag	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/systemd(/.*)?		gen_context(system_u:object_r:init_runtime_t,s0)
+/run/wd_keepalive\.pid	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
 
 ifdef(`distro_debian',`
-/run/hotkey-setup	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/kdm/.*		--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/motd		--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/motd\.dynamic	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
+/run/hotkey-setup	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/kdm/.*		--	gen_context(system_u:object_r:initrc_runtime_t,s0)
 /etc/network/if-pre-up\.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
 /etc/network/if-up\.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
 /etc/network/if-down\.d/.* --	gen_context(system_u:object_r:initrc_exec_t,s0)
@@ -79,13 +82,16 @@ ifdef(`distro_debian',`
 
 ifdef(`distro_gentoo', `
 /var/lib/init\.d(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
-/run/svscan\.pid	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
+/var/lib/ip6?tables(/.*)?	gen_context(system_u:object_r:initrc_tmp_t,s0)
+
+/run/openrc(/.*)?		gen_context(system_u:object_r:initrc_state_t,s0)
+/run/svscan\.pid	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
 ')
 
 ifdef(`distro_suse', `
-/run/bootsplashctl	-p	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/keymap		--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/numlock-on	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/setleds-on	--	gen_context(system_u:object_r:initrc_var_run_t,s0)
-/run/sysconfig(/.*)?	gen_context(system_u:object_r:initrc_var_run_t,s0)
+/run/bootsplashctl	-p	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/keymap		--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/numlock-on	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/setleds-on	--	gen_context(system_u:object_r:initrc_runtime_t,s0)
+/run/sysconfig(/.*)?	gen_context(system_u:object_r:initrc_runtime_t,s0)
 ')

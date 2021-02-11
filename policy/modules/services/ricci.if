@@ -61,7 +61,7 @@ interface(`ricci_dontaudit_use_modcluster_fds',`
 ########################################
 ## <summary>
 ##	Do not audit attempts to read write
-##	ricci modcluster unamed pipes.
+##	ricci modcluster unnamed pipes.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -90,11 +90,11 @@ interface(`ricci_dontaudit_rw_modcluster_pipes',`
 #
 interface(`ricci_stream_connect_modclusterd',`
 	gen_require(`
-		type ricci_modclusterd_t, ricci_modcluster_var_run_t;
+		type ricci_modclusterd_t, ricci_modcluster_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, ricci_modcluster_var_run_t, ricci_modcluster_var_run_t, ricci_modclusterd_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, ricci_modcluster_runtime_t, ricci_modcluster_runtime_t, ricci_modclusterd_t)
 ')
 
 ########################################
@@ -197,7 +197,7 @@ interface(`ricci_domtrans_modstorage',`
 interface(`ricci_admin',`
 	gen_require(`
 		type ricci_t, ricci_initrc_exec_t, ricci_tmp_t;
-		type ricci_var_lib_t, ricci_var_log_t, ricci_var_run_t;
+		type ricci_var_lib_t, ricci_var_log_t, ricci_runtime_t;
 	')
 
 	allow $1 ricci_t:process { ptrace signal_perms };
@@ -214,6 +214,6 @@ interface(`ricci_admin',`
 	logging_list_logs($1)
 	admin_pattern($1, ricci_var_log_t)
 
-	files_list_pids($1)
-	admin_pattern($1, ricci_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, ricci_runtime_t)
 ')

@@ -1,4 +1,4 @@
-policy_module(syncthing, 1.2.0)
+policy_module(syncthing, 1.3.0)
 
 ########################################
 #
@@ -13,7 +13,7 @@ type syncthing_exec_t;
 init_daemon_domain(syncthing_t, syncthing_exec_t)
 userdom_user_application_domain(syncthing_t, syncthing_exec_t)
 
-type syncthing_xdg_config_t alias syncthing_config_home_t;
+type syncthing_xdg_config_t;
 xdg_config_content(syncthing_xdg_config_t)
 
 ########################################
@@ -42,10 +42,8 @@ corenet_tcp_sendrecv_generic_if(syncthing_t)
 corenet_udp_sendrecv_generic_if(syncthing_t)
 corenet_tcp_bind_generic_node(syncthing_t)
 corenet_tcp_sendrecv_generic_node(syncthing_t)
-corenet_tcp_sendrecv_all_ports(syncthing_t)
 corenet_udp_bind_generic_node(syncthing_t)
 corenet_udp_sendrecv_generic_node(syncthing_t)
-corenet_udp_sendrecv_all_ports(syncthing_t)
 corenet_tcp_connect_all_ports(syncthing_t)
 corenet_tcp_bind_syncthing_port(syncthing_t)
 corenet_udp_bind_syncthing_discovery_port(syncthing_t)
@@ -64,4 +62,3 @@ miscfiles_read_localization(syncthing_t)
 userdom_user_content_access_template(syncthing, syncthing_t)
 
 userdom_use_user_terminals(syncthing_t)
-

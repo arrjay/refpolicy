@@ -20,7 +20,7 @@
 interface(`pxe_admin',`
 	gen_require(`
 		type pxe_t, pxe_initrc_exec_t, pxe_log_t;
-		type pxe_var_run_t;
+		type pxe_runtime_t;
 	')
 
 	allow $1 pxe_t:process { ptrace signal_perms };
@@ -31,6 +31,6 @@ interface(`pxe_admin',`
 	logging_search_logs($1)
 	admin_pattern($1, pxe_log_t)
 
-	files_search_pids($1)
-	admin_pattern($1, pxe_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, pxe_runtime_t)
 ')

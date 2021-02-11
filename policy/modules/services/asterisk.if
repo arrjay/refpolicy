@@ -51,11 +51,11 @@ interface(`asterisk_exec',`
 #
 interface(`asterisk_stream_connect',`
 	gen_require(`
-		type asterisk_t, asterisk_var_run_t;
+		type asterisk_t, asterisk_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, asterisk_var_run_t, asterisk_var_run_t, asterisk_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, asterisk_runtime_t, asterisk_runtime_t, asterisk_t)
 ')
 
 #######################################
@@ -91,13 +91,7 @@ interface(`asterisk_setattr_logs',`
 ## </param>
 #
 interface(`asterisk_setattr_pid_files',`
-	gen_require(`
-		type asterisk_var_run_t;
-	')
-
-	setattr_files_pattern($1, asterisk_var_run_t, asterisk_var_run_t)
-	setattr_dirs_pattern($1, asterisk_var_run_t, asterisk_var_run_t)
-	files_search_pids($1)
+	refpolicywarn(`$0($*) has been deprecated.')
 ')
 
 ########################################
@@ -119,7 +113,7 @@ interface(`asterisk_setattr_pid_files',`
 #
 interface(`asterisk_admin',`
 	gen_require(`
-		type asterisk_t, asterisk_var_run_t, asterisk_spool_t;
+		type asterisk_t, asterisk_runtime_t, asterisk_spool_t;
 		type asterisk_etc_t, asterisk_tmp_t, asterisk_log_t;
 		type asterisk_var_lib_t, asterisk_initrc_exec_t;
 	')
@@ -146,6 +140,6 @@ interface(`asterisk_admin',`
 	files_list_var_lib($1)
 	admin_pattern($1, asterisk_var_lib_t)
 
-	files_list_pids($1)
-	admin_pattern($1, asterisk_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, asterisk_runtime_t)
 ')

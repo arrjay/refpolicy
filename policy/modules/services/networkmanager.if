@@ -173,6 +173,24 @@ interface(`networkmanager_signal',`
 
 ########################################
 ## <summary>
+##	Watch networkmanager etc dirs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`networkmanager_watch_etc_dirs',`
+	gen_require(`
+		type NetworkManager_etc_t;
+	')
+
+	allow $1 NetworkManager_etc_t:dir watch;
+')
+
+########################################
+## <summary>
 ##	Read networkmanager etc files.
 ## </summary>
 ## <param name="domain">
@@ -255,7 +273,7 @@ interface(`networkmanager_append_log_files',`
 
 ########################################
 ## <summary>
-##	Read networkmanager pid files.
+##	Read networkmanager pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -264,13 +282,27 @@ interface(`networkmanager_append_log_files',`
 ## </param>
 #
 interface(`networkmanager_read_pid_files',`
+	refpolicywarn(`$0($*) has been deprecated, please use networkmanager_read_runtime_files() instead.')
+	networkmanager_read_runtime_files($1)
+')
+
+########################################
+## <summary>
+##	Read networkmanager runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`networkmanager_read_runtime_files',`
 	gen_require(`
-		type NetworkManager_var_run_t;
+		type NetworkManager_runtime_t;
 	')
 
-	files_search_pids($1)
-	allow $1 NetworkManager_var_run_t:dir search_dir_perms;
-	allow $1 NetworkManager_var_run_t:file read_file_perms;
+	files_search_runtime($1)
+	read_files_pattern($1, NetworkManager_runtime_t, NetworkManager_runtime_t)
 ')
 
 ####################################
@@ -286,11 +318,68 @@ interface(`networkmanager_read_pid_files',`
 #
 interface(`networkmanager_stream_connect',`
 	gen_require(`
-		type NetworkManager_t, NetworkManager_var_run_t;
+		type NetworkManager_t, NetworkManager_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, NetworkManager_var_run_t, NetworkManager_var_run_t, NetworkManager_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, NetworkManager_runtime_t, NetworkManager_runtime_t, NetworkManager_t)
+')
+
+########################################
+## <summary>
+##	Allow specified domain to enable/disable NetworkManager units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`networkmanager_enabledisable',`
+	gen_require(`
+		type NetworkManager_unit_t;
+		class service { enable disable };
+	')
+
+	allow $1 NetworkManager_unit_t:service { enable disable };
+')
+
+########################################
+## <summary>
+##	Allow specified domain to start/stop NetworkManager units
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`networkmanager_startstop',`
+	gen_require(`
+		type NetworkManager_unit_t;
+		class service { start stop };
+	')
+
+	allow $1 NetworkManager_unit_t:service { start stop };
+')
+
+########################################
+## <summary>
+##	Allow specified domain to get status of NetworkManager
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`networkmanager_status',`
+	gen_require(`
+		type NetworkManager_unit_t;
+		class service status;
+	')
+
+	allow $1 NetworkManager_unit_t:service status;
 ')
 
 ########################################
@@ -314,7 +403,7 @@ interface(`networkmanager_admin',`
 	gen_require(`
 		type NetworkManager_t, NetworkManager_initrc_exec_t, NetworkManager_etc_t;
 		type NetworkManager_etc_rw_t, NetworkManager_log_t, NetworkManager_tmp_t;
-		type NetworkManager_var_lib_t, NetworkManager_var_run_t, wpa_cli_t;
+		type NetworkManager_var_lib_t, NetworkManager_runtime_t, wpa_cli_t;
 	')
 
 	allow $1 { wpa_cli_t NetworkManager_t }:process { ptrace signal_perms };
@@ -332,8 +421,8 @@ interface(`networkmanager_admin',`
 	admin_pattern($1, NetworkManager_var_lib_t)
 	allow $1 NetworkManager_var_lib_t:file map;
 
-	files_search_pids($1)
-	admin_pattern($1, NetworkManager_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, NetworkManager_runtime_t)
 
 	files_search_tmp($1)
 	admin_pattern($1, NetworkManager_tmp_t)

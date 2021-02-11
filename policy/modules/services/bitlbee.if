@@ -40,7 +40,7 @@ interface(`bitlbee_read_config',`
 interface(`bitlbee_admin',`
 	gen_require(`
 		type bitlbee_t, bitlbee_conf_t, bitlbee_var_t;
-		type bitlbee_initrc_exec_t, bitlbee_var_run_t;
+		type bitlbee_initrc_exec_t, bitlbee_runtime_t;
 		type bitlbee_log_t, bitlbee_tmp_t;
 	')
 
@@ -58,8 +58,8 @@ interface(`bitlbee_admin',`
 	files_search_tmp($1)
 	admin_pattern($1, bitlbee_tmp_t)
 
-	files_search_pids($1)
-	admin_pattern($1, bitlbee_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, bitlbee_runtime_t)
 
 	files_search_var_lib($1)
 	admin_pattern($1, bitlbee_var_t)

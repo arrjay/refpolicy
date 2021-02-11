@@ -103,6 +103,46 @@ interface(`spamassassin_signal_spamd',`
 
 ########################################
 ## <summary>
+##	reload SA service
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`spamassassin_reload',`
+	gen_require(`
+		type spamassassin_unit_t;
+		class service reload;
+	')
+
+	allow $1 spamassassin_unit_t:service reload;
+')
+
+########################################
+## <summary>
+##	Get SA service status
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`spamassassin_status',`
+	gen_require(`
+		type spamassassin_unit_t;
+		class service status;
+	')
+
+	allow $1 spamassassin_unit_t:service status;
+')
+
+########################################
+## <summary>
 ##	Execute spamd in the caller domain.
 ## </summary>
 ## <param name="domain">
@@ -309,7 +349,7 @@ interface(`spamassassin_manage_lib_files',`
 
 ########################################
 ## <summary>
-##	Read spamd pid files.
+##	Read spamd pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -318,12 +358,27 @@ interface(`spamassassin_manage_lib_files',`
 ## </param>
 #
 interface(`spamassassin_read_spamd_pid_files',`
+	refpolicywarn(`$0($*) has been deprecated, please use spamassassin_read_spamd_runtime_files() instead.')
+	spamassassin_read_spamd_runtime_files($1)
+')
+
+########################################
+## <summary>
+##	Read spamd runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`spamassassin_read_spamd_runtime_files',`
 	gen_require(`
-		type spamd_var_run_t;
+		type spamd_runtime_t;
 	')
 
-	files_search_pids($1)
-	read_files_pattern($1, spamd_var_run_t, spamd_var_run_t)
+	files_search_runtime($1)
+	read_files_pattern($1, spamd_runtime_t, spamd_runtime_t)
 ')
 
 ########################################
@@ -376,11 +431,11 @@ interface(`spamassassin_dontaudit_getattr_spamd_tmp_sockets',`
 #
 interface(`spamassassin_stream_connect_spamd',`
 	gen_require(`
-		type spamd_t, spamd_var_run_t;
+		type spamd_t, spamd_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, spamd_var_run_t, spamd_var_run_t, spamd_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, spamd_runtime_t, spamd_runtime_t, spamd_t)
 ')
 
 ########################################
@@ -403,7 +458,7 @@ interface(`spamassassin_stream_connect_spamd',`
 interface(`spamassassin_admin',`
 	gen_require(`
 		type spamd_t, spamd_tmp_t, spamd_log_t;
-		type spamd_spool_t, spamd_var_lib_t, spamd_var_run_t;
+		type spamd_spool_t, spamd_var_lib_t, spamd_runtime_t;
 		type spamd_initrc_exec_t, spamassassin_unit_t;
 		type spamd_gpg_t, spamd_update_t, spamd_update_tmp_t;
 	')
@@ -424,8 +479,8 @@ interface(`spamassassin_admin',`
 	files_list_var_lib($1)
 	admin_pattern($1, spamd_var_lib_t)
 
-	files_list_pids($1)
-	admin_pattern($1, spamd_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, spamd_runtime_t)
 
 	# This makes it impossible to apply _admin if _role has already been applied
 	#spamassassin_role($2, $1)

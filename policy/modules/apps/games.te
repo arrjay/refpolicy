@@ -1,4 +1,4 @@
-policy_module(games, 2.5.0)
+policy_module(games, 2.8.0)
 
 ########################################
 #
@@ -9,8 +9,6 @@ attribute_role games_roles;
 
 type games_t;
 type games_exec_t;
-typealias games_t alias { user_games_t staff_games_t sysadm_games_t };
-typealias games_t alias { auditadm_games_t secadm_games_t };
 userdom_user_application_domain(games_t, games_exec_t)
 role games_roles types games_t;
 
@@ -19,31 +17,23 @@ optional_policy(`
 ')
 
 type games_data_t;
-typealias games_data_t alias { user_games_data_t staff_games_data_t sysadm_games_data_t };
-typealias games_data_t alias { auditadm_games_data_t secadm_games_data_t };
 files_type(games_data_t)
 ubac_constrained(games_data_t)
 
 type games_devpts_t;
-typealias games_devpts_t alias { user_games_devpts_t staff_games_devpts_t sysadm_games_devpts_t };
-typealias games_devpts_t alias { auditadm_games_devpts_t secadm_games_devpts_t };
 term_pty(games_devpts_t)
 ubac_constrained(games_devpts_t)
 
 type games_srv_t;
 init_system_domain(games_srv_t, games_exec_t)
 
-type games_srv_var_run_t;
-files_pid_file(games_srv_var_run_t)
+type games_srv_runtime_t alias games_srv_var_run_t;
+files_runtime_file(games_srv_runtime_t)
 
 type games_tmp_t;
-typealias games_tmp_t alias { user_games_tmp_t staff_games_tmp_t sysadm_games_tmp_t };
-typealias games_tmp_t alias { auditadm_games_tmp_t secadm_games_tmp_t };
 userdom_user_tmp_file(games_tmp_t)
 
 type games_tmpfs_t;
-typealias games_tmpfs_t alias { user_games_tmpfs_t staff_games_tmpfs_t sysadm_games_tmpfs_t };
-typealias games_tmpfs_t alias { auditadm_games_tmpfs_t secadm_games_tmpfs_t };
 userdom_user_tmpfs_file(games_tmpfs_t)
 
 optional_policy(`
@@ -61,8 +51,8 @@ allow games_srv_t self:process signal_perms;
 manage_files_pattern(games_srv_t, games_data_t, games_data_t)
 manage_lnk_files_pattern(games_srv_t, games_data_t, games_data_t)
 
-manage_files_pattern(games_srv_t, games_srv_var_run_t, games_srv_var_run_t)
-files_pid_filetrans(games_srv_t, games_srv_var_run_t, file)
+manage_files_pattern(games_srv_t, games_srv_runtime_t, games_srv_runtime_t)
+files_runtime_filetrans(games_srv_t, games_srv_runtime_t, file)
 
 can_exec(games_srv_t, games_exec_t)
 
@@ -94,16 +84,12 @@ optional_policy(`
 	seutil_sigchld_newrole(games_srv_t)
 ')
 
-optional_policy(`
-	udev_read_db(games_srv_t)
-')
-
 ########################################
 #
 # Client local policy
 #
 
-allow games_t self:fifo_file rw_file_perms;
+allow games_t self:fifo_file rw_fifo_file_perms;
 allow games_t self:sem create_sem_perms;
 allow games_t self:tcp_socket { accept listen };
 
@@ -125,15 +111,15 @@ fs_tmpfs_filetrans(games_t, games_tmpfs_t, { file lnk_file sock_file fifo_file }
 
 can_exec(games_t, games_exec_t)
 
+kernel_read_kernel_sysctls(games_t)
 kernel_read_system_state(games_t)
 
 corecmd_exec_bin(games_t)
+corecmd_exec_shell(games_t)
 
-corenet_all_recvfrom_unlabeled(games_t)
 corenet_all_recvfrom_netlabel(games_t)
 corenet_tcp_sendrecv_generic_if(games_t)
 corenet_tcp_sendrecv_generic_node(games_t)
-corenet_tcp_sendrecv_all_ports(games_t)
 corenet_tcp_bind_generic_node(games_t)
 
 corenet_sendrecv_generic_server_packets(games_t)
@@ -162,6 +148,7 @@ init_dontaudit_rw_utmp(games_t)
 
 logging_dontaudit_search_logs(games_t)
 
+miscfiles_read_generic_certs(games_t)
 miscfiles_read_man_pages(games_t)
 miscfiles_read_localization(games_t)
 
@@ -178,8 +165,14 @@ tunable_policy(`allow_execmem',`
 ')
 
 optional_policy(`
+	alsa_read_config(games_t)
+')
+
+optional_policy(`
 	dbus_all_session_bus_client(games_t)
 	dbus_connect_all_session_bus(games_t)
+	dbus_read_lib_files(games_t)
+	dbus_system_bus_client(games_t)
 ')
 
 optional_policy(`
@@ -188,6 +181,11 @@ optional_policy(`
 
 optional_policy(`
 	pulseaudio_run(games_t, games_roles)
+')
+
+optional_policy(`
+	xdg_read_config_files(games_t)
+	xdg_read_data_files(games_t)
 ')
 
 optional_policy(`

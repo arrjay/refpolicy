@@ -20,7 +20,7 @@
 interface(`nessus_admin',`
 	gen_require(`
 		type nessusd_t, nessusd_db_t, nessusd_initrc_exec_t;
-		type nessusd_etc_t, nessusd_log_t, nessusd_var_run_t;
+		type nessusd_etc_t, nessusd_log_t, nessusd_runtime_t;
 	')
 
 	allow $1 nessusd_t:process { ptrace signal_perms };
@@ -34,8 +34,8 @@ interface(`nessus_admin',`
 	files_search_etc($1)
 	admin_pattern($1, nessusd_etc_t)
 
-	files_search_pids($1)
-	admin_pattern($1, nessusd_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, nessusd_runtime_t)
 
 	files_search_var_lib($1)
 	admin_pattern($1, nessusd_db_t)

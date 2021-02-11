@@ -1,4 +1,4 @@
-policy_module(nagios, 1.16.0)
+policy_module(nagios, 1.19.0)
 
 ########################################
 #
@@ -20,11 +20,11 @@ init_script_file(nagios_initrc_exec_t)
 type nagios_log_t;
 logging_log_file(nagios_log_t)
 
+type nagios_runtime_t alias nagios_var_run_t;
+files_runtime_file(nagios_runtime_t)
+
 type nagios_tmp_t;
 files_tmp_file(nagios_tmp_t)
-
-type nagios_var_run_t;
-files_pid_file(nagios_var_run_t)
 
 type nagios_spool_t;
 files_type(nagios_spool_t)
@@ -53,8 +53,8 @@ init_daemon_domain(nrpe_t, nrpe_exec_t)
 type nrpe_etc_t;
 files_config_file(nrpe_etc_t)
 
-type nrpe_var_run_t;
-files_pid_file(nrpe_var_run_t)
+type nrpe_runtime_t alias nrpe_var_run_t;
+files_runtime_file(nrpe_runtime_t)
 
 ######################################
 #
@@ -106,8 +106,8 @@ manage_dirs_pattern(nagios_t, nagios_tmp_t, nagios_tmp_t)
 manage_files_pattern(nagios_t, nagios_tmp_t, nagios_tmp_t)
 files_tmp_filetrans(nagios_t, nagios_tmp_t, { dir file })
 
-manage_files_pattern(nagios_t, nagios_var_run_t, nagios_var_run_t)
-files_pid_filetrans(nagios_t, nagios_var_run_t, file)
+manage_files_pattern(nagios_t, nagios_runtime_t, nagios_runtime_t)
+files_runtime_filetrans(nagios_t, nagios_runtime_t, file)
 
 manage_fifo_files_pattern(nagios_t, nagios_spool_t, nagios_spool_t)
 files_spool_filetrans(nagios_t, nagios_spool_t, fifo_file)
@@ -123,14 +123,12 @@ kernel_read_software_raid_state(nagios_t)
 corecmd_exec_bin(nagios_t)
 corecmd_exec_shell(nagios_t)
 
-corenet_all_recvfrom_unlabeled(nagios_t)
 corenet_all_recvfrom_netlabel(nagios_t)
 corenet_tcp_sendrecv_generic_if(nagios_t)
 corenet_tcp_sendrecv_generic_node(nagios_t)
 
 corenet_sendrecv_all_client_packets(nagios_t)
 corenet_tcp_connect_all_ports(nagios_t)
-corenet_tcp_sendrecv_all_ports(nagios_t)
 
 corenet_dontaudit_tcp_bind_all_reserved_ports(nagios_t)
 corenet_dontaudit_udp_bind_all_reserved_ports(nagios_t)
@@ -172,18 +170,12 @@ optional_policy(`
 	seutil_sigchld_newrole(nagios_t)
 ')
 
-optional_policy(`
-	udev_read_db(nagios_t)
-')
-
 ########################################
 #
 # CGI local policy
 #
 optional_policy(`
 	apache_content_template(nagios)
-	typealias httpd_nagios_script_t alias nagios_cgi_t;
-	typealias httpd_nagios_script_exec_t alias nagios_cgi_exec_t;
 
 	allow httpd_nagios_script_t self:process signal_perms;
 
@@ -229,8 +221,8 @@ allow nrpe_t nagios_plugin_domain:process { signal sigkill };
 
 read_files_pattern(nrpe_t, nagios_etc_t, nrpe_etc_t)
 
-manage_files_pattern(nrpe_t, nrpe_var_run_t, nrpe_var_run_t)
-files_pid_filetrans(nrpe_t, nrpe_var_run_t, file)
+manage_files_pattern(nrpe_t, nrpe_runtime_t, nrpe_runtime_t)
+files_runtime_filetrans(nrpe_t, nrpe_runtime_t, file)
 
 domtrans_pattern(nrpe_t, nagios_checkdisk_plugin_exec_t, nagios_checkdisk_plugin_t)
 
@@ -241,7 +233,6 @@ kernel_read_system_state(nrpe_t)
 corecmd_exec_bin(nrpe_t)
 corecmd_exec_shell(nrpe_t)
 
-corenet_all_recvfrom_unlabeled(nrpe_t)
 corenet_all_recvfrom_netlabel(nrpe_t)
 corenet_tcp_sendrecv_generic_if(nrpe_t)
 corenet_tcp_sendrecv_generic_node(nrpe_t)
@@ -249,7 +240,6 @@ corenet_tcp_bind_generic_node(nrpe_t)
 
 corenet_sendrecv_inetd_child_server_packets(nrpe_t)
 corenet_tcp_bind_inetd_child_port(nrpe_t)
-corenet_tcp_sendrecv_inetd_child_port(nrpe_t)
 
 dev_read_sysfs(nrpe_t)
 dev_read_urand(nrpe_t)
@@ -285,10 +275,6 @@ optional_policy(`
 
 optional_policy(`
 	tcpd_wrapped_domain(nrpe_t, nrpe_exec_t)
-')
-
-optional_policy(`
-	udev_read_db(nrpe_t)
 ')
 
 #####################################
@@ -331,7 +317,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	nscd_dontaudit_search_pid(nagios_mail_plugin_t)
+	nscd_dontaudit_search_runtime(nagios_mail_plugin_t)
 ')
 
 optional_policy(`
@@ -366,7 +352,6 @@ allow nagios_services_plugin_t self:tcp_socket { accept listen };
 
 corecmd_exec_bin(nagios_services_plugin_t)
 
-corenet_all_recvfrom_unlabeled(nagios_services_plugin_t)
 corenet_all_recvfrom_netlabel(nagios_services_plugin_t)
 corenet_tcp_sendrecv_generic_if(nagios_services_plugin_t)
 corenet_udp_sendrecv_generic_if(nagios_services_plugin_t)
@@ -376,11 +361,9 @@ corenet_udp_bind_generic_node(nagios_services_plugin_t)
 
 corenet_sendrecv_all_client_packets(nagios_services_plugin_t)
 corenet_tcp_connect_all_ports(nagios_services_plugin_t)
-corenet_tcp_sendrecv_all_ports(nagios_services_plugin_t)
 
 corenet_sendrecv_dhcpc_server_packets(nagios_services_plugin_t)
 corenet_udp_bind_dhcpc_port(nagios_services_plugin_t)
-corenet_udp_sendrecv_dhcpc_port(nagios_services_plugin_t)
 
 auth_use_nsswitch(nagios_services_plugin_t)
 

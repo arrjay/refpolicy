@@ -1,10 +1,11 @@
-policy_module(filesystem, 1.25.0)
+policy_module(filesystem, 1.29.0)
 
 ########################################
 #
 # Declarations
 #
 
+attribute filesystem_image_file_type;
 attribute filesystem_type;
 attribute filesystem_unconfined_type;
 attribute noxattrfs;
@@ -66,6 +67,12 @@ type binfmt_misc_fs_t;
 fs_type(binfmt_misc_fs_t)
 files_mountpoint(binfmt_misc_fs_t)
 genfscon binfmt_misc / gen_context(system_u:object_r:binfmt_misc_fs_t,s0)
+
+type bpf_t;
+fs_type(bpf_t)
+files_mountpoint(bpf_t)
+dev_associate_sysfs(bpf_t)
+genfscon bpf / gen_context(system_u:object_r:bpf_t,s0)
 
 type capifs_t;
 fs_type(capifs_t)
@@ -175,6 +182,10 @@ type tracefs_t;
 fs_type(tracefs_t)
 genfscon tracefs / gen_context(system_u:object_r:tracefs_t,s0)
 
+optional_policy(`
+	init_mountpoint(tracefs_t)
+')
+
 type vmblock_t;
 fs_noxattr_type(vmblock_t)
 files_mountpoint(vmblock_t)
@@ -228,7 +239,7 @@ genfscon automount / gen_context(system_u:object_r:autofs_t,s0)
 # cifs_t is the type for filesystems and their
 # files shared from Windows servers
 #
-type cifs_t alias sambafs_t;
+type cifs_t;
 fs_noxattr_type(cifs_t)
 files_mountpoint(cifs_t)
 genfscon cifs / gen_context(system_u:object_r:cifs_t,s0)
@@ -315,15 +326,15 @@ fs_associate_noxattr(noxattrfs)
 # Unconfined access to this module
 #
 
-allow filesystem_unconfined_type filesystem_type:filesystem { mount remount unmount getattr relabelfrom relabelto transition associate quotamod quotaget };
+allow filesystem_unconfined_type filesystem_type:filesystem { mount remount unmount getattr relabelfrom relabelto associate quotamod quotaget watch };
 
 # Create/access other files. fs_type is to pick up various
 # pseudo filesystem types that are applied to both the filesystem
 # and its files.
-allow filesystem_unconfined_type filesystem_type:file { manage_file_perms relabelfrom relabelto map execute swapon quotaon mounton execute_no_trans entrypoint audit_access execmod };
-allow filesystem_unconfined_type filesystem_type:lnk_file  { manage_lnk_file_perms relabelfrom relabelto append map execute swapon quotaon mounton open audit_access execmod };
-allow filesystem_unconfined_type filesystem_type:sock_file { manage_sock_file_perms relabelfrom relabelto map execute swapon quotaon mounton audit_access execmod };
-allow filesystem_unconfined_type filesystem_type:fifo_file { manage_fifo_file_perms relabelfrom relabelto map execute swapon quotaon mounton audit_access execmod };
-allow filesystem_unconfined_type filesystem_type:blk_file { manage_blk_file_perms relabelfrom relabelto map execute swapon quotaon mounton audit_access execmod };
-allow filesystem_unconfined_type filesystem_type:chr_file { manage_chr_file_perms relabelfrom relabelto map execute swapon quotaon mounton execute_no_trans entrypoint audit_access execmod };
-allow filesystem_unconfined_type filesystem_type:dir { manage_dir_perms relabelfrom relabelto append map execute swapon quotaon mounton add_name remove_name reparent search rmdir audit_access execmod };
+allow filesystem_unconfined_type filesystem_type:file { manage_file_perms relabel_file_perms exec_file_perms quotaon mounton entrypoint audit_access execmod watch };
+allow filesystem_unconfined_type filesystem_type:lnk_file  { manage_lnk_file_perms relabel_lnk_file_perms append map execute quotaon mounton open audit_access execmod watch };
+allow filesystem_unconfined_type filesystem_type:sock_file { manage_sock_file_perms relabel_sock_file_perms map execute quotaon mounton audit_access execmod watch };
+allow filesystem_unconfined_type filesystem_type:fifo_file { manage_fifo_file_perms relabel_fifo_file_perms map execute quotaon mounton audit_access execmod watch };
+allow filesystem_unconfined_type filesystem_type:blk_file { manage_blk_file_perms relabel_blk_file_perms map execute quotaon mounton audit_access execmod watch };
+allow filesystem_unconfined_type filesystem_type:chr_file { manage_chr_file_perms relabel_chr_file_perms map execute quotaon mounton audit_access execmod watch };
+allow filesystem_unconfined_type filesystem_type:dir { manage_dir_perms relabel_dir_perms append map execute quotaon mounton add_name remove_name reparent search rmdir audit_access execmod watch };

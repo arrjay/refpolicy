@@ -214,7 +214,7 @@ interface(`squid_dontaudit_read_tmpfs_files',`
 interface(`squid_admin',`
 	gen_require(`
 		type squid_t, squid_cache_t, squid_conf_t;
-		type squid_log_t, squid_var_run_t, squid_tmpfs_t;
+		type squid_log_t, squid_runtime_t, squid_tmpfs_t;
 		type squid_initrc_exec_t, squid_tmp_t;
 	')
 
@@ -232,8 +232,8 @@ interface(`squid_admin',`
 	logging_list_logs($1)
 	admin_pattern($1, squid_log_t)
 
-	files_list_pids($1)
-	admin_pattern($1, squid_var_run_t)
+	files_list_runtime($1)
+	admin_pattern($1, squid_runtime_t)
 
 	fs_list_tmpfs($1)
 	admin_pattern($1, squid_tmpfs_t)

@@ -50,11 +50,11 @@ interface(`tgtd_manage_semaphores',`
 #
 interface(`tgtd_stream_connect',`
 	gen_require(`
-		type tgtd_t, tgtd_var_run_t;
+		type tgtd_t, tgtd_runtime_t;
 	')
 
-	files_search_pids($1)
-	stream_connect_pattern($1, tgtd_var_run_t, tgtd_var_run_t, tgtd_t)
+	files_search_runtime($1)
+	stream_connect_pattern($1, tgtd_runtime_t, tgtd_runtime_t, tgtd_t)
 ')
 
 ########################################
@@ -77,7 +77,7 @@ interface(`tgtd_stream_connect',`
 interface(`tgtd_admin',`
 	gen_require(`
 		type tgtd_t, tgtd_initrc_exec_t, tgtd_var_lib_t;
-		type tgtd_var_run_t, tgtd_tmp_t, tgtd_tmpfs_t;
+		type tgtd_runtime_t, tgtd_tmp_t, tgtd_tmpfs_t;
 	')
 
 	allow $1 tgtd_t:process { ptrace signal_perms };
@@ -88,8 +88,8 @@ interface(`tgtd_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, tgtd_var_lib_t)
 
-	files_search_pids($1)
-	admin_pattern($1, tgtd_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, tgtd_runtime_t)
 
 	files_search_tmp($1)
 	admin_pattern($1, tgtd_tmp_t)

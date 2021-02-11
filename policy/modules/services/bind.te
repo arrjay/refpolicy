@@ -1,4 +1,4 @@
-policy_module(bind, 1.20.0)
+policy_module(bind, 1.23.0)
 
 ########################################
 #
@@ -50,15 +50,15 @@ files_type(named_keytab_t)
 type named_log_t;
 logging_log_file(named_log_t)
 
+type named_runtime_t alias named_var_run_t;
+files_runtime_file(named_runtime_t)
+init_daemon_runtime_file(named_runtime_t, dir, "named")
+
 type named_tmp_t;
 files_tmp_file(named_tmp_t)
 
 type named_unit_t;
 init_unit_file(named_unit_t)
-
-type named_var_run_t;
-files_pid_file(named_var_run_t)
-init_daemon_pid_file(named_var_run_t, dir, "named")
 
 # for primary zone files
 type named_zone_t;
@@ -101,10 +101,10 @@ manage_dirs_pattern(named_t, named_tmp_t, named_tmp_t)
 manage_files_pattern(named_t, named_tmp_t, named_tmp_t)
 files_tmp_filetrans(named_t, named_tmp_t, { file dir })
 
-manage_dirs_pattern(named_t, named_var_run_t, named_var_run_t)
-manage_files_pattern(named_t, named_var_run_t, named_var_run_t)
-manage_sock_files_pattern(named_t, named_var_run_t, named_var_run_t)
-files_pid_filetrans(named_t, named_var_run_t, { dir file sock_file })
+manage_dirs_pattern(named_t, named_runtime_t, named_runtime_t)
+manage_files_pattern(named_t, named_runtime_t, named_runtime_t)
+manage_sock_files_pattern(named_t, named_runtime_t, named_runtime_t)
+files_runtime_filetrans(named_t, named_runtime_t, { dir file sock_file })
 
 can_exec(named_t, named_exec_t)
 
@@ -121,7 +121,6 @@ kernel_read_network_state(named_t)
 
 corecmd_search_bin(named_t)
 
-corenet_all_recvfrom_unlabeled(named_t)
 corenet_all_recvfrom_netlabel(named_t)
 corenet_tcp_sendrecv_generic_if(named_t)
 corenet_udp_sendrecv_generic_if(named_t)
@@ -133,19 +132,14 @@ corenet_udp_bind_generic_node(named_t)
 corenet_sendrecv_all_server_packets(named_t)
 corenet_tcp_bind_dns_port(named_t)
 corenet_udp_bind_dns_port(named_t)
-corenet_tcp_sendrecv_dns_port(named_t)
-corenet_udp_sendrecv_dns_port(named_t)
 
 corenet_tcp_bind_rndc_port(named_t)
-corenet_tcp_sendrecv_rndc_port(named_t)
 
 corenet_dontaudit_udp_bind_all_reserved_ports(named_t)
 corenet_udp_bind_all_unreserved_ports(named_t)
-corenet_udp_sendrecv_all_ports(named_t)
 
 corenet_sendrecv_all_client_packets(named_t)
 corenet_tcp_connect_all_ports(named_t)
-corenet_tcp_sendrecv_all_ports(named_t)
 
 dev_read_sysfs(named_t)
 dev_read_rand(named_t)
@@ -155,6 +149,7 @@ domain_use_interactive_fds(named_t)
 
 files_read_etc_runtime_files(named_t)
 files_read_usr_files(named_t)
+files_map_usr_files(named_t)
 
 fs_getattr_all_fs(named_t)
 fs_search_auto_mountpoints(named_t)
@@ -173,7 +168,6 @@ userdom_dontaudit_search_user_home_dirs(named_t)
 tunable_policy(`named_tcp_bind_http_port',`
 	corenet_sendrecv_http_server_packets(named_t)
 	corenet_tcp_bind_http_port(named_t)
-	corenet_tcp_sendrecv_http_port(named_t)
 ')
 
 tunable_policy(`named_write_master_zones',`
@@ -213,10 +207,6 @@ optional_policy(`
 	seutil_sigchld_newrole(named_t)
 ')
 
-optional_policy(`
-	udev_read_db(named_t)
-')
-
 ########################################
 #
 # NDC local policy
@@ -231,7 +221,7 @@ allow ndc_t self:unix_stream_socket { accept listen };
 allow ndc_t dnssec_t:file read_file_perms;
 allow ndc_t dnssec_t:lnk_file read_lnk_file_perms;
 
-stream_connect_pattern(ndc_t, named_var_run_t, named_var_run_t, named_t)
+stream_connect_pattern(ndc_t, named_runtime_t, named_runtime_t, named_t)
 
 allow ndc_t named_conf_t:file read_file_perms;
 allow ndc_t named_conf_t:lnk_file read_lnk_file_perms;
@@ -241,11 +231,9 @@ allow ndc_t named_zone_t:dir search_dir_perms;
 kernel_read_kernel_sysctls(ndc_t)
 kernel_read_system_state(ndc_t)
 
-corenet_all_recvfrom_unlabeled(ndc_t)
 corenet_all_recvfrom_netlabel(ndc_t)
 corenet_tcp_sendrecv_generic_if(ndc_t)
 corenet_tcp_sendrecv_generic_node(ndc_t)
-corenet_tcp_sendrecv_all_ports(ndc_t)
 corenet_tcp_bind_generic_node(ndc_t)
 
 corenet_tcp_connect_rndc_port(ndc_t)
@@ -253,7 +241,7 @@ corenet_sendrecv_rndc_client_packets(ndc_t)
 
 domain_use_interactive_fds(ndc_t)
 
-files_search_pids(ndc_t)
+files_search_runtime(ndc_t)
 
 fs_getattr_xattr_fs(ndc_t)
 

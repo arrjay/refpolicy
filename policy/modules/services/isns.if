@@ -20,7 +20,7 @@
 interface(`isnsd_admin',`
 	gen_require(`
 		type isnsd_t, isnsd_initrc_exec_t, isnsd_var_lib_t;
-		type isnsd_var_run_t;
+		type isnsd_runtime_t;
 	')
 
 	allow $1 isnsd_t:process { ptrace signal_perms };
@@ -31,6 +31,6 @@ interface(`isnsd_admin',`
 	files_search_var_lib($1)
 	admin_pattern($1, isnsd_var_lib_t)
 
-	files_search_pids($1)
-	admin_pattern($1, isnsd_var_run_t)
+	files_search_runtime($1)
+	admin_pattern($1, isnsd_runtime_t)
 ')

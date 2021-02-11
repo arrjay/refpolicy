@@ -1,4 +1,4 @@
-policy_module(telepathy, 1.9.0)
+policy_module(telepathy, 1.11.0)
 
 ########################################
 #
@@ -27,22 +27,22 @@ attribute telepathy_tmp_content;
 
 telepathy_domain_template(gabble)
 
-type telepathy_xdg_cache_t alias telepathy_cache_home_t;
+type telepathy_xdg_cache_t;
 xdg_cache_content(telepathy_xdg_cache_t)
 
-type telepathy_gabble_xdg_cache_t alias telepathy_gabble_cache_home_t;
+type telepathy_gabble_xdg_cache_t;
 xdg_cache_content(telepathy_gabble_xdg_cache_t)
 
 telepathy_domain_template(idle)
 telepathy_domain_template(logger)
 
-type telepathy_xdg_data_t alias telepathy_data_home_t;
+type telepathy_xdg_data_t;
 xdg_data_content(telepathy_xdg_data_t)
 
-type telepathy_logger_xdg_cache_t alias telepathy_logger_cache_home_t;
+type telepathy_logger_xdg_cache_t;
 xdg_cache_content(telepathy_logger_xdg_cache_t)
 
-type telepathy_logger_xdg_data_t alias telepathy_logger_data_home_t;
+type telepathy_logger_xdg_data_t;
 xdg_data_content(telepathy_logger_xdg_data_t)
 
 telepathy_domain_template(mission_control)
@@ -50,10 +50,10 @@ telepathy_domain_template(mission_control)
 type telepathy_mission_control_home_t;
 userdom_user_home_content(telepathy_mission_control_home_t)
 
-type telepathy_mission_control_xdg_data_t alias telepathy_mission_control_data_home_t;
+type telepathy_mission_control_xdg_data_t;
 xdg_data_content(telepathy_mission_control_xdg_data_t)
 
-type telepathy_mission_control_xdg_cache_t alias telepathy_mission_control_cache_home_t;
+type telepathy_mission_control_xdg_cache_t;
 xdg_cache_content(telepathy_mission_control_xdg_cache_t)
 
 telepathy_domain_template(msn)
@@ -83,22 +83,18 @@ manage_dirs_pattern(telepathy_gabble_t, telepathy_gabble_tmp_t, telepathy_gabble
 manage_sock_files_pattern(telepathy_gabble_t, telepathy_gabble_tmp_t, telepathy_gabble_tmp_t)
 files_tmp_filetrans(telepathy_gabble_t, telepathy_gabble_tmp_t, { dir sock_file })
 
-corenet_all_recvfrom_unlabeled(telepathy_gabble_t)
 corenet_all_recvfrom_netlabel(telepathy_gabble_t)
 corenet_tcp_sendrecv_generic_if(telepathy_gabble_t)
 corenet_tcp_sendrecv_generic_node(telepathy_gabble_t)
 
 corenet_sendrecv_http_client_packets(telepathy_gabble_t)
 corenet_tcp_connect_http_port(telepathy_gabble_t)
-corenet_tcp_sendrecv_http_port(telepathy_gabble_t)
 
 corenet_sendrecv_jabber_client_client_packets(telepathy_gabble_t)
 corenet_tcp_connect_jabber_client_port(telepathy_gabble_t)
-corenet_tcp_sendrecv_jabber_client_port(telepathy_gabble_t)
 
 corenet_sendrecv_vnc_client_packets(telepathy_gabble_t)
 corenet_tcp_connect_vnc_port(telepathy_gabble_t)
-corenet_tcp_sendrecv_vnc_port(telepathy_gabble_t)
 
 dev_read_rand(telepathy_gabble_t)
 
@@ -110,13 +106,11 @@ miscfiles_read_all_certs(telepathy_gabble_t)
 tunable_policy(`telepathy_connect_all_ports',`
 	corenet_sendrecv_all_client_packets(telepathy_gabble_t)
 	corenet_tcp_connect_all_ports(telepathy_gabble_t)
-	corenet_tcp_sendrecv_all_ports(telepathy_gabble_t)
 ')
 
 tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
 	corenet_sendrecv_generic_client_packets(telepathy_gabble_t)
 	corenet_tcp_connect_generic_port(telepathy_gabble_t)
-	corenet_tcp_sendrecv_generic_port(telepathy_gabble_t)
 ')
 
 tunable_policy(`use_nfs_home_dirs',`
@@ -144,17 +138,14 @@ optional_policy(`
 #
 
 corenet_all_recvfrom_netlabel(telepathy_idle_t)
-corenet_all_recvfrom_unlabeled(telepathy_idle_t)
 corenet_tcp_sendrecv_generic_if(telepathy_idle_t)
 corenet_tcp_sendrecv_generic_node(telepathy_idle_t)
 
 corenet_sendrecv_gatekeeper_client_packets(telepathy_idle_t)
 corenet_tcp_connect_gatekeeper_port(telepathy_idle_t)
-corenet_tcp_sendrecv_gatekeeper_port(telepathy_idle_t)
 
 corenet_sendrecv_ircd_client_packets(telepathy_idle_t)
 corenet_tcp_connect_ircd_port(telepathy_idle_t)
-corenet_tcp_sendrecv_ircd_port(telepathy_idle_t)
 
 dev_read_rand(telepathy_idle_t)
 
@@ -163,13 +154,11 @@ files_read_usr_files(telepathy_idle_t)
 tunable_policy(`telepathy_connect_all_ports',`
 	corenet_sendrecv_all_client_packets(telepathy_idle_t)
 	corenet_tcp_connect_all_ports(telepathy_idle_t)
-	corenet_tcp_sendrecv_all_ports(telepathy_idle_t)
 ')
 
 tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
 	corenet_sendrecv_generic_client_packets(telepathy_idle_t)
 	corenet_tcp_connect_generic_port(telepathy_idle_t)
-	corenet_tcp_sendrecv_generic_port(telepathy_idle_t)
 ')
 
 #######################################
@@ -188,7 +177,7 @@ manage_files_pattern(telepathy_logger_t, telepathy_logger_xdg_data_t, telepathy_
 # gnome_data_filetrans(telepathy_logger_t, telepathy_logger_xdg_data_t, dir, "TpLogger")
 
 files_read_usr_files(telepathy_logger_t)
-files_search_pids(telepathy_logger_t)
+files_search_runtime(telepathy_logger_t)
 
 tunable_policy(`use_nfs_home_dirs',`
 	fs_manage_nfs_dirs(telepathy_logger_t)
@@ -277,25 +266,20 @@ userdom_user_tmp_filetrans(telepathy_msn_t, telepathy_msn_tmp_t, { dir file sock
 can_exec(telepathy_msn_t, telepathy_msn_tmp_t)
 
 corenet_all_recvfrom_netlabel(telepathy_msn_t)
-corenet_all_recvfrom_unlabeled(telepathy_msn_t)
 corenet_tcp_sendrecv_generic_if(telepathy_msn_t)
 corenet_tcp_sendrecv_generic_node(telepathy_msn_t)
 
 corenet_sendrecv_http_client_packets(telepathy_msn_t)
 corenet_tcp_connect_http_port(telepathy_msn_t)
-corenet_tcp_sendrecv_http_port(telepathy_msn_t)
 
 corenet_sendrecv_mmcc_client_packets(telepathy_msn_t)
 corenet_tcp_connect_mmcc_port(telepathy_msn_t)
-corenet_tcp_sendrecv_mmcc_port(telepathy_msn_t)
 
 corenet_sendrecv_msnp_client_packets(telepathy_msn_t)
 corenet_tcp_connect_msnp_port(telepathy_msn_t)
-corenet_tcp_sendrecv_msnp_port(telepathy_msn_t)
 
 corenet_sendrecv_sip_client_packets(telepathy_msn_t)
 corenet_tcp_connect_sip_port(telepathy_msn_t)
-corenet_tcp_sendrecv_sip_port(telepathy_msn_t)
 
 corecmd_exec_bin(telepathy_msn_t)
 corecmd_exec_shell(telepathy_msn_t)
@@ -315,13 +299,11 @@ miscfiles_read_all_certs(telepathy_msn_t)
 tunable_policy(`telepathy_connect_all_ports',`
 	corenet_sendrecv_all_client_packets(telepathy_msn_t)
 	corenet_tcp_connect_all_ports(telepathy_msn_t)
-	corenet_tcp_sendrecv_all_ports(telepathy_msn_t)
 ')
 
 tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
 	corenet_sendrecv_generic_client_packets(telepathy_msn_t)
 	corenet_tcp_connect_generic_port(telepathy_msn_t)
-	corenet_tcp_sendrecv_generic_port(telepathy_msn_t)
 ')
 
 optional_policy(`
@@ -348,7 +330,6 @@ manage_sock_files_pattern(telepathy_salut_t, telepathy_salut_tmp_t, telepathy_sa
 files_tmp_filetrans(telepathy_salut_t, telepathy_salut_tmp_t, sock_file)
 
 corenet_all_recvfrom_netlabel(telepathy_salut_t)
-corenet_all_recvfrom_unlabeled(telepathy_salut_t)
 corenet_tcp_sendrecv_generic_if(telepathy_salut_t)
 corenet_tcp_sendrecv_generic_node(telepathy_salut_t)
 corenet_tcp_bind_generic_node(telepathy_salut_t)
@@ -357,18 +338,15 @@ corenet_sendrecv_presence_server_packets(telepathy_salut_t)
 corenet_tcp_bind_presence_port(telepathy_salut_t)
 corenet_sendrecv_presence_client_packets(telepathy_salut_t)
 corenet_tcp_connect_presence_port(telepathy_salut_t)
-corenet_tcp_sendrecv_presence_port(telepathy_salut_t)
 
 tunable_policy(`telepathy_connect_all_ports',`
 	corenet_sendrecv_all_client_packets(telepathy_salut_t)
 	corenet_tcp_connect_all_ports(telepathy_salut_t)
-	corenet_tcp_sendrecv_all_ports(telepathy_salut_t)
 ')
 
 tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
 	corenet_sendrecv_generic_client_packets(telepathy_salut_t)
 	corenet_tcp_connect_generic_port(telepathy_salut_t)
-	corenet_tcp_sendrecv_generic_port(telepathy_salut_t)
 ')
 
 optional_policy(`
@@ -388,7 +366,6 @@ allow telepathy_sofiasip_t self:rawip_socket create_stream_socket_perms;
 allow telepathy_sofiasip_t self:tcp_socket { accept listen };
 
 corenet_all_recvfrom_netlabel(telepathy_sofiasip_t)
-corenet_all_recvfrom_unlabeled(telepathy_sofiasip_t)
 corenet_tcp_sendrecv_generic_if(telepathy_sofiasip_t)
 corenet_raw_sendrecv_generic_if(telepathy_sofiasip_t)
 corenet_raw_sendrecv_generic_node(telepathy_sofiasip_t)
@@ -398,26 +375,22 @@ corenet_raw_bind_generic_node(telepathy_sofiasip_t)
 
 corenet_sendrecv_all_server_packets(telepathy_sofiasip_t)
 corenet_tcp_bind_all_unreserved_ports(telepathy_sofiasip_t)
-corenet_tcp_sendrecv_all_ports(telepathy_sofiasip_t)
 
 corenet_dontaudit_tcp_bind_all_ports(telepathy_sofiasip_t)
 
 corenet_sendrecv_sip_client_packets(telepathy_sofiasip_t)
 corenet_tcp_connect_sip_port(telepathy_sofiasip_t)
-corenet_tcp_sendrecv_sip_port(telepathy_sofiasip_t)
 
 kernel_request_load_module(telepathy_sofiasip_t)
 
 tunable_policy(`telepathy_connect_all_ports',`
 	corenet_sendrecv_all_client_packets(telepathy_sofiasip_t)
 	corenet_tcp_connect_all_ports(telepathy_sofiasip_t)
-	corenet_tcp_sendrecv_all_ports(telepathy_sofiasip_t)
 ')
 
 tunable_policy(`telepathy_tcp_connect_generic_network_ports',`
 	corenet_sendrecv_generic_client_packets(telepathy_sofiasip_t)
 	corenet_tcp_connect_generic_port(telepathy_sofiasip_t)
-	corenet_tcp_sendrecv_generic_port(telepathy_sofiasip_t)
 ')
 
 #######################################
@@ -449,7 +422,7 @@ tunable_policy(`use_samba_home_dirs',`
 ')
 
 optional_policy(`
-	xserver_read_xdm_pid(telepathy_sunshine_t)
+	xserver_read_xdm_runtime_files(telepathy_sunshine_t)
 	xserver_stream_connect(telepathy_sunshine_t)
 ')
 

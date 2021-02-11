@@ -1,4 +1,4 @@
-policy_module(portage, 1.17.0)
+policy_module(portage, 1.20.0)
 
 ########################################
 #
@@ -110,7 +110,7 @@ files_manage_etc_files(gcc_config_t)
 files_rw_etc_runtime_files(gcc_config_t)
 files_read_usr_files(gcc_config_t)
 files_search_var_lib(gcc_config_t)
-files_search_pids(gcc_config_t)
+files_search_runtime(gcc_config_t)
 # complains loudly about not being able to list
 # the directory it is being run from
 files_list_all(gcc_config_t)
@@ -130,14 +130,16 @@ miscfiles_read_localization(gcc_config_t)
 
 userdom_use_user_terminals(gcc_config_t)
 
-consoletype_exec(gcc_config_t)
-
 ifdef(`distro_gentoo',`
 	init_exec_rc(gcc_config_t)
 ')
 
 tunable_policy(`portage_use_nfs',`
 	fs_read_nfs_files(gcc_config_t)
+')
+
+optional_policy(`
+	consoletype_exec(gcc_config_t)
 ')
 
 optional_policy(`
@@ -232,12 +234,6 @@ optional_policy(`
 	usermanage_run_useradd(portage_t, portage_roles)
 ')
 
-ifdef(`TODO',`
-# seems to work ok without these
-dontaudit portage_t device_t:{ blk_file chr_file } getattr;
-dontaudit portage_t proc_t:dir setattr_dir_perms;
-')
-
 ##########################################
 #
 # Portage fetch domain
@@ -276,11 +272,9 @@ kernel_read_kernel_sysctls(portage_fetch_t)
 corecmd_exec_bin(portage_fetch_t)
 corecmd_exec_shell(portage_fetch_t)
 
-corenet_all_recvfrom_unlabeled(portage_fetch_t)
 corenet_all_recvfrom_netlabel(portage_fetch_t)
 corenet_tcp_sendrecv_generic_if(portage_fetch_t)
 corenet_tcp_sendrecv_generic_node(portage_fetch_t)
-corenet_tcp_sendrecv_all_ports(portage_fetch_t)
 corenet_tcp_connect_http_cache_port(portage_fetch_t)
 corenet_tcp_connect_git_port(portage_fetch_t)
 corenet_tcp_connect_rsync_port(portage_fetch_t)
@@ -301,7 +295,7 @@ domain_use_interactive_fds(portage_fetch_t)
 
 files_read_etc_runtime_files(portage_fetch_t)
 files_read_usr_files(portage_fetch_t)
-files_dontaudit_search_pids(portage_fetch_t)
+files_dontaudit_search_runtime(portage_fetch_t)
 
 fs_search_auto_mountpoints(portage_fetch_t)
 

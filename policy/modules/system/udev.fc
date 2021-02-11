@@ -1,12 +1,8 @@
-/dev/\.udev(/.*)? --	gen_context(system_u:object_r:udev_tbl_t,s0)
-/dev/\.udevdb	--	gen_context(system_u:object_r:udev_tbl_t,s0)
-/dev/udev\.tbl	--	gen_context(system_u:object_r:udev_tbl_t,s0)
-
 /etc/dev\.d/.+	--	gen_context(system_u:object_r:udev_helper_exec_t,s0)
 
 /etc/hotplug\.d/default/udev.* -- gen_context(system_u:object_r:udev_helper_exec_t,s0)
 
-/etc/udev/rules.d(/.*)? gen_context(system_u:object_r:udev_rules_t,s0)
+/etc/udev/rules\.d(/.*)? gen_context(system_u:object_r:udev_rules_t,s0)
 /etc/udev/scripts/.+ --	gen_context(system_u:object_r:udev_helper_exec_t,s0)
 
 /usr/bin/udev		--	gen_context(system_u:object_r:udev_exec_t,s0)
@@ -37,9 +33,8 @@ ifdef(`distro_redhat',`
 
 /usr/share/virtualbox/VBoxCreateUSBNode\.sh	--	gen_context(system_u:object_r:udev_helper_exec_t,s0)
 
-/run/udev(/.*)?	gen_context(system_u:object_r:udev_var_run_t,s0)
+/run/udev(/.*)?	gen_context(system_u:object_r:udev_runtime_t,s0)
 
 ifdef(`distro_debian',`
-/run/console-setup(/.*)?	gen_context(system_u:object_r:udev_var_run_t,s0)
-/run/xen-hotplug -d	gen_context(system_u:object_r:udev_var_run_t,s0)
+/run/xen-hotplug -d	gen_context(system_u:object_r:udev_runtime_t,s0)
 ')
