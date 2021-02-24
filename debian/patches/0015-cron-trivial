@@ -287,7 +287,7 @@ Index: refpolicy-2.20210203/policy/modules/services/postfix.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/postfix.te
 +++ refpolicy-2.20210203/policy/modules/services/postfix.te
-@@ -652,6 +652,7 @@ optional_policy(`
+@@ -654,6 +654,7 @@ optional_policy(`
  
  optional_policy(`
  	cron_system_entry(postfix_postdrop_t, postfix_postdrop_exec_t)

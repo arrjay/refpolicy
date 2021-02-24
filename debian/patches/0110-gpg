@@ -41,7 +41,7 @@ Index: refpolicy-2.20210203/policy/modules/roles/sysadm.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/roles/sysadm.te
 +++ refpolicy-2.20210203/policy/modules/roles/sysadm.te
-@@ -1350,10 +1350,6 @@ ifndef(`distro_redhat',`
+@@ -1351,10 +1351,6 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -111,7 +111,7 @@ Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/userdomain.if
 +++ refpolicy-2.20210203/policy/modules/system/userdomain.if
-@@ -2238,6 +2238,24 @@ interface(`userdom_dontaudit_append_user
+@@ -2247,6 +2247,24 @@ interface(`userdom_dontaudit_append_user
  
  ########################################
  ## <summary>

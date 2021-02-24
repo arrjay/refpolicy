@@ -1,7 +1,7 @@
-Index: refpolicy-2.20210126/policy/modules/services/dictd.te
+Index: refpolicy-2.20210203/policy/modules/services/dictd.te
 ===================================================================
---- refpolicy-2.20210126.orig/policy/modules/services/dictd.te
-+++ refpolicy-2.20210126/policy/modules/services/dictd.te
+--- refpolicy-2.20210203.orig/policy/modules/services/dictd.te
++++ refpolicy-2.20210203/policy/modules/services/dictd.te
 @@ -79,3 +79,6 @@ optional_policy(`
  	seutil_sigchld_newrole(dictd_t)
  ')
@@ -9,10 +9,10 @@ Index: refpolicy-2.20210126/policy/modules/services/dictd.te
 +ifdef(`init_systemd',`
 +	init_dbus_chat(dictd_t)
 +')
-Index: refpolicy-2.20210126/policy/modules/services/postfix.te
+Index: refpolicy-2.20210203/policy/modules/services/postfix.te
 ===================================================================
---- refpolicy-2.20210126.orig/policy/modules/services/postfix.te
-+++ refpolicy-2.20210126/policy/modules/services/postfix.te
+--- refpolicy-2.20210203.orig/policy/modules/services/postfix.te
++++ refpolicy-2.20210203/policy/modules/services/postfix.te
 @@ -377,9 +377,6 @@ manage_lnk_files_pattern(postfix_bounce_
  
  optional_policy(`
@@ -23,7 +23,7 @@ Index: refpolicy-2.20210126/policy/modules/services/postfix.te
  	dbus_system_bus_client(postfix_bounce_t)
  ')
  
-@@ -765,6 +762,11 @@ optional_policy(`
+@@ -767,6 +764,11 @@ optional_policy(`
  	unconfined_run_to(postfix_showq_t, postfix_showq_exec_t)
  ')
  
@@ -35,7 +35,7 @@ Index: refpolicy-2.20210126/policy/modules/services/postfix.te
  ########################################
  #
  # Smtp delivery local policy
-@@ -785,6 +787,12 @@ optional_policy(`
+@@ -787,6 +789,12 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -48,7 +48,7 @@ Index: refpolicy-2.20210126/policy/modules/services/postfix.te
  	dovecot_stream_connect(postfix_smtp_t)
  ')
  
-@@ -822,9 +830,8 @@ mta_read_aliases(postfix_smtpd_t)
+@@ -824,9 +832,8 @@ mta_read_aliases(postfix_smtpd_t)
  mta_map_aliases(postfix_smtpd_t)
  
  optional_policy(`

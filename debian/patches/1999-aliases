@@ -1,7 +1,7 @@
-Index: refpolicy-2.20210112/policy/modules/apps/chromium.te
+Index: refpolicy-2.20210203/policy/modules/apps/chromium.te
 ===================================================================
---- refpolicy-2.20210112.orig/policy/modules/apps/chromium.te
-+++ refpolicy-2.20210112/policy/modules/apps/chromium.te
+--- refpolicy-2.20210203.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20210203/policy/modules/apps/chromium.te
 @@ -53,6 +53,7 @@ type chromium_t;
  domain_dyntrans_type(chromium_t)
  
@@ -18,10 +18,10 @@ Index: refpolicy-2.20210112/policy/modules/apps/chromium.te
  application_domain(chromium_sandbox_t, chromium_sandbox_exec_t)
  
  type chromium_renderer_t;
-Index: refpolicy-2.20210112/policy/modules/kernel/devices.te
+Index: refpolicy-2.20210203/policy/modules/kernel/devices.te
 ===================================================================
---- refpolicy-2.20210112.orig/policy/modules/kernel/devices.te
-+++ refpolicy-2.20210112/policy/modules/kernel/devices.te
+--- refpolicy-2.20210203.orig/policy/modules/kernel/devices.te
++++ refpolicy-2.20210203/policy/modules/kernel/devices.te
 @@ -36,6 +36,7 @@ dev_node(agp_device_t)
  # Type for /dev/apm_bios
  #
@@ -30,11 +30,11 @@ Index: refpolicy-2.20210112/policy/modules/kernel/devices.te
  dev_node(acpi_bios_t)
  
  #
-Index: refpolicy-2.20210112/policy/modules/system/systemd.te
+Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20210112.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20210112/policy/modules/system/systemd.te
-@@ -118,6 +118,7 @@ type systemd_hwdb_t;
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20210203/policy/modules/system/systemd.te
+@@ -129,6 +129,7 @@ type systemd_hwdb_t;
  files_type(systemd_hwdb_t)
  
  type systemd_journal_t;
