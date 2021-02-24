@@ -1,3 +1,32 @@
+refpolicy (2:2.20210203-3) unstable; urgency=medium
+
+  * Add policy for blkmapd which is part of nfs service (included in upstream)
+  * Add interfaces systemd_search_user_runtime()
+  * Allow systemd_user_runtime_dir_t to unlink dirmngr sock files
+  * Allow sshd_t to talk to systemd_nspawn_t via Unix sockets
+  * Allow syslogd_t to search systemd_user_runtime_t dirs
+  * Allow acpid_t to rw input device files
+  * Allow restorecond_t to watch all dirs
+  * Allow mailman_queue_t to search the cron spool dir, also allow it to be
+    started as a daemon and to write mailman pid files
+  * Included upstream git patches for latest systemd features, this may
+    save some pain when Bullseye+1 is released
+  * Allow systemd-nspawn to mount on and manage more things when
+    systemd_nspawn_labeled_namespace is on.
+  * Allow smbcontrol_t to talk to itself via Unix domain sockets
+  * Add policy for postfwd
+  * Allow aptcacher_t to read urandom and random devices and to read kernel
+    sysctls
+  * Label /usr/lib/x86_64-linux-gnu/libexec/* as bin_t for KDE/sddm login
+    Allow user to execute and execmod user tmpfs files, for KDE
+    Allow user to write to user_runtime_t sock files
+  * Add policy to run the certbot --nginx which runs nginx, doesn't work
+    in all situations but should cover the common cases.
+  * Set label for /usr/bin/redis-check-rdb (redis server binary in Debian)
+    and allow redis to read certs and read vm and net sysctls.
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 23 Feb 2021 16:57:40 +1100
+
 refpolicy (2:2.20210203-2) unstable; urgency=medium
 
   * lots of little policy changes
