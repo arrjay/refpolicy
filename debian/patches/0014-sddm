@@ -1,7 +1,7 @@
-Index: refpolicy-2.20210126/policy/modules/services/xserver.te
+Index: refpolicy-2.20210203/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20210126.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20210126/policy/modules/services/xserver.te
+--- refpolicy-2.20210203.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20210203/policy/modules/services/xserver.te
 @@ -18,6 +18,7 @@ gen_require(`
  	class x_resource all_x_resource_perms;
  	class x_event all_x_event_perms;
@@ -31,18 +31,18 @@ Index: refpolicy-2.20210126/policy/modules/services/xserver.te
  # Run Xorg.wrap
  can_exec(xserver_t, xserver_exec_t)
  
-Index: refpolicy-2.20210126/config/appconfig-mcs/seusers
+Index: refpolicy-2.20210203/config/appconfig-mcs/seusers
 ===================================================================
---- refpolicy-2.20210126.orig/config/appconfig-mcs/seusers
-+++ refpolicy-2.20210126/config/appconfig-mcs/seusers
+--- refpolicy-2.20210203.orig/config/appconfig-mcs/seusers
++++ refpolicy-2.20210203/config/appconfig-mcs/seusers
 @@ -1,2 +1,3 @@
  root:unconfined_u:s0-mcs_systemhigh
  __default__:unconfined_u:s0-mcs_systemhigh
 +sddm:xdm:s0
-Index: refpolicy-2.20210126/policy/users
+Index: refpolicy-2.20210203/policy/users
 ===================================================================
---- refpolicy-2.20210126.orig/policy/users
-+++ refpolicy-2.20210126/policy/users
+--- refpolicy-2.20210203.orig/policy/users
++++ refpolicy-2.20210203/policy/users
 @@ -27,6 +27,7 @@ gen_user(system_u,, system_r, s0, s0 - m
  gen_user(user_u, user, user_r, s0, s0)
  gen_user(staff_u, staff, staff_r sysadm_r ifdef(`enable_mls',`secadm_r auditadm_r'), s0, s0 - mls_systemhigh, mcs_allcats)
@@ -51,16 +51,16 @@ Index: refpolicy-2.20210126/policy/users
  
  # Until order dependence is fixed for users:
  ifdef(`direct_sysadm_daemon',`
-Index: refpolicy-2.20210126/config/appconfig-mcs/xdm_default_contexts
+Index: refpolicy-2.20210203/config/appconfig-mcs/xdm_default_contexts
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210126/config/appconfig-mcs/xdm_default_contexts
++++ refpolicy-2.20210203/config/appconfig-mcs/xdm_default_contexts
 @@ -0,0 +1 @@
 +system_r:xdm_t:s0		xdm_r:xdm_t:s0
-Index: refpolicy-2.20210126/policy/modules/kernel/kernel.te
+Index: refpolicy-2.20210203/policy/modules/kernel/kernel.te
 ===================================================================
---- refpolicy-2.20210126.orig/policy/modules/kernel/kernel.te
-+++ refpolicy-2.20210126/policy/modules/kernel/kernel.te
+--- refpolicy-2.20210203.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20210203/policy/modules/kernel/kernel.te
 @@ -32,6 +32,7 @@ role system_r;
  role sysadm_r;
  role staff_r;
