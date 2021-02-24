@@ -45,7 +45,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -639,6 +639,9 @@ init_start_system(systemd_logind_t)
+@@ -655,6 +655,9 @@ init_start_system(systemd_logind_t)
  init_stop_system(systemd_logind_t)
  init_watch_utmp(systemd_logind_t)
  

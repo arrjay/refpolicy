@@ -202,7 +202,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -55,10 +55,6 @@ type systemd_activate_t;
+@@ -63,10 +63,6 @@ type systemd_activate_t;
  type systemd_activate_exec_t;
  init_system_domain(systemd_activate_t, systemd_activate_exec_t)
  
@@ -213,7 +213,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
  type systemd_backlight_t;
  type systemd_backlight_exec_t;
  init_system_domain(systemd_backlight_t, systemd_backlight_exec_t)
-@@ -1374,6 +1370,7 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -1410,6 +1406,7 @@ tunable_policy(`systemd_tmpfilesd_factor
  ')
  
  optional_policy(`
