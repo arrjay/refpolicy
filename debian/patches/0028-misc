@@ -284,7 +284,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.te
  	allow init_t self:key { search setattr write };
  	allow init_t self:bpf { map_create map_read map_write prog_load prog_run };
  
-@@ -262,7 +261,7 @@ ifdef(`init_systemd',`
+@@ -263,7 +262,7 @@ ifdef(`init_systemd',`
  
  	# setexec and setkeycreate for systemd --user
  	allow init_t self:process { getcap getsched setsched setpgid setfscreate setsockcreate setexec setkeycreate setcap setrlimit };
@@ -293,7 +293,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.te
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
  	allow init_t self:unix_dgram_socket lock;
  
-@@ -428,6 +427,7 @@ ifdef(`init_systemd',`
+@@ -434,6 +433,7 @@ ifdef(`init_systemd',`
  	miscfiles_watch_localization(init_t)
  
  	mount_watch_runtime_dirs(init_t)
@@ -305,7 +305,7 @@ Index: refpolicy-2.20210203/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/logging.te
 +++ refpolicy-2.20210203/policy/modules/system/logging.te
-@@ -510,6 +510,7 @@ seutil_read_config(syslogd_t)
+@@ -507,6 +507,7 @@ seutil_read_config(syslogd_t)
  
  userdom_dontaudit_use_unpriv_user_fds(syslogd_t)
  userdom_dontaudit_search_user_home_dirs(syslogd_t)
@@ -313,8 +313,8 @@ Index: refpolicy-2.20210203/policy/modules/system/logging.te
  
  ifdef(`init_systemd',`
  	# for systemd-journal
-@@ -549,6 +550,8 @@ ifdef(`init_systemd',`
- 	systemd_manage_journal_files(syslogd_t)
+@@ -551,6 +552,8 @@ ifdef(`init_systemd',`
+ 	systemd_search_user_runtime(syslogd_t)
  
  	udev_read_runtime_files(syslogd_t)
 +	userdom_list_user_tmp(syslogd_t)
@@ -326,7 +326,7 @@ Index: refpolicy-2.20210203/policy/modules/system/lvm.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/lvm.te
 +++ refpolicy-2.20210203/policy/modules/system/lvm.te
-@@ -105,10 +105,13 @@ files_read_etc_files(clvmd_t)
+@@ -108,10 +108,13 @@ files_read_etc_files(clvmd_t)
  files_list_usr(clvmd_t)
  
  fs_getattr_all_fs(clvmd_t)
@@ -340,7 +340,7 @@ Index: refpolicy-2.20210203/policy/modules/system/lvm.te
  
  storage_dontaudit_getattr_removable_dev(clvmd_t)
  storage_manage_fixed_disk(clvmd_t)
-@@ -167,7 +170,6 @@ optional_policy(`
+@@ -170,7 +173,6 @@ optional_policy(`
  allow lvm_t self:capability { chown dac_override fowner ipc_lock mknod net_admin sys_admin sys_nice sys_rawio sys_resource };
  dontaudit lvm_t self:capability sys_tty_config;
  allow lvm_t self:process { sigchld sigkill sigstop signull signal setfscreate };
@@ -348,7 +348,7 @@ Index: refpolicy-2.20210203/policy/modules/system/lvm.te
  allow lvm_t self:process setsched;
  allow lvm_t self:file rw_file_perms;
  allow lvm_t self:fifo_file manage_fifo_file_perms;
-@@ -298,6 +300,8 @@ selinux_compute_user_contexts(lvm_t)
+@@ -301,6 +303,8 @@ selinux_compute_user_contexts(lvm_t)
  
  storage_relabel_fixed_disk(lvm_t)
  storage_dontaudit_read_removable_device(lvm_t)
@@ -404,7 +404,7 @@ Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/selinuxutil.te
 +++ refpolicy-2.20210203/policy/modules/system/selinuxutil.te
-@@ -368,14 +368,19 @@ fs_list_inotifyfs(restorecond_t)
+@@ -368,11 +368,14 @@ fs_list_inotifyfs(restorecond_t)
  fs_relabelfrom_noxattr_fs(restorecond_t)
  fs_getattr_pstorefs(restorecond_t)
  
@@ -419,12 +419,7 @@ Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
  
  files_relabel_non_auth_files(restorecond_t )
  files_dontaudit_read_all_symlinks(restorecond_t)
-+files_watch_etc_dirs(restorecond_t)
-+files_watch_runtime_dirs(restorecond_t)
- auth_use_nsswitch(restorecond_t)
- 
- logging_send_syslog_msg(restorecond_t)
-@@ -416,6 +421,8 @@ allow run_init_t self:netlink_audit_sock
+@@ -417,6 +420,8 @@ allow run_init_t self:netlink_audit_sock
  # the failed access to the current directory
  dontaudit run_init_t self:capability { dac_override dac_read_search };
  
@@ -433,7 +428,7 @@ Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
  corecmd_exec_bin(run_init_t)
  corecmd_exec_shell(run_init_t)
  
-@@ -585,6 +592,7 @@ allow setfiles_t { policy_src_t policy_c
+@@ -586,6 +591,7 @@ allow setfiles_t { policy_src_t policy_c
  allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:lnk_file { read_lnk_file_perms ioctl lock };
  allow setfiles_t file_context_t:file map;
  
@@ -523,3 +518,23 @@ Index: refpolicy-2.20210203/policy/modules/system/unconfined.te
  
  seutil_run_setfiles(unconfined_t, unconfined_r)
  seutil_run_semanage(unconfined_t, unconfined_r)
+Index: refpolicy-2.20210203/policy/modules/admin/apt.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/admin/apt.fc
++++ refpolicy-2.20210203/policy/modules/admin/apt.fc
+@@ -3,6 +3,7 @@
+ /usr/bin/apt		--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/apt-get	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/apt-shell	--	gen_context(system_u:object_r:apt_exec_t,s0)
++/usr/bin/apt-show-versions --	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/aptitude	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/bin/unattended-upgrade -- gen_context(system_u:object_r:apt_exec_t,s0)
+ 
+@@ -14,6 +15,7 @@ ifndef(`distro_redhat',`
+ /usr/sbin/synaptic	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/lib/packagekit/packagekitd	--	gen_context(system_u:object_r:apt_exec_t,s0)
+ /usr/libexec/packagekitd	--	gen_context(system_u:object_r:apt_exec_t,s0)
++/var/cache/apt-show-versions(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
+ /var/cache/PackageKit(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
+ /var/lib/PackageKit(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
+ ')

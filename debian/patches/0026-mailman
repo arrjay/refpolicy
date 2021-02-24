@@ -101,7 +101,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/mailman.te
 +++ refpolicy-2.20210203/policy/modules/services/mailman.te
-@@ -26,6 +26,9 @@ files_lock_file(mailman_lock_t)
+@@ -26,11 +26,15 @@ files_lock_file(mailman_lock_t)
  type mailman_runtime_t alias mailman_var_run_t;
  files_runtime_file(mailman_runtime_t)
  
@@ -111,7 +111,13 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  mailman_domain_template(mail)
  init_daemon_domain(mailman_mail_t, mailman_mail_exec_t)
  role mailman_roles types mailman_mail_t;
-@@ -89,13 +92,16 @@ miscfiles_read_localization(mailman_doma
+ 
+ mailman_domain_template(queue)
++init_daemon_domain(mailman_queue_t, mailman_queue_exec_t)
+ 
+ ########################################
+ #
+@@ -89,13 +93,16 @@ miscfiles_read_localization(mailman_doma
  # CGI local policy
  #
  
@@ -130,7 +136,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  allow mailman_cgi_t mailman_data_t:lnk_file read_lnk_file_perms;
  
  allow mailman_cgi_t mailman_lock_t:dir manage_dir_perms;
-@@ -104,25 +110,40 @@ allow mailman_cgi_t mailman_lock_t:file
+@@ -104,25 +111,40 @@ allow mailman_cgi_t mailman_lock_t:file
  allow mailman_cgi_t mailman_log_t:file { append_file_perms read_file_perms };
  allow mailman_cgi_t mailman_log_t:dir search_dir_perms;
  
@@ -172,7 +178,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  optional_policy(`
  	apache_sigchld(mailman_cgi_t)
  	apache_use_fds(mailman_cgi_t)
-@@ -133,6 +154,15 @@ optional_policy(`
+@@ -133,6 +155,15 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -188,7 +194,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  	postfix_read_config(mailman_cgi_t)
  ')
  
-@@ -142,7 +172,9 @@ optional_policy(`
+@@ -142,7 +173,9 @@ optional_policy(`
  #
  
  allow mailman_mail_t self:capability { dac_override kill setgid setuid sys_tty_config };
@@ -199,7 +205,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  
  allow mailman_mail_t mailman_archive_t:dir manage_dir_perms;
  allow mailman_mail_t mailman_archive_t:file manage_file_perms;
-@@ -167,8 +199,12 @@ manage_files_pattern(mailman_mail_t, mai
+@@ -167,8 +200,12 @@ manage_files_pattern(mailman_mail_t, mai
  manage_dirs_pattern(mailman_mail_t, mailman_runtime_t, mailman_runtime_t)
  files_runtime_filetrans(mailman_mail_t, mailman_runtime_t, { file dir })
  
@@ -212,7 +218,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  corenet_tcp_connect_smtp_port(mailman_mail_t)
  corenet_sendrecv_spamd_client_packets(mailman_mail_t)
  corenet_sendrecv_innd_client_packets(mailman_mail_t)
-@@ -193,6 +229,7 @@ libs_read_lib_files(mailman_mail_t)
+@@ -193,6 +230,7 @@ libs_read_lib_files(mailman_mail_t)
  
  logging_search_logs(mailman_mail_t)
  
@@ -220,7 +226,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  miscfiles_read_localization(mailman_mail_t)
  
  mta_use_mailserver_fds(mailman_mail_t)
-@@ -200,14 +237,26 @@ mta_dontaudit_rw_delivery_tcp_sockets(ma
+@@ -200,14 +238,26 @@ mta_dontaudit_rw_delivery_tcp_sockets(ma
  mta_dontaudit_rw_queue(mailman_mail_t)
  
  optional_policy(`
@@ -247,7 +253,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  	postfix_search_spool(mailman_mail_t)
  	postfix_rw_inherited_master_pipes(mailman_mail_t)
  ')
-@@ -217,8 +266,8 @@ optional_policy(`
+@@ -217,10 +267,13 @@ optional_policy(`
  # Queue local policy
  #
  
@@ -257,8 +263,20 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
 +allow mailman_queue_t self:process { setsched signal_perms sigkill };
  allow mailman_queue_t self:fifo_file rw_fifo_file_perms;
  
++allow mailman_queue_t mailman_runtime_t:dir rw_dir_perms;
++allow mailman_queue_t mailman_runtime_t:file manage_file_perms;
++
  allow mailman_queue_t mailman_archive_t:dir manage_dir_perms;
-@@ -240,6 +289,7 @@ auth_domtrans_chk_passwd(mailman_queue_t
+ allow mailman_queue_t mailman_archive_t:file manage_file_perms;
+ 
+@@ -234,12 +287,14 @@ allow mailman_queue_t mailman_lock_t:fil
+ allow mailman_queue_t mailman_log_t:dir list_dir_perms;
+ allow mailman_queue_t mailman_log_t:file manage_file_perms;
+ 
++kernel_read_network_state(mailman_queue_t)
+ kernel_read_system_state(mailman_queue_t)
+ 
+ auth_domtrans_chk_passwd(mailman_queue_t)
  
  corecmd_read_bin_files(mailman_queue_t)
  corenet_sendrecv_innd_client_packets(mailman_queue_t)
@@ -266,7 +284,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
  corenet_tcp_connect_innd_port(mailman_queue_t)
  
  files_dontaudit_search_runtime(mailman_queue_t)
-@@ -251,14 +301,19 @@ seutil_dontaudit_search_config(mailman_q
+@@ -251,14 +306,23 @@ seutil_dontaudit_search_config(mailman_q
  
  userdom_search_user_home_dirs(mailman_queue_t)
  
@@ -285,6 +303,10 @@ Index: refpolicy-2.20210203/policy/modules/services/mailman.te
 +optional_policy(`
 +	mysql_stream_connect(mailman_queue_t)
 +	mysql_tcp_connect(mailman_queue_t)
++')
++
++optional_policy(`
++	postfix_read_config(mailman_queue_t)
  ')
  
  optional_policy(`
@@ -321,7 +343,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -1523,6 +1523,10 @@ optional_policy(`
+@@ -1559,6 +1559,10 @@ optional_policy(`
  ')
  
  optional_policy(`

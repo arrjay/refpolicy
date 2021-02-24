@@ -26,7 +26,11 @@ Index: refpolicy-2.20210203/policy/modules/services/acpi.te
  
  kernel_read_system_state(acpi_t)
  
-@@ -105,6 +107,7 @@ dev_rw_acpi_bios(acpid_t)
+@@ -102,9 +104,11 @@ dev_read_mouse(acpid_t)
+ dev_read_realtime_clock(acpid_t)
+ dev_read_urand(acpid_t)
+ dev_rw_acpi_bios(acpid_t)
++dev_rw_input_dev(acpid_t)
  dev_rw_sysfs(acpid_t)
  dev_dontaudit_getattr_all_chr_files(acpid_t)
  dev_dontaudit_getattr_all_blk_files(acpid_t)
@@ -34,7 +38,7 @@ Index: refpolicy-2.20210203/policy/modules/services/acpi.te
  
  files_exec_etc_files(acpid_t)
  files_read_etc_runtime_files(acpid_t)
-@@ -136,6 +139,7 @@ domain_dontaudit_list_all_domains_state(
+@@ -136,6 +140,7 @@ domain_dontaudit_list_all_domains_state(
  auth_use_nsswitch(acpid_t)
  
  init_domtrans_script(acpid_t)
@@ -42,7 +46,7 @@ Index: refpolicy-2.20210203/policy/modules/services/acpi.te
  init_telinit(acpid_t)
  
  libs_exec_ld_so(acpid_t)
-@@ -218,6 +222,7 @@ optional_policy(`
+@@ -218,6 +223,7 @@ optional_policy(`
  
  optional_policy(`
  	init_list_unit_dirs(acpid_t)
@@ -87,17 +91,22 @@ Index: refpolicy-2.20210203/policy/modules/services/aptcacher.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/aptcacher.te
 +++ refpolicy-2.20210203/policy/modules/services/aptcacher.te
-@@ -64,6 +64,7 @@ manage_files_pattern(aptcacher_t, aptcac
+@@ -64,6 +64,8 @@ manage_files_pattern(aptcacher_t, aptcac
  
  manage_sock_files_pattern(aptcacher_t, aptcacher_runtime_t, aptcacher_runtime_t)
  
++kernel_read_kernel_sysctls(aptcacher_t)
 +kernel_read_system_state(aptcacher_t)
  kernel_read_vm_overcommit_sysctl(aptcacher_t)
  
  # Calls system()
-@@ -76,6 +77,7 @@ corenet_tcp_connect_http_port(aptcacher_
+@@ -75,7 +77,11 @@ corenet_tcp_connect_http_port(aptcacher_
+ 
  auth_use_nsswitch(aptcacher_t)
  
++dev_read_rand(aptcacher_t)
++dev_read_urand(aptcacher_t)
++
  files_read_etc_files(aptcacher_t)
 +files_read_usr_files(aptcacher_t)
  
@@ -661,7 +670,7 @@ Index: refpolicy-2.20210203/policy/modules/services/rpc.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/rpc.te
 +++ refpolicy-2.20210203/policy/modules/services/rpc.te
-@@ -114,6 +114,7 @@ corenet_udp_bind_all_rpc_ports(rpc_domai
+@@ -121,6 +121,7 @@ corenet_udp_bind_all_rpc_ports(rpc_domai
  
  fs_rw_rpc_named_pipes(rpc_domain)
  fs_search_auto_mountpoints(rpc_domain)
@@ -673,7 +682,39 @@ Index: refpolicy-2.20210203/policy/modules/services/samba.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/samba.te
 +++ refpolicy-2.20210203/policy/modules/services/samba.te
-@@ -619,7 +619,7 @@ allow smbcontrol_t self:unix_stream_sock
+@@ -426,11 +426,13 @@ tunable_policy(`samba_domain_controller'
+ ')
+ 
+ tunable_policy(`samba_enable_home_dirs',`
++	files_watch_home(smbd_t)
+ 	userdom_manage_user_home_content_dirs(smbd_t)
+ 	userdom_manage_user_home_content_files(smbd_t)
+ 	userdom_manage_user_home_content_symlinks(smbd_t)
+ 	userdom_manage_user_home_content_sockets(smbd_t)
+ 	userdom_manage_user_home_content_pipes(smbd_t)
++	userdom_watch_user_home_dirs(smbd_t)
+ ')
+ 
+ tunable_policy(`samba_portmapper',`
+@@ -462,11 +464,13 @@ tunable_policy(`samba_export_all_ro',`
+ 	fs_read_noxattr_fs_files(smbd_t)
+ 	files_list_non_auth_dirs(smbd_t)
+ 	files_read_non_auth_files(smbd_t)
++	files_watch_all_file_type_dir(smbd_t)
+ ')
+ 
+ tunable_policy(`samba_export_all_rw',`
+ 	fs_read_noxattr_fs_files(smbd_t)
+ 	files_manage_non_auth_files(smbd_t)
++	files_watch_all_file_type_dir(smbd_t)
+ ')
+ 
+ optional_policy(`
+@@ -616,10 +620,11 @@ optional_policy(`
+ allow smbcontrol_t self:process signal;
+ allow smbcontrol_t self:fifo_file rw_fifo_file_perms;
+ allow smbcontrol_t self:unix_stream_socket create_stream_socket_perms;
++allow smbcontrol_t self:unix_dgram_socket create_socket_perms;
  allow smbcontrol_t self:process { signal signull };
  
  allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
@@ -682,7 +723,7 @@ Index: refpolicy-2.20210203/policy/modules/services/samba.te
  allow smbcontrol_t samba_runtime_t:dir rw_dir_perms;
  
  manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
-@@ -638,6 +638,7 @@ files_search_var_lib(smbcontrol_t)
+@@ -638,6 +643,7 @@ files_search_var_lib(smbcontrol_t)
  term_use_console(smbcontrol_t)
  
  init_use_fds(smbcontrol_t)
@@ -754,8 +795,8 @@ Index: refpolicy-2.20210203/policy/modules/services/ssh.te
 +	# dynamic users
 +	init_stream_connect(sshd_t)
  	init_rw_stream_sockets(sshd_t)
+ 	systemd_dgram_nspawn(sshd_t)
  	systemd_write_inherited_logind_sessions_pipes(sshd_t)
- ')
 Index: refpolicy-2.20210203/policy/modules/services/virt.fc
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/virt.fc
@@ -859,10 +900,62 @@ Index: refpolicy-2.20210203/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/kernel/files.if
 +++ refpolicy-2.20210203/policy/modules/kernel/files.if
-@@ -5932,6 +5932,24 @@ interface(`files_read_var_lib_files',`
+@@ -1418,6 +1418,25 @@ interface(`files_unmount_all_file_type_f
  
  ########################################
  ## <summary>
++##	watch all directories of file_type
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_watch_all_file_type_dir',`
++	gen_require(`
++		attribute file_type;
++	')
++
++	allow $1 file_type:dir watch;
++')
++
++########################################
++########################################
++## <summary>
+ ##	Read all non-authentication related
+ ##	directories.
+ ## </summary>
+@@ -3881,6 +3900,24 @@ interface(`files_home_filetrans',`
+ 
+ ########################################
+ ## <summary>
++##	watch /home.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_watch_home',`
++	gen_require(`
++		type home_root_t;
++	')
++
++	allow $1 home_root_t:dir watch;
++')
++
++########################################
++## <summary>
+ ##	Get the attributes of lost+found directories.
+ ## </summary>
+ ## <param name="domain">
+@@ -5989,6 +6026,24 @@ interface(`files_read_var_lib_files',`
+ ')
+ 
+ ########################################
++## <summary>
 +##	map generic files in /var/lib.
 +## </summary>
 +## <param name="domain">
@@ -880,10 +973,9 @@ Index: refpolicy-2.20210203/policy/modules/kernel/files.if
 +')
 +
 +########################################
-+## <summary>
+ ## <summary>
  ##	Read generic symbolic links in /var/lib
  ## </summary>
- ## <param name="domain">
 Index: refpolicy-2.20210203/policy/modules/system/libraries.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/libraries.if
@@ -914,7 +1006,7 @@ Index: refpolicy-2.20210203/policy/modules/system/sysnetwork.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/sysnetwork.if
 +++ refpolicy-2.20210203/policy/modules/system/sysnetwork.if
-@@ -545,6 +545,24 @@ interface(`sysnet_manage_config',`
+@@ -549,6 +549,24 @@ interface(`sysnet_manage_config',`
  
  #######################################
  ## <summary>
@@ -994,7 +1086,7 @@ Index: refpolicy-2.20210203/policy/modules/kernel/filesystem.if
  #########################################
  ## <summary>
  ##	Read and write RPC pipe filesystem named pipes.
-@@ -5773,3 +5810,21 @@ interface(`fs_unconfined',`
+@@ -5822,3 +5859,21 @@ interface(`fs_unconfined',`
  
  	typeattribute $1 filesystem_unconfined_type;
  ')
@@ -1028,3 +1120,170 @@ Index: refpolicy-2.20210203/policy/modules/services/acpi.fc
  /usr/sbin/apmd	--	gen_context(system_u:object_r:acpid_exec_t,s0)
  /usr/sbin/powersaved	--	gen_context(system_u:object_r:acpid_exec_t,s0)
  
+Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/selinuxutil.te
++++ refpolicy-2.20210203/policy/modules/system/selinuxutil.te
+@@ -376,6 +376,7 @@ selinux_compute_user_contexts(restorecon
+ 
+ files_relabel_non_auth_files(restorecond_t )
+ files_dontaudit_read_all_symlinks(restorecond_t)
++files_watch_all_file_type_dir(restorecond_t)
+ auth_use_nsswitch(restorecond_t)
+ 
+ logging_send_syslog_msg(restorecond_t)
+Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20210203/policy/modules/system/userdomain.if
+@@ -4312,6 +4312,24 @@ interface(`userdom_search_user_home_cont
+ 
+ ########################################
+ ## <summary>
++##	watch users home directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_watch_user_home_dirs',`
++	gen_require(`
++		type user_home_dir_t;
++	')
++
++	allow $1 user_home_dir_t:dir watch;
++')
++
++########################################
++## <summary>
+ ##	Send signull to unprivileged user domains.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20210203/policy/modules/services/mailman.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/mailman.te
++++ refpolicy-2.20210203/policy/modules/services/mailman.te
+@@ -312,6 +312,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	cron_rw_tmp_files(mailman_queue_t)
++	cron_search_spool(mailman_queue_t)
+ 	cron_system_entry(mailman_queue_t, mailman_queue_exec_t)
+ 	cron_use_fds(mailman_queue_t)
+ ')
+Index: refpolicy-2.20210203/policy/modules/services/milter.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/milter.te
++++ refpolicy-2.20210203/policy/modules/services/milter.te
+@@ -9,9 +9,19 @@ attribute milter_domains;
+ attribute milter_data_type;
+ 
+ milter_template(greylist)
++milter_template(postfwd)
+ milter_template(regex)
+ milter_template(spamass)
+ 
++type postfwd_milter_runtime_t;
++files_runtime_file(postfwd_milter_runtime_t)
++
++type postfwd_milter_tmp_t;
++files_tmp_file(postfwd_milter_tmp_t)
++allow postfwd_milter_t postfwd_milter_tmp_t:sock_file manage_sock_file_perms;
++allow postfwd_milter_t postfwd_milter_tmp_t:file manage_file_perms;
++files_tmp_filetrans(postfwd_milter_t, postfwd_milter_tmp_t, { file sock_file })
++
+ type spamass_milter_initrc_exec_t;
+ init_script_file(spamass_milter_initrc_exec_t)
+ 
+@@ -75,6 +85,35 @@ optional_policy(`
+ ')
+ 
+ ########################################
++#
++# postfwd local policy
++#
++
++allow postfwd_milter_t self:process { signal signull };
++allow postfwd_milter_t self:capability { chown dac_override dac_read_search setgid setuid };
++allow postfwd_milter_t self:unix_stream_socket connectto;
++
++files_runtime_filetrans(postfwd_milter_t, postfwd_milter_runtime_t, file, "postfwd.pid")
++allow postfwd_milter_t postfwd_milter_runtime_t:file manage_file_perms;
++
++kernel_read_kernel_sysctls(postfwd_milter_t)
++
++corecmd_exec_bin(postfwd_milter_t)
++corecmd_exec_shell(postfwd_milter_t)
++corecmd_mmap_bin_files(postfwd_milter_t)
++corenet_tcp_bind_all_unreserved_ports(postfwd_milter_t)
++corenet_tcp_connect_all_unreserved_ports(postfwd_milter_t)
++dev_read_urand(postfwd_milter_t)
++
++files_read_usr_files(postfwd_milter_t)
++files_read_usr_symlinks(postfwd_milter_t)
++files_search_tmp(postfwd_milter_t)
++
++optional_policy(`
++	postfix_read_config(postfwd_milter_t)
++')
++
++########################################
+ #
+ # regex local policy
+ #
+Index: refpolicy-2.20210203/policy/modules/services/milter.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/milter.fc
++++ refpolicy-2.20210203/policy/modules/services/milter.fc
+@@ -8,6 +8,7 @@
+ /usr/sbin/milter-greylist	--	gen_context(system_u:object_r:greylist_milter_exec_t,s0)
+ /usr/sbin/sqlgrey		--	gen_context(system_u:object_r:greylist_milter_exec_t,s0)
+ /usr/sbin/milter-regex		--	gen_context(system_u:object_r:regex_milter_exec_t,s0)
++/usr/sbin/postfwd.*		--	gen_context(system_u:object_r:postfwd_milter_exec_t,s0)
+ /usr/sbin/spamass-milter	--	gen_context(system_u:object_r:spamass_milter_exec_t,s0)
+ 
+ /var/lib/milter-greylist(/.*)?		gen_context(system_u:object_r:greylist_milter_data_t,s0)
+@@ -16,6 +17,7 @@
+ 
+ /run/milter-greylist(/.*)?		gen_context(system_u:object_r:greylist_milter_data_t,s0)
+ /run/milter-greylist\.pid	--	gen_context(system_u:object_r:greylist_milter_data_t,s0)
++/run/postfwd\.pid		--	gen_context(system_u:object_r:postfwd_milter_runtime_t,s0)
+ /run/spamass(/.*)?			gen_context(system_u:object_r:spamass_milter_data_t,s0)
+ /run/sqlgrey\.pid		--	gen_context(system_u:object_r:greylist_milter_data_t,s0)
+ /run/spamass-milter(/.*)?		gen_context(system_u:object_r:spamass_milter_data_t,s0)
+Index: refpolicy-2.20210203/policy/modules/services/redis.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/redis.fc
++++ refpolicy-2.20210203/policy/modules/services/redis.fc
+@@ -3,6 +3,7 @@
+ /etc/redis.*\.conf	--	gen_context(system_u:object_r:redis_conf_t,s0)
+ 
+ /usr/bin/redis-server	--	gen_context(system_u:object_r:redis_exec_t,s0)
++/usr/bin/redis-check-rdb --	gen_context(system_u:object_r:redis_exec_t,s0)
+ 
+ /usr/sbin/redis-server	--	gen_context(system_u:object_r:redis_exec_t,s0)
+ 
+Index: refpolicy-2.20210203/policy/modules/services/redis.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/redis.te
++++ refpolicy-2.20210203/policy/modules/services/redis.te
+@@ -50,7 +50,9 @@ manage_dirs_pattern(redis_t, redis_runti
+ manage_files_pattern(redis_t, redis_runtime_t, redis_runtime_t)
+ manage_lnk_files_pattern(redis_t, redis_runtime_t, redis_runtime_t)
+ 
++kernel_read_net_sysctls(redis_t)
+ kernel_read_system_state(redis_t)
++kernel_read_vm_overcommit_sysctl(redis_t)
+ 
+ corenet_all_recvfrom_netlabel(redis_t)
+ corenet_tcp_sendrecv_generic_if(redis_t)
+@@ -66,6 +68,7 @@ dev_read_urand(redis_t)
+ 
+ logging_send_syslog_msg(redis_t)
+ 
++miscfiles_read_generic_certs(redis_t)
+ miscfiles_read_localization(redis_t)
+ 
+ sysnet_dns_name_resolve(redis_t)
