@@ -10,6 +10,8 @@
 0026-mailman
 0027-services
 0028-misc
+0030-user-sddm
+0035-certbot
 0110-gpg
 0190-net_admin
 0191-GetDynamicUsers

@@ -1,0 +1,78 @@
+Index: refpolicy-2.20210203/policy/modules/services/apache.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/apache.if
++++ refpolicy-2.20210203/policy/modules/services/apache.if
+@@ -223,6 +223,24 @@ interface(`apache_domtrans',`
+ 
+ ########################################
+ ## <summary>
++##	Execute httpd
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed to execute it.
++##	</summary>
++## </param>
++#
++interface(`apache_exec',`
++	gen_require(`
++		type httpd_t, httpd_exec_t;
++	')
++
++	can_exec($1, httpd_exec_t)
++')
++
++########################################
++## <summary>
+ ##	Execute httpd server in the httpd domain.
+ ## </summary>
+ ## <param name="domain">
+@@ -1415,3 +1433,21 @@ interface(`apache_admin',`
+ 	apache_run_all_scripts($1, $2)
+ 	apache_run_helper($1, $2)
+ ')
++
++########################################
++## <summary>
++##	rw httpd_runtime_t files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`apache_rw_runtime_files',`
++	gen_require(`
++		type httpd_runtime_t;
++	')
++
++	allow $1 httpd_runtime_t:file rw_file_perms;
++')
+Index: refpolicy-2.20210203/policy/modules/services/certbot.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/certbot.te
++++ refpolicy-2.20210203/policy/modules/services/certbot.te
+@@ -46,6 +46,7 @@ allow certbot_t self:netlink_route_socke
+ files_search_var_lib(certbot_t)
+ manage_dirs_pattern(certbot_t, certbot_lib_t, certbot_lib_t)
+ manage_files_pattern(certbot_t, certbot_lib_t, certbot_lib_t)
++allow certbot_t certbot_lib_t:file relabelfrom;
+ 
+ manage_dirs_pattern(certbot_t, certbot_tmp_t, certbot_tmp_t)
+ manage_files_pattern(certbot_t, certbot_tmp_t, certbot_tmp_t)
+@@ -114,5 +115,13 @@ optional_policy(`
+ 	# for writing to webroot
+ 	apache_manage_sys_content(certbot_t)
+ 
+-	apache_search_config(certbot_t)
++	apache_append_log(certbot_t)
++	apache_exec(certbot_t)
++	apache_exec_modules(certbot_t)
++
++	# for certbot to create nginx config
++	apache_manage_config(certbot_t)
++
++	apache_rw_runtime_files(certbot_t)
++	apache_signal(certbot_t)
+ ')
