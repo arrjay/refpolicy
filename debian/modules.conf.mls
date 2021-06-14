@@ -545,6 +545,13 @@ cmirrord = module
 cobbler = module
 
 # Layer: contrib
+# Module: cockpit
+#
+# Web based sysadmin tool that includes web shell access
+# 
+cockpit = module
+
+# Layer: contrib
 # Module: collectd
 #
 # Statistics collection daemon for filling RRD files.
@@ -1861,6 +1868,13 @@ radvd = module
 raid = module
 
 # Layer: contrib
+# Module: rasdaemon
+#
+# rasdaemon tracks motherboard hardware errors
+# 
+rasdaemon = module
+
+# Layer: contrib
 # Module: razor
 #
 # A distributed, collaborative, spam detection and filtering network.
@@ -2195,6 +2209,13 @@ svnserve = module
 # SUID/SGID program monitoring.
 # 
 sxid = module
+
+# Layer: contrib
+# Module: sympa
+#
+# Manage electronic mail discussion and e-newsletter lists.
+# 
+sympa = module
 
 # Layer: contrib
 # Module: sysstat

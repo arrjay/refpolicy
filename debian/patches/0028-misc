@@ -247,7 +247,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/init.if
 +++ refpolicy-2.20210203/policy/modules/system/init.if
-@@ -3498,6 +3498,24 @@ interface(`init_reload_all_units',`
+@@ -3516,6 +3516,24 @@ interface(`init_reload_all_units',`
  	allow $1 { init_script_file_type systemdunit }:service reload;
  ')
  
@@ -276,7 +276,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/init.te
 +++ refpolicy-2.20210203/policy/modules/system/init.te
-@@ -244,7 +244,6 @@ ifdef(`init_systemd',`
+@@ -248,7 +248,6 @@ ifdef(`init_systemd',`
  	allow init_t self:udp_socket create_socket_perms;
  	allow init_t self:netlink_route_socket create_netlink_socket_perms;
  	allow init_t initrc_t:unix_dgram_socket create_socket_perms;
@@ -284,7 +284,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.te
  	allow init_t self:key { search setattr write };
  	allow init_t self:bpf { map_create map_read map_write prog_load prog_run };
  
-@@ -263,7 +262,7 @@ ifdef(`init_systemd',`
+@@ -267,7 +266,7 @@ ifdef(`init_systemd',`
  
  	# setexec and setkeycreate for systemd --user
  	allow init_t self:process { getcap getsched setsched setpgid setfscreate setsockcreate setexec setkeycreate setcap setrlimit };
@@ -293,7 +293,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.te
  	allow init_t self:netlink_kobject_uevent_socket create_socket_perms;
  	allow init_t self:unix_dgram_socket lock;
  
-@@ -434,6 +433,7 @@ ifdef(`init_systemd',`
+@@ -438,6 +437,7 @@ ifdef(`init_systemd',`
  	miscfiles_watch_localization(init_t)
  
  	mount_watch_runtime_dirs(init_t)
@@ -319,9 +319,9 @@ Index: refpolicy-2.20210203/policy/modules/system/logging.te
  	udev_read_runtime_files(syslogd_t)
 +	userdom_list_user_tmp(syslogd_t)
 +	userdom_read_user_tmp_symlinks(syslogd_t)
- ')
  
- ifdef(`distro_gentoo',`
+ 	# journald traverses /run/user/UID (which is mode 0700) to read symlinks in /run/user/UID/systemd/units/
+ 	allow syslogd_t self:capability dac_read_search;
 Index: refpolicy-2.20210203/policy/modules/system/lvm.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/lvm.te
@@ -404,7 +404,16 @@ Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/selinuxutil.te
 +++ refpolicy-2.20210203/policy/modules/system/selinuxutil.te
-@@ -368,11 +368,14 @@ fs_list_inotifyfs(restorecond_t)
+@@ -346,6 +346,8 @@ allow restorecond_t self:fifo_file rw_fi
+ allow restorecond_t restorecond_run_t:file manage_file_perms;
+ files_runtime_filetrans(restorecond_t, restorecond_run_t, file)
+ 
++allow restorecond_t selinux_config_t:file watch;
++
+ kernel_getattr_debugfs(restorecond_t)
+ kernel_read_system_state(restorecond_t)
+ kernel_rw_pipes(restorecond_t)
+@@ -368,11 +370,14 @@ fs_list_inotifyfs(restorecond_t)
  fs_relabelfrom_noxattr_fs(restorecond_t)
  fs_getattr_pstorefs(restorecond_t)
  
@@ -419,7 +428,7 @@ Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
  
  files_relabel_non_auth_files(restorecond_t )
  files_dontaudit_read_all_symlinks(restorecond_t)
-@@ -417,6 +420,8 @@ allow run_init_t self:netlink_audit_sock
+@@ -417,6 +422,8 @@ allow run_init_t self:netlink_audit_sock
  # the failed access to the current directory
  dontaudit run_init_t self:capability { dac_override dac_read_search };
  
@@ -428,7 +437,7 @@ Index: refpolicy-2.20210203/policy/modules/system/selinuxutil.te
  corecmd_exec_bin(run_init_t)
  corecmd_exec_shell(run_init_t)
  
-@@ -586,6 +591,7 @@ allow setfiles_t { policy_src_t policy_c
+@@ -586,6 +593,7 @@ allow setfiles_t { policy_src_t policy_c
  allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:lnk_file { read_lnk_file_perms ioctl lock };
  allow setfiles_t file_context_t:file map;
  
@@ -537,4 +546,296 @@ Index: refpolicy-2.20210203/policy/modules/admin/apt.fc
 +/var/cache/apt-show-versions(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
  /var/cache/PackageKit(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
  /var/lib/PackageKit(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
+ ')
+Index: refpolicy-2.20210203/policy/modules/kernel/kernel.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20210203/policy/modules/kernel/kernel.te
+@@ -232,6 +232,7 @@ allow kernel_t self:unix_stream_socket c
+ allow kernel_t self:fifo_file rw_fifo_file_perms;
+ allow kernel_t self:sock_file read_sock_file_perms;
+ allow kernel_t self:fd use;
++allow kernel_t self:perf_event cpu;
+ 
+ allow kernel_t debugfs_t:dir search_dir_perms;
+ 
+Index: refpolicy-2.20210203/policy/modules/apps/chromium.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/chromium.if
++++ refpolicy-2.20210203/policy/modules/apps/chromium.if
+@@ -41,6 +41,7 @@ interface(`chromium_role',`
+ 	allow $2 chromium_sandbox_t:process signal_perms;
+ 	allow $2 chromium_naclhelper_t:process signal_perms;
+ 	allow chromium_t $2:process { signull signal };
++	allow chromium_t $2:unix_stream_socket { read write };
+ 
+ 	allow $2 chromium_t:unix_stream_socket connectto;
+ 
+Index: refpolicy-2.20210203/policy/modules/apps/chromium.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20210203/policy/modules/apps/chromium.te
+@@ -114,6 +114,7 @@ allow chromium_t chromium_sandbox_t:unix
+ allow chromium_t chromium_sandbox_t:file read_file_perms;
+ 
+ allow chromium_t chromium_naclhelper_t:process { share };
++allow chromium_t chromium_naclhelper_t:process2 nnp_transition;
+ 
+ # tmp has a wide class access (used for plugins)
+ manage_files_pattern(chromium_t, chromium_tmp_t, chromium_tmp_t)
+@@ -183,6 +184,7 @@ files_read_usr_files(chromium_t)
+ files_map_usr_files(chromium_t)
+ files_read_etc_files(chromium_t)
+ files_watch_etc_dirs(chromium_t)
++files_watch_root_dirs(chromium_t)
+ # During find for /etc/whatever-release we get lots of output otherwise
+ files_dontaudit_getattr_all_dirs(chromium_t)
+ 
+@@ -255,6 +257,10 @@ tunable_policy(`chromium_read_system_inf
+ ')
+ 
+ optional_policy(`
++	alsa_read_config(chromium_t)
++')
++
++optional_policy(`
+ 	cups_read_config(chromium_t)
+ 	cups_stream_connect(chromium_t)
+ ')
+@@ -290,6 +296,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	networkmanager_dbus_chat(chromium_t)
++	networkmanager_watch_runtime_dirs(chromium_t)
+ ')
+ 
+ optional_policy(`
+@@ -383,6 +390,9 @@ allow chromium_sandbox_t chromium_naclhe
+ allow chromium_naclhelper_t chromium_t:unix_stream_socket { getattr read write };
+ allow chromium_naclhelper_t chromium_sandbox_t:unix_stream_socket { getattr read write };
+ 
++allow chromium_naclhelper_t self:cap_userns { sys_admin sys_chroot };
++allow chromium_naclhelper_t self:process { setcap signal };
++
+ dev_read_sysfs(chromium_naclhelper_t)
+ dev_read_urand(chromium_naclhelper_t)
+ 
+Index: refpolicy-2.20210203/policy/modules/services/networkmanager.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/networkmanager.if
++++ refpolicy-2.20210203/policy/modules/services/networkmanager.if
+@@ -305,6 +305,24 @@ interface(`networkmanager_read_runtime_f
+ 	read_files_pattern($1, NetworkManager_runtime_t, NetworkManager_runtime_t)
+ ')
+ 
++########################################
++## <summary>
++##	watch networkmanager runtime files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`networkmanager_watch_runtime_dirs',`
++	gen_require(`
++		type NetworkManager_runtime_t;
++	')
++
++	allow $1 NetworkManager_runtime_t:dir watch;
++')
++
+ ####################################
+ ## <summary>
+ ##  Connect to networkmanager over
+Index: refpolicy-2.20210203/policy/modules/admin/usermanage.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/admin/usermanage.te
++++ refpolicy-2.20210203/policy/modules/admin/usermanage.te
+@@ -438,6 +438,9 @@ files_read_etc_runtime_files(sysadm_pass
+ # for nscd lookups
+ files_dontaudit_search_runtime(sysadm_passwd_t)
+ 
++files_etc_filetrans_etc(sysadm_passwd_t, file, "passwd.edit")
++files_etc_filetrans_etc(sysadm_passwd_t, file, "group.edit")
++
+ # /usr/bin/passwd asks for w access to utmp, but it will operate
+ # correctly without it.  Do not audit write denials to utmp.
+ init_dontaudit_rw_utmp(sysadm_passwd_t)
+Index: refpolicy-2.20210203/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20210203/policy/modules/kernel/files.if
+@@ -3413,6 +3413,35 @@ interface(`files_etc_filetrans',`
+ 
+ ########################################
+ ## <summary>
++##	Create objects in /etc with type etc_t with specified
++##	name to overide default transition
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="class">
++##	<summary>
++##	Object classes to be created.
++##	</summary>
++## </param>
++## <param name="name">
++##	<summary>
++##	The name of the object being created.
++##	</summary>
++## </param>
++#
++interface(`files_etc_filetrans_etc',`
++	gen_require(`
++		type etc_t;
++	')
++
++	filetrans_pattern($1, etc_t, etc_t, $2, $3)
++')
++
++########################################
++## <summary>
+ ##	Create a boot flag.
+ ## </summary>
+ ## <desc>
+Index: refpolicy-2.20210203/policy/modules/system/unconfined.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/unconfined.if
++++ refpolicy-2.20210203/policy/modules/system/unconfined.if
+@@ -44,6 +44,8 @@ interface(`unconfined_domain_noaudit',`
+ 	# Transition to myself, to make get_ordered_context_list happy.
+ 	allow $1 self:process transition;
+ 
++	allow $1 self:lockdown { integrity confidentiality };
++
+ 	# Write access is for setting attributes under /proc/self/attr.
+ 	allow $1 self:file rw_file_perms;
+ 
+Index: refpolicy-2.20210203/policy/modules/admin/netutils.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/admin/netutils.te
++++ refpolicy-2.20210203/policy/modules/admin/netutils.te
+@@ -39,6 +39,7 @@ allow netutils_t self:process { getcap s
+ allow netutils_t self:netlink_route_socket create_netlink_socket_perms;
+ allow netutils_t self:netlink_socket create_socket_perms;
+ # For tcpdump.
++allow netutils_t self:netlink_generic_socket create_socket_perms;
+ allow netutils_t self:netlink_netfilter_socket create_socket_perms;
+ allow netutils_t self:packet_socket { create_socket_perms map };
+ allow netutils_t self:udp_socket create_socket_perms;
+Index: refpolicy-2.20210203/policy/modules/apps/wm.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/wm.if
++++ refpolicy-2.20210203/policy/modules/apps/wm.if
+@@ -101,6 +101,10 @@ template(`wm_role_template',`
+ 	optional_policy(`
+ 		pulseaudio_run($1_wm_t, $2)
+ 	')
++
++	optional_policy(`
++		xdg_watch_config_files($1_wm_t)
++	')
+ ')
+ 
+ ########################################
+Index: refpolicy-2.20210203/policy/modules/apps/wm.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/wm.te
++++ refpolicy-2.20210203/policy/modules/apps/wm.te
+@@ -39,6 +39,7 @@ files_tmp_filetrans(wm_domain, wm_tmp_t,
+ manage_dirs_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
+ manage_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
+ mmap_read_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
++allow wm_domain wm_tmpfs_t:file execmod;
+ manage_lnk_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
+ fs_tmpfs_filetrans(wm_domain, wm_tmpfs_t, { dir file lnk_file })
+ 
+Index: refpolicy-2.20210203/policy/modules/system/xdg.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/xdg.if
++++ refpolicy-2.20210203/policy/modules/system/xdg.if
+@@ -389,6 +389,24 @@ interface(`xdg_watch_config_dirs',`
+ 
+ ########################################
+ ## <summary>
++##	Watch the xdg config home files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`xdg_watch_config_files',`
++	gen_require(`
++		type xdg_config_t;
++	')
++
++	allow $1 xdg_config_t:file watch;
++')
++
++########################################
++## <summary>
+ ##	Watch all the xdg config home directories
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20210203/policy/modules/services/cron.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/cron.te
++++ refpolicy-2.20210203/policy/modules/services/cron.te
+@@ -507,6 +507,7 @@ files_read_usr_files(system_cronjob_t)
+ files_read_var_files(system_cronjob_t)
+ files_dontaudit_search_runtime(system_cronjob_t)
+ files_manage_generic_spool(system_cronjob_t)
++files_manage_var_lib_dirs(system_cronjob_t)
+ files_create_boot_flag(system_cronjob_t)
+ files_read_var_lib_symlinks(system_cronjob_t)
+ 
+Index: refpolicy-2.20210203/policy/modules/apps/pulseaudio.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/pulseaudio.if
++++ refpolicy-2.20210203/policy/modules/apps/pulseaudio.if
+@@ -205,6 +205,24 @@ interface(`pulseaudio_stream_connect',`
+ 	stream_connect_pattern($1, { pulseaudio_tmp_t pulseaudio_runtime_t }, { pulseaudio_tmp_t pulseaudio_runtime_t }, pulseaudio_t)
+ ')
+ 
++#####################################
++## <summary>
++##	Manage pulseaudio_tmp_t dirs
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`pulseaudio_manage_tmp_dirs',`
++	gen_require(`
++		type pulseaudio_tmp_t;
++	')
++
++	allow $1 pulseaudio_tmp_t:dir manage_dir_perms;
++')
++
+ ########################################
+ ## <summary>
+ ##	Send and receive messages from
+Index: refpolicy-2.20210203/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20210203/policy/modules/system/systemd.te
+@@ -1760,5 +1760,9 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	pulseaudio_manage_tmp_dirs(systemd_user_runtime_dir_t)
++')
++
++optional_policy(`
+ 	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
  ')

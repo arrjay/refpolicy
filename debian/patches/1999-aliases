@@ -34,7 +34,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -129,6 +129,7 @@ type systemd_hwdb_t;
+@@ -131,6 +131,7 @@ type systemd_hwdb_t;
  files_type(systemd_hwdb_t)
  
  type systemd_journal_t;

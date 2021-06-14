@@ -231,7 +231,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/init.if
 +++ refpolicy-2.20210203/policy/modules/system/init.if
-@@ -3585,3 +3585,21 @@ interface(`init_getrlimit',`
+@@ -3622,3 +3622,21 @@ interface(`init_getrlimit',`
  
  	allow $1 init_t:process getrlimit;
  ')

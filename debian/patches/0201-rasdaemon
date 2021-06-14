@@ -1,0 +1,98 @@
+Index: refpolicy-2.20210203/policy/modules/kernel/filesystem.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20210203/policy/modules/kernel/filesystem.if
+@@ -5302,6 +5302,25 @@ interface(`fs_getattr_tracefs_files',`
+ 
+ ########################################
+ ## <summary>
++##	Read/write trace filesystem files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`fs_write_tracefs_files',`
++	gen_require(`
++		type tracefs_t;
++	')
++
++	allow $1 tracefs_t:dir list_dir_perms;
++	allow $1 tracefs_t:file rw_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Mount a XENFS filesystem.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.fc
+===================================================================
+--- /dev/null
++++ refpolicy-2.20210203/policy/modules/services/rasdaemon.fc
+@@ -0,0 +1,3 @@
++/usr/sbin/rasdaemon			--	gen_context(system_u:object_r:rasdaemon_exec_t,s0)
++/var/lib/rasdaemon(/.*)?			gen_context(system_u:object_r:rasdaemon_var_t,s0)
++
+Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.if
+===================================================================
+--- /dev/null
++++ refpolicy-2.20210203/policy/modules/services/rasdaemon.if
+@@ -0,0 +1 @@
++## <summary></summary>
+Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.te
+===================================================================
+--- /dev/null
++++ refpolicy-2.20210203/policy/modules/services/rasdaemon.te
+@@ -0,0 +1,49 @@
++policy_module(rasdaemon, 1.0.0)
++
++# rasdaemon is a RAS (Reliability, Availability and Serviceability) logging
++# tool.  It currently records memory errors, using the EDAC tracing events.
++# EDAC are drivers in the Linux kernel that handle detection of ECC errors
++# from memory controllers for most chipsets on x86 and ARM architectures.
++#
++# https://git.infradead.org/users/mchehab/rasdaemon.git
++
++########################################
++#
++# Declarations
++#
++
++type rasdaemon_t;
++type rasdaemon_exec_t;
++init_daemon_domain(rasdaemon_t, rasdaemon_exec_t)
++
++type rasdaemon_var_t;
++files_type(rasdaemon_var_t)
++
++########################################
++#
++# Local policy
++#
++
++allow rasdaemon_t self:unix_dgram_socket create_socket_perms;
++
++# confidentiality for tracefs and integrity for debugfs
++allow rasdaemon_t self:lockdown { confidentiality integrity };
++
++allow rasdaemon_t rasdaemon_var_t:dir manage_dir_perms;
++allow rasdaemon_t rasdaemon_var_t:file manage_file_perms;
++
++kernel_read_debugfs(rasdaemon_t)
++kernel_read_system_state(rasdaemon_t)
++kernel_read_vm_overcommit_sysctl(rasdaemon_t)
++kernel_search_fs_sysctls(rasdaemon_t)
++
++dev_list_sysfs(rasdaemon_t)
++dev_read_urand(rasdaemon_t)
++
++files_read_etc_symlinks(rasdaemon_t)
++files_search_var_lib(rasdaemon_t)
++fs_write_tracefs_files(rasdaemon_t)
++
++logging_send_syslog_msg(rasdaemon_t)
++miscfiles_read_localization(rasdaemon_t)
++

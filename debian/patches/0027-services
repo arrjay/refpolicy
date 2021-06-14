@@ -58,7 +58,15 @@ Index: refpolicy-2.20210203/policy/modules/services/apache.fc
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/apache.fc
 +++ refpolicy-2.20210203/policy/modules/services/apache.fc
-@@ -164,6 +164,7 @@ ifdef(`distro_suse',`
+@@ -67,6 +67,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
+ /usr/lib/systemd/system/apache[^/]*\.service		--	gen_context(system_u:object_r:httpd_unit_t,s0)
+ /usr/lib/systemd/system/httpd.*\.service		--	gen_context(system_u:object_r:httpd_unit_t,s0)
+ /usr/lib/systemd/system/jetty.*\.service		--	gen_context(system_u:object_r:httpd_unit_t,s0)
++/usr/lib/w3m/cgi-bin(/.*)?					gen_context(system_u:object_r:httpd_sys_script_exec_t,s0)
+ 
+ /usr/libexec/httpd-ssl-pass-dialog			--	gen_context(system_u:object_r:httpd_passwd_exec_t,s0)
+ 
+@@ -164,6 +165,7 @@ ifdef(`distro_suse',`
  /var/log/glpi(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/hiawatha(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/mlogc(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -66,7 +74,7 @@ Index: refpolicy-2.20210203/policy/modules/services/apache.fc
  /var/log/httpd(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/horde2(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/lighttpd(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
-@@ -172,7 +173,7 @@ ifdef(`distro_suse',`
+@@ -172,7 +174,7 @@ ifdef(`distro_suse',`
  /var/log/roundcubemail(/.*)?					gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/suphp\.log.*					--	gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/z-push(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -87,6 +95,14 @@ Index: refpolicy-2.20210203/policy/modules/services/apache.te
  files_search_home(httpd_t)
  files_getattr_home_dir(httpd_t)
  files_read_etc_runtime_files(httpd_t)
+@@ -703,6 +704,7 @@ optional_policy(`
+ 
+ tunable_policy(`httpd_read_user_content',`
+ 	userdom_read_user_home_content_files(httpd_t)
++	userdom_map_user_home_content_files(httpd_t)
+ ')
+ 
+ tunable_policy(`httpd_setrlimit',`
 Index: refpolicy-2.20210203/policy/modules/services/aptcacher.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/aptcacher.te
@@ -112,6 +128,19 @@ Index: refpolicy-2.20210203/policy/modules/services/aptcacher.te
  
  # Uses sd_notify() to inform systemd it has properly started
  init_dgram_send(aptcacher_t)
+@@ -99,8 +105,12 @@ allow acngtool_t self:unix_stream_socket
+ allow acngtool_t aptcacher_conf_t:dir list_dir_perms;
+ allow acngtool_t aptcacher_conf_t:file mmap_read_file_perms;
+ 
++kernel_read_kernel_sysctls(acngtool_t)
++
+ aptcacher_stream_connect(acngtool_t)
+ 
++dev_read_rand(acngtool_t)
++dev_read_urand(acngtool_t)
+ corenet_tcp_connect_aptcacher_port(acngtool_t)
+ 
+ auth_use_nsswitch(acngtool_t)
 Index: refpolicy-2.20210203/policy/modules/services/bind.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/bind.te
@@ -188,26 +217,6 @@ Index: refpolicy-2.20210203/policy/modules/services/boinc.te
  dev_rw_xserver_misc(boinc_t)
  
  domain_read_all_domains_state(boinc_t)
-Index: refpolicy-2.20210203/policy/modules/services/certbot.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/certbot.te
-+++ refpolicy-2.20210203/policy/modules/services/certbot.te
-@@ -80,11 +80,15 @@ corenet_tcp_connect_dns_port(certbot_t)
- # bind to http port for standalone mode
- corenet_tcp_bind_http_port(certbot_t)
- 
-+dev_read_urand(certbot_t)
-+
- domain_use_interactive_fds(certbot_t)
- 
- files_read_etc_files(certbot_t)
- files_read_usr_files(certbot_t)
- 
-+# dontaudit for attempts to write python cache files
-+libs_dontaudit_write_lib_dirs(certbot_t)
- libs_exec_ldconfig(certbot_t)
- # for /usr/lib/gcc/x86_64-linux-gnu/8/collect2
- libs_exec_lib_files(certbot_t)
 Index: refpolicy-2.20210203/policy/modules/services/clamav.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/clamav.te
@@ -335,7 +344,7 @@ Index: refpolicy-2.20210203/policy/modules/services/devicekit.te
  miscfiles_read_localization(devicekit_disk_t)
  
  userdom_read_all_users_state(devicekit_disk_t)
-@@ -214,7 +217,7 @@ optional_policy(`
+@@ -216,7 +219,7 @@ optional_policy(`
  
  allow devicekit_power_t self:capability { dac_override net_admin sys_admin sys_nice sys_ptrace sys_tty_config };
  allow devicekit_power_t self:capability2 wake_alarm;
@@ -368,7 +377,15 @@ Index: refpolicy-2.20210203/policy/modules/services/dovecot.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/dovecot.te
 +++ refpolicy-2.20210203/policy/modules/services/dovecot.te
-@@ -258,6 +258,8 @@ allow dovecot_auth_t dovecot_t:unix_stre
+@@ -211,6 +211,7 @@ optional_policy(`
+ 	mta_manage_mail_home_rw_content(dovecot_t)
+ 	mta_home_filetrans_mail_home_rw(dovecot_t, dir, "Maildir")
+ 	mta_home_filetrans_mail_home_rw(dovecot_t, dir, ".maildir")
++	mta_home_filetrans_mail_home_rw(dovecot_t, dir, "mail")
+ ')
+ 
+ optional_policy(`
+@@ -258,6 +259,8 @@ allow dovecot_auth_t dovecot_t:unix_stre
  
  kernel_dontaudit_getattr_proc(dovecot_auth_t)
  
@@ -516,7 +533,15 @@ Index: refpolicy-2.20210203/policy/modules/services/mon.te
  
  can_exec(mon_local_test_t, mon_local_test_exec_t)
  
-@@ -197,8 +202,11 @@ files_list_boot(mon_local_test_t)
+@@ -189,6 +194,7 @@ dev_read_sysfs(mon_local_test_t)
+ 
+ domain_read_all_domains_state(mon_local_test_t)
+ 
++files_dontaudit_tmpfs_file_getattr(mon_local_test_t)
+ files_read_usr_files(mon_local_test_t)
+ files_search_mnt(mon_local_test_t)
+ files_search_spool(mon_local_test_t)
+@@ -197,9 +203,13 @@ files_list_boot(mon_local_test_t)
  fs_search_auto_mountpoints(mon_local_test_t)
  fs_getattr_nfs(mon_local_test_t)
  fs_getattr_xattr_fs(mon_local_test_t)
@@ -526,9 +551,11 @@ Index: refpolicy-2.20210203/policy/modules/services/mon.te
 +fs_read_cgroup_files(mon_local_test_t)
 +fs_search_cgroup_dirs(mon_local_test_t)
  fs_search_nfs(mon_local_test_t)
++fstools_domtrans(mon_local_test_t)
  
  storage_getattr_fixed_disk_dev(mon_local_test_t)
-@@ -211,12 +219,14 @@ application_exec_all(mon_local_test_t)
+ storage_getattr_removable_dev(mon_local_test_t)
+@@ -211,12 +221,14 @@ application_exec_all(mon_local_test_t)
  
  auth_use_nsswitch(mon_local_test_t)
  
@@ -547,11 +574,113 @@ Index: refpolicy-2.20210203/policy/modules/services/mta.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/mta.if
 +++ refpolicy-2.20210203/policy/modules/services/mta.if
-@@ -253,6 +253,7 @@ interface(`mta_manage_mail_home_rw_conte
+@@ -74,26 +74,20 @@ template(`mta_base_mail_template',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`mta_role',`
++interface(`mta_base_role',`
+ 	gen_require(`
+ 		attribute mta_user_agent;
+-		attribute_role user_mail_roles;
+-		type user_mail_t, sendmail_exec_t, mail_home_t;
++		type user_mail_t, mail_home_t;
+ 		type user_mail_tmp_t, mail_home_rw_t;
+ 	')
+ 
+-	roleattribute $1 user_mail_roles;
+-
+ 	# this is something i need to fix
+ 	# i dont know if and why it is needed
+ 	# will role attribute work?
+ 	role $1 types mta_user_agent;
+ 
+-	domtrans_pattern($2, sendmail_exec_t, user_mail_t)
+-	allow $2 sendmail_exec_t:lnk_file read_lnk_file_perms;
+-
+-	allow $2 { user_mail_t mta_user_agent }:process { ptrace signal_perms };
+-	ps_process_pattern($2, { user_mail_t mta_user_agent })
++	allow $2 mta_user_agent:process { ptrace signal_perms };
++	ps_process_pattern($2, mta_user_agent)
+ 
+ 	allow $2 mail_home_t:file { manage_file_perms relabel_file_perms };
+ 	userdom_user_home_dir_filetrans($2, mail_home_t, file, ".esmtp_queue")
+@@ -121,6 +115,70 @@ interface(`mta_role',`
+ 
+ ########################################
+ ## <summary>
++##	User Role access for mta.
++## </summary>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <param name="domain">
++##	<summary>
++##	User domain for the role.
++##	</summary>
++## </param>
++#
++interface(`mta_user_role',`
++	gen_require(`
++		attribute_role user_mail_roles;
++		type user_mail_t, sendmail_exec_t, mail_home_t;
++		type user_mail_tmp_t, mail_home_rw_t;
++	')
++	mta_base_role($1, $2)
++
++	roleattribute $1 user_mail_roles;
++
++	domtrans_pattern($2, sendmail_exec_t, user_mail_t)
++	allow $2 sendmail_exec_t:lnk_file read_lnk_file_perms;
++
++	allow $2 user_mail_t:process { ptrace signal_perms };
++	ps_process_pattern($2, user_mail_t)
++')
++
++########################################
++## <summary>
++##	Admin Role access for mta.
++## </summary>
++## <param name="role">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++## <param name="domain">
++##	<summary>
++##	User domain for the role.
++##	</summary>
++## </param>
++#
++interface(`mta_admin_role',`
++	gen_require(`
++		attribute_role admin_mail_roles;
++		type admin_mail_t, sendmail_exec_t, mail_home_t;
++		type user_mail_tmp_t, mail_home_rw_t;
++	')
++	mta_base_role($1, $2)
++
++	roleattribute $1 admin_mail_roles;
++
++	domtrans_pattern($2, sendmail_exec_t, admin_mail_t)
++	allow $2 sendmail_exec_t:lnk_file read_lnk_file_perms;
++
++	allow $2 admin_mail_t:process { ptrace signal_perms };
++	ps_process_pattern($2, admin_mail_t)
++')
++
++########################################
++## <summary>
+ ##	Make the specified domain usable for a mail server.
+ ## </summary>
+ ## <param name="type">
+@@ -253,6 +311,7 @@ interface(`mta_manage_mail_home_rw_conte
  	manage_files_pattern($1, mail_home_rw_t, mail_home_rw_t)
  	allow $1 mail_home_rw_t:file map;
  	manage_lnk_files_pattern($1, mail_home_rw_t, mail_home_rw_t)
-+	allow $1 mail_home_rw_t:dir watch;
++	allow $1 mail_home_rw_t:{ dir file } watch;
  ')
  
  ########################################
@@ -710,7 +839,7 @@ Index: refpolicy-2.20210203/policy/modules/services/samba.te
  ')
  
  optional_policy(`
-@@ -616,10 +620,11 @@ optional_policy(`
+@@ -616,13 +620,17 @@ optional_policy(`
  allow smbcontrol_t self:process signal;
  allow smbcontrol_t self:fifo_file rw_fifo_file_perms;
  allow smbcontrol_t self:unix_stream_socket create_stream_socket_perms;
@@ -719,11 +848,17 @@ Index: refpolicy-2.20210203/policy/modules/services/samba.te
  
  allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
 -read_files_pattern(smbcontrol_t, samba_runtime_t, samba_runtime_t)
++allow smbcontrol_t smbd_t:unix_dgram_socket sendto;
 +manage_files_pattern(smbcontrol_t, samba_runtime_t, samba_runtime_t)
++allow smbcontrol_t samba_runtime_t:file map;
  allow smbcontrol_t samba_runtime_t:dir rw_dir_perms;
  
  manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
-@@ -638,6 +643,7 @@ files_search_var_lib(smbcontrol_t)
++allow smbcontrol_t samba_var_t:sock_file manage_file_perms;
+ 
+ samba_read_config(smbcontrol_t)
+ samba_search_var(smbcontrol_t)
+@@ -638,6 +646,7 @@ files_search_var_lib(smbcontrol_t)
  term_use_console(smbcontrol_t)
  
  init_use_fds(smbcontrol_t)
@@ -853,28 +988,10 @@ Index: refpolicy-2.20210203/policy/modules/system/mount.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/mount.if
 +++ refpolicy-2.20210203/policy/modules/system/mount.if
-@@ -224,6 +224,42 @@ interface(`mount_watch_runtime_dirs',`
+@@ -260,6 +260,24 @@ interface(`mount_watch_reads_runtime_fil
  
  ########################################
  ## <summary>
-+##	Watch mount runtime files.
-+## </summary>
-+## <param name="domain">
-+##     <summary>
-+##     Domain allowed access.
-+##     </summary>
-+## </param>
-+#
-+interface(`mount_watch_runtime_files',`
-+	gen_require(`
-+		type mount_runtime_t;
-+	')
-+
-+	allow $1 mount_runtime_t:file watch;
-+')
-+
-+########################################
-+## <summary>
 +##	Watch mount runtime files reads.
 +## </summary>
 +## <param name="domain">
@@ -900,7 +1017,32 @@ Index: refpolicy-2.20210203/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/kernel/files.if
 +++ refpolicy-2.20210203/policy/modules/kernel/files.if
-@@ -1418,6 +1418,25 @@ interface(`files_unmount_all_file_type_f
+@@ -480,6 +480,24 @@ interface(`files_tmpfs_file',`
+ 
+ ########################################
+ ## <summary>
++##	dontaudit getattr on tmpfs files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to not have stat on tmpfs files audited
++##	</summary>
++## </param>
++#
++interface(`files_dontaudit_tmpfs_file_getattr',`
++	gen_require(`
++		attribute tmpfsfile;
++	')
++
++	dontaudit $1 tmpfsfile:file getattr;
++')
++
++########################################
++## <summary>
+ ##	Get the attributes of all directories.
+ ## </summary>
+ ## <param name="domain">
+@@ -1418,6 +1436,25 @@ interface(`files_unmount_all_file_type_f
  
  ########################################
  ## <summary>
@@ -926,7 +1068,7 @@ Index: refpolicy-2.20210203/policy/modules/kernel/files.if
  ##	Read all non-authentication related
  ##	directories.
  ## </summary>
-@@ -3881,6 +3900,24 @@ interface(`files_home_filetrans',`
+@@ -3881,6 +3918,24 @@ interface(`files_home_filetrans',`
  
  ########################################
  ## <summary>
@@ -951,7 +1093,7 @@ Index: refpolicy-2.20210203/policy/modules/kernel/files.if
  ##	Get the attributes of lost+found directories.
  ## </summary>
  ## <param name="domain">
-@@ -5989,6 +6026,24 @@ interface(`files_read_var_lib_files',`
+@@ -5989,6 +6044,24 @@ interface(`files_read_var_lib_files',`
  ')
  
  ########################################
@@ -1136,7 +1278,7 @@ Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/userdomain.if
 +++ refpolicy-2.20210203/policy/modules/system/userdomain.if
-@@ -4312,6 +4312,24 @@ interface(`userdom_search_user_home_cont
+@@ -4348,6 +4348,24 @@ interface(`userdom_search_user_home_cont
  
  ########################################
  ## <summary>
@@ -1161,18 +1303,6 @@ Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
  ##	Send signull to unprivileged user domains.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20210203/policy/modules/services/mailman.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/mailman.te
-+++ refpolicy-2.20210203/policy/modules/services/mailman.te
-@@ -312,6 +312,7 @@ optional_policy(`
- 
- optional_policy(`
- 	cron_rw_tmp_files(mailman_queue_t)
-+	cron_search_spool(mailman_queue_t)
- 	cron_system_entry(mailman_queue_t, mailman_queue_exec_t)
- 	cron_use_fds(mailman_queue_t)
- ')
 Index: refpolicy-2.20210203/policy/modules/services/milter.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/milter.te
@@ -1287,3 +1417,460 @@ Index: refpolicy-2.20210203/policy/modules/services/redis.te
  miscfiles_read_localization(redis_t)
  
  sysnet_dns_name_resolve(redis_t)
+Index: refpolicy-2.20210203/policy/modules/services/postgresql.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/postgresql.te
++++ refpolicy-2.20210203/policy/modules/services/postgresql.te
+@@ -65,6 +65,9 @@ init_daemon_runtime_file(postgresql_runt
+ type postgresql_tmp_t;
+ files_tmp_file(postgresql_tmp_t)
+ 
++type postgresql_tmpfs_t;
++files_tmpfs_file(postgresql_tmpfs_t)
++
+ type postgresql_unit_t;
+ init_unit_file(postgresql_unit_t)
+ 
+@@ -282,7 +285,10 @@ manage_lnk_files_pattern(postgresql_t, p
+ manage_fifo_files_pattern(postgresql_t, postgresql_tmp_t, postgresql_tmp_t)
+ manage_sock_files_pattern(postgresql_t, postgresql_tmp_t, postgresql_tmp_t)
+ files_tmp_filetrans(postgresql_t, postgresql_tmp_t, { dir file sock_file })
+-fs_tmpfs_filetrans(postgresql_t, postgresql_tmp_t, { dir file lnk_file sock_file fifo_file })
++fs_tmpfs_filetrans(postgresql_t, postgresql_tmp_t, { dir lnk_file sock_file fifo_file })
++fs_tmpfs_filetrans(postgresql_t, postgresql_tmpfs_t, { file })
++allow postgresql_t postgresql_tmpfs_t:file map;
++manage_files_pattern(postgresql_t, postgresql_tmpfs_t, postgresql_tmpfs_t)
+ 
+ manage_dirs_pattern(postgresql_t, postgresql_runtime_t, postgresql_runtime_t)
+ manage_files_pattern(postgresql_t, postgresql_runtime_t, postgresql_runtime_t)
+@@ -342,6 +348,7 @@ init_read_utmp(postgresql_t)
+ logging_send_syslog_msg(postgresql_t)
+ logging_send_audit_msgs(postgresql_t)
+ 
++miscfiles_read_generic_tls_privkey(postgresql_t)
+ miscfiles_read_localization(postgresql_t)
+ 
+ seutil_libselinux_linked(postgresql_t)
+Index: refpolicy-2.20210203/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20210203/policy/modules/system/systemd.te
+@@ -699,6 +699,7 @@ dev_setattr_video_dev(systemd_logind_t)
+ 
+ domain_obj_id_change_exemption(systemd_logind_t)
+ 
++files_dontaudit_tmpfs_file_getattr(systemd_logind_t)
+ files_search_boot(systemd_logind_t)
+ files_search_runtime(systemd_logind_t)
+ 
+Index: refpolicy-2.20210203/policy/modules/roles/staff.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20210203/policy/modules/roles/staff.te
+@@ -154,7 +154,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		mta_role(staff_r, staff_t)
++		mta_user_role(staff_r, staff_t)
+ 	')
+ 
+ 	optional_policy(`
+Index: refpolicy-2.20210203/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20210203/policy/modules/roles/sysadm.te
+@@ -706,7 +706,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	mta_role(sysadm_r, sysadm_t)
++	mta_admin_role(sysadm_r, sysadm_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20210203/policy/modules/roles/unprivuser.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20210203/policy/modules/roles/unprivuser.te
+@@ -126,7 +126,7 @@ ifndef(`distro_redhat',`
+ 	')
+ 
+ 	optional_policy(`
+-		mta_role(user_r, user_t)
++		mta_user_role(user_r, user_t)
+ 	')
+ 
+ 	optional_policy(`
+Index: refpolicy-2.20210203/policy/modules/services/mta.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/mta.te
++++ refpolicy-2.20210203/policy/modules/services/mta.te
+@@ -15,6 +15,7 @@ attribute mailserver_sender;
+ attribute user_mail_domain;
+ 
+ attribute_role user_mail_roles;
++attribute_role admin_mail_roles;
+ 
+ type etc_aliases_t;
+ files_type(etc_aliases_t)
+@@ -44,6 +45,10 @@ mta_base_mail_template(user)
+ userdom_user_application_type(user_mail_t)
+ role user_mail_roles types user_mail_t;
+ 
++mta_base_mail_template(admin)
++userdom_user_application_type(admin_mail_t)
++role admin_mail_roles types admin_mail_t;
++
+ userdom_user_tmp_file(user_mail_tmp_t)
+ 
+ ########################################
+@@ -424,3 +429,30 @@ optional_policy(`
+ 	postfix_read_config(user_mail_t)
+ 	postfix_list_spool(user_mail_t)
+ ')
++
++########################################
++#
++# Admin local policy
++#
++
++manage_files_pattern(admin_mail_t, mail_home_t, mail_home_t)
++userdom_user_home_dir_filetrans(admin_mail_t, mail_home_t, file, ".esmtp_queue")
++userdom_user_home_dir_filetrans(admin_mail_t, mail_home_t, file, ".forward")
++userdom_user_home_dir_filetrans(admin_mail_t, mail_home_t, file, ".mailrc")
++userdom_user_home_dir_filetrans(admin_mail_t, mail_home_t, file, "dead.letter")
++
++dev_read_sysfs(admin_mail_t)
++
++userdom_use_user_terminals(admin_mail_t)
++
++files_etc_filetrans(admin_mail_t, etc_aliases_t, file)
++allow admin_mail_t etc_aliases_t:file manage_file_perms;
++
++optional_policy(`
++	allow admin_mail_t self:capability dac_override;
++
++	userdom_rw_user_tmp_files(admin_mail_t)
++
++	postfix_read_config(admin_mail_t)
++	postfix_list_spool(admin_mail_t)
++')
+Index: refpolicy-2.20210203/policy/modules/system/unconfined.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20210203/policy/modules/system/unconfined.te
+@@ -141,7 +141,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	mta_role(unconfined_r, unconfined_t)
++	mta_admin_role(unconfined_r, unconfined_t)
+ ')
+ 
+ optional_policy(`
+Index: refpolicy-2.20210203/policy/modules/services/spamassassin.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/spamassassin.fc
++++ refpolicy-2.20210203/policy/modules/services/spamassassin.fc
+@@ -16,7 +16,7 @@ HOME_DIR/\.spamd(/.*)?			gen_context(sys
+ /usr/bin/spamd			--	gen_context(system_u:object_r:spamd_exec_t,s0)
+ /usr/bin/spampd			--	gen_context(system_u:object_r:spamd_exec_t,s0)
+ /usr/bin/sa-update		--	gen_context(system_u:object_r:spamd_update_exec_t,s0)
+-/usr/bin/rspamd			-l	gen_context(system_u:object_r:spamd_exec_t,s0)
++/usr/bin/rspamd			--	gen_context(system_u:object_r:spamd_exec_t,s0)
+ /usr/bin/rspamd-[^/]+	--	gen_context(system_u:object_r:spamd_exec_t,s0)
+ /usr/bin/rspamc			-l	gen_context(system_u:object_r:spamc_exec_t,s0)
+ /usr/bin/rspamc-[^/]+	--	gen_context(system_u:object_r:spamc_exec_t,s0)
+@@ -41,6 +41,7 @@ HOME_DIR/\.spamd(/.*)?			gen_context(sys
+ 
+ /var/log/spamd\.log.*		--	gen_context(system_u:object_r:spamd_log_t,s0)
+ /var/log/rspamd\.log.*		--	gen_context(system_u:object_r:spamd_log_t,s0)
++/var/log/rspamd(/.*)?			gen_context(system_u:object_r:spamd_log_t,s0)
+ /var/log/mimedefang.*		--	gen_context(system_u:object_r:spamd_log_t,s0)
+ 
+ /var/vmail/\.spamassassin(/.*)?		gen_context(system_u:object_r:spamassassin_home_t,s0)
+Index: refpolicy-2.20210203/policy/modules/services/courier.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/courier.fc
++++ refpolicy-2.20210203/policy/modules/services/courier.fc
+@@ -23,8 +23,8 @@
+ /usr/lib/courier/courier/courierpop.*	--	gen_context(system_u:object_r:courier_pop_exec_t,s0)
+ /usr/lib/courier/courier/imaplogin	--	gen_context(system_u:object_r:courier_pop_exec_t,s0)
+ /usr/lib/courier/courier/pcpd	--	gen_context(system_u:object_r:courier_pcp_exec_t,s0)
+-/usr/lib/courier/imapd	--	gen_context(system_u:object_r:courier_pop_exec_t,s0)
+-/usr/lib/courier/pop3d	--	gen_context(system_u:object_r:courier_pop_exec_t,s0)
++/usr/lib/courier/imapd.*	--	gen_context(system_u:object_r:courier_pop_exec_t,s0)
++/usr/lib/courier/pop3d.*	--	gen_context(system_u:object_r:courier_pop_exec_t,s0)
+ /usr/lib/courier/rootcerts(/.*)?	gen_context(system_u:object_r:courier_etc_t,s0)
+ /usr/lib/courier/sqwebmail/cleancache\.pl	--	gen_context(system_u:object_r:courier_sqwebmail_exec_t,s0)
+ /usr/lib/courier-imap/couriertcpd	--	gen_context(system_u:object_r:courier_tcpd_exec_t,s0)
+Index: refpolicy-2.20210203/policy/modules/services/courier.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/courier.te
++++ refpolicy-2.20210203/policy/modules/services/courier.te
+@@ -96,6 +96,8 @@ allow courier_authdaemon_t courier_tcpd_
+ 
+ can_exec(courier_authdaemon_t, courier_exec_t)
+ 
++kernel_getattr_proc(courier_authdaemon_t)
++
+ corecmd_exec_shell(courier_authdaemon_t)
+ 
+ domtrans_pattern(courier_authdaemon_t, courier_pop_exec_t, courier_pop_t)
+@@ -112,6 +114,7 @@ libs_read_lib_files(courier_authdaemon_t
+ miscfiles_read_localization(courier_authdaemon_t)
+ 
+ selinux_getattr_fs(courier_authdaemon_t)
++seutil_search_default_contexts(courier_authdaemon_t)
+ 
+ userdom_dontaudit_search_user_home_dirs(courier_authdaemon_t)
+ 
+@@ -129,20 +132,34 @@ dev_read_rand(courier_pcp_t)
+ # POP3/IMAP local policy
+ #
+ 
+-allow courier_pop_t self:capability { setgid setuid };
++allow courier_pop_t self:capability { chown dac_read_search fowner setgid setuid };
++dontaudit courier_pop_t self:capability fsetid;
++allow courier_pop_t self:unix_stream_socket connectto;
++allow courier_pop_t self:process setrlimit;
++
+ allow courier_pop_t courier_authdaemon_t:tcp_socket rw_stream_socket_perms;
+ allow courier_pop_t courier_authdaemon_t:process sigchld;
+ 
+ allow courier_pop_t courier_tcpd_t:{ unix_stream_socket tcp_socket } rw_stream_socket_perms;
+ 
+-allow courier_pop_t courier_var_lib_t:file rw_inherited_file_perms;
++allow courier_pop_t courier_var_lib_t:dir rw_dir_perms;
++allow courier_pop_t courier_var_lib_t:file manage_file_perms;
+ 
++allow courier_pop_t courier_etc_t:file map;
++
++can_exec(courier_pop_t, courier_exec_t)
++can_exec(courier_pop_t, courier_tcpd_exec_t)
+ stream_connect_pattern(courier_pop_t, courier_var_lib_t, courier_var_lib_t, courier_authdaemon_t)
+ 
+ domtrans_pattern(courier_pop_t, courier_authdaemon_exec_t, courier_authdaemon_t)
+ 
+ corecmd_exec_shell(courier_pop_t)
++corenet_tcp_bind_generic_node(courier_pop_t)
++corenet_tcp_bind_pop_port(courier_pop_t)
++
++files_search_var_lib(courier_pop_t)
+ 
++miscfiles_read_generic_certs(courier_pop_t)
+ miscfiles_read_localization(courier_pop_t)
+ 
+ mta_manage_mail_home_rw_content(courier_pop_t)
+Index: refpolicy-2.20210203/policy/modules/services/spamassassin.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/spamassassin.te
++++ refpolicy-2.20210203/policy/modules/services/spamassassin.te
+@@ -399,6 +399,10 @@ tunable_policy(`rspamd_spamd',`
+ 	allow spamd_t self:process setrlimit;
+ 	allow spamc_t self:process setrlimit;
+ 
++	allow spamd_t self:process execmem;
++
++	kernel_read_network_state(spamd_t)
++
+ 	list_dirs_pattern(spamd_t, spamd_etc_t, spamd_etc_t)
+ 	mmap_read_files_pattern(spamd_t, spamd_etc_t, spamd_etc_t)
+ 	allow spamd_t spamd_etc_t:dir watch;
+@@ -407,7 +411,7 @@ tunable_policy(`rspamd_spamd',`
+ 	allow spamd_t spamd_var_lib_t:dir watch;
+ 	filetrans_pattern(spamd_t, spamd_var_lib_t, spamd_runtime_t, sock_file)
+ 
+-	search_dirs_pattern(spamd_t, spamd_log_t, spamd_log_t)
++	allow spamd_t spamd_log_t:dir rw_dir_perms;
+ 
+ 	fs_search_tmpfs(spamd_t)
+ 	manage_dirs_pattern(spamd_t, spamd_tmpfs_t, spamd_tmpfs_t)
+Index: refpolicy-2.20210203/policy/modules/services/exim.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/exim.te
++++ refpolicy-2.20210203/policy/modules/services/exim.te
+@@ -73,7 +73,7 @@ ifdef(`distro_debian',`
+ # Local policy
+ #
+ 
+-allow exim_t self:capability { chown dac_override fowner setgid setuid sys_resource };
++allow exim_t self:capability { chown dac_override dac_read_search fowner setgid setuid sys_resource };
+ allow exim_t self:process { setrlimit setpgid };
+ allow exim_t self:fifo_file rw_fifo_file_perms;
+ allow exim_t self:unix_stream_socket { accept listen };
+@@ -190,6 +190,7 @@ optional_policy(`
+ 
+ optional_policy(`
+ 	cron_read_pipes(exim_t)
++	cron_rw_inherited_tmp_files(exim_t)
+ 	cron_rw_system_job_pipes(exim_t)
+ 	cron_use_system_job_fds(exim_t)
+ ')
+Index: refpolicy-2.20210203/policy/modules/kernel/corenetwork.te.in
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/corenetwork.te.in
++++ refpolicy-2.20210203/policy/modules/kernel/corenetwork.te.in
+@@ -255,7 +255,7 @@ network_port(smtp, tcp,25,s0, tcp,465,s0
+ network_port(snmp, udp,161,s0, udp,162,s0, tcp,199,s0, tcp,1161,s0)
+ network_port(socks) # no defined portcon
+ network_port(soundd, tcp,8000,s0, tcp,9433,s0, tcp, 16001, s0)
+-network_port(spamd, tcp,783,s0)
++network_port(spamd, tcp,783,s0, tcp,11333,s0)
+ network_port(speech, tcp,8036,s0)
+ network_port(squid, udp,3401,s0, tcp,3401,s0, udp,4827,s0, tcp,4827,s0) # snmp and htcp
+ network_port(ssdp, tcp,1900,s0, udp,1900,s0)
+Index: refpolicy-2.20210203/policy/modules/services/smartmon.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/smartmon.te
++++ refpolicy-2.20210203/policy/modules/services/smartmon.te
+@@ -39,7 +39,7 @@ ifdef(`enable_mls',`
+ #
+ 
+ allow fsdaemon_t self:capability { dac_override kill setgid setuid setpcap sys_admin sys_rawio };
+-dontaudit fsdaemon_t self:capability sys_tty_config;
++dontaudit fsdaemon_t self:capability { net_admin sys_tty_config };
+ allow fsdaemon_t self:process { getcap setcap signal_perms };
+ allow fsdaemon_t self:fifo_file rw_fifo_file_perms;
+ allow fsdaemon_t self:unix_stream_socket { accept listen };
+Index: refpolicy-2.20210203/policy/modules/services/inetd.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/inetd.te
++++ refpolicy-2.20210203/policy/modules/services/inetd.te
+@@ -37,7 +37,7 @@ ifdef(`enable_mcs',`
+ # Local policy
+ #
+ 
+-allow inetd_t self:capability { setgid setuid sys_resource };
++allow inetd_t self:capability { kill setgid setuid sys_resource };
+ dontaudit inetd_t self:capability sys_tty_config;
+ allow inetd_t self:process { setsched setexec setrlimit };
+ allow inetd_t self:fifo_file rw_fifo_file_perms;
+Index: refpolicy-2.20210203/policy/modules/kernel/corecommands.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20210203/policy/modules/kernel/corecommands.fc
+@@ -43,6 +43,8 @@ ifdef(`distro_redhat',`
+ /etc/cron\.monthly(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ 
+ /etc/dhcp/dhclient\.d(/.*)?		gen_context(system_u:object_r:bin_t,s0)
++/etc/dhcp/dhclient-enter-hooks.d(/.*)? --	gen_context(system_u:object_r:bin_t,s0)
++/etc/dhcp/dhclient-exit-hooks.d(/.*)? --	gen_context(system_u:object_r:bin_t,s0)
+ 
+ /etc/hotplug/.*agent		--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/hotplug/.*rc		-- 	gen_context(system_u:object_r:bin_t,s0)
+@@ -101,6 +103,9 @@ ifdef(`distro_redhat',`
+ 
+ /etc/vmware-tools(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ 
++/etc/wide-dhcpv6/dhcp6c-ifupdown --	gen_context(system_u:object_r:bin_t,s0)
++/etc/wide-dhcpv6/dhcp6c-script	--	gen_context(system_u:object_r:bin_t,s0)
++
+ /etc/X11/xdm/GiveConsole	--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/X11/xdm/TakeConsole	--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/X11/xdm/Xsetup_0		--	gen_context(system_u:object_r:bin_t,s0)
+Index: refpolicy-2.20210203/policy/modules/kernel/storage.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/storage.fc
++++ refpolicy-2.20210203/policy/modules/kernel/storage.fc
+@@ -29,6 +29,7 @@
+ /dev/lvm		-c	gen_context(system_u:object_r:fixed_disk_device_t,mls_systemhigh)
+ /dev/mcdx?		-b	gen_context(system_u:object_r:removable_device_t,s0)
+ /dev/megadev.*		-c	gen_context(system_u:object_r:removable_device_t,s0)
++/dev/megaraid.*		-c	gen_context(system_u:object_r:fixed_disk_device_t,mls_systemhigh)
+ /dev/mmcblk.*		-b	gen_context(system_u:object_r:removable_device_t,s0)
+ /dev/mmcblk.*		-c	gen_context(system_u:object_r:removable_device_t,s0)
+ /dev/mspblk.*		-b	gen_context(system_u:object_r:removable_device_t,s0)
+Index: refpolicy-2.20210203/policy/modules/system/fstools.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/fstools.te
++++ refpolicy-2.20210203/policy/modules/system/fstools.te
+@@ -137,6 +137,8 @@ mls_file_write_all_levels(fsadm_t)
+ 
+ selinux_getattr_fs(fsadm_t)
+ 
++storage_dev_filetrans_fixed_disk_control(fsadm_t, "megaraid_sas_ioctl_node")
++storage_manage_fixed_disk(fsadm_t)
+ storage_raw_read_fixed_disk(fsadm_t)
+ storage_raw_write_fixed_disk(fsadm_t)
+ storage_raw_read_removable_device(fsadm_t)
+@@ -192,6 +194,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	fsdaemon_read_lib(fsadm_t)
++')
++
++optional_policy(`
+ 	livecd_rw_tmp_files(fsadm_t)
+ ')
+ 
+@@ -201,6 +207,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	mon_dontaudit_use_fds(fsadm_t)
++')
++
++optional_policy(`
+ 	nis_use_ypbind(fsadm_t)
+ ')
+ 
+Index: refpolicy-2.20210203/policy/modules/apps/java.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/java.te
++++ refpolicy-2.20210203/policy/modules/apps/java.te
+@@ -128,11 +128,17 @@ tunable_policy(`allow_java_execstack',`
+ auth_use_nsswitch(java_t)
+ 
+ corecmd_search_bin(java_t)
++corecmd_exec_bin(java_t)
+ 
+ dev_read_sysfs(java_t)
+ 
++fs_read_cgroup_files(java_t)
++fs_search_cgroup_dirs(java_t)
++
+ locallogin_use_fds(java_t)
+ 
++libs_exec_lib_files(java_t)
++
+ userdom_read_user_tmp_files(java_t)
+ userdom_use_user_terminals(java_t)
+ 
+Index: refpolicy-2.20210203/policy/modules/kernel/storage.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/kernel/storage.if
++++ refpolicy-2.20210203/policy/modules/kernel/storage.if
+@@ -309,6 +309,30 @@ interface(`storage_dev_filetrans_fixed_d
+ 
+ ########################################
+ ## <summary>
++##	Create char devices in /dev with the fixed disk type
++##	via an automatic type transition.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <param name="filename" optional="true">
++##	<summary>
++##	Optional filename of the char device to be created
++##	</summary>
++## </param>
++#
++interface(`storage_dev_filetrans_fixed_disk_control',`
++	gen_require(`
++		type fixed_disk_device_t;
++	')
++
++	dev_filetrans($1, fixed_disk_device_t, chr_file, $2)
++')
++
++########################################
++## <summary>
+ ##	Create block devices in on a tmpfs filesystem with the
+ ##	fixed disk type via an automatic type transition.
+ ## </summary>

@@ -1,3 +1,119 @@
+refpolicy (2:2.20210203-7) unstable; urgency=medium
+
+  * Allow certbot to create /var/log/letsencrypt and /var/lib/letsencrypt
+  * Label /etc/wide-dhcpv6/dhcp6c-ifupdown /etc/wide-dhcpv6/dhcp6c-script
+    /etc/dhcp/dhclient-enter-hooks.d/* and /etc/dhcp/dhclient-exit-hooks.d/*
+    as bin_t.
+  * Allow mon_local_test_t to run smartctl in fsadm_t for megaraid and other
+    corner cases and allowed fsadm_t to read fsdaemon_var_lib_t.  Dontaudit
+    fsadm_t inheriting file handles from mon_t.
+  * Allow fsadm_t to do a file type trans for creating
+    /dev/megaraid_sas_ioctl_node
+  * Allow java_t to exec bin_t and lib_t files for jspawnhelper, and to read
+    cgroup files.  Needed for JRE 17
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 14 Jun 2021 09:47:05 +1000
+
+refpolicy (2:2.20210203-6) unstable; urgency=medium
+
+  * Add policy for cockpit web admin tool
+  * Fixes for puppet policy
+  * Allow system_mail_t to be in role unconfined_r for upgrades of the exim
+    packages
+  * Allow more spamd_log_t access if boolean rspamd_spamd is enabled
+  * Allow httpd_sys_script_t to rw sympa_var_t dirs and manage sympa_var_t
+    files, and to read sympa conf files.  Also allow it to read generic certs
+    for sympa and also for lots of other things
+    Allow httpd_t to read sympa conf files, read sympa var files, manage sympa
+    runtime files, and manage sympa runtime sockets
+    Allow sympa to send signull to itself
+  * Allow certbot to search xdg dirs, don't know what it's trying to do but
+    searching doesn't do any harm and makes it easier to discover what's
+    happening.
+  * Allow postgresql to read tls privkey
+  * Give systemd_nspawn_t the audit_control capability
+  * Allow devicekit_disk_t to read logind sessions and write inherited logind
+    inhibit pipes
+  * Give capability kill to inetd_t so it can kill child processes under
+    different uids
+  * Allow chromium_naclhelper_t process access setcap and signal and
+    cap_userns access sys_admin and sys_chroot.
+    Allow chromium_t to read alsa config.
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 08 May 2021 17:55:06 +1000
+
+refpolicy (2:2.20210203-5) unstable; urgency=medium
+
+  * Add policy for rasdaemon
+  * Made mta_manage_mail_home_rw_content() include mail_home_rw_t:file watch
+    access, needed by dovecot_t and probably others in future
+  * Allow restorecond to watch selinux_config_t files.
+  * Allow *_wm_t domains (for window manager processes) to watch xdg_config_t
+    files and to execmod wm_tmpfs_t files (stops kwin_x11 SEGV)
+  * Allow systemd_tmpfiles_t to relabel colord var lib files and dirs
+  * Allow smbcontrol_t to map samba_runtime_t files and send unix datagrams
+    to smbd processes
+  * Allow systemd_user_runtime_dir_t to delete all user runtime sock files
+    and manage pulseaudio_tmp_t dirs
+  * Allow system_cronjob_t to manage var_lib dirs
+  * Allow dovecot to create ~/mail directories.
+  * Label /usr/share/mailman3-web/manage.py as mailman_queue_exec_t
+    Allow mailman_queue_t to read usr files and to create it's own tmpfs files
+    and allow it to map mailman_data_t files
+  * Added systemd policy from upstream git as of 31st Mar to the upstream patch
+  * Label /usr/bin/rspamd file not /usr/bin/rspamd symlink
+    label /var/log/rspamd(/.*)? as spamd_log_t.  Allow spamd_t self execmem
+    access when rspamd_spamd.  Label port 11333 as spamd_port_t for rspam.
+  * Label /usr/lib/courier/imapd.* and /usr/lib/courier/pop3d.* as
+    courier_pop_exec_t.  Allow courier_pop_t to read generic certs, manage
+    courier_var_lib_t files, bind to POP ports, execute courier_exec_t and
+    courier_tcpd_exec_t programs, and map courier config files.  Grant
+    courier_pop_t the fowner and chown capabilities (for managing user mail)
+    but dontaudit the fsetid capability.  Grant courier_pop_t the setrlimit
+    process access so it can set it's own resource limits.  Allow
+    courier_authdaemon_t to search SE Linux default contexts (needed by pam
+    before using unix_chkpwd) and allow it to stat proc files.
+  * Add sympa policy
+  * Allow exim_t to read/write tmp files inherited from cron.  Allow exim_t
+    the dac_read_search capability.
+  * Allow apache to map user content files when httpd_read_user_content is set.
+    Label /usr/lib/w3m/* as httpd_sys_script_exec_t
+  * Dontaudit fsdaemon_t capability net_admin (probably setting buffer size)
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 09 Apr 2021 23:02:14 +1000
+
+refpolicy (2:2.20210203-4) unstable; urgency=medium
+
+  * Allow ntpd_t to get the status of generic systemd units
+  * Allow kernel_t self:perf_event cpu.
+  * Allow chromium to watch network manager runtime dirs (for resolv.conf)
+    Allow chromium to run naclhelper with nnp_transition
+    Allow chromium to watch root dirs
+    Allow chromium to read/write unix sockets from the calling domain
+  * Make Postgresql use postgresql_tmpfs_t for tmpfs files and make 
+    mon_local_test_t and systemd_logind_t not have getattr access to tmpfs
+    files audited.
+  * Allow systemd_user_runtime_dir_t to unlink device nodes of type
+    user_tmp_t, they probably should not exist, so it's in the hacks patch.
+  * Allow the acngtool to read random and urandom devices and search fs sysctls
+  * Add wm_write_xdg_data tunable to allow user_wm_t etc to write xdg data.
+  * Allow chromium to watch gnome_xdg_config_t dirs
+  * Label pinentry programs as gpg_agent_exec_t and allow gpg_agent_t to exec
+    them
+  * Create new admin_mail_t domain so that newaliases can work with Postfix
+  * Added a transition rule so that vipw/vigr gives the right context for
+    /etc/passwd and /etc/group
+  * Allow acngtool_t to read /proc/sys/kernel/random/uuid
+  * Allow unconfined domains lockdown confidentiality and integrity access
+  * Allow netutils_t netlink_generic_socket access for tcpdump
+  * Allow smbcontrol to create a sock_file in a samba run dir
+  * Allow mailman_queue_t to bind to all unreserved TCP ports
+  * Allow systemd_coredump_t to mmap all executables and to have cap_userns
+    sys_ptrace access. dontaudit systemd_coredump_t capability net_admin
+  * Allow mailman_queue_t to connect to port 443
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 05 Mar 2021 21:11:58 +1100
+
 refpolicy (2:2.20210203-3) unstable; urgency=medium
 
   * Add policy for blkmapd which is part of nfs service (included in upstream)

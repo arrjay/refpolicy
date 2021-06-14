@@ -26,7 +26,7 @@ Index: refpolicy-2.20210203/policy/modules/system/init.if
 +
  ########################################
  ## <summary>
- ##	Read systemd unit links
+ ##     Read systemd unit files
 Index: refpolicy-2.20210203/policy/modules/system/locallogin.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/locallogin.te
@@ -45,7 +45,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -655,6 +655,9 @@ init_start_system(systemd_logind_t)
+@@ -674,6 +674,9 @@ init_start_system(systemd_logind_t)
  init_stop_system(systemd_logind_t)
  init_watch_utmp(systemd_logind_t)
  
@@ -59,7 +59,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.if
 +++ refpolicy-2.20210203/policy/modules/system/systemd.if
-@@ -19,17 +19,13 @@
+@@ -19,11 +19,6 @@
  ##	The user domain for the role.
  ##	</summary>
  ## </param>
@@ -71,25 +71,36 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.if
  #
  template(`systemd_role_template',`
  	gen_require(`
- 		attribute systemd_user_session_type, systemd_log_parse_env_type;
+@@ -33,6 +28,7 @@ template(`systemd_role_template',`
+ 		type systemd_conf_home_t, systemd_data_home_t;
  		type systemd_user_runtime_t, systemd_user_runtime_notify_t;
--		type systemd_run_exec_t, systemd_analyze_exec_t;
-+		type systemd_run_exec_t, systemd_analyze_exec_t, user_devpts_t;
-+		type systemd_machined_t;
+ 		type systemd_user_unit_t, systemd_user_runtime_unit_t;
++		type systemd_machined_t, user_devpts_t;
  	')
  
  	#################################
-@@ -61,6 +57,7 @@ template(`systemd_role_template',`
- 	allow $1_systemd_t $3:process { setsched rlimitinh };
+@@ -59,6 +55,7 @@ template(`systemd_role_template',`
+ 	allow $1_systemd_t $3:process { setsched rlimitinh signal_perms };
  	corecmd_shell_domtrans($1_systemd_t, $3)
  	corecmd_bin_domtrans($1_systemd_t, $3)
 +	corecmd_shell_entry_type($1_systemd_t)
- 	allow $1_systemd_t self:process signal;
  
- 	files_search_home($1_systemd_t)
-@@ -69,6 +66,12 @@ template(`systemd_role_template',`
- 	allow $3 $1_systemd_t:fd use;
- 	allow $3 $1_systemd_t:fifo_file rw_inherited_fifo_file_perms;
+ 	# systemctl --user rules
+ 	allow $1_systemd_t systemd_user_unix_stream_activated_socket_type:unix_stream_socket { create_socket_perms listen };
+@@ -110,6 +107,10 @@ template(`systemd_role_template',`
+ 	seutil_search_default_contexts($1_systemd_t)
+ 	seutil_read_file_contexts($1_systemd_t)
+ 
++	# for machinectl shell
++	term_user_pty($1_systemd_t, user_devpts_t)
++	allow $1_systemd_t user_devpts_t:chr_file rw_file_perms;
++
+ 	systemd_manage_conf_home_content($1_systemd_t)
+ 	systemd_manage_data_home_content($1_systemd_t)
+ 
+@@ -137,6 +138,12 @@ template(`systemd_role_template',`
+ 	allow $3 systemd_user_runtime_t:lnk_file { manage_lnk_file_perms relabel_lnk_file_perms };
+ 	allow $3 systemd_user_runtime_t:sock_file { manage_sock_file_perms relabel_sock_file_perms };
  
 +	# for "machinectl shell"
 +	allow $1_systemd_t systemd_machined_t:fd use;
@@ -97,17 +108,6 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.if
 +	allow $3 systemd_machined_t:dbus send_msg;
 +	allow systemd_machined_t $3:dbus send_msg;
 +
- 	# systemctl --user
- 	stream_connect_pattern($3, systemd_user_runtime_t, systemd_user_runtime_t, $1_systemd_t)
+ 	allow $3 systemd_user_runtime_notify_t:sock_file { manage_sock_file_perms relabel_sock_file_perms };
  
-@@ -80,6 +83,10 @@ template(`systemd_role_template',`
- 
- 	seutil_read_file_contexts($1_systemd_t)
- 	seutil_search_default_contexts($1_systemd_t)
-+
-+	# for machinectl shell
-+	term_user_pty($1_systemd_t, user_devpts_t)
-+	allow $1_systemd_t user_devpts_t:chr_file rw_file_perms;
- ')
- 
- ######################################
+ 	allow $3 systemd_user_unit_t:service { reload start status stop };

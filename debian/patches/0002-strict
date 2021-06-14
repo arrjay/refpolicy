@@ -135,15 +135,15 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/dbus.if
 +++ refpolicy-2.20210203/policy/modules/services/dbus.if
-@@ -84,6 +84,7 @@ template(`dbus_role_template',`
+@@ -85,6 +85,7 @@ template(`dbus_role_template',`
  
  	allow $3 $1_dbusd_t:unix_stream_socket connectto;
  	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
 +	allow $1_dbusd_t $3:dbus send_msg;
  	allow $3 $1_dbusd_t:fd use;
  
- 	allow $3 system_dbusd_t:dbus { send_msg acquire_svc };
-@@ -99,9 +100,13 @@ template(`dbus_role_template',`
+ 	dontaudit $1_dbusd_t self:process getcap;
+@@ -103,9 +104,13 @@ template(`dbus_role_template',`
  
  	allow $1_dbusd_t $3:process sigkill;
  
@@ -157,9 +157,9 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	auth_use_nsswitch($1_dbusd_t)
  
  	ifdef(`hide_broken_symptoms',`
-@@ -111,6 +116,15 @@ template(`dbus_role_template',`
- 	optional_policy(`
- 		systemd_read_logind_runtime_files($1_dbusd_t)
+@@ -117,6 +122,15 @@ template(`dbus_role_template',`
+ 		systemd_user_daemon_domain($1, dbusd_exec_t, $1_dbusd_t)
+ 		systemd_user_unix_stream_activated_socket($1_dbusd_t, session_dbusd_runtime_t)
  	')
 +
 +	optional_policy(`
@@ -202,7 +202,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -63,10 +63,6 @@ type systemd_activate_t;
+@@ -65,10 +65,6 @@ type systemd_activate_t;
  type systemd_activate_exec_t;
  init_system_domain(systemd_activate_t, systemd_activate_exec_t)
  
@@ -213,7 +213,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
  type systemd_backlight_t;
  type systemd_backlight_exec_t;
  init_system_domain(systemd_backlight_t, systemd_backlight_exec_t)
-@@ -1410,6 +1406,7 @@ tunable_policy(`systemd_tmpfilesd_factor
+@@ -1429,6 +1425,7 @@ tunable_policy(`systemd_tmpfilesd_factor
  ')
  
  optional_policy(`
@@ -245,3 +245,15 @@ Index: refpolicy-2.20210203/policy/modules/apps/pulseaudio.te
  
  tunable_policy(`pulseaudio_execmem',`
  	allow pulseaudio_t self:process execmem;
+Index: refpolicy-2.20210203/policy/modules/services/ntp.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/ntp.te
++++ refpolicy-2.20210203/policy/modules/services/ntp.te
+@@ -130,6 +130,7 @@ term_use_ptmx(ntpd_t)
+ auth_use_nsswitch(ntpd_t)
+ 
+ init_exec_script_files(ntpd_t)
++init_get_generic_units_status(ntpd_t)
+ 
+ logging_send_syslog_msg(ntpd_t)
+ 

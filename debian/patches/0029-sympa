@@ -1,0 +1,368 @@
+Index: refpolicy-2.20210203/policy/modules/services/sympa.fc
+===================================================================
+--- /dev/null
++++ refpolicy-2.20210203/policy/modules/services/sympa.fc
+@@ -0,0 +1,6 @@
++/usr/lib/sympa/bin/.*	--	gen_context(system_u:object_r:sympa_exec_t,s0)
++/var/lib/sympa(/.*)?		gen_context(system_u:object_r:sympa_var_t,s0)
++/var/spool/sympa(/.*)?		gen_context(system_u:object_r:sympa_var_t,s0)
++/run/sympa(/.*)?		gen_context(system_u:object_r:sympa_runtime_t,s0)
++/etc/mail/sympa(/.*)?		gen_context(system_u:object_r:sympa_etc_t,s0)
++/etc/sympa(/.*)?		gen_context(system_u:object_r:sympa_etc_t,s0)
+Index: refpolicy-2.20210203/policy/modules/services/sympa.te
+===================================================================
+--- /dev/null
++++ refpolicy-2.20210203/policy/modules/services/sympa.te
+@@ -0,0 +1,65 @@
++policy_module(sympa,1.0.0)
++
++type sympa_t;
++type sympa_exec_t;
++init_daemon_domain(sympa_t, sympa_exec_t)
++
++type sympa_var_t;
++files_type(sympa_var_t)
++
++type sympa_runtime_t;
++files_runtime_file(sympa_runtime_t)
++
++type sympa_etc_t;
++files_config_file(sympa_etc_t)
++
++type sympa_tmp_t;
++files_tmp_file(sympa_tmp_t)
++
++allow sympa_t self:fifo_file rw_file_perms;
++allow sympa_t self:tcp_socket create_socket_perms;
++allow sympa_t self:unix_dgram_socket create_socket_perms;
++allow sympa_t self:process signull;
++allow sympa_t sympa_var_t:dir manage_dir_perms;
++allow sympa_t sympa_var_t:file manage_file_perms;
++
++allow sympa_t sympa_runtime_t:dir manage_dir_perms;
++allow sympa_t sympa_runtime_t:file manage_file_perms;
++
++allow sympa_t sympa_etc_t:dir list_dir_perms;
++allow sympa_t sympa_etc_t:file read_file_perms;
++
++files_tmp_filetrans(sympa_t, sympa_tmp_t, { file })
++allow sympa_t sympa_tmp_t:file manage_file_perms;
++
++kernel_read_kernel_sysctls(sympa_t)
++
++auth_dontaudit_read_shadow(sympa_t)
++
++corecmd_exec_bin(sympa_t)
++corecmd_exec_shell(sympa_t)
++
++dev_read_urand(sympa_t)
++
++files_read_etc_files(sympa_t)
++files_read_usr_files(sympa_t)
++files_search_spool(sympa_t)
++files_search_var_lib(sympa_t)
++
++logging_send_syslog_msg(sympa_t)
++
++miscfiles_read_generic_certs(sympa_t)
++miscfiles_read_localization(sympa_t)
++
++sysnet_read_config(sympa_t)
++
++optional_policy(`
++	mta_read_config(sympa_t)
++	mta_send_mail(sympa_t)
++	mta_rw_delivery_fifos(sympa_t)
++')
++
++optional_policy(`
++	mysql_tcp_connect(sympa_t)
++	mysql_stream_connect(sympa_t)
++')
+Index: refpolicy-2.20210203/policy/modules/services/sympa.if
+===================================================================
+--- /dev/null
++++ refpolicy-2.20210203/policy/modules/services/sympa.if
+@@ -0,0 +1,168 @@
++## <summary></summary>
++
++########################################
++## <summary>
++##      Allow appending to sympa_var_t (for error log)
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sympa_append_var_files',`
++	gen_require(`
++		type sympa_var_t;
++	')
++
++	allow $1 sympa_var_t:file { append getattr };
++')
++
++########################################
++## <summary>
++##      Allow reading sympa_var_t files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sympa_read_var_files',`
++	gen_require(`
++		type sympa_var_t;
++	')
++
++	allow $1 sympa_var_t:dir list_dir_perms;
++	allow $1 sympa_var_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##      Allow managing sympa_var_t files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sympa_manage_var_files',`
++	gen_require(`
++		type sympa_var_t;
++	')
++
++	allow $1 sympa_var_t:dir rw_dir_perms;
++	allow $1 sympa_var_t:file manage_file_perms;
++')
++
++########################################
++## <summary>
++##      Transition to sympa_t when executing sympa_exec_t
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sympa_domtrans',`
++	gen_require(`
++		type sympa_exec_t, sympa_t;
++	')
++
++	domain_auto_transition_pattern($1, sympa_exec_t, sympa_t)
++')
++
++########################################
++## <summary>
++##      Use file handles inherited from sympa
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sympa_use_fd',`
++	gen_require(`
++		type sympa_t;
++	')
++
++	allow $1 sympa_t:fd use;
++')
++
++########################################
++## <summary>
++##      Dontaudit access to inherited sympa tcp sockets
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to not audit
++##      </summary>
++## </param>
++#
++interface(`sympa_dontaudit_tcp_rw',`
++	gen_require(`
++		type sympa_t;
++	')
++
++	dontaudit $1 sympa_t:tcp_socket { read write };
++')
++
++########################################
++## <summary>
++##	Allow reading sympa config files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`sympa_read_conf',`
++	gen_require(`
++		type sympa_etc_t;
++	')
++
++	allow $1 sympa_etc_t:dir list_dir_perms;
++	allow $1 sympa_etc_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##	Allow rw sympa runtime dirs and manage sympa runtime files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`sympa_manage_runtime_files',`
++	gen_require(`
++		type sympa_runtime_t;
++	')
++
++	allow $1 sympa_runtime_t:dir rw_dir_perms;
++	allow $1 sympa_runtime_t:file manage_file_perms;
++')
++
++########################################
++## <summary>
++##	Allow rw sympa runtime dirs and manage sympa runtime sock files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`sympa_manage_runtime_sock_files',`
++	gen_require(`
++		type sympa_runtime_t;
++	')
++
++	allow $1 sympa_runtime_t:dir rw_dir_perms;
++	allow $1 sympa_runtime_t:sock_file { setattr create unlink write };
++')
+Index: refpolicy-2.20210203/policy/modules/services/mta.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/mta.te
++++ refpolicy-2.20210203/policy/modules/services/mta.te
+@@ -310,6 +310,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	sympa_append_var_files(system_mail_t)
++	sympa_dontaudit_tcp_rw(system_mail_t)
++')
++
++optional_policy(`
+ 	unconfined_use_fds(system_mail_t)
+ ')
+ 
+@@ -403,6 +408,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	sympa_dontaudit_tcp_rw(mailserver_delivery)
++	sympa_domtrans(mailserver_delivery)
++')
++
++optional_policy(`
+ 	uucp_domtrans_uux(mailserver_delivery)
+ ')
+ 
+Index: refpolicy-2.20210203/policy/modules/services/mta.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/mta.if
++++ refpolicy-2.20210203/policy/modules/services/mta.if
+@@ -814,6 +814,26 @@ interface(`mta_dontaudit_rw_delivery_tcp
+ 
+ #######################################
+ ## <summary>
++##	read and write fifo files inherited from delivery domains
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to use fifo files
++##	</summary>
++## </param>
++#
++interface(`mta_rw_delivery_fifos',`
++	gen_require(`
++		attribute mailserver_delivery;
++	')
++
++	allow $1 mailserver_delivery:fd use;
++	allow $1 mailserver_delivery:fifo_file { getattr read write };
++')
++
++
++#######################################
++## <summary>
+ ##	Do not audit attempts to read
+ ##	mail spool symlinks.
+ ## </summary>
+Index: refpolicy-2.20210203/policy/modules/services/exim.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/exim.te
++++ refpolicy-2.20210203/policy/modules/services/exim.te
+@@ -249,3 +249,10 @@ optional_policy(`
+ 	spamassassin_exec(exim_t)
+ 	spamassassin_exec_client(exim_t)
+ ')
++
++optional_policy(`
++	# each of these should probably be for mailserver_delivery or mailserver_domain
++	sympa_append_var_files(exim_t)
++	sympa_read_var_files(exim_t)
++	sympa_use_fd(exim_t)
++')
+Index: refpolicy-2.20210203/policy/modules/services/apache.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/apache.te
++++ refpolicy-2.20210203/policy/modules/services/apache.te
+@@ -902,6 +902,14 @@ optional_policy(`
+ 	snmp_dontaudit_write_snmp_var_lib_files(httpd_t)
+ ')
+ 
++optional_policy(`
++	sympa_manage_runtime_files(httpd_t)
++	sympa_manage_runtime_sock_files(httpd_t)
++	sympa_read_conf(httpd_t)
++	sympa_read_var_files(httpd_t)
++')
++
++
+ ########################################
+ #
+ # Helper local policy
+@@ -1243,6 +1251,8 @@ files_read_var_symlinks(httpd_sys_script
+ files_search_var_lib(httpd_sys_script_t)
+ files_search_spool(httpd_sys_script_t)
+ 
++miscfiles_read_generic_certs(httpd_sys_script_t)
++
+ apache_domtrans_rotatelogs(httpd_sys_script_t)
+ 
+ auth_use_nsswitch(httpd_sys_script_t)
+@@ -1325,6 +1335,11 @@ optional_policy(`
+ 	')
+ ')
+ 
++optional_policy(`
++	sympa_manage_var_files(httpd_sys_script_t)
++	sympa_read_conf(httpd_sys_script_t)
++')
++
+ ########################################
+ #
+ # Rotatelogs local policy

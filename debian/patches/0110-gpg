@@ -14,7 +14,7 @@ Index: refpolicy-2.20210203/policy/modules/apps/gpg.fc
  /usr/bin/gpgsm				--	gen_context(system_u:object_r:gpg_exec_t,s0)
  /usr/bin/gpg-agent			--	gen_context(system_u:object_r:gpg_agent_exec_t,s0)
 -/usr/bin/pinentry.*			--	gen_context(system_u:object_r:gpg_pinentry_exec_t,s0)
-+/usr/bin/pinentry.*			--	gen_context(system_u:object_r:gpg_exec_t,s0)
++/usr/bin/pinentry.*			--	gen_context(system_u:object_r:gpg_agent_exec_t,s0)
  
  /usr/lib/gnupg/.*			--	gen_context(system_u:object_r:gpg_exec_t,s0)
 -/usr/lib/gnupg/gpgkeys.*		--	gen_context(system_u:object_r:gpg_helper_exec_t,s0)
@@ -152,7 +152,7 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/dbus.if
 +++ refpolicy-2.20210203/policy/modules/services/dbus.if
-@@ -75,6 +75,9 @@ template(`dbus_role_template',`
+@@ -76,6 +76,9 @@ template(`dbus_role_template',`
  	domain_entry_file($1_dbusd_t, dbusd_exec_t)
  	ubac_constrained($1_dbusd_t)
  
@@ -162,7 +162,7 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	role $2 types $1_dbusd_t;
  
  	##############################
-@@ -82,7 +85,7 @@ template(`dbus_role_template',`
+@@ -83,7 +86,7 @@ template(`dbus_role_template',`
  	# Local policy
  	#
  
@@ -171,7 +171,7 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
  	allow $1_dbusd_t $3:dbus send_msg;
  	allow $3 $1_dbusd_t:fd use;
-@@ -229,7 +232,7 @@ interface(`dbus_all_session_bus_client',
+@@ -235,7 +238,7 @@ interface(`dbus_all_session_bus_client',
  	allow $1 { session_bus_type self }:dbus send_msg;
  	allow session_bus_type $1:dbus send_msg;
  
@@ -180,7 +180,7 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	allow $1 session_bus_type:fd use;
  ')
  
-@@ -262,7 +265,7 @@ interface(`dbus_spec_session_bus_client'
+@@ -268,7 +271,7 @@ interface(`dbus_spec_session_bus_client'
  	allow $2 { $1_dbusd_t self }:dbus send_msg;
  	allow $1_dbusd_t $2:dbus send_msg;
  
@@ -225,3 +225,16 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.if
  ## <summary>
  ##	Do not audit attempts to append temporary
  ##	system cron job files.
+Index: refpolicy-2.20210203/policy/modules/apps/gpg.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/apps/gpg.te
++++ refpolicy-2.20210203/policy/modules/apps/gpg.te
+@@ -84,6 +84,8 @@ dontaudit gpg_t self:netlink_audit_socke
+ allow gpg_t self:fifo_file rw_fifo_file_perms;
+ allow gpg_t self:tcp_socket { accept listen };
+ 
++can_exec(gpg_agent_t, gpg_agent_exec_t)
++
+ manage_dirs_pattern(gpg_t, gpg_runtime_t, gpg_runtime_t)
+ userdom_user_runtime_filetrans(gpg_t, gpg_runtime_t, dir, "gnupg")
+ 

@@ -53,15 +53,44 @@ Index: refpolicy-2.20210203/policy/modules/services/certbot.te
 ===================================================================
 --- refpolicy-2.20210203.orig/policy/modules/services/certbot.te
 +++ refpolicy-2.20210203/policy/modules/services/certbot.te
-@@ -46,6 +46,7 @@ allow certbot_t self:netlink_route_socke
- files_search_var_lib(certbot_t)
+@@ -43,9 +43,10 @@ allow certbot_t self:udp_socket all_udp_
+ allow certbot_t self:tcp_socket all_tcp_socket_perms;
+ allow certbot_t self:netlink_route_socket create_netlink_socket_perms;
+ 
+-files_search_var_lib(certbot_t)
++files_var_lib_filetrans(certbot_t, certbot_lib_t, dir, "letsencrypt")
  manage_dirs_pattern(certbot_t, certbot_lib_t, certbot_lib_t)
  manage_files_pattern(certbot_t, certbot_lib_t, certbot_lib_t)
 +allow certbot_t certbot_lib_t:file relabelfrom;
  
  manage_dirs_pattern(certbot_t, certbot_tmp_t, certbot_tmp_t)
  manage_files_pattern(certbot_t, certbot_tmp_t, certbot_tmp_t)
-@@ -114,5 +115,13 @@ optional_policy(`
+@@ -62,7 +63,7 @@ allow certbot_t certbot_tmp_t:file mmap_
+ allow certbot_t certbot_tmpfs_t:file mmap_exec_file_perms;
+ allow certbot_t certbot_runtime_t:file mmap_exec_file_perms;
+ 
+-logging_search_logs(certbot_t)
++logging_log_filetrans(certbot_t, certbot_log_t, dir, "letsencrypt")
+ allow certbot_t certbot_log_t:dir manage_dir_perms;
+ allow certbot_t certbot_log_t:file manage_file_perms;
+ 
+@@ -80,11 +81,15 @@ corenet_tcp_connect_dns_port(certbot_t)
+ # bind to http port for standalone mode
+ corenet_tcp_bind_http_port(certbot_t)
+ 
++dev_read_urand(certbot_t)
++
+ domain_use_interactive_fds(certbot_t)
+ 
+ files_read_etc_files(certbot_t)
+ files_read_usr_files(certbot_t)
+ 
++# dontaudit for attempts to write python cache files
++libs_dontaudit_write_lib_dirs(certbot_t)
+ libs_exec_ldconfig(certbot_t)
+ # for /usr/lib/gcc/x86_64-linux-gnu/8/collect2
+ libs_exec_lib_files(certbot_t)
+@@ -110,5 +115,17 @@ optional_policy(`
  	# for writing to webroot
  	apache_manage_sys_content(certbot_t)
  
@@ -75,4 +104,8 @@ Index: refpolicy-2.20210203/policy/modules/services/certbot.te
 +
 +	apache_rw_runtime_files(certbot_t)
 +	apache_signal(certbot_t)
++')
++
++optional_policy(`
++	xdg_search_config_dirs(certbot_t)
  ')

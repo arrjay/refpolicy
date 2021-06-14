@@ -1,7 +1,7 @@
-Index: refpolicy-2.20210130/policy/modules/system/init.if
+Index: refpolicy-2.20210203/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20210130.orig/policy/modules/system/init.if
-+++ refpolicy-2.20210130/policy/modules/system/init.if
+--- refpolicy-2.20210203.orig/policy/modules/system/init.if
++++ refpolicy-2.20210203/policy/modules/system/init.if
 @@ -178,7 +178,11 @@ interface(`init_domain',`
  
  	role system_r types $1;
@@ -15,11 +15,11 @@ Index: refpolicy-2.20210130/policy/modules/system/init.if
  
  	allow init_t $1:process rlimitinh;
  
-Index: refpolicy-2.20210130/policy/modules/system/fstools.te
+Index: refpolicy-2.20210203/policy/modules/system/fstools.te
 ===================================================================
---- refpolicy-2.20210130.orig/policy/modules/system/fstools.te
-+++ refpolicy-2.20210130/policy/modules/system/fstools.te
-@@ -151,6 +151,11 @@ init_use_script_ptys(fsadm_t)
+--- refpolicy-2.20210203.orig/policy/modules/system/fstools.te
++++ refpolicy-2.20210203/policy/modules/system/fstools.te
+@@ -153,6 +153,11 @@ init_use_script_ptys(fsadm_t)
  init_dontaudit_getattr_initctl(fsadm_t)
  init_rw_script_stream_sockets(fsadm_t)
  
@@ -31,10 +31,10 @@ Index: refpolicy-2.20210130/policy/modules/system/fstools.te
  logging_send_syslog_msg(fsadm_t)
  
  miscfiles_read_localization(fsadm_t)
-Index: refpolicy-2.20210130/policy/modules/system/sysnetwork.te
+Index: refpolicy-2.20210203/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20210130.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20210130/policy/modules/system/sysnetwork.te
+--- refpolicy-2.20210203.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20210203/policy/modules/system/sysnetwork.te
 @@ -345,6 +345,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
@@ -47,10 +47,10 @@ Index: refpolicy-2.20210130/policy/modules/system/sysnetwork.te
  logging_send_syslog_msg(ifconfig_t)
  
  miscfiles_read_localization(ifconfig_t)
-Index: refpolicy-2.20210130/config/appconfig-mcs/default_contexts
+Index: refpolicy-2.20210203/config/appconfig-mcs/default_contexts
 ===================================================================
---- refpolicy-2.20210130.orig/config/appconfig-mcs/default_contexts
-+++ refpolicy-2.20210130/config/appconfig-mcs/default_contexts
+--- refpolicy-2.20210203.orig/config/appconfig-mcs/default_contexts
++++ refpolicy-2.20210203/config/appconfig-mcs/default_contexts
 @@ -2,7 +2,7 @@ system_r:crond_t:s0		user_r:user_t:s0 st
  system_r:init_t:s0		user_r:user_systemd_t:s0 staff_r:staff_systemd_t:s0 sysadm_r:sysadm_systemd_t:s0 unconfined_r:unconfined_t:s0
  system_r:local_login_t:s0	user_r:user_t:s0 staff_r:staff_t:s0 sysadm_r:sysadm_t:s0 unconfined_r:unconfined_t:s0
@@ -60,10 +60,10 @@ Index: refpolicy-2.20210130/config/appconfig-mcs/default_contexts
  system_r:sulogin_t:s0		sysadm_r:sysadm_t:s0
  system_r:xdm_t:s0		user_r:user_t:s0 staff_r:staff_t:s0 sysadm_r:sysadm_t:s0 unconfined_r:unconfined_t:s0
  
-Index: refpolicy-2.20210130/Makefile
+Index: refpolicy-2.20210203/Makefile
 ===================================================================
---- refpolicy-2.20210130.orig/Makefile
-+++ refpolicy-2.20210130/Makefile
+--- refpolicy-2.20210203.orig/Makefile
++++ refpolicy-2.20210203/Makefile
 @@ -240,6 +240,7 @@ M4PARAM += -D mls_num_sens=$(MLS_SENS) -
  # differently on different distros
  ifeq ($(DISTRO),debian)
@@ -72,3 +72,88 @@ Index: refpolicy-2.20210130/Makefile
  endif
  
  ifeq ($(DISTRO),gentoo)
+Index: refpolicy-2.20210203/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20210203/policy/modules/system/systemd.te
+@@ -1767,3 +1767,7 @@ optional_policy(`
+ optional_policy(`
+ 	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
+ ')
++
++optional_policy(`
++	userdom_unlink_user_tmp_devices(systemd_user_runtime_dir_t)
++')
+Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20210203/policy/modules/system/userdomain.if
+@@ -4603,6 +4603,25 @@ interface(`userdom_dontaudit_write_user_
+ 
+ ########################################
+ ## <summary>
++##      Delete user_tmp_t device nodes (probably should not have been
++##	created in the first place)
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow deleting
++##      </summary>
++## </param>
++#
++interface(`userdom_unlink_user_tmp_devices',`
++	gen_require(`
++		type user_tmp_t;
++	')
++
++	allow $1 user_tmp_t:{ chr_file blk_file } unlink;
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to use user ttys.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20210203/policy/modules/services/mta.if
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/mta.if
++++ refpolicy-2.20210203/policy/modules/services/mta.if
+@@ -165,11 +165,15 @@ interface(`mta_admin_role',`
+ 		attribute_role admin_mail_roles;
+ 		type admin_mail_t, sendmail_exec_t, mail_home_t;
+ 		type user_mail_tmp_t, mail_home_rw_t;
++		type system_mail_t;
+ 	')
+ 	mta_base_role($1, $2)
+ 
+ 	roleattribute $1 admin_mail_roles;
+ 
++	# maybe not ideal but needed for exim postinst in Debian
++	role $1 types system_mail_t;
++
+ 	domtrans_pattern($2, sendmail_exec_t, admin_mail_t)
+ 	allow $2 sendmail_exec_t:lnk_file read_lnk_file_perms;
+ 
+@@ -1222,3 +1226,22 @@ interface(`mta_rw_user_mail_stream_socke
+ 
+ 	allow $1 user_mail_domain:unix_stream_socket rw_socket_perms;
+ ')
++
++# hack for exim postinst in Debian
++#######################################
++## <summary>
++##	Allow system_mail_t to run in a role
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Role allowed access.
++##	</summary>
++## </param>
++#
++interface(`mta_system_mail_role',`
++	gen_require(`
++		type system_mail_t;
++	')
++
++	role $1 types system_mail_t;
++')
