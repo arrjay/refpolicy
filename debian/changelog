@@ -1,3 +1,22 @@
+refpolicy (2:2.20210203-8) unstable; urgency=medium
+
+  * Label /etc/ppp/ip-pre-up as pppd_initrc_exec_t
+  * Allow wireshark to rw DRI devices, read crypto sysctls, rw the xserver
+    mesa shader cache, read the kernel network state, have execmem access
+    (probably needed for one of the many shared objects it uses), have setsched
+    access, execute lib files (for it's helper programs), manage xdg config
+    files (gives warning if it can't do this), manage xdg cache, and read xdg
+    data files.
+  * Allow acngtool_t the dac_override capability for managing log files
+  * Allow pppd to connect create and ioctl pppox_socket and allow it to map
+    pppd_runtime_t files.
+  * Allow kmod_t, ifconfig_t, and ping_t to use unallocated ttys (for sysadmin
+    login on boot failure)
+  * Allow ntpd_t to start and stop generic units when systemd is used, for
+    systemd-timesyncd.
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 04 Oct 2021 15:06:54 +1100
+
 refpolicy (2:2.20210203-7) unstable; urgency=medium
 
   * Allow certbot to create /var/log/letsencrypt and /var/lib/letsencrypt

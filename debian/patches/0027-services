@@ -128,7 +128,14 @@ Index: refpolicy-2.20210203/policy/modules/services/aptcacher.te
  
  # Uses sd_notify() to inform systemd it has properly started
  init_dgram_send(aptcacher_t)
-@@ -99,8 +105,12 @@ allow acngtool_t self:unix_stream_socket
+@@ -93,14 +99,19 @@ sysnet_mmap_config_files(aptcacher_t)
+ # acngtool local policy
+ #
+ 
++allow acngtool_t self:capability dac_override;
+ allow acngtool_t self:tcp_socket create_stream_socket_perms;
+ allow acngtool_t self:unix_stream_socket create_socket_perms;
+ 
  allow acngtool_t aptcacher_conf_t:dir list_dir_perms;
  allow acngtool_t aptcacher_conf_t:file mmap_read_file_perms;
  
@@ -1874,3 +1881,60 @@ Index: refpolicy-2.20210203/policy/modules/kernel/storage.if
  ##	Create block devices in on a tmpfs filesystem with the
  ##	fixed disk type via an automatic type transition.
  ## </summary>
+Index: refpolicy-2.20210203/policy/modules/services/ppp.fc
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/ppp.fc
++++ refpolicy-2.20210203/policy/modules/services/ppp.fc
+@@ -8,6 +8,7 @@ HOME_DIR/\.ppprc	--	gen_context(system_u
+ /etc/ppp/.*secrets	--	gen_context(system_u:object_r:pppd_secret_t,s0)
+ /etc/ppp/resolv\.conf	--	gen_context(system_u:object_r:pppd_etc_rw_t,s0)
+ /etc/ppp/(auth|ip(v6|x)?)-(up|down)	--	gen_context(system_u:object_r:pppd_initrc_exec_t,s0)
++/etc/ppp/ip-pre-up	--	gen_context(system_u:object_r:pppd_initrc_exec_t,s0)
+ 
+ /usr/bin/ipppd		--	gen_context(system_u:object_r:pppd_exec_t,s0)
+ /usr/bin/ppp-watch	--	gen_context(system_u:object_r:pppd_exec_t,s0)
+Index: refpolicy-2.20210203/policy/modules/services/ppp.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/ppp.te
++++ refpolicy-2.20210203/policy/modules/services/ppp.te
+@@ -86,6 +86,7 @@ allow pppd_t self:socket create_socket_p
+ allow pppd_t self:netlink_route_socket nlmsg_write;
+ allow pppd_t self:tcp_socket { accept listen };
+ allow pppd_t self:packet_socket create_socket_perms;
++allow pppd_t self:pppox_socket { connect create ioctl };
+ 
+ allow pppd_t pppd_devpts_t:chr_file { rw_chr_file_perms setattr_chr_file_perms };
+ 
+@@ -108,6 +109,7 @@ files_tmp_filetrans(pppd_t, pppd_tmp_t,
+ 
+ manage_dirs_pattern(pppd_t, pppd_runtime_t, pppd_runtime_t)
+ manage_files_pattern(pppd_t, pppd_runtime_t, pppd_runtime_t)
++allow pppd_t pppd_runtime_t:file map;
+ files_runtime_filetrans(pppd_t, pppd_runtime_t, { dir file })
+ 
+ can_exec(pppd_t, pppd_exec_t)
+Index: refpolicy-2.20210203/policy/modules/admin/netutils.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/admin/netutils.te
++++ refpolicy-2.20210203/policy/modules/admin/netutils.te
+@@ -134,6 +134,7 @@ logging_send_syslog_msg(ping_t)
+ miscfiles_read_localization(ping_t)
+ 
+ userdom_use_inherited_user_terminals(ping_t)
++term_use_unallocated_ttys(ping_t)
+ 
+ ifdef(`hide_broken_symptoms',`
+ 	init_dontaudit_use_fds(ping_t)
+Index: refpolicy-2.20210203/policy/modules/services/ntp.te
+===================================================================
+--- refpolicy-2.20210203.orig/policy/modules/services/ntp.te
++++ refpolicy-2.20210203/policy/modules/services/ntp.te
+@@ -156,6 +156,8 @@ ifdef(`init_systemd',`
+ 	allow ntpd_t self:capability { fowner setpcap };
+ 	init_read_state(ntpd_t)
+ 	init_reload(ntpd_t)
++	init_start_generic_units(ntpd_t)
++	init_stop_generic_units(ntpd_t)
+ 
+ 	# for /var/lib/systemd/clock
+ 	init_list_var_lib_dirs(ntpd_t)
