@@ -125,7 +125,7 @@ install-%-policy: build-%-policy
 	mkdir -p $(CURDIR)/debian/tmp/etc/selinux/$*/policy/
 	mkdir -p $(CURDIR)/debian/tmp/var/lib/selinux/$*
 # Create a list with the modules we are shipping
-	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; LC_ALL=C ls -1 | cut -d. -f1 > .modules)
+	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; LC_ALL=C ls -1 *.pp | cut -d. -f1 > .modules)
 	(cd $(CURDIR)/debian/tmp/usr/share/selinux/$*; grep -P '^[a-z0-9_]+\s*=\s*base$$' $(CURDIR)/debian/build-$*/policy/modules.conf | cut -d= -f1 | awk '{$$1=$$1};1' | LC_ALL=C sort > .basemodules)
 	touch $@
 
