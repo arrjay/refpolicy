@@ -1,4 +1,4 @@
-policy_module(postfix, 1.24.1)
+policy_module(postfix, 1.24.0)
 
 ########################################
 #
@@ -596,8 +596,6 @@ corecmd_exec_bin(postfix_pipe_t)
 
 optional_policy(`
 	dovecot_domtrans_deliver(postfix_pipe_t)
-	dovecot_read_config(postfix_pipe_t)
-	dovecot_stream_connect(postfix_pipe_t)
 ')
 
 optional_policy(`
