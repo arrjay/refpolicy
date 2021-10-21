@@ -29,7 +29,9 @@ override_dh_install:
 override_dh_fixperms:
 	dh_fixperms
 	chmod +x $(CURDIR)/debian/selinux-policy-dev/usr/share/selinux/devel/include/support/segenxml.py
-	chmod 0700 $(CURDIR)/debian/selinux-policy-default/var/lib/selinux/default $(CURDIR)/debian/selinux-policy-mls/var/lib/selinux/mls
+	for flavour in $(FLAVOURS) ; do \
+	  chmod 0700 $(CURDIR)/debian/selinux-policy-$$flavour/var/lib/selinux/$$flavour; \
+	done
 
 override_dh_compress:
 	dh_compress
