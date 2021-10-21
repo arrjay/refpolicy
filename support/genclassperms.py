@@ -59,7 +59,7 @@ def get_av_db(file_name):
 	# Reading into av_data:
 	#  The file specified will be read line by line. Each line will have
 	#   its comments removed. Once comments are removed, each 'word' (text
-	#   separated by whitespace) and braces will be split up into seperate
+	#   separated by whitespace) and braces will be split up into separate
 	#   strings and appended to the av_data list, in the order they were
 	#   read.
 	# Parsing av_data:
