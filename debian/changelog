@@ -1,3 +1,16 @@
+refpolicy (2:2.20210203-9) unstable; urgency=medium
+
+  * Label /opt/google/chrome/chrome_crashpad_handler and
+    /opt/google/chrome/crashpad_handler as chromium_exec_t
+  * Allow kmod_t to manage bootloader_tmp_t files and allow bootloader_t to
+    create and delete /dev/null (for initramfs).  Also allow bootloader_t to
+    read udev rules and network config.
+  * Merged patches from Topi Miettinen for building only one flavour and for
+    correctly making a list of modules even when building is asynchronous.
+  * Added patch for /usr/libexec/sssd/sssd_.+ from Sam Morris.
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 21 Oct 2021 14:23:40 +1100
+
 refpolicy (2:2.20210203-8) unstable; urgency=medium
 
   * Label /etc/ppp/ip-pre-up as pppd_initrc_exec_t
