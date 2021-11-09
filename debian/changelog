@@ -1,3 +1,11 @@
+refpolicy (2:2.20210203-10) unstable; urgency=medium
+
+  * Team upload.
+  * debian/control: Adjust the (build-)dependencies for the userspace 3.3
+    release
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 09 Nov 2021 09:44:53 +0100
+
 refpolicy (2:2.20210203-9) unstable; urgency=medium
 
   * Label /opt/google/chrome/chrome_crashpad_handler and
