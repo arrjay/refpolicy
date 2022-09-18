@@ -72,7 +72,7 @@ AWK ?= gawk
 GREP ?= egrep
 INSTALL ?= install
 M4 ?= m4 -E -E
-PYTHON ?= python3 -t -t -E -W error
+PYTHON ?= python3 -bb -t -t -E -W error
 SED ?= sed
 SORT ?= LC_ALL=C sort
 UMASK ?= umask
@@ -133,6 +133,9 @@ htmldir := $(LOCAL_ROOT)/doc/html
 doctmpdir := $(LOCAL_ROOT)/doc/tmp
 endif
 
+# udica templates path
+udicatemplates := udica-templates
+
 # config file paths
 globaltun := $(poldir)/global_tunables
 globalbool := $(poldir)/global_booleans
@@ -167,20 +170,21 @@ sharedir := $(prefix)/share/selinux
 modpkgdir := $(sharedir)/$(strip $(NAME))
 headerdir := $(modpkgdir)/include
 docsdir := $(prefix)/share/doc/$(PKGNAME)
+udicatemplatesdir := $(prefix)/share/udica/templates
 
 # enable MLS if requested.
 ifeq "$(TYPE)" "mls"
 	M4PARAM += -D enable_mls=true
-	CHECKPOLICY += -M
-	CHECKMODULE += -M
+	override CHECKPOLICY += -M
+	override CHECKMODULE += -M
 	gennetfilter += -m
 endif
 
 # enable MLS if MCS requested.
 ifeq "$(TYPE)" "mcs"
 	M4PARAM += -D enable_mcs=true
-	CHECKPOLICY += -M
-	CHECKMODULE += -M
+	override CHECKPOLICY += -M
+	override CHECKMODULE += -M
 	gennetfilter += -c
 endif
 
@@ -198,7 +202,7 @@ ifeq "$(SYSTEMD)" "y"
 endif
 
 ifneq ($(OUTPUT_POLICY),)
-	CHECKPOLICY += -c $(OUTPUT_POLICY)
+	override CHECKPOLICY += -c $(OUTPUT_POLICY)
 endif
 
 ifneq "$(CUSTOM_BUILDOPT)" ""
@@ -234,7 +238,7 @@ else
 	VERBOSE_FLAG = --verbose
 endif
 
-M4PARAM += -D mls_num_sens=$(MLS_SENS) -D mls_num_cats=$(MLS_CATS) -D mcs_num_cats=$(MCS_CATS) -D hide_broken_symptoms=true
+M4PARAM += -D mls_num_sens=$(MLS_SENS) -D mls_num_cats=$(MLS_CATS) -D mcs_num_cats=$(MCS_CATS)
 
 # we need exuberant ctags; unfortunately it is named
 # differently on different distros
@@ -532,17 +536,19 @@ $(appdir)/%: $(appconf)/%
 # Install policy headers
 #
 install-headers: $(layerxml) $(tunxml) $(boolxml)
-	@mkdir -p $(headerdir)
+	$(verbose) $(INSTALL) -d -m 755 $(headerdir)
 	@echo "Installing $(NAME) policy headers."
 	$(verbose) $(INSTALL) -m 644 $^ $(headerdir)
-	$(verbose) mkdir -p $(headerdir)/support
+	$(verbose) $(INSTALL) -d -m 755 $(headerdir)/support
 	$(verbose) $(INSTALL) -m 644 $(m4support) $(xmldtd) $(headerdir)/support
 	$(verbose) $(INSTALL) -m 755 $(word $(words $(genxml)),$(genxml)) $(headerdir)/support
+	$(verbose) $(INSTALL) -m 644 /dev/null $(headerdir)/support/all_perms.spt
 	$(verbose) $(genperm) $(avs) $(secclass) > $(headerdir)/support/all_perms.spt
 	$(verbose) for i in $(notdir $(all_layers)); do \
-		mkdir -p $(headerdir)/$$i ;\
+		$(INSTALL) -d -m 755 $(headerdir)/$$i ;\
 		$(INSTALL) -m 644 $(moddir)/$$i/*.if $(headerdir)/$$i ;\
 	done
+	$(verbose) $(INSTALL) -m 644 /dev/null $(headerdir)/build.conf
 	$(verbose) echo "TYPE ?= $(TYPE)" > $(headerdir)/build.conf
 	$(verbose) echo "NAME ?= $(NAME)" >> $(headerdir)/build.conf
 ifneq "$(DISTRO)" ""
@@ -587,6 +593,15 @@ install-src:
 	fi
 	mkdir -p $(srcpath)/policy
 	cp -R . $(srcpath)/policy
+
+########################################
+#
+# Install udica templates
+#
+install-udica-templates:
+	@mkdir -p $(udicatemplatesdir)
+	@echo "Installing udica templates"
+	$(verbose) $(INSTALL) -m 644 $(wildcard $(udicatemplates)/*) $(udicatemplatesdir)
 
 ########################################
 #
@@ -669,4 +684,4 @@ ifneq ($(generated_fc),)
 endif
 endif
 
-.PHONY: install-src install-appconfig install-headers build-interface-db generate xml conf html bare tags
+.PHONY: install-src install-appconfig install-headers install-udica-templates build-interface-db generate xml conf html bare tags

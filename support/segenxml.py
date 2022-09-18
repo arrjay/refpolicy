@@ -78,7 +78,7 @@ def getModuleXML(file_name):
 	module_te = "%s/%s.te" % (module_dir, module_name)
 	module_if = "%s/%s.if" % (module_dir, module_name)
 
-	# Try to open the file, if it cant, just ignore it.
+	# Try to open the file, if it can't, just ignore it.
 	try:
 		module_file = open(module_if, "r")
 		module_code = module_file.readlines()
@@ -131,7 +131,7 @@ def getModuleXML(file_name):
 		if line.isspace():
 			continue
 
-		# Grab a comment and add it to the temprorary buffer, if it
+		# Grab a comment and add it to the temporary buffer, if it
 		#  is there.
 		comment = XML_COMMENT.match(line)
 		if comment:
@@ -201,7 +201,7 @@ def getTunableXML(file_name, kind):
 	Return all the XML for the tunables/bools in the file specified.
 	'''
 
-	# Try to open the file, if it cant, just ignore it.
+	# Try to open the file, if it can't, just ignore it.
 	try:
 		tunable_file = open(file_name, "r")
 		tunable_code = tunable_file.readlines()
@@ -235,7 +235,7 @@ def getTunableXML(file_name, kind):
 					template_code = template_file.readlines()
 					template_file.close()
 				except OSError:
-					warning("cannot open file %s for read, bailing out" % templatedir + "/" + template_call.group(1) + ".iftemplate")
+					warning("cannot open file %s for read, bailing out" % (templatedir + "/" + template_call.group(1) + ".iftemplate"))
 					return []
 				# Substitute content (i.e. $1 for argument 1, $2 for argument 2, etc.)
 				template_split = re.findall(r"[\w\" {}]+", line.strip())
@@ -283,7 +283,7 @@ def getTunableXML(file_name, kind):
 			temp_buf = []
 			tunable_buf.append("</%s>\n" % boolean.group(1))
 
-	# If there are XML comments at the end of the file, they arn't
+	# If there are XML comments at the end of the file, they aren't
 	# attributed to anything. These are ignored.
 	if len(temp_buf):
 		warning("orphan XML comments at bottom of file %s" % file_name)

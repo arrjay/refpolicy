@@ -119,7 +119,7 @@ def gen_module_conf(doc, file_name, namevalue_list):
 	file_name.write("# included in the base module.  \"%s\" will be compiled\n" % MOD_ENABLED)
 	file_name.write("# as individual loadable modules.\n#\n\n")
 
-	# For required in [True,False] is present so that the requiered modules
+	# For required in [True,False] is present so that the required modules
 	# are at the top of the config file.
 	for required in [True,False]:
 		for node in doc.getElementsByTagName("module"):
@@ -266,7 +266,7 @@ def format_html_desc(node):
 	desc_buf = ''
 	for desc in node.childNodes:
 		if desc.nodeName == "#text":
-			if desc.data is not '':
+			if desc.data:
 				if desc.parentNode.nodeName != "p":
 					desc_buf += "<p>" + desc.data + "</p>"
 				else:
