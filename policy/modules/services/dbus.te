@@ -1,4 +1,4 @@
-policy_module(dbus, 1.30.0)
+policy_module(dbus)
 
 gen_require(`
 	class dbus all_dbus_perms;
@@ -17,6 +17,23 @@ gen_require(`
 ## </p>
 ## </desc>
 gen_tunable(dbus_pass_tuntap_fd, false)
+
+## <desc>
+## <p>
+## Allow dbus-daemon system bus to to run systemd transient
+## units. This is used by dbus-broker for dbus-activated
+## services when the unit file for the service does not exist.
+## </p>
+## </desc>
+gen_tunable(dbus_broker_run_transient_units, false)
+
+## <desc>
+## <p>
+## Enable additional rules to support using dbus-broker
+## as the dbus-daemon system bus.
+## </p>
+## </desc>
+gen_tunable(dbus_broker_system_bus, false)
 
 attribute dbusd_unconfined;
 attribute session_bus_type;
@@ -55,12 +72,11 @@ init_mountpoint(system_dbusd_runtime_t)
 type system_dbusd_tmp_t;
 files_tmp_file(system_dbusd_tmp_t)
 
+type system_dbusd_tmpfs_t;
+files_tmpfs_file(system_dbusd_tmpfs_t)
+
 type system_dbusd_var_lib_t;
 files_type(system_dbusd_var_lib_t)
-
-ifdef(`enable_mcs',`
-	init_ranged_system_domain(system_dbusd_t, dbusd_exec_t, s0 - mcs_systemhigh)
-')
 
 ifdef(`enable_mls',`
 	init_ranged_system_domain(system_dbusd_t, dbusd_exec_t, s0 - mls_systemhigh)
@@ -72,7 +88,8 @@ ifdef(`enable_mls',`
 #
 
 allow system_dbusd_t self:capability { dac_override setgid setpcap setuid sys_resource };
-dontaudit system_dbusd_t self:capability sys_tty_config;
+# net_admin for changing buffer sizes
+dontaudit system_dbusd_t self:capability { net_admin sys_tty_config };
 allow system_dbusd_t self:process { getattr getsched signal_perms setpgid getcap setcap setrlimit };
 allow system_dbusd_t self:fifo_file rw_fifo_file_perms;
 allow system_dbusd_t self:dbus { send_msg acquire_svc };
@@ -86,6 +103,10 @@ read_lnk_files_pattern(system_dbusd_t, dbusd_etc_t, dbusd_etc_t)
 manage_dirs_pattern(system_dbusd_t, system_dbusd_tmp_t, system_dbusd_tmp_t)
 manage_files_pattern(system_dbusd_t, system_dbusd_tmp_t, system_dbusd_tmp_t)
 files_tmp_filetrans(system_dbusd_t, system_dbusd_tmp_t, { dir file })
+
+manage_files_pattern(system_dbusd_t, system_dbusd_tmpfs_t, system_dbusd_tmpfs_t)
+fs_tmpfs_filetrans(system_dbusd_t, system_dbusd_tmpfs_t, file)
+allow system_dbusd_t system_dbusd_tmpfs_t:file map;
 
 read_files_pattern(system_dbusd_t, system_dbusd_var_lib_t, system_dbusd_var_lib_t)
 
@@ -129,6 +150,7 @@ mls_socket_read_to_clearance(system_dbusd_t)
 mls_dbus_recv_all_levels(system_dbusd_t)
 
 selinux_get_fs_mount(system_dbusd_t)
+selinux_use_status_page(system_dbusd_t)
 selinux_validate_context(system_dbusd_t)
 selinux_compute_access_vector(system_dbusd_t)
 selinux_compute_create_context(system_dbusd_t)
@@ -176,10 +198,37 @@ ifdef(`init_systemd', `
 
 	# Recent versions of dbus are started as Type=notify
 	init_write_runtime_socket(system_dbusd_t)
+
+	tunable_policy(`dbus_broker_system_bus',`
+		init_get_system_status(system_dbusd_t)
+	')
 ')
 
 tunable_policy(`dbus_pass_tuntap_fd',`
         corenet_rw_tun_tap_dev(system_dbusd_t)
+')
+
+tunable_policy(`dbus_broker_run_transient_units',`
+	init_start_transient_units(system_dbusd_t)
+	init_stop_transient_units(system_dbusd_t)
+')
+
+# the below duplicated tunable blocks are due to
+# optionals within tunables not being supported
+optional_policy(`
+	tunable_policy(`dbus_broker_system_bus',`
+		policykit_get_unit_status(system_dbusd_t)
+		policykit_start_unit(system_dbusd_t)
+		policykit_stop_unit(system_dbusd_t)
+		policykit_reload_unit(system_dbusd_t)
+	')
+')
+
+optional_policy(`
+	tunable_policy(`dbus_broker_system_bus',`
+		networkmanager_startstop(system_dbusd_t)
+		networkmanager_status(system_dbusd_t)
+	')
 ')
 
 optional_policy(`
@@ -190,6 +239,9 @@ optional_policy(`
 
 	# for passing around terminal file handles for machinectl shell
 	systemd_use_inherited_machined_ptys(system_dbusd_t)
+
+	# allow populating of /var/lib/dbus by systemd-tmpfilesd
+	systemd_tmpfilesd_managed(system_dbusd_var_lib_t)
 ')
 
 optional_policy(`
@@ -277,10 +329,13 @@ files_read_usr_files(session_bus_type)
 files_watch_usr_dirs(session_bus_type)
 files_dontaudit_search_var(session_bus_type)
 
+fs_getattr_cgroup(session_bus_type)
 fs_getattr_romfs(session_bus_type)
 fs_getattr_xattr_fs(session_bus_type)
 fs_list_inotifyfs(session_bus_type)
 fs_dontaudit_list_nfs(session_bus_type)
+
+kernel_getattr_proc(session_bus_type)
 
 selinux_get_fs_mount(session_bus_type)
 selinux_validate_context(session_bus_type)

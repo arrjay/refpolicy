@@ -1,4 +1,4 @@
-policy_module(samba, 1.26.0)
+policy_module(samba)
 
 #################################
 #
@@ -268,7 +268,7 @@ optional_policy(`
 #
 
 allow smbd_t self:capability { chown dac_override dac_read_search fowner fsetid kill lease setgid setuid sys_admin sys_chroot sys_nice sys_resource };
-dontaudit smbd_t self:capability sys_tty_config;
+dontaudit smbd_t self:capability { sys_tty_config net_admin };
 allow smbd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow smbd_t self:fd use;
 allow smbd_t self:fifo_file rw_fifo_file_perms;
@@ -363,6 +363,8 @@ files_search_spool(smbd_t)
 files_dontaudit_getattr_all_dirs(smbd_t)
 files_dontaudit_list_all_mountpoints(smbd_t)
 files_list_mnt(smbd_t)
+files_dontaudit_getattr_default_dirs(smbd_t)
+files_dontaudit_getattr_boot_dirs(smbd_t)
 
 fs_getattr_all_fs(smbd_t)
 fs_getattr_all_dirs(smbd_t)
@@ -396,14 +398,6 @@ userdom_signal_all_users(smbd_t)
 userdom_home_filetrans_user_home_dir(smbd_t)
 userdom_user_home_dir_filetrans_user_home_content(smbd_t, { dir file lnk_file sock_file fifo_file })
 
-usermanage_read_crack_db(smbd_t)
-
-ifdef(`hide_broken_symptoms',`
-	files_dontaudit_getattr_default_dirs(smbd_t)
-	files_dontaudit_getattr_boot_dirs(smbd_t)
-	fs_dontaudit_getattr_tmpfs_dirs(smbd_t)
-')
-
 tunable_policy(`allow_smbd_anon_write',`
 	miscfiles_manage_public_files(smbd_t)
 ')
@@ -411,18 +405,6 @@ tunable_policy(`allow_smbd_anon_write',`
 tunable_policy(`samba_create_home_dirs',`
 	allow smbd_t self:capability chown;
 	userdom_create_user_home_dirs(smbd_t)
-')
-
-tunable_policy(`samba_domain_controller',`
-	gen_require(`
-		class passwd passwd;
-	')
-
-	usermanage_domtrans_passwd(smbd_t)
-	usermanage_kill_passwd(smbd_t)
-	usermanage_domtrans_useradd(smbd_t)
-	usermanage_domtrans_groupadd(smbd_t)
-	allow smbd_t self:passwd passwd;
 ')
 
 tunable_policy(`samba_enable_home_dirs',`
@@ -470,10 +452,6 @@ tunable_policy(`samba_export_all_rw',`
 ')
 
 optional_policy(`
-	ccs_read_config(smbd_t)
-')
-
-optional_policy(`
 	ctdbd_stream_connect(smbd_t)
 	ctdbd_manage_lib_files(smbd_t)
 ')
@@ -485,6 +463,10 @@ optional_policy(`
 
 optional_policy(`
 	dbus_system_bus_client(smbd_t)
+
+	optional_policy(`
+		avahi_dbus_chat(smbd_t)
+	')
 ')
 
 optional_policy(`
@@ -509,12 +491,30 @@ optional_policy(`
 	seutil_sigchld_newrole(smbd_t)
 ')
 
+optional_policy(`
+	usermanage_read_crack_db(smbd_t)
+')
+
+optional_policy(`
+	tunable_policy(`samba_domain_controller',`
+		gen_require(`
+			class passwd passwd;
+		')
+
+		usermanage_domtrans_passwd(smbd_t)
+		usermanage_kill_passwd(smbd_t)
+		usermanage_domtrans_useradd(smbd_t)
+		usermanage_domtrans_groupadd(smbd_t)
+		allow smbd_t self:passwd passwd;
+	')
+')
+
 ########################################
 #
 # Nmbd Local policy
 #
 
-dontaudit nmbd_t self:capability sys_tty_config;
+dontaudit nmbd_t self:capability { sys_tty_config net_admin };
 allow nmbd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow nmbd_t self:fd use;
 allow nmbd_t self:fifo_file rw_fifo_file_perms;
@@ -539,6 +539,7 @@ append_files_pattern(nmbd_t, samba_log_t, samba_log_t)
 create_files_pattern(nmbd_t, samba_log_t, samba_log_t)
 setattr_files_pattern(nmbd_t, samba_log_t, samba_log_t)
 
+manage_dirs_pattern(nmbd_t, samba_var_t, samba_var_t)
 mmap_manage_files_pattern(nmbd_t, samba_var_t, samba_var_t)
 manage_lnk_files_pattern(nmbd_t, samba_var_t, samba_var_t)
 manage_sock_files_pattern(nmbd_t, samba_var_t, samba_var_t)
@@ -842,6 +843,7 @@ optional_policy(`
 
 allow winbind_t self:capability { dac_override ipc_lock setuid sys_nice };
 dontaudit winbind_t self:capability sys_tty_config;
+dontaudit winbind_t self:cap_userns kill;
 allow winbind_t self:process { signal_perms getsched setsched };
 allow winbind_t self:fifo_file rw_fifo_file_perms;
 allow winbind_t self:unix_stream_socket { accept listen };

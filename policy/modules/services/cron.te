@@ -1,4 +1,4 @@
-policy_module(cron, 2.19.0)
+policy_module(cron)
 
 gen_require(`
 	class passwd rootok;
@@ -113,10 +113,6 @@ type user_cron_spool_log_t;
 logging_log_file(user_cron_spool_log_t)
 ubac_constrained(user_cron_spool_log_t)
 
-ifdef(`enable_mcs',`
-	init_ranged_daemon_domain(crond_t, crond_exec_t, s0 - mcs_systemhigh)
-')
-
 optional_policy(`
 	mta_system_content(cron_spool_t)
 	mta_system_content(crond_tmp_t)
@@ -206,8 +202,10 @@ tunable_policy(`fcron_crond',`
 # Daemon local policy
 #
 
+dontaudit crond_t self:capability net_admin;
 allow crond_t self:capability { chown dac_override dac_read_search fowner setgid setuid sys_nice };
-dontaudit crond_t self:capability { sys_resource sys_tty_config };
+# net_admin for changing buffer sizes
+dontaudit crond_t self:capability { net_admin sys_resource sys_tty_config };
 
 allow crond_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
 allow crond_t self:fd use;
@@ -630,6 +628,12 @@ optional_policy(`
 
 optional_policy(`
 	lpd_list_spool(system_cronjob_t)
+')
+
+optional_policy(`
+	mailman_domtrans_queue(system_cronjob_t)
+	# for flock
+	mailman_manage_runtime_files(system_cronjob_t)
 ')
 
 optional_policy(`

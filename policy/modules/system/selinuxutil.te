@@ -1,4 +1,4 @@
-policy_module(selinuxutil, 1.29.0)
+policy_module(selinuxutil)
 
 gen_require(`  #selint-disable:S-001
 	bool secure_mode;
@@ -89,7 +89,6 @@ type restorecond_unit_t;
 init_unit_file(restorecond_unit_t)
 
 type restorecond_run_t;
-typealias restorecond_run_t alias restorecond_var_run_t;
 files_runtime_file(restorecond_run_t)
 
 type run_init_t;
@@ -172,6 +171,9 @@ allow load_policy_t self:capability dac_override;
 read_files_pattern(load_policy_t, { policy_src_t policy_config_t }, policy_config_t)
 allow load_policy_t policy_config_t:file map;
 
+# leaked file descriptors.
+dontaudit load_policy_t selinux_config_t:file write;
+
 dev_read_urand(load_policy_t)
 
 domain_use_interactive_fds(load_policy_t)
@@ -206,17 +208,13 @@ ifdef(`distro_ubuntu',`
 	')
 ')
 
-ifdef(`hide_broken_symptoms',`
-	# cjp: cover up stray file descriptors.
-	dontaudit load_policy_t selinux_config_t:file write;
-
-	optional_policy(`
-		unconfined_dontaudit_read_pipes(load_policy_t)
-	')
+optional_policy(`
+	portage_dontaudit_use_fds(load_policy_t)
 ')
 
 optional_policy(`
-	portage_dontaudit_use_fds(load_policy_t)
+        # leaked file descriptors
+        unconfined_dontaudit_read_pipes(load_policy_t)
 ')
 
 ########################################
@@ -599,6 +597,8 @@ kernel_rw_unix_dgram_sockets(setfiles_t)
 kernel_dontaudit_list_all_proc(setfiles_t)
 kernel_dontaudit_list_all_sysctls(setfiles_t)
 kernel_getattr_debugfs(setfiles_t)
+kernel_read_kernel_sysctls(setfiles_t)
+kernel_dontaudit_getattr_proc(setfiles_t)
 
 dev_read_urand(setfiles_t)
 dev_relabel_all_dev_nodes(setfiles_t)
@@ -671,8 +671,8 @@ ifdef(`distro_debian',`
 ifdef(`distro_redhat', `
 	fs_rw_tmpfs_chr_files(setfiles_t)
 	fs_rw_tmpfs_blk_files(setfiles_t)
-	fs_relabel_tmpfs_blk_file(setfiles_t)
-	fs_relabel_tmpfs_chr_file(setfiles_t)
+	fs_relabel_tmpfs_blk_files(setfiles_t)
+	fs_relabel_tmpfs_chr_files(setfiles_t)
 ')
 
 ifdef(`distro_ubuntu',`
@@ -681,18 +681,17 @@ ifdef(`distro_ubuntu',`
 	')
 ')
 
-ifdef(`hide_broken_symptoms',`
-	optional_policy(`
-		udev_dontaudit_rw_dgram_sockets(setfiles_t)
-	')
-
-	# cjp: cover up stray file descriptors.
-	optional_policy(`
-		unconfined_dontaudit_read_pipes(setfiles_t)
-		unconfined_dontaudit_rw_tcp_sockets(setfiles_t)
-	')
+optional_policy(`
+	apt_use_fds(setfiles_t)
 ')
 
 optional_policy(`
-	apt_use_fds(setfiles_t)
+        # leaked file descriptors
+        udev_dontaudit_rw_dgram_sockets(setfiles_t)
+')
+
+# cjp: cover up stray file descriptors.
+optional_policy(`
+        unconfined_dontaudit_read_pipes(setfiles_t)
+        unconfined_dontaudit_rw_tcp_sockets(setfiles_t)
 ')

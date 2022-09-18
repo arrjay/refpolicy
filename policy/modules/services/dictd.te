@@ -1,4 +1,4 @@
-policy_module(dictd, 1.16.0)
+policy_module(dictd)
 
 ########################################
 #
@@ -79,3 +79,6 @@ optional_policy(`
 	seutil_sigchld_newrole(dictd_t)
 ')
 
+ifdef(`init_systemd',`
+	systemd_use_nss(dictd_t)
+')

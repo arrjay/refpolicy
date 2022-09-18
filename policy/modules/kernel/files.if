@@ -1595,7 +1595,7 @@ interface(`files_manage_config_dirs',`
 ##	Relabel configuration directories
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed access.
 ##	</summary>
 ## </param>
@@ -1607,6 +1607,25 @@ interface(`files_relabel_config_dirs',`
 	')
 
 	relabel_dirs_pattern($1, configfile, configfile)
+')
+
+#########################################
+## <summary>
+##	Do not audit attempts to relabel configuration directories
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain not to audit.
+##	</summary>
+## </param>
+##
+#
+interface(`files_dontaudit_relabel_config_dirs',`
+	gen_require(`
+		attribute configfile;
+	')
+
+	dontaudit $1 configfile:dir relabel_dir_perms;
 ')
 
 ########################################
@@ -1634,9 +1653,9 @@ interface(`files_read_config_files',`
 ## 	Manage all configuration files on filesystem
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed access.
-## 	</summary>
+##	</summary>
 ## </param>
 ##
 #
@@ -1653,7 +1672,7 @@ interface(`files_manage_config_files',`
 ##	Relabel configuration files
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed access.
 ##	</summary>
 ## </param>
@@ -1665,6 +1684,25 @@ interface(`files_relabel_config_files',`
 	')
 
 	relabel_files_pattern($1, configfile, configfile)
+')
+
+#######################################
+## <summary>
+##	Do not audit attempts to relabel configuration files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain not to audit.
+##	</summary>
+## </param>
+##
+#
+interface(`files_dontaudit_relabel_config_files',`
+	gen_require(`
+		attribute configfile;
+	')
+
+	dontaudit $1 configfile:file relabel_file_perms;
 ')
 
 ########################################
@@ -2196,6 +2234,24 @@ interface(`files_mounton_root',`
 	')
 
 	allow $1 root_t:dir mounton;
+')
+
+########################################
+## <summary>
+##	Remount a filesystem mounted on /boot.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_remount_boot',`
+	gen_require(`
+		type boot_t;
+	')
+
+	allow $1 boot_t:filesystem remount;
 ')
 
 ########################################
@@ -3119,6 +3175,26 @@ interface(`files_manage_etc_files',`
 
 ########################################
 ## <summary>
+##	Do not audit attempts to create, read, write,
+##	and delete generic files in /etc.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`files_dontaudit_manage_etc_files',`
+	gen_require(`
+		type etc_t;
+	')
+
+	dontaudit $1 etc_t:file manage_file_perms;
+')
+
+########################################
+## <summary>
 ##	Delete system configuration files in /etc.
 ## </summary>
 ## <param name="domain">
@@ -3168,6 +3244,7 @@ interface(`files_exec_etc_files',`
 interface(`files_get_etc_unit_status',`
 	gen_require(`
 		type etc_t;
+		class service status;
 	')
 
 	allow $1 etc_t:service status;
@@ -3186,6 +3263,7 @@ interface(`files_get_etc_unit_status',`
 interface(`files_start_etc_service',`
 	gen_require(`
 		type etc_t;
+		class service start;
 	')
 
 	allow $1 etc_t:service start;
@@ -3204,6 +3282,7 @@ interface(`files_start_etc_service',`
 interface(`files_stop_etc_service',`
 	gen_require(`
 		type etc_t;
+		class service stop;
 	')
 
 	allow $1 etc_t:service stop;
@@ -3790,6 +3869,24 @@ interface(`files_relabelfrom_home',`
 
 ########################################
 ## <summary>
+##	Watch the user home root (/home).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_watch_home',`
+	gen_require(`
+		type home_root_t;
+	')
+
+	allow $1 home_root_t:dir watch;
+')
+
+########################################
+## <summary>
 ##	Create objects in /home.
 ## </summary>
 ## <param name="domain">
@@ -4311,6 +4408,25 @@ interface(`files_load_kernel_modules',`
 
 ########################################
 ## <summary>
+##	Load kernel module files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_dontaudit_load_kernel_modules',`
+	gen_require(`
+		type modules_object_t;
+	')
+
+	dontaudit $1 modules_object_t:file read_file_perms;
+	dontaudit $1 modules_object_t:system module_load;
+')
+
+########################################
+## <summary>
 ##	List world-readable directories.
 ## </summary>
 ## <param name="domain">
@@ -4583,6 +4699,24 @@ interface(`files_manage_generic_tmp_dirs',`
 	')
 
 	manage_dirs_pattern($1, tmp_t, tmp_t)
+')
+
+########################################
+## <summary>
+##	Relabel temporary directories in /tmp.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_relabel_generic_tmp_dirs',`
+	gen_require(`
+		type tmp_t;
+	')
+
+	relabel_dirs_pattern($1, tmp_t, tmp_t)
 ')
 
 ########################################
@@ -6111,7 +6245,7 @@ interface(`files_rw_lock_dirs',`
 ## 	Create lock directories
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed access
 ##	</summary>
 ## </param>
@@ -6725,7 +6859,7 @@ interface(`files_pid_filetrans',`
 ## 	Create a generic lock directory within the run directories.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed access
 ##	</summary>
 ## </param>
@@ -6807,9 +6941,9 @@ interface(`files_dontaudit_ioctl_all_pids',`
 ##     in the /var/run directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_manage_all_pid_dirs',`
@@ -6838,9 +6972,9 @@ interface(`files_read_all_pids',`
 ##     Execute generic programs in /var/run in the caller domain.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_exec_generic_pid_files',`
@@ -6853,9 +6987,9 @@ interface(`files_exec_generic_pid_files',`
 ##     Relabel all pid files.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_relabel_all_pid_files',`
@@ -6888,9 +7022,9 @@ interface(`files_delete_all_pids',`
 ##     Create all pid sockets.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_create_all_pid_sockets',`
@@ -6903,9 +7037,9 @@ interface(`files_create_all_pid_sockets',`
 ##     Create all pid named pipes.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_create_all_pid_pipes',`
@@ -6938,9 +7072,9 @@ interface(`files_read_runtime_files',`
 ##     Execute generic programs in /var/run in the caller domain.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_exec_runtime',`
@@ -7032,9 +7166,9 @@ interface(`files_delete_all_runtime_dirs',`
 ##     Create, read, write, and delete all runtime directories.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_manage_all_runtime_dirs',`
@@ -7189,9 +7323,9 @@ interface(`files_manage_all_runtime_files',`
 ##     Relabel all runtime files.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_relabel_all_runtime_files',`
@@ -7263,9 +7397,9 @@ interface(`files_relabel_all_runtime_symlinks',`
 ##     Create all runtime named pipes
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_create_all_runtime_pipes',`
@@ -7282,9 +7416,9 @@ interface(`files_create_all_runtime_pipes',`
 ##     Delete all runtime named pipes
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_delete_all_runtime_pipes',`
@@ -7301,9 +7435,9 @@ interface(`files_delete_all_runtime_pipes',`
 ##     Create all runtime sockets.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_create_all_runtime_sockets',`
@@ -7319,9 +7453,9 @@ interface(`files_create_all_runtime_sockets',`
 ##     Delete all runtime sockets.
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_delete_all_runtime_sockets',`
@@ -7417,7 +7551,7 @@ interface(`files_runtime_filetrans',`
 ## 	Create a generic lock directory within the run directories.
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed access
 ##	</summary>
 ## </param>
@@ -7440,9 +7574,9 @@ interface(`files_runtime_filetrans_lock_dir',`
 ##     Create all spool sockets
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_create_all_spool_sockets',`
@@ -7458,9 +7592,9 @@ interface(`files_create_all_spool_sockets',`
 ##     Delete all spool sockets
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     Domain allowed access.
-##     </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`files_delete_all_spool_sockets',`
@@ -7696,7 +7830,7 @@ interface(`files_manage_generic_spool',`
 ##	Domain allowed access.
 ##	</summary>
 ## </param>
-## <param name="file">
+## <param name="file_type">
 ##	<summary>
 ##	Type to which the created node will be transitioned.
 ##	</summary>

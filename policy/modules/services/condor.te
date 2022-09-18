@@ -1,4 +1,4 @@
-policy_module(condor, 1.7.0)
+policy_module(condor)
 
 ########################################
 #
@@ -118,10 +118,6 @@ tunable_policy(`condor_tcp_network_connect',`
 	corenet_tcp_connect_all_ports(condor_domain)
 ')
 
-optional_policy(`
-	rhcs_stream_connect_cluster(condor_domain)
-')
-
 #####################################
 #
 # Master local policy
@@ -183,6 +179,7 @@ allow condor_negotiator_t condor_master_t:udp_socket getattr;
 #
 
 allow condor_procd_t self:capability { chown dac_override fowner kill sys_ptrace };
+allow condor_procd_t self:cap_userns sys_ptrace;
 
 allow condor_procd_t condor_domain:process sigkill;
 

@@ -1,4 +1,4 @@
-policy_module(policykit, 1.12.0)
+policy_module(policykit)
 
 ########################################
 #
@@ -69,6 +69,8 @@ miscfiles_read_localization(policykit_domain)
 #
 
 allow policykit_t self:capability { dac_override dac_read_search setgid setuid sys_nice sys_ptrace };
+# for changing buffer sizes
+dontaudit policykit_t self:capability net_admin;
 allow policykit_t self:process { getsched setsched signal };
 allow policykit_t self:unix_stream_socket { accept connectto listen };
 
@@ -137,9 +139,11 @@ optional_policy(`
 
 	# for /run/systemd/seats/seat*
 	systemd_read_logind_sessions_files(policykit_t)
+	systemd_watch_logind_sessions_dirs(policykit_t)
 
 	# for /run/systemd/users/*
 	systemd_read_logind_runtime_files(policykit_t)
+	systemd_watch_logind_runtime_dirs(policykit_t)
 ')
 
 ########################################
@@ -264,8 +268,6 @@ read_files_pattern(policykit_resolve_t, policykit_var_lib_t, policykit_var_lib_t
 can_exec(policykit_resolve_t, policykit_resolve_exec_t)
 
 domtrans_pattern(policykit_resolve_t, policykit_auth_exec_t, policykit_auth_t)
-
-mcs_ptrace_all(policykit_resolve_t)
 
 auth_use_nsswitch(policykit_resolve_t)
 

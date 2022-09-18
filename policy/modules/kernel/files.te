@@ -1,4 +1,4 @@
-policy_module(files, 1.30.0)
+policy_module(files)
 
 ########################################
 #
@@ -183,7 +183,7 @@ files_runtime_file(var_run_t)
 files_mountpoint(var_run_t)
 
 optional_policy(`
-	systemd_tmpfilesd_managed(var_run_t, lnk_file)
+	systemd_tmpfilesd_managed(var_run_t)
 ')
 
 #

@@ -1,4 +1,4 @@
-policy_module(exim, 1.15.0)
+policy_module(exim)
 
 ########################################
 #
@@ -55,7 +55,6 @@ type exim_log_t;
 logging_log_file(exim_log_t)
 
 type exim_pid_t;
-typealias exim_pid_t alias exim_var_run_t;
 files_runtime_file(exim_pid_t)
 
 type exim_spool_t;
@@ -180,6 +179,10 @@ tunable_policy(`exim_read_user_files',`
 tunable_policy(`exim_manage_user_files',`
 	userdom_manage_user_home_content_dirs(exim_t)
 	userdom_manage_user_tmp_files(exim_t)
+')
+
+optional_policy(`
+	certbot_read_lib(exim_t)
 ')
 
 optional_policy(`

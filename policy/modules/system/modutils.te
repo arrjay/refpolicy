@@ -1,4 +1,4 @@
-policy_module(modutils, 1.24.0)
+policy_module(modutils)
 
 ########################################
 #
@@ -40,6 +40,7 @@ dontaudit kmod_t self:capability sys_admin;
 
 allow kmod_t self:udp_socket create_socket_perms;
 allow kmod_t self:rawip_socket create_socket_perms;
+allow kmod_t self:key write;
 
 # Read module config and dependency information
 list_dirs_pattern(kmod_t, modules_conf_t, modules_conf_t)
@@ -88,6 +89,7 @@ files_read_kernel_symbol_table(kmod_t)
 files_read_etc_runtime_files(kmod_t)
 files_read_etc_files(kmod_t)
 files_read_usr_files(kmod_t)
+files_read_usr_src_files(kmod_t)
 files_exec_etc_files(kmod_t)
 files_search_tmp(kmod_t)
 # for nscd:

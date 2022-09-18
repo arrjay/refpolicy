@@ -1,4 +1,4 @@
-policy_module(spamassassin, 2.15.0)
+policy_module(spamassassin)
 
 ########################################
 #
@@ -30,7 +30,6 @@ gen_tunable(spamd_enable_home_dirs, false)
 gen_tunable(rspamd_spamd, false)
 
 type spamd_update_t;
-typealias spamd_update_t alias spamd_gpg_t;
 type spamd_update_exec_t;
 init_system_domain(spamd_update_t, spamd_update_exec_t)
 
@@ -183,6 +182,7 @@ allow spamc_t self:fifo_file rw_fifo_file_perms;
 allow spamc_t self:unix_dgram_socket sendto;
 allow spamc_t self:unix_stream_socket { accept connectto listen };
 allow spamc_t self:tcp_socket { accept listen };
+dontaudit spamc_t self:capability dac_read_search;
 
 manage_dirs_pattern(spamc_t, spamc_tmp_t, spamc_tmp_t)
 manage_files_pattern(spamc_t, spamc_tmp_t, spamc_tmp_t)
@@ -266,7 +266,9 @@ optional_policy(`
 optional_policy(`
 	mta_send_mail(spamc_t)
 	mta_getattr_spool(spamc_t)
+	mta_list_spool(spamc_t)
 	mta_read_spool_files(spamc_t)
+	mta_read_spool_symlinks(spamc_t)
 	mta_read_config(spamc_t)
 	mta_read_queue(spamc_t)
 	sendmail_rw_pipes(spamc_t)
@@ -417,6 +419,8 @@ tunable_policy(`rspamd_spamd',`
 
 	corenet_tcp_connect_http_port(spamd_t)
 	corenet_tcp_connect_redis_port(spamd_t)
+
+	kernel_read_network_state(spamd_t)
 ')
 
 tunable_policy(`use_nfs_home_dirs',`
@@ -445,13 +449,6 @@ optional_policy(`
 
 optional_policy(`
 	daemontools_service_domain(spamd_t, spamd_exec_t)
-')
-
-optional_policy(`
-	dcc_domtrans_cdcc(spamd_t)
-	dcc_domtrans_client(spamd_t)
-	dcc_signal_client(spamd_t)
-	dcc_stream_connect_dccifd(spamd_t)
 ')
 
 optional_policy(`

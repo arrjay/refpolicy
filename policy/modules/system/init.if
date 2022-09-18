@@ -9,9 +9,9 @@
 ##	This is normally used for systemd BindPaths options.
 ## </desc>
 ## <param name="file_type">
-##   <summary>
-##     Type to be used as a mountpoint.
-##   </summary>
+##	<summary>
+##	Type to be used as a mountpoint.
+##	</summary>
 ## </param>
 #
 interface(`init_mountpoint',`
@@ -89,9 +89,9 @@ interface(`init_script_file',`
 ##   systemd unit files.
 ## </summary>
 ## <param name="type">
-##   <summary>
-##   Type to be used for systemd unit files.
-##   </summary>
+##	<summary>
+##	Type to be used for systemd unit files.
+##	</summary>
 ## </param>
 #
 interface(`init_unit_file',`
@@ -183,9 +183,17 @@ interface(`init_domain',`
 	allow init_t $1:process rlimitinh;
 
 	ifdef(`init_systemd',`
+		gen_require(`
+			type init_tmpfs_t;
+		')
+
 		allow $1 init_t:unix_stream_socket { getattr read write ioctl };
 
 		allow init_t $1:process2 { nnp_transition nosuid_transition };
+
+		# StandardInputText uses a memfd rw shm segment.
+		# Cannot deny writes or it breaks.
+		allow $1 init_tmpfs_t:file rw_inherited_file_perms;
 	')
 ')
 
@@ -270,9 +278,17 @@ interface(`init_spec_daemon_domain',`
 	allow init_t $1:process rlimitinh;
 
 	ifdef(`init_systemd',`
+		gen_require(`
+			type init_tmpfs_t;
+		')
+
 		allow $1 init_t:unix_stream_socket { getattr read write ioctl };
 
 		allow init_t $1:process2 { nnp_transition nosuid_transition };
+
+		# StandardInputText uses a memfd rw shm segment.
+		# Cannot deny writes or it breaks.
+		allow $1 init_tmpfs_t:file rw_inherited_file_perms;
 	')
 
 	# daemons started from init will
@@ -359,6 +375,8 @@ interface(`init_daemon_domain',`
 		init_domain($1, $2)
 
 		allow $1 init_t:unix_dgram_socket sendto;
+
+		allow init_t $1:process2 { nnp_transition nosuid_transition };
 
 		optional_policy(`
 			systemd_stream_connect_socket_proxyd($1)
@@ -908,6 +926,24 @@ interface(`init_sigchld',`
 
 ########################################
 ## <summary>
+##	Set the nice level of init.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_setsched',`
+	gen_require(`
+		type init_t;
+	')
+
+	allow $1 init_t:process setsched;
+')
+
+########################################
+## <summary>
 ##	Connect to init with a unix socket.
 ## </summary>
 ## <param name="domain">
@@ -1082,6 +1118,24 @@ interface(`init_rw_stream_sockets',`
 
 ########################################
 ## <summary>
+##	Do not audit attempts to search init keys.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_dontaudit_search_keys',`
+	gen_require(`
+		type init_t;
+	')
+
+	dontaudit $1 init_t:key search;
+')
+
+########################################
+## <summary>
 ##	start service (systemd).
 ## </summary>
 ## <param name="domain">
@@ -1229,9 +1283,9 @@ interface(`init_shutdown_system',`
 ## 	Allow specified domain to get init status
 ## </summary>
 ## <param name="domain">
-## <summary>
-## 	Domain to allow access.
-## </summary>
+##	<summary>
+##	Domain to allow access.
+##	</summary>
 ## </param>
 #
 interface(`init_service_status',`
@@ -1248,9 +1302,9 @@ interface(`init_service_status',`
 ## 	Allow specified domain to get init start
 ## </summary>
 ## <param name="domain">
-## <summary>
-## 	Domain to allow access.
-## </summary>
+##	<summary>
+##	Domain to allow access.
+##	</summary>
 ## </param>
 #
 interface(`init_service_start',`
@@ -1285,12 +1339,31 @@ interface(`init_dbus_chat',`
 
 ########################################
 ## <summary>
+## 	Run init BPF programs.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_run_bpf',`
+	gen_require(`
+		type init_t;
+		class bpf prog_run;
+	')
+
+	allow $1 init_t:bpf prog_run;
+')
+
+########################################
+## <summary>
 ##      read/follow symlinks under /var/lib/systemd/
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_read_var_lib_links',`
@@ -1307,9 +1380,9 @@ interface(`init_read_var_lib_links',`
 ##      List /var/lib/systemd/ dir
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_list_var_lib_dirs',`
@@ -1412,9 +1485,9 @@ interface(`init_search_pids',`
 ##  Allow listing of the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_list_pids',`
@@ -1427,9 +1500,9 @@ interface(`init_list_pids',`
 ##  Create symbolic links in the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_manage_pid_symlinks', `
@@ -1442,9 +1515,9 @@ interface(`init_manage_pid_symlinks', `
 ##  Create files in the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_create_pid_files', `
@@ -1457,9 +1530,9 @@ interface(`init_create_pid_files', `
 ##  Write files in the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_write_pid_files', `
@@ -1473,9 +1546,9 @@ interface(`init_write_pid_files', `
 ##  directories in the /run/systemd directory.  (Deprecated)
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_manage_pid_dirs', `
@@ -1940,9 +2013,9 @@ interface(`init_script_file_domtrans',`
 ##      Send a kill signal to init scripts.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_kill_scripts',`
@@ -1958,9 +2031,9 @@ interface(`init_kill_scripts',`
 ##      Allow manage service for initrc_exec_t scripts
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Target domain
-##      </summary>
+##	<summary>
+##	Target domain
+##	</summary>
 ## </param>
 #
 interface(`init_manage_script_service',`
@@ -2005,7 +2078,7 @@ interface(`init_labeled_script_domtrans',`
 ## 	for all labeled init script types
 ## </summary>
 ## <param name="domain">
-## 	<summary>
+##	<summary>
 ##	Domain allowed to transition.
 ##	</summary>
 ## </param>
@@ -2023,9 +2096,9 @@ interface(`init_all_labeled_script_domtrans',`
 ##      Allow getting service status of initrc_exec_t scripts
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Target domain
-##      </summary>
+##	<summary>
+##	Target domain
+##	</summary>
 ## </param>
 #
 interface(`init_get_script_status',`
@@ -2141,9 +2214,9 @@ interface(`init_run_daemon',`
 ##     Start and stop init_script_file_type services
 ## </summary>
 ## <param name="domain">
-##     <summary>
-##     domain that can start and stop the services
-##     </summary>
+##	<summary>
+##	domain that can start and stop the services
+##	</summary>
 ## </param>
 #
 interface(`init_startstop_all_script_services',`
@@ -2544,7 +2617,7 @@ interface(`init_rw_script_pipes',`
 		type initrc_t;
 	')
 
-	allow $1 initrc_t:fifo_file rw_inherited_fifo_file_perms;
+	allow $1 initrc_t:fifo_file rw_fifo_file_perms;
 ')
 
 ########################################
@@ -3011,6 +3084,24 @@ interface(`init_manage_utmp',`
 
 ########################################
 ## <summary>
+##	Add a watch on utmp.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_watch_utmp',`
+	gen_require(`
+		type initrc_runtime_t;
+	')
+
+	allow $1 initrc_runtime_t:file watch;
+')
+
+########################################
+## <summary>
 ##	Relabel utmp.
 ## </summary>
 ## <param name="domain">
@@ -3070,9 +3161,9 @@ interface(`init_create_runtime_dirs',`
 ##      Read init_runtime_t files
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      domain
-##      </summary>
+##	<summary>
+##	domain
+##	</summary>
 ## </param>
 #
 interface(`init_read_runtime_files',`
@@ -3088,9 +3179,9 @@ interface(`init_read_runtime_files',`
 ##      Rename init_runtime_t files
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      domain
-##      </summary>
+##	<summary>
+##	domain
+##	</summary>
 ## </param>
 #
 interface(`init_rename_runtime_files',`
@@ -3106,9 +3197,9 @@ interface(`init_rename_runtime_files',`
 ##      Setattr init_runtime_t files
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      domain
-##      </summary>
+##	<summary>
+##	domain
+##	</summary>
 ## </param>
 #
 interface(`init_setattr_runtime_files',`
@@ -3124,9 +3215,9 @@ interface(`init_setattr_runtime_files',`
 ##      Delete init_runtime_t files
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      domain
-##      </summary>
+##	<summary>
+##	domain
+##	</summary>
 ## </param>
 #
 interface(`init_delete_runtime_files',`
@@ -3143,9 +3234,9 @@ interface(`init_delete_runtime_files',`
 ##  init sock file.
 ## </summary>
 ## <param name="domain">
-##  <summary>
-##  Domain allowed access.
-##  </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_write_runtime_socket',`
@@ -3274,6 +3365,24 @@ interface(`init_list_unit_dirs',`
 
 ########################################
 ## <summary>
+##	Read systemd unit files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_read_generic_units_files',`
+	gen_require(`
+		type systemd_unit_t;
+	')
+
+	allow $1 systemd_unit_t:file read_file_perms;
+')
+
+########################################
+## <summary>
 ##	Read systemd unit links
 ## </summary>
 ## <param name="domain">
@@ -3334,8 +3443,8 @@ interface(`init_start_generic_units',`
 ## </summary>
 ## <param name="domain">
 ##	<summary>
-## 	Domain to not audit.
-## </summary>
+##	Domain to not audit.
+##	</summary>
 ## </param>
 #
 interface(`init_stop_generic_units',`
@@ -3368,6 +3477,83 @@ interface(`init_reload_generic_units',`
 
 ########################################
 ## <summary>
+##	Get status of transient systemd units.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_get_transient_units_status',`
+	gen_require(`
+		type systemd_transient_unit_t;
+		class service status;
+	')
+
+	allow $1 systemd_transient_unit_t:service status;
+')
+
+########################################
+## <summary>
+##	Start transient systemd units.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_start_transient_units',`
+	gen_require(`
+		type systemd_transient_unit_t;
+		class service start;
+	')
+
+	allow $1 systemd_transient_unit_t:service start;
+')
+
+########################################
+## <summary>
+##	Stop transient systemd units.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`init_stop_transient_units',`
+	gen_require(`
+		type systemd_transient_unit_t;
+		class service stop;
+	')
+
+	allow $1 systemd_transient_unit_t:service stop;
+')
+
+#######################################
+## <summary>
+##	Reload transient systemd units.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`init_reload_transient_units',`
+	gen_require(`
+		type systemd_transient_unit_t;
+		class service reload;
+	')
+
+	allow $1 systemd_transient_unit_t:service reload;
+')
+
+
+########################################
+## <summary>
 ##	Get status of all systemd units.
 ## </summary>
 ## <param name="domain">
@@ -3390,9 +3576,9 @@ interface(`init_get_all_units_status',`
 ##      All perms on all systemd units.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+##	<summary>
+##	Domain allowed access.
+##	</summary>
 ## </param>
 #
 interface(`init_manage_all_units',`
@@ -3430,8 +3616,8 @@ interface(`init_start_all_units',`
 ## </summary>
 ## <param name="domain">
 ##	<summary>
-## 	Domain to not audit.
-## </summary>
+##	Domain to not audit.
+##	</summary>
 ## </param>
 #
 interface(`init_stop_all_units',`
@@ -3482,14 +3668,33 @@ interface(`init_manage_all_unit_files',`
 	manage_lnk_files_pattern($1, systemdunit, systemdunit)
 ')
 
+#########################################
+## <summary>
+##	Associate the specified domain to be a domain whose
+##	keyring init should be allowed to link.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain whose keyring init should be allowed to link.
+##	</summary>
+## </param>
+#
+interface(`init_linkable_keyring',`
+	gen_require(`
+		attribute init_linkable_keyring_type;
+	')
+
+	typeattribute $1 init_linkable_keyring_type;
+')
+
 ########################################
 ## <summary>
 ##      Allow unconfined access to send instructions to init
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Target domain
-##      </summary>
+##	<summary>
+##	Target domain
+##	</summary>
 ## </param>
 #
 interface(`init_admin',`
@@ -3519,9 +3724,9 @@ interface(`init_admin',`
 ##      Allow getting init_t rlimit
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Source domain
-##      </summary>
+##	<summary>
+##	Source domain
+##	</summary>
 ## </param>
 #
 interface(`init_getrlimit',`
