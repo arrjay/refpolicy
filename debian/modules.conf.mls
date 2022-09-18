@@ -202,13 +202,6 @@ acct = module
 afs = module
 
 # Layer: contrib
-# Module: aiccu
-#
-# Automatic IPv6 Connectivity Client Utility.
-# 
-aiccu = module
-
-# Layer: contrib
 # Module: aide
 #
 # Aide filesystem integrity checker.
@@ -342,13 +335,6 @@ backup = module
 bacula = module
 
 # Layer: contrib
-# Module: bcfg2
-#
-# configuration management suite.
-# 
-bcfg2 = module
-
-# Layer: contrib
 # Module: bind
 #
 # Berkeley Internet name domain DNS server.
@@ -419,25 +405,11 @@ cachefilesd = module
 calamaris = module
 
 # Layer: contrib
-# Module: callweaver
-#
-# PBX software.
-# 
-callweaver = off
-
-# Layer: contrib
 # Module: canna
 #
 # Kana-kanji conversion server.
 # 
 canna = module
-
-# Layer: contrib
-# Module: ccs
-#
-# Cluster Configuration System.
-# 
-ccs = off
 
 # Layer: contrib
 # Module: cdrecord
@@ -503,39 +475,11 @@ chromium = module
 chronyd = module
 
 # Layer: contrib
-# Module: cipe
-#
-# Encrypted tunnel daemon.
-# 
-cipe = off
-
-# Layer: contrib
 # Module: clamav
 #
 # ClamAV Virus Scanner.
 # 
 clamav = module
-
-# Layer: contrib
-# Module: clockspeed
-#
-# Clock speed measurement and manipulation.
-# 
-clockspeed = off
-
-# Layer: contrib
-# Module: clogd
-#
-# Clustered Mirror Log Server.
-# 
-clogd = off
-
-# Layer: contrib
-# Module: cmirrord
-#
-# Cluster mirror log daemon.
-# 
-cmirrord = module
 
 # Layer: contrib
 # Module: cobbler
@@ -692,32 +636,11 @@ dbskk = module
 dbus = base
 
 # Layer: contrib
-# Module: dcc
-#
-# Distributed checksum clearinghouse spam filtering.
-# 
-dcc = off
-
-# Layer: contrib
 # Module: ddclient
 #
 # Update dynamic IP address at DynDNS.org.
 # 
 ddclient = module
-
-# Layer: contrib
-# Module: ddcprobe
-#
-# ddcprobe retrieves monitor and graphics card information.
-# 
-ddcprobe = off
-
-# Layer: contrib
-# Module: denyhosts
-#
-# SSH dictionary attack mitigation.
-# 
-denyhosts = off
 
 # Layer: contrib
 # Module: devicekit
@@ -802,13 +725,6 @@ dpkg = base
 # Mirrors a block device over the network to another machine.
 # 
 drbd = module
-
-# Layer: contrib
-# Module: dspam
-#
-# Content-based spam filter designed for multi-user enterprise systems.
-# 
-dspam = off
 
 # Layer: contrib
 # Module: entropyd
@@ -993,13 +909,6 @@ hadoop = off
 hddtemp = module
 
 # Layer: contrib
-# Module: howl
-#
-# Port of Apple Rendezvous multicast DNS.
-# 
-howl = off
-
-# Layer: contrib
 # Module: hypervkvp
 #
 # HyperV key value pair (KVP).
@@ -1026,13 +935,6 @@ icecast = module
 # Bring up/down ethernet interfaces based on cable detection.
 # 
 ifplugd = module
-
-# Layer: contrib
-# Module: imaze
-#
-# iMaze game server.
-# 
-imaze = off
 
 # Layer: contrib
 # Module: inetd
@@ -1105,13 +1007,6 @@ jabber = module
 java = module
 
 # Layer: contrib
-# Module: jockey
-#
-# Jockey driver manager.
-# 
-jockey = off
-
-# Layer: contrib
 # Module: kdump
 #
 # Kernel crash dumping mechanism.
@@ -1152,13 +1047,6 @@ kismet = module
 # Kernel Samepage Merging Tuning Daemon.
 # 
 ksmtuned = module
-
-# Layer: contrib
-# Module: ktalk
-#
-# KDE Talk daemon.
-# 
-ktalk = off
 
 # Layer: contrib
 # Module: l2tp
@@ -1217,13 +1105,6 @@ lldpad = module
 loadkeys = module
 
 # Layer: contrib
-# Module: lockdev
-#
-# Library for locking devices.
-# 
-lockdev = off
-
-# Layer: contrib
 # Module: logrotate
 #
 # Rotates, compresses, removes and mails system log files.
@@ -1257,13 +1138,6 @@ lsm = off
 # Manage electronic mail discussion and e-newsletter lists.
 # 
 mailman = module
-
-# Layer: contrib
-# Module: mailscanner
-#
-# E-mail security and anti-spam package for e-mail gateway systems.
-# 
-mailscanner = off
 
 # Layer: contrib
 # Module: man2html
@@ -1525,13 +1399,6 @@ nut = module
 nx = module
 
 # Layer: contrib
-# Module: oav
-#
-# Open AntiVirus scannerdaemon and signature update.
-# 
-oav = off
-
-# Layer: contrib
 # Module: obex
 #
 # D-Bus service providing high-level OBEX client and server side functionality.
@@ -1656,13 +1523,6 @@ plymouthd = module
 # Policy framework for controlling privileges for system-wide services.
 # 
 policykit = module
-
-# Layer: contrib
-# Module: polipo
-#
-# Lightweight forwarding and caching proxy server.
-# 
-polipo = off
 
 # Layer: contrib
 # Module: portage
@@ -1791,13 +1651,6 @@ pwauth = module
 pxe = module
 
 # Layer: contrib
-# Module: pyicqt
-#
-# ICQ transport for XMPP server.
-# 
-pyicqt = off
-
-# Layer: contrib
 # Module: pyzor
 #
 # Pyzor is a distributed, collaborative spam detection and filtering network.
@@ -1917,32 +1770,11 @@ remotelogin = module
 resmgr = off
 
 # Layer: contrib
-# Module: rgmanager
-#
-# Resource Group Manager.
-# 
-rgmanager = module
-
-# Layer: contrib
-# Module: rhcs
-#
-# Red Hat Cluster Suite.
-# 
-rhcs = off
-
-# Layer: contrib
 # Module: rhsmcertd
 #
 # Subscription Management Certificate Daemon.
 # 
 rhsmcertd = off
-
-# Layer: contrib
-# Module: ricci
-#
-# Ricci cluster management agent.
-# 
-ricci = off
 
 # Layer: contrib
 # Module: rlogin

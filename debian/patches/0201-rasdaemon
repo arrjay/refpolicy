@@ -1,8 +1,8 @@
-Index: refpolicy-2.20210203/policy/modules/kernel/filesystem.if
+Index: refpolicy-2.20220217/policy/modules/kernel/filesystem.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/kernel/filesystem.if
-+++ refpolicy-2.20210203/policy/modules/kernel/filesystem.if
-@@ -5302,6 +5302,25 @@ interface(`fs_getattr_tracefs_files',`
+--- refpolicy-2.20220217.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20220217/policy/modules/kernel/filesystem.if
+@@ -5485,6 +5485,43 @@ interface(`fs_getattr_tracefs_files',`
  
  ########################################
  ## <summary>
@@ -25,36 +25,56 @@ Index: refpolicy-2.20210203/policy/modules/kernel/filesystem.if
 +
 +########################################
 +## <summary>
++##	create trace filesystem directories
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`fs_create_tracefs_dirs',`
++	gen_require(`
++		type tracefs_t;
++	')
++
++	allow $1 tracefs_t:dir { create rw_dir_perms };
++')
++
++########################################
++## <summary>
  ##	Mount a XENFS filesystem.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.fc
+Index: refpolicy-2.20220217/policy/modules/services/rasdaemon.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210203/policy/modules/services/rasdaemon.fc
++++ refpolicy-2.20220217/policy/modules/services/rasdaemon.fc
 @@ -0,0 +1,3 @@
 +/usr/sbin/rasdaemon			--	gen_context(system_u:object_r:rasdaemon_exec_t,s0)
 +/var/lib/rasdaemon(/.*)?			gen_context(system_u:object_r:rasdaemon_var_t,s0)
 +
-Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.if
+Index: refpolicy-2.20220217/policy/modules/services/rasdaemon.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210203/policy/modules/services/rasdaemon.if
-@@ -0,0 +1 @@
-+## <summary></summary>
-Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.te
++++ refpolicy-2.20220217/policy/modules/services/rasdaemon.if
+@@ -0,0 +1,10 @@
++## <summary>RAS (Reliability, Availability and Serviceability) logging tool</summary>
++##
++## <desc>
++## rasdaemon is a RAS (Reliability, Availability and Serviceability) logging
++## tool.  It currently records memory errors, using the EDAC tracing events.
++## EDAC are drivers in the Linux kernel that handle detection of ECC errors
++## from memory controllers for most chipsets on x86 and ARM architectures.
++##
++## https://git.infradead.org/users/mchehab/rasdaemon.git
++## </desc>
+Index: refpolicy-2.20220217/policy/modules/services/rasdaemon.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210203/policy/modules/services/rasdaemon.te
-@@ -0,0 +1,49 @@
++++ refpolicy-2.20220217/policy/modules/services/rasdaemon.te
+@@ -0,0 +1,37 @@
 +policy_module(rasdaemon, 1.0.0)
-+
-+# rasdaemon is a RAS (Reliability, Availability and Serviceability) logging
-+# tool.  It currently records memory errors, using the EDAC tracing events.
-+# EDAC are drivers in the Linux kernel that handle detection of ECC errors
-+# from memory controllers for most chipsets on x86 and ARM architectures.
-+#
-+# https://git.infradead.org/users/mchehab/rasdaemon.git
 +
 +########################################
 +#
@@ -73,11 +93,6 @@ Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.te
 +# Local policy
 +#
 +
-+allow rasdaemon_t self:unix_dgram_socket create_socket_perms;
-+
-+# confidentiality for tracefs and integrity for debugfs
-+allow rasdaemon_t self:lockdown { confidentiality integrity };
-+
 +allow rasdaemon_t rasdaemon_var_t:dir manage_dir_perms;
 +allow rasdaemon_t rasdaemon_var_t:file manage_file_perms;
 +
@@ -89,9 +104,9 @@ Index: refpolicy-2.20210203/policy/modules/services/rasdaemon.te
 +dev_list_sysfs(rasdaemon_t)
 +dev_read_urand(rasdaemon_t)
 +
-+files_read_etc_symlinks(rasdaemon_t)
 +files_search_var_lib(rasdaemon_t)
 +fs_write_tracefs_files(rasdaemon_t)
++fs_create_tracefs_dirs(rasdaemon_t)
 +
 +logging_send_syslog_msg(rasdaemon_t)
 +miscfiles_read_localization(rasdaemon_t)

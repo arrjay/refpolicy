@@ -1,7 +1,7 @@
-Index: refpolicy-2.20210203/policy/modules/services/sympa.fc
+Index: refpolicy-2.20220322/policy/modules/services/sympa.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210203/policy/modules/services/sympa.fc
++++ refpolicy-2.20220322/policy/modules/services/sympa.fc
 @@ -0,0 +1,6 @@
 +/usr/lib/sympa/bin/.*	--	gen_context(system_u:object_r:sympa_exec_t,s0)
 +/var/lib/sympa(/.*)?		gen_context(system_u:object_r:sympa_var_t,s0)
@@ -9,12 +9,17 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.fc
 +/run/sympa(/.*)?		gen_context(system_u:object_r:sympa_runtime_t,s0)
 +/etc/mail/sympa(/.*)?		gen_context(system_u:object_r:sympa_etc_t,s0)
 +/etc/sympa(/.*)?		gen_context(system_u:object_r:sympa_etc_t,s0)
-Index: refpolicy-2.20210203/policy/modules/services/sympa.te
+Index: refpolicy-2.20220322/policy/modules/services/sympa.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210203/policy/modules/services/sympa.te
-@@ -0,0 +1,65 @@
++++ refpolicy-2.20220322/policy/modules/services/sympa.te
+@@ -0,0 +1,86 @@
 +policy_module(sympa,1.0.0)
++
++########################################
++#
++# Declarations
++#
 +
 +type sympa_t;
 +type sympa_exec_t;
@@ -32,6 +37,12 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.te
 +type sympa_tmp_t;
 +files_tmp_file(sympa_tmp_t)
 +
++########################################
++#
++# Local policy
++#
++
++allow sympa_t self:capability { chown dac_override setgid setuid };
 +allow sympa_t self:fifo_file rw_file_perms;
 +allow sympa_t self:tcp_socket create_socket_perms;
 +allow sympa_t self:unix_dgram_socket create_socket_perms;
@@ -41,6 +52,7 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.te
 +
 +allow sympa_t sympa_runtime_t:dir manage_dir_perms;
 +allow sympa_t sympa_runtime_t:file manage_file_perms;
++allow sympa_t sympa_runtime_t:sock_file { create setattr unlink write };
 +
 +allow sympa_t sympa_etc_t:dir list_dir_perms;
 +allow sympa_t sympa_etc_t:file read_file_perms;
@@ -48,9 +60,14 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.te
 +files_tmp_filetrans(sympa_t, sympa_tmp_t, { file })
 +allow sympa_t sympa_tmp_t:file manage_file_perms;
 +
++can_exec(sympa_t, sympa_exec_t)
++
 +kernel_read_kernel_sysctls(sympa_t)
 +
 +auth_dontaudit_read_shadow(sympa_t)
++
++# for setting SE Linux context in systemd unit file
++corecmd_bin_entry_type(sympa_t)
 +
 +corecmd_exec_bin(sympa_t)
 +corecmd_exec_shell(sympa_t)
@@ -70,6 +87,10 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.te
 +sysnet_read_config(sympa_t)
 +
 +optional_policy(`
++	apache_search_sys_scripts(sympa_t)
++')
++
++optional_policy(`
 +	mta_read_config(sympa_t)
 +	mta_send_mail(sympa_t)
 +	mta_rw_delivery_fifos(sympa_t)
@@ -79,12 +100,17 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.te
 +	mysql_tcp_connect(sympa_t)
 +	mysql_stream_connect(sympa_t)
 +')
-Index: refpolicy-2.20210203/policy/modules/services/sympa.if
+Index: refpolicy-2.20220322/policy/modules/services/sympa.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20210203/policy/modules/services/sympa.if
-@@ -0,0 +1,168 @@
-+## <summary></summary>
++++ refpolicy-2.20220322/policy/modules/services/sympa.if
+@@ -0,0 +1,209 @@
++## <summary>Sympa mailing list manager</summary>
++##
++## <desc>
++## Sympa is a popular mailing list manager.
++## https://www.sympa.org/
++## </desc>
 +
 +########################################
 +## <summary>
@@ -140,6 +166,24 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.if
 +
 +	allow $1 sympa_var_t:dir rw_dir_perms;
 +	allow $1 sympa_var_t:file manage_file_perms;
++')
++
++########################################
++## <summary>
++##      Allow mapping sympa_var_t files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`sympa_map_var_files',`
++	gen_require(`
++		type sympa_var_t;
++	')
++
++	allow $1 sympa_var_t:file map;
 +')
 +
 +########################################
@@ -252,11 +296,29 @@ Index: refpolicy-2.20210203/policy/modules/services/sympa.if
 +	allow $1 sympa_runtime_t:dir rw_dir_perms;
 +	allow $1 sympa_runtime_t:sock_file { setattr create unlink write };
 +')
-Index: refpolicy-2.20210203/policy/modules/services/mta.te
++
++########################################
++## <summary>
++##	Allow domain to connect to sympa socket
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`sympa_connect_runtime_sock_files',`
++	gen_require(`
++		type sympa_t;
++	')
++
++	allow $1 sympa_t:unix_stream_socket connectto;
++')
+Index: refpolicy-2.20220322/policy/modules/services/mta.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/mta.te
-+++ refpolicy-2.20210203/policy/modules/services/mta.te
-@@ -310,6 +310,11 @@ optional_policy(`
+--- refpolicy-2.20220322.orig/policy/modules/services/mta.te
++++ refpolicy-2.20220322/policy/modules/services/mta.te
+@@ -307,6 +307,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -268,7 +330,7 @@ Index: refpolicy-2.20210203/policy/modules/services/mta.te
  	unconfined_use_fds(system_mail_t)
  ')
  
-@@ -403,6 +408,11 @@ optional_policy(`
+@@ -397,6 +402,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -280,11 +342,11 @@ Index: refpolicy-2.20210203/policy/modules/services/mta.te
  	uucp_domtrans_uux(mailserver_delivery)
  ')
  
-Index: refpolicy-2.20210203/policy/modules/services/mta.if
+Index: refpolicy-2.20220322/policy/modules/services/mta.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/mta.if
-+++ refpolicy-2.20210203/policy/modules/services/mta.if
-@@ -814,6 +814,26 @@ interface(`mta_dontaudit_rw_delivery_tcp
+--- refpolicy-2.20220322.orig/policy/modules/services/mta.if
++++ refpolicy-2.20220322/policy/modules/services/mta.if
+@@ -872,6 +872,26 @@ interface(`mta_read_spool_symlinks',`
  
  #######################################
  ## <summary>
@@ -311,11 +373,11 @@ Index: refpolicy-2.20210203/policy/modules/services/mta.if
  ##	Do not audit attempts to read
  ##	mail spool symlinks.
  ## </summary>
-Index: refpolicy-2.20210203/policy/modules/services/exim.te
+Index: refpolicy-2.20220322/policy/modules/services/exim.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/exim.te
-+++ refpolicy-2.20210203/policy/modules/services/exim.te
-@@ -249,3 +249,10 @@ optional_policy(`
+--- refpolicy-2.20220322.orig/policy/modules/services/exim.te
++++ refpolicy-2.20220322/policy/modules/services/exim.te
+@@ -252,3 +252,10 @@ optional_policy(`
  	spamassassin_exec(exim_t)
  	spamassassin_exec_client(exim_t)
  ')
@@ -326,17 +388,17 @@ Index: refpolicy-2.20210203/policy/modules/services/exim.te
 +	sympa_read_var_files(exim_t)
 +	sympa_use_fd(exim_t)
 +')
-Index: refpolicy-2.20210203/policy/modules/services/apache.te
+Index: refpolicy-2.20220322/policy/modules/services/apache.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/apache.te
-+++ refpolicy-2.20210203/policy/modules/services/apache.te
-@@ -902,6 +902,14 @@ optional_policy(`
+--- refpolicy-2.20220322.orig/policy/modules/services/apache.te
++++ refpolicy-2.20220322/policy/modules/services/apache.te
+@@ -899,6 +899,14 @@ optional_policy(`
  	snmp_dontaudit_write_snmp_var_lib_files(httpd_t)
  ')
  
 +optional_policy(`
-+	sympa_manage_runtime_files(httpd_t)
 +	sympa_manage_runtime_sock_files(httpd_t)
++	sympa_map_var_files(httpd_t)
 +	sympa_read_conf(httpd_t)
 +	sympa_read_var_files(httpd_t)
 +')
@@ -345,7 +407,7 @@ Index: refpolicy-2.20210203/policy/modules/services/apache.te
  ########################################
  #
  # Helper local policy
-@@ -1243,6 +1251,8 @@ files_read_var_symlinks(httpd_sys_script
+@@ -1240,6 +1248,8 @@ files_read_var_symlinks(httpd_sys_script
  files_search_var_lib(httpd_sys_script_t)
  files_search_spool(httpd_sys_script_t)
  
@@ -354,7 +416,7 @@ Index: refpolicy-2.20210203/policy/modules/services/apache.te
  apache_domtrans_rotatelogs(httpd_sys_script_t)
  
  auth_use_nsswitch(httpd_sys_script_t)
-@@ -1325,6 +1335,11 @@ optional_policy(`
+@@ -1322,6 +1332,11 @@ optional_policy(`
  	')
  ')
  

@@ -1,9 +1,9 @@
-Index: refpolicy-2.20210203/policy/modules/system/init.if
+Index: refpolicy-2.20220520/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/init.if
-+++ refpolicy-2.20210203/policy/modules/system/init.if
-@@ -3290,6 +3290,24 @@ interface(`init_list_unit_dirs',`
- 	init_search_units($1)
+--- refpolicy-2.20220520.orig/policy/modules/system/init.if
++++ refpolicy-2.20220520/policy/modules/system/init.if
+@@ -3301,6 +3301,24 @@ interface(`init_tcp_recvfrom_all_daemons
+ 	corenet_tcp_recvfrom_labeled($1, daemon)
  ')
  
 +######################################
@@ -26,12 +26,12 @@ Index: refpolicy-2.20210203/policy/modules/system/init.if
 +
  ########################################
  ## <summary>
- ##     Read systemd unit files
-Index: refpolicy-2.20210203/policy/modules/system/locallogin.te
+ ##	Allow the specified domain to connect to daemon with a udp socket
+Index: refpolicy-2.20220520/policy/modules/system/locallogin.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/locallogin.te
-+++ refpolicy-2.20210203/policy/modules/system/locallogin.te
-@@ -125,7 +125,8 @@ auth_manage_pam_runtime_files(local_logi
+--- refpolicy-2.20220520.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20220520/policy/modules/system/locallogin.te
+@@ -129,7 +129,8 @@ auth_manage_pam_runtime_files(local_logi
  auth_manage_pam_console_data(local_login_t)
  auth_domtrans_pam_console(local_login_t)
  
@@ -41,11 +41,11 @@ Index: refpolicy-2.20210203/policy/modules/system/locallogin.te
  
  miscfiles_read_localization(local_login_t)
  
-Index: refpolicy-2.20210203/policy/modules/system/systemd.te
+Index: refpolicy-2.20220520/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20210203/policy/modules/system/systemd.te
-@@ -674,6 +674,9 @@ init_start_system(systemd_logind_t)
+--- refpolicy-2.20220520.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20220520/policy/modules/system/systemd.te
+@@ -844,6 +844,9 @@ init_start_system(systemd_logind_t)
  init_stop_system(systemd_logind_t)
  init_watch_utmp(systemd_logind_t)
  
@@ -55,10 +55,10 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.te
  locallogin_read_state(systemd_logind_t)
  
  seutil_libselinux_linked(systemd_logind_t)
-Index: refpolicy-2.20210203/policy/modules/system/systemd.if
+Index: refpolicy-2.20220520/policy/modules/system/systemd.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/systemd.if
-+++ refpolicy-2.20210203/policy/modules/system/systemd.if
+--- refpolicy-2.20220520.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20220520/policy/modules/system/systemd.if
 @@ -19,11 +19,6 @@
  ##	The user domain for the role.
  ##	</summary>
@@ -79,7 +79,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.if
  	')
  
  	#################################
-@@ -59,6 +55,7 @@ template(`systemd_role_template',`
+@@ -60,6 +56,7 @@ template(`systemd_role_template',`
  	allow $1_systemd_t $3:process { setsched rlimitinh signal_perms };
  	corecmd_shell_domtrans($1_systemd_t, $3)
  	corecmd_bin_domtrans($1_systemd_t, $3)
@@ -87,7 +87,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.if
  
  	# systemctl --user rules
  	allow $1_systemd_t systemd_user_unix_stream_activated_socket_type:unix_stream_socket { create_socket_perms listen };
-@@ -110,6 +107,10 @@ template(`systemd_role_template',`
+@@ -114,6 +111,10 @@ template(`systemd_role_template',`
  	seutil_search_default_contexts($1_systemd_t)
  	seutil_read_file_contexts($1_systemd_t)
  
@@ -98,7 +98,7 @@ Index: refpolicy-2.20210203/policy/modules/system/systemd.if
  	systemd_manage_conf_home_content($1_systemd_t)
  	systemd_manage_data_home_content($1_systemd_t)
  
-@@ -137,6 +138,12 @@ template(`systemd_role_template',`
+@@ -144,6 +145,12 @@ template(`systemd_role_template',`
  	allow $3 systemd_user_runtime_t:lnk_file { manage_lnk_file_perms relabel_lnk_file_perms };
  	allow $3 systemd_user_runtime_t:sock_file { manage_sock_file_perms relabel_sock_file_perms };
  

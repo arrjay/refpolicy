@@ -2,10 +2,10 @@ Description: cron patches
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2017-02-21
 
-Index: refpolicy-2.20210115/policy/modules/services/cron.if
+Index: refpolicy-2.20220217/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20210115.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20210115/policy/modules/services/cron.if
+--- refpolicy-2.20220217.orig/policy/modules/services/cron.if
++++ refpolicy-2.20220217/policy/modules/services/cron.if
 @@ -21,23 +21,33 @@ template(`cron_common_crontab_template',
  	# Declarations
  	#
@@ -49,105 +49,101 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.if
  ')
  
  ########################################
-@@ -58,9 +68,11 @@ template(`cron_common_crontab_template',
+@@ -69,8 +79,8 @@ template(`cron_common_crontab_template',
  #
- interface(`cron_role',`
+ template(`cron_role',`
  	gen_require(`
-+ifdef(`cronjob_domain', `
- 		type cronjob_t;
-+')
- 		type crontab_exec_t, crond_t;
--		type crontab_t, user_cron_spool_t, crond_tmp_t;
-+		type $2_crontab_t, $2_cron_spool_t, crond_tmp_t;
+-		type cronjob_t, crontab_t, crontab_exec_t;
+-		type user_cron_spool_t, crond_t;
++		type cronjob_t, $1_crontab_t, crontab_exec_t;
++		type $1_cron_spool_t, crond_t;
  		bool cron_userdomain_transition;
  	')
  
-@@ -69,64 +81,60 @@ interface(`cron_role',`
+@@ -79,32 +89,32 @@ template(`cron_role',`
  	# Declarations
  	#
  
--	role $1 types { cronjob_t crontab_t };
-+ifdef(`cronjob_domain', `
-+	role $1 types { cronjob_t };
-+')
-+	role $1 types { $2_crontab_t };
+-	role $4 types { cronjob_t crontab_t };
++	role $4 types { cronjob_t $1_crontab_t };
  
  	##############################
  	#
  	# Local policy
  	#
  
--	domtrans_pattern($2_t, crontab_exec_t, crontab_t)
-+	domtrans_pattern($2_t, crontab_exec_t, $2_crontab_t)
+-	domtrans_pattern($2, crontab_exec_t, crontab_t)
++	domtrans_pattern($2, crontab_exec_t, $1_crontab_t)
  
- 	dontaudit crond_t $2_t:process { noatsecure rlimitinh siginh };
- 	allow $2_t crond_t:process sigchld;
+ 	dontaudit crond_t $3:process { noatsecure rlimitinh siginh };
+ 	allow $2 crond_t:process sigchld;
  
--	allow $2_t user_cron_spool_t:file rw_inherited_file_perms;
-+	allow $2_t $2_cron_spool_t:file rw_inherited_file_perms;
+-	allow $2 user_cron_spool_t:file rw_inherited_file_perms;
++	allow $2 $1_cron_spool_t:file rw_inherited_file_perms;
  
--	allow $2_t crontab_t:process { ptrace signal_perms };
--	ps_process_pattern($2_t, crontab_t)
-+	allow $2_t $2_crontab_t:process { ptrace signal_perms };
-+	ps_process_pattern($2_t, $2_crontab_t)
+-	allow $2 crontab_t:process { ptrace signal_perms };
+-	ps_process_pattern($2, crontab_t)
++	allow $2 $1_crontab_t:process { ptrace signal_perms };
++	ps_process_pattern($2, $1_crontab_t)
  
 -	corecmd_exec_bin(crontab_t)
 -	corecmd_exec_shell(crontab_t)
-+	corecmd_exec_bin($2_crontab_t)
-+	corecmd_exec_shell($2_crontab_t)
++	corecmd_exec_bin($1_crontab_t)
++	corecmd_exec_shell($1_crontab_t)
  
--	tunable_policy(`cron_userdomain_transition',`
-+	ifndef(`cronjob_domain', `
- 		allow crond_t $2_t:process transition;
- 		allow crond_t $2_t:fd use;
- 		allow crond_t $2_t:key manage_key_perms;
+ 	tunable_policy(`cron_userdomain_transition',`
+ 		allow crond_t $2:process transition;
+ 		allow crond_t $2:fd use;
+ 		allow crond_t $2:key manage_key_perms;
  
--		allow $2_t user_cron_spool_t:file entrypoint;
-+		allow $2_t $2_cron_spool_t:file entrypoint;
- 		allow $2_t crond_tmp_t:file rw_inherited_file_perms;
+-		allow $2 user_cron_spool_t:file entrypoint;
++		allow $2 $1_cron_spool_t:file entrypoint;
  
- 		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
-+	')
+ 		allow $2 crond_t:fifo_file rw_fifo_file_perms;
  
--		allow $2_t cronjob_t:process { ptrace signal_perms };
--		ps_process_pattern($2_t, cronjob_t)
-+	tunable_policy(`cron_userdomain_transition',`
-+		allow crond_t $2_t:process transition;
-+		allow crond_t $2_t:fd use;
-+		allow crond_t $2_t:key manage_key_perms;
-+		allow $2_t $2_cron_spool_t:file entrypoint;
- 	',`
- 		dontaudit crond_t $2_t:process transition;
- 		dontaudit crond_t $2_t:fd use;
- 		dontaudit crond_t $2_t:key manage_key_perms;
+@@ -115,7 +125,7 @@ template(`cron_role',`
+ 		dontaudit crond_t $2:fd use;
+ 		dontaudit crond_t $2:key manage_key_perms;
  
--		dontaudit $2_t user_cron_spool_t:file entrypoint;
-+		dontaudit $2_t $2_cron_spool_t:file entrypoint;
+-		dontaudit $2 user_cron_spool_t:file entrypoint;
++		dontaudit $2 $1_cron_spool_t:file entrypoint;
  
- 		dontaudit $2_t crond_t:fifo_file rw_fifo_file_perms;
--
--		dontaudit $2_t cronjob_t:process { ptrace signal_perms };
--	')
--
--	optional_policy(`
--		gen_require(`
--			class dbus send_msg;
--		')
--
--		dbus_stub(cronjob_t)
--
--		allow cronjob_t $2_t:dbus send_msg;
+ 		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
+ 
+@@ -162,7 +172,7 @@ template(`cron_role',`
+ template(`cron_unconfined_role',`
+ 	gen_require(`
+ 		type unconfined_cronjob_t, crontab_t, crontab_exec_t;
+-		type crond_t, user_cron_spool_t;
++		type crond_t, $1_cron_spool_t;
+ 		bool cron_userdomain_transition;
  	')
- ')
  
- ########################################
- ## <summary>
- ##	Role access for unconfined cron.
-+##	Only used if cronjob_domain is set
- ## </summary>
- ## <param name="role">
- ##	<summary>
-@@ -192,7 +200,7 @@ interface(`cron_unconfined_role',`
+@@ -183,7 +193,7 @@ template(`cron_unconfined_role',`
+ 	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
+ 	allow $2 crond_t:process sigchld;
+ 
+-	allow $2 user_cron_spool_t:file rw_inherited_file_perms;
++	allow $2 $1_cron_spool_t:file rw_inherited_file_perms;
+ 
+ 	allow $2 crontab_t:process { ptrace signal_perms };
+ 	ps_process_pattern($2, crontab_t)
+@@ -196,7 +206,7 @@ template(`cron_unconfined_role',`
+ 		allow crond_t $2:fd use;
+ 		allow crond_t $2:key manage_key_perms;
+ 
+-		allow $2 user_cron_spool_t:file entrypoint;
++		allow $2 $1_cron_spool_t:file entrypoint;
+ 
+ 		allow $2 crond_t:fifo_file rw_fifo_file_perms;
+ 
+@@ -207,12 +217,12 @@ template(`cron_unconfined_role',`
+ 		dontaudit crond_t $2:fd use;
+ 		dontaudit crond_t $2:key manage_key_perms;
+ 
+-		dontaudit $2 user_cron_spool_t:file entrypoint;
++		dontaudit $2 $1_cron_spool_t:file entrypoint;
+ 
  		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
  
  		dontaudit $2 unconfined_cronjob_t:process { ptrace signal_perms };
@@ -156,7 +152,43 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.if
  
  	optional_policy(`
  		gen_require(`
-@@ -314,11 +322,8 @@ interface(`cron_admin_role',`
+@@ -255,7 +265,7 @@ template(`cron_admin_role',`
+ 	gen_require(`
+ 		type cronjob_t, crontab_exec_t, admin_crontab_t;
+ 		class passwd crontab;
+-		type crond_t, crond_runtime_t, user_cron_spool_t;
++		type crond_t, crond_runtime_t, $1_cron_spool_t;
+ 		bool cron_userdomain_transition, fcron_crond;
+ 	')
+ 
+@@ -276,7 +286,7 @@ template(`cron_admin_role',`
+ 	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
+ 	allow $2 crond_t:process sigchld;
+ 
+-	allow $2 user_cron_spool_t:file rw_inherited_file_perms;
++	allow $2 $1_cron_spool_t:file rw_inherited_file_perms;
+ 
+ 	allow $2 admin_crontab_t:process { ptrace signal_perms };
+ 	ps_process_pattern($2, admin_crontab_t)
+@@ -292,7 +302,7 @@ template(`cron_admin_role',`
+ 		allow crond_t $2:fd use;
+ 		allow crond_t $2:key manage_key_perms;
+ 
+-		allow $2 user_cron_spool_t:file entrypoint;
++		allow $2 $1_cron_spool_t:file entrypoint;
+ 
+ 		allow $2 crond_t:fifo_file rw_fifo_file_perms;
+ 
+@@ -303,7 +313,7 @@ template(`cron_admin_role',`
+ 		dontaudit crond_t $2:fd use;
+ 		dontaudit crond_t $2:key manage_key_perms;
+ 
+-		dontaudit $2 user_cron_spool_t:file entrypoint;
++		dontaudit $2 $1_cron_spool_t:file entrypoint;
+ 
+ 		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
+ 
+@@ -345,11 +355,8 @@ template(`cron_admin_role',`
  interface(`cron_system_entry',`
  	gen_require(`
  		type crond_t, system_cronjob_t;
@@ -168,7 +200,7 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.if
  	domtrans_pattern(system_cronjob_t, $2, $1)
  	domtrans_pattern(crond_t, $2, $1)
  
-@@ -992,7 +997,7 @@ interface(`cron_admin',`
+@@ -1023,7 +1030,7 @@ interface(`cron_admin',`
  		type crond_tmp_t, admin_crontab_tmp_t;
  		type crontab_tmp_t, system_cronjob_tmp_t;
  		type cron_runtime_t, system_cronjob_runtime_t, crond_runtime_t;
@@ -177,7 +209,7 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.if
  		attribute cron_spool_type;
  	')
  
-@@ -1015,7 +1020,7 @@ interface(`cron_admin',`
+@@ -1046,7 +1053,7 @@ interface(`cron_admin',`
  	admin_pattern($1, system_cronjob_lock_t)
  
  	logging_search_logs($1)
@@ -186,10 +218,10 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.if
  
  	files_search_spool($1)
  	admin_pattern($1, cron_spool_type)
-Index: refpolicy-2.20210115/policy/modules/services/cron.te
+Index: refpolicy-2.20220217/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20210115.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20210115/policy/modules/services/cron.te
+--- refpolicy-2.20220217.orig/policy/modules/services/cron.te
++++ refpolicy-2.20220217/policy/modules/services/cron.te
 @@ -25,7 +25,9 @@ gen_tunable(cron_can_relabel, false)
  ##	the generic cronjob domain.
  ##	</p>
@@ -216,7 +248,7 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
  
  type system_cron_spool_t, cron_spool_type;
  files_type(system_cron_spool_t)
-@@ -105,25 +109,13 @@ files_tmp_file(system_cronjob_tmp_t)
+@@ -105,21 +109,9 @@ files_tmp_file(system_cronjob_tmp_t)
  type system_cronjob_var_lib_t;
  files_type(system_cronjob_var_lib_t)
  
@@ -228,10 +260,6 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
 -logging_log_file(user_cron_spool_log_t)
 -ubac_constrained(user_cron_spool_log_t)
 -
- ifdef(`enable_mcs',`
- 	init_ranged_daemon_domain(crond_t, crond_exec_t, s0 - mcs_systemhigh)
- ')
- 
  optional_policy(`
 -	mta_system_content(cron_spool_t)
  	mta_system_content(crond_tmp_t)
@@ -242,7 +270,7 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
  ')
  
  ##############################
-@@ -135,9 +127,6 @@ allow crontab_domain self:capability { c
+@@ -131,9 +123,6 @@ allow crontab_domain self:capability { c
  allow crontab_domain self:process { getcap setsched signal_perms };
  allow crontab_domain self:fifo_file rw_fifo_file_perms;
  
@@ -252,7 +280,7 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
  allow crontab_domain cron_spool_t:dir setattr_dir_perms;
  
  allow crontab_domain crond_t:process signal;
-@@ -184,30 +173,11 @@ tunable_policy(`fcron_crond',`
+@@ -180,32 +169,12 @@ tunable_policy(`fcron_crond',`
  
  ########################################
  #
@@ -278,14 +306,16 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
  # Daemon local policy
  #
  
+-dontaudit crond_t self:capability net_admin;
 -allow crond_t self:capability { chown dac_override dac_read_search fowner setgid setuid sys_nice };
--dontaudit crond_t self:capability { sys_resource sys_tty_config };
 +allow crond_t self:capability { chown dac_override dac_read_search fowner setgid setuid sys_nice sys_resource };
-+dontaudit crond_t self:capability { sys_tty_config };
+ # net_admin for changing buffer sizes
+-dontaudit crond_t self:capability { net_admin sys_resource sys_tty_config };
++dontaudit crond_t self:capability { net_admin sys_tty_config };
  
  allow crond_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
  allow crond_t self:fd use;
-@@ -221,6 +191,7 @@ allow crond_t self:msg { send receive };
+@@ -219,6 +188,7 @@ allow crond_t self:msg { send receive };
  allow crond_t self:key { search write link };
  dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
  
@@ -293,7 +323,7 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
  allow crond_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
  logging_log_filetrans(crond_t, cron_log_t, file)
  
-@@ -244,8 +215,6 @@ manage_files_pattern(crond_t, user_cron_
+@@ -242,8 +212,6 @@ manage_files_pattern(crond_t, user_cron_
  manage_lnk_files_pattern(crond_t, user_cron_spool_t, user_cron_spool_t)
  allow crond_t user_cron_spool_t:dir watch;
  
@@ -302,10 +332,10 @@ Index: refpolicy-2.20210115/policy/modules/services/cron.te
  allow crond_t system_cronjob_t:process transition;
  allow crond_t system_cronjob_t:fd use;
  allow crond_t system_cronjob_t:key manage_key_perms;
-Index: refpolicy-2.20210115/policy/modules/services/cron.fc
+Index: refpolicy-2.20220217/policy/modules/services/cron.fc
 ===================================================================
---- refpolicy-2.20210115.orig/policy/modules/services/cron.fc
-+++ refpolicy-2.20210115/policy/modules/services/cron.fc
+--- refpolicy-2.20220217.orig/policy/modules/services/cron.fc
++++ refpolicy-2.20220217/policy/modules/services/cron.fc
 @@ -38,8 +38,7 @@
  /run/.*cron.*	--	gen_context(system_u:object_r:crond_runtime_t,s0)
  

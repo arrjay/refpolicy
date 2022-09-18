@@ -1,10 +1,83 @@
+refpolicy (2:2.20220520-4) unstable; urgency=medium
+
+  * Add label for /etc/dkimkeys Closes: #900188
+  * Allow chronyd_t to send unix datagrams to unconfined_t and gave it
+    dac_read_search Closes: #962223
+  * Allow firewalld_t to do netlink_netfilter_socket access, watch
+    firewalld_etc_rw_t dirs, and read generic certs
+  * Allow init_t to watch for reads on console_device_t for autorelabel
+    processing.
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 18 Sep 2022 12:48:43 +1000
+
+refpolicy (2:2.20220520-3) unstable; urgency=medium
+
+  * Allow systemd_passwd_agent_t to stat /proc and read sys/kernel/cap_last_cap
+  * Allow systemd_backlight_t to stat sysfs and read SE Linux contexts
+  * Allow systemd_logind_t to read localization.
+  * Allow lvm_t to read generic certificates for systmd-cryptsetup
+  * Allow systemd_logind_t to read udev runtime links
+  * Allow systemd-udevd to manage cgroup files
+  * Allow systemd_machined_t, systemd_locale_t, lvm_t, systemd_binfmt_t, and
+    systemd_backlight_t to statfs /proc
+  * give the sys_resource capability to systemd_sysctl_t
+  * Allow chromium to read the vm_overcommit sysctl
+  * Allow systemd_binfmt_t to check executable status of bin files and search
+    cgroup dirs
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 15 Sep 2022 00:03:25 +1000
+
+refpolicy (2:2.20220520-2) unstable; urgency=medium
+
+  * Added label for /usr/sbin/nfsdcld and gave nfsd_t setpcap capability
+  * Allow syslogd_t to relabel from/to systemd_journal_t
+  * Created 0002-upstream patch file for changes that are in the upstream git
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 14 Aug 2022 00:20:28 +1000
+
+refpolicy (2:2.20220520-1) unstable; urgency=medium
+
+  * new upstream release
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 22 May 2022 21:55:06 +1000
+
+refpolicy (2:2.20220403-3) unstable; urgency=medium
+
+  * little policy fixes
+  * Changed build-depends from libsepol1 to libsepol2
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 12 Apr 2022 23:38:26 +1000
+
+refpolicy (2:2.20220403-2) unstable; urgency=medium
+
+  * Allow init to watch_reads on terminal devices
+  * Allow init_t to mounton files of type init_t
+  * Label /usr/share/unattended-upgrades/* as bin_t
+  * Allow systemd_backlight_t to search cgroup dirs
+  * Allow lvm_t to getattr a cgroup filesystem
+  * Make init_t file handles inheritable by most domains because systemd opens
+    devices for getty
+  * Make xdm_r the default role for SE Linux user xdm
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 07 Apr 2022 23:36:51 +1000
+
+refpolicy (2:2.20220403-1) unstable; urgency=medium
+
+  * New package based on git.  Will have another proper release soon.
+  * Lots of Debian policy upstreamed.
+  * Depend on the latest versions of the libraries.
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 03 Apr 2022 17:51:30 +1000
+
 refpolicy (2:2.20210203-10) unstable; urgency=medium
 
-  * Team upload.
-  * debian/control: Adjust the (build-)dependencies for the userspace 3.3
-    release
+  * Allow mon_local_test_t access to domain_getattr_all_domains() to get the
+    context of all processes and to have selinux_get_enforce_mode(),
+    selinux_getattr_fs(), and seutil_search_default_contexts() to get the
+    enforcing mode for selinux.monitor.  Uploading with just this change
+    because I already uploaded mon version 1.3.5-8 with selinux.monitor.
 
- -- Laurent Bigonville <bigon@debian.org>  Tue, 09 Nov 2021 09:44:53 +0100
+ -- Russell Coker <russell@coker.com.au>  Mon, 08 Nov 2021 13:33:52 +1100
 
 refpolicy (2:2.20210203-9) unstable; urgency=medium
 

@@ -5,10 +5,10 @@ Description: Create user_gpg_t etc domains, remove gpg_helper_t & gpg_pinentry_t
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2015-01-12
 
-Index: refpolicy-2.20210203/policy/modules/apps/gpg.fc
+Index: refpolicy-2.20220322/policy/modules/apps/gpg.fc
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/apps/gpg.fc
-+++ refpolicy-2.20210203/policy/modules/apps/gpg.fc
+--- refpolicy-2.20220322.orig/policy/modules/apps/gpg.fc
++++ refpolicy-2.20220322/policy/modules/apps/gpg.fc
 @@ -6,10 +6,10 @@ HOME_DIR/\.gnupg/S\.scdaemon		-s	gen_con
  /usr/bin/gpg(2)?			--	gen_context(system_u:object_r:gpg_exec_t,s0)
  /usr/bin/gpgsm				--	gen_context(system_u:object_r:gpg_exec_t,s0)
@@ -22,53 +22,11 @@ Index: refpolicy-2.20210203/policy/modules/apps/gpg.fc
  
  /run/user/%{USERID}/gnupg(/.*)?			gen_context(system_u:object_r:gpg_runtime_t,s0)
  /run/user/%{USERID}/gnupg/S\.gpg-agent.* -s	gen_context(system_u:object_r:gpg_agent_tmp_t,s0)
-Index: refpolicy-2.20210203/policy/modules/roles/staff.te
+Index: refpolicy-2.20220322/policy/modules/apps/gpg.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20210203/policy/modules/roles/staff.te
-@@ -122,10 +122,6 @@ ifndef(`distro_redhat',`
- 	')
- 
- 	optional_policy(`
--		gpg_role(staff_r, staff_t)
--	')
--
--	optional_policy(`
- 		irc_role(staff_r, staff_t)
- 	')
- 
-Index: refpolicy-2.20210203/policy/modules/roles/sysadm.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20210203/policy/modules/roles/sysadm.te
-@@ -1351,10 +1351,6 @@ ifndef(`distro_redhat',`
- 	')
- 
- 	optional_policy(`
--		gpg_role(sysadm_r, sysadm_t)
--	')
--
--	optional_policy(`
- 		irc_role(sysadm_r, sysadm_t)
- 	')
- 
-Index: refpolicy-2.20210203/policy/modules/apps/gpg.if
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/apps/gpg.if
-+++ refpolicy-2.20210203/policy/modules/apps/gpg.if
-@@ -31,6 +31,11 @@ interface(`gpg_role',`
- 	domtrans_pattern($2, gpg_exec_t, gpg_t)
- 	domtrans_pattern($2, gpg_agent_exec_t, gpg_agent_t)
- 
-+	# transition to user_t when running ck-launch-session or other bin_t
-+	corecmd_bin_domtrans(gpg_agent_t, $2)
-+	allow gpg_agent_t $2:process signull;
-+	allow $2 gpg_agent_t:fd use;
-+
- 	allow $2 self:process setrlimit;
- 	allow $2 { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t }:process { ptrace signal_perms };
- 	ps_process_pattern($2, { gpg_t gpg_agent_t gpg_helper_t gpg_pinentry_t })
-@@ -46,6 +51,9 @@ interface(`gpg_role',`
+--- refpolicy-2.20220322.orig/policy/modules/apps/gpg.if
++++ refpolicy-2.20220322/policy/modules/apps/gpg.if
+@@ -57,6 +57,9 @@ template(`gpg_role',`
  	filetrans_pattern($2, gpg_secret_t, gpg_agent_tmp_t, sock_file, "log-socket")
  	userdom_user_home_dir_filetrans($2, gpg_secret_t, dir, ".gnupg")
  
@@ -76,9 +34,9 @@ Index: refpolicy-2.20210203/policy/modules/apps/gpg.if
 +	userdom_append_inherited_user_home_content_files(gpg_agent_t)
 +
  	optional_policy(`
- 		gpg_pinentry_dbus_chat($2)
+ 		gpg_pinentry_dbus_chat($3)
  	')
-@@ -179,6 +187,28 @@ interface(`gpg_signal',`
+@@ -213,6 +216,28 @@ interface(`gpg_signal',`
  	allow $1 gpg_t:process signal;
  ')
  
@@ -107,11 +65,11 @@ Index: refpolicy-2.20210203/policy/modules/apps/gpg.if
  ########################################
  ## <summary>
  ##	Read and write gpg agent pipes.
-Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
+Index: refpolicy-2.20220322/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20210203/policy/modules/system/userdomain.if
-@@ -2247,6 +2247,24 @@ interface(`userdom_dontaudit_append_user
+--- refpolicy-2.20220322.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20220322/policy/modules/system/userdomain.if
+@@ -2315,6 +2315,24 @@ interface(`userdom_dontaudit_append_user
  
  ########################################
  ## <summary>
@@ -136,11 +94,11 @@ Index: refpolicy-2.20210203/policy/modules/system/userdomain.if
  ##	Do not audit attempts to write user home files.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20210203/policy/modules/services/ssh.if
+Index: refpolicy-2.20220322/policy/modules/services/ssh.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/ssh.if
-+++ refpolicy-2.20210203/policy/modules/services/ssh.if
-@@ -369,6 +369,7 @@ template(`ssh_role_template',`
+--- refpolicy-2.20220322.orig/policy/modules/services/ssh.if
++++ refpolicy-2.20220322/policy/modules/services/ssh.if
+@@ -385,6 +385,7 @@ template(`ssh_role_template',`
  	ps_process_pattern($3, $1_ssh_agent_t)
  
  	domtrans_pattern($3, ssh_agent_exec_t, $1_ssh_agent_t)
@@ -148,10 +106,10 @@ Index: refpolicy-2.20210203/policy/modules/services/ssh.if
  
  	kernel_read_kernel_sysctls($1_ssh_agent_t)
  
-Index: refpolicy-2.20210203/policy/modules/services/dbus.if
+Index: refpolicy-2.20220322/policy/modules/services/dbus.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/dbus.if
-+++ refpolicy-2.20210203/policy/modules/services/dbus.if
+--- refpolicy-2.20220322.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20220322/policy/modules/services/dbus.if
 @@ -76,6 +76,9 @@ template(`dbus_role_template',`
  	domain_entry_file($1_dbusd_t, dbusd_exec_t)
  	ubac_constrained($1_dbusd_t)
@@ -171,7 +129,7 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
  	allow $1_dbusd_t $3:dbus send_msg;
  	allow $3 $1_dbusd_t:fd use;
-@@ -235,7 +238,7 @@ interface(`dbus_all_session_bus_client',
+@@ -233,7 +236,7 @@ interface(`dbus_all_session_bus_client',
  	allow $1 { session_bus_type self }:dbus send_msg;
  	allow session_bus_type $1:dbus send_msg;
  
@@ -180,7 +138,7 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	allow $1 session_bus_type:fd use;
  ')
  
-@@ -268,7 +271,7 @@ interface(`dbus_spec_session_bus_client'
+@@ -266,7 +269,7 @@ template(`dbus_spec_session_bus_client',
  	allow $2 { $1_dbusd_t self }:dbus send_msg;
  	allow $1_dbusd_t $2:dbus send_msg;
  
@@ -189,11 +147,11 @@ Index: refpolicy-2.20210203/policy/modules/services/dbus.if
  	allow $2 $1_dbusd_t:fd use;
  ')
  
-Index: refpolicy-2.20210203/policy/modules/services/cron.if
+Index: refpolicy-2.20220322/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20210203/policy/modules/services/cron.if
-@@ -876,10 +876,31 @@ interface(`cron_read_system_job_tmp_file
+--- refpolicy-2.20220322.orig/policy/modules/services/cron.if
++++ refpolicy-2.20220322/policy/modules/services/cron.if
+@@ -909,10 +909,31 @@ interface(`cron_read_system_job_tmp_file
  	')
  
  	files_search_tmp($1)
@@ -225,10 +183,10 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.if
  ## <summary>
  ##	Do not audit attempts to append temporary
  ##	system cron job files.
-Index: refpolicy-2.20210203/policy/modules/apps/gpg.te
+Index: refpolicy-2.20220322/policy/modules/apps/gpg.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/apps/gpg.te
-+++ refpolicy-2.20210203/policy/modules/apps/gpg.te
+--- refpolicy-2.20220322.orig/policy/modules/apps/gpg.te
++++ refpolicy-2.20220322/policy/modules/apps/gpg.te
 @@ -84,6 +84,8 @@ dontaudit gpg_t self:netlink_audit_socke
  allow gpg_t self:fifo_file rw_fifo_file_perms;
  allow gpg_t self:tcp_socket { accept listen };

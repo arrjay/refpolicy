@@ -1,0 +1,53 @@
+Index: refpolicy-2.20220520/policy/modules/system/init.te
+===================================================================
+--- refpolicy-2.20220520.orig/policy/modules/system/init.te
++++ refpolicy-2.20220520/policy/modules/system/init.te
+@@ -229,6 +229,7 @@ selinux_get_fs_mount(init_t)
+ selinux_set_all_booleans(init_t)
+ 
+ term_use_all_terms(init_t)
++term_watch_reads_unallocated_ttys(init_t)
+ 
+ libs_rw_ld_so_cache(init_t)
+ 
+Index: refpolicy-2.20220520/policy/modules/kernel/terminal.if
+===================================================================
+--- refpolicy-2.20220520.orig/policy/modules/kernel/terminal.if
++++ refpolicy-2.20220520/policy/modules/kernel/terminal.if
+@@ -5,6 +5,24 @@
+ 
+ ########################################
+ ## <summary>
++##    watch reads on tty devices
++## </summary>
++## <param name="domain">
++##    <summary>
++##    Domain to not audit.
++##    </summary>
++## </param>
++#
++interface(`term_watch_reads_unallocated_ttys',`
++      gen_require(`
++              type tty_device_t;
++      ')
++
++      allow $1 tty_device_t:chr_file watch_reads;
++')
++
++########################################
++## <summary>
+ ##	Transform specified type into a pty type.
+ ## </summary>
+ ## <param name="pty_type">
+Index: refpolicy-2.20220520/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20220520.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20220520/policy/modules/system/systemd.te
+@@ -446,6 +446,7 @@ files_read_etc_files(systemd_coredump_t)
+ files_search_var_lib(systemd_coredump_t)
+ 
+ fs_getattr_xattr_fs(systemd_coredump_t)
++fs_search_cgroup_dirs(systemd_coredump_t)
+ 
+ selinux_getattr_fs(systemd_coredump_t)
+ 

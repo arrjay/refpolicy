@@ -1,98 +1,8 @@
-Index: refpolicy-2.20210203/policy/modules/services/cron.if
+Index: refpolicy-2.20220325/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20210203/policy/modules/services/cron.if
-@@ -51,15 +51,16 @@ template(`cron_common_crontab_template',
- ## </param>
- ## <param name="domain">
- ##	<summary>
--##	User domain for the role.
-+##	stem of domain for the role.
- ##	</summary>
- ## </param>
- ## <rolecap/>
- #
- interface(`cron_role',`
- 	gen_require(`
--		type cronjob_t, crontab_t, crontab_exec_t;
--		type user_cron_spool_t, crond_t;
-+		type cronjob_t;
-+		type crontab_exec_t, crond_t;
-+		type crontab_t, user_cron_spool_t, crond_tmp_t;
- 		bool cron_userdomain_transition;
- 	')
- 
-@@ -75,40 +76,41 @@ interface(`cron_role',`
- 	# Local policy
- 	#
- 
--	domtrans_pattern($2, crontab_exec_t, crontab_t)
-+	domtrans_pattern($2_t, crontab_exec_t, crontab_t)
- 
--	dontaudit crond_t $2:process { noatsecure rlimitinh siginh };
--	allow $2 crond_t:process sigchld;
-+	dontaudit crond_t $2_t:process { noatsecure rlimitinh siginh };
-+	allow $2_t crond_t:process sigchld;
- 
--	allow $2 user_cron_spool_t:file rw_inherited_file_perms;
-+	allow $2_t user_cron_spool_t:file rw_inherited_file_perms;
- 
--	allow $2 crontab_t:process { ptrace signal_perms };
--	ps_process_pattern($2, crontab_t)
-+	allow $2_t crontab_t:process { ptrace signal_perms };
-+	ps_process_pattern($2_t, crontab_t)
- 
- 	corecmd_exec_bin(crontab_t)
- 	corecmd_exec_shell(crontab_t)
- 
- 	tunable_policy(`cron_userdomain_transition',`
--		allow crond_t $2:process transition;
--		allow crond_t $2:fd use;
--		allow crond_t $2:key manage_key_perms;
-+		allow crond_t $2_t:process transition;
-+		allow crond_t $2_t:fd use;
-+		allow crond_t $2_t:key manage_key_perms;
- 
--		allow $2 user_cron_spool_t:file entrypoint;
-+		allow $2_t user_cron_spool_t:file entrypoint;
-+		allow $2_t crond_tmp_t:file rw_inherited_file_perms;
- 
--		allow $2 crond_t:fifo_file rw_fifo_file_perms;
-+		allow $2_t crond_t:fifo_file rw_fifo_file_perms;
- 
--		allow $2 cronjob_t:process { ptrace signal_perms };
--		ps_process_pattern($2, cronjob_t)
-+		allow $2_t cronjob_t:process { ptrace signal_perms };
-+		ps_process_pattern($2_t, cronjob_t)
- 	',`
--		dontaudit crond_t $2:process transition;
--		dontaudit crond_t $2:fd use;
--		dontaudit crond_t $2:key manage_key_perms;
-+		dontaudit crond_t $2_t:process transition;
-+		dontaudit crond_t $2_t:fd use;
-+		dontaudit crond_t $2_t:key manage_key_perms;
- 
--		dontaudit $2 user_cron_spool_t:file entrypoint;
-+		dontaudit $2_t user_cron_spool_t:file entrypoint;
- 
--		dontaudit $2 crond_t:fifo_file rw_fifo_file_perms;
-+		dontaudit $2_t crond_t:fifo_file rw_fifo_file_perms;
- 
--		dontaudit $2 cronjob_t:process { ptrace signal_perms };
-+		dontaudit $2_t cronjob_t:process { ptrace signal_perms };
- 	')
- 
- 	optional_policy(`
-@@ -118,7 +120,7 @@ interface(`cron_role',`
- 
- 		dbus_stub(cronjob_t)
- 
--		allow cronjob_t $2:dbus send_msg;
-+		allow cronjob_t $2_t:dbus send_msg;
- 	')
- ')
- 
-@@ -742,6 +744,24 @@ interface(`cron_rw_tmp_files',`
+--- refpolicy-2.20220325.orig/policy/modules/services/cron.if
++++ refpolicy-2.20220325/policy/modules/services/cron.if
+@@ -775,6 +775,24 @@ interface(`cron_rw_tmp_files',`
  
  ########################################
  ## <summary>
@@ -117,7 +27,7 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.if
  ##	Read system cron job lib files.
  ## </summary>
  ## <param name="domain">
-@@ -874,6 +894,24 @@ interface(`cron_dontaudit_append_system_
+@@ -907,6 +925,24 @@ interface(`cron_dontaudit_append_system_
  ')
  
  ########################################
@@ -142,50 +52,11 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.if
  ## <summary>
  ##	Read and write to inherited system cron job temporary files.
  ## </summary>
-Index: refpolicy-2.20210203/policy/modules/roles/staff.te
+Index: refpolicy-2.20220325/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20210203/policy/modules/roles/staff.te
-@@ -90,7 +90,7 @@ ifndef(`distro_redhat',`
- 	')
- 
- 	optional_policy(`
--		cron_role(staff_r, staff_t)
-+		cron_role(staff_r, staff)
- 	')
- 
- 	optional_policy(`
-Index: refpolicy-2.20210203/policy/modules/roles/unprivuser.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/roles/unprivuser.te
-+++ refpolicy-2.20210203/policy/modules/roles/unprivuser.te
-@@ -58,7 +58,7 @@ ifndef(`distro_redhat',`
- 	')
- 
- 	optional_policy(`
--		cron_role(user_r, user_t)
-+		cron_role(user_r, user)
- 	')
- 
- 	optional_policy(`
-Index: refpolicy-2.20210203/policy/modules/system/unconfined.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20210203/policy/modules/system/unconfined.te
-@@ -88,7 +88,7 @@ optional_policy(`
- ')
- 
- optional_policy(`
--	cron_unconfined_role(unconfined_r, unconfined_t)
-+	cron_role(unconfined_r, unconfined)
- ')
- 
- optional_policy(`
-Index: refpolicy-2.20210203/policy/modules/services/cron.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20210203/policy/modules/services/cron.te
-@@ -433,6 +433,8 @@ optional_policy(`
+--- refpolicy-2.20220325.orig/policy/modules/services/cron.te
++++ refpolicy-2.20220325/policy/modules/services/cron.te
+@@ -431,6 +431,8 @@ optional_policy(`
  	systemd_dbus_chat_logind(system_cronjob_t)
  	systemd_read_journal_files(system_cronjob_t)
  	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
@@ -194,7 +65,7 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.te
  	# so cron jobs can restart daemons
  	init_stream_connect(system_cronjob_t)
  	init_manage_script_service(system_cronjob_t)
-@@ -503,6 +505,7 @@ corenet_udp_sendrecv_generic_if(system_c
+@@ -501,6 +503,7 @@ corenet_udp_sendrecv_generic_if(system_c
  corenet_tcp_sendrecv_generic_node(system_cronjob_t)
  corenet_udp_sendrecv_generic_node(system_cronjob_t)
  corenet_udp_bind_generic_node(system_cronjob_t)
@@ -202,7 +73,7 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.te
  
  dev_getattr_all_blk_files(system_cronjob_t)
  dev_getattr_all_chr_files(system_cronjob_t)
-@@ -553,6 +556,7 @@ logging_manage_generic_logs(system_cronj
+@@ -551,6 +554,7 @@ logging_manage_generic_logs(system_cronj
  logging_send_audit_msgs(system_cronjob_t)
  logging_send_syslog_msg(system_cronjob_t)
  
@@ -210,7 +81,7 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.te
  miscfiles_read_localization(system_cronjob_t)
  
  seutil_read_config(system_cronjob_t)
-@@ -667,10 +671,16 @@ optional_policy(`
+@@ -671,10 +675,16 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -227,11 +98,11 @@ Index: refpolicy-2.20210203/policy/modules/services/cron.te
  ')
  
  ########################################
-Index: refpolicy-2.20210203/policy/modules/system/init.if
+Index: refpolicy-2.20220325/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/system/init.if
-+++ refpolicy-2.20210203/policy/modules/system/init.if
-@@ -3622,3 +3622,21 @@ interface(`init_getrlimit',`
+--- refpolicy-2.20220325.orig/policy/modules/system/init.if
++++ refpolicy-2.20220325/policy/modules/system/init.if
+@@ -3772,3 +3772,21 @@ interface(`init_getrlimit',`
  
  	allow $1 init_t:process getrlimit;
  ')
@@ -253,11 +124,11 @@ Index: refpolicy-2.20210203/policy/modules/system/init.if
 +
 +	allow $1 init_t:key search;
 +')
-Index: refpolicy-2.20210203/policy/modules/services/mta.te
+Index: refpolicy-2.20220325/policy/modules/services/mta.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/mta.te
-+++ refpolicy-2.20210203/policy/modules/services/mta.te
-@@ -287,7 +287,12 @@ optional_policy(`
+--- refpolicy-2.20220325.orig/policy/modules/services/mta.te
++++ refpolicy-2.20220325/policy/modules/services/mta.te
+@@ -284,7 +284,12 @@ optional_policy(`
  	userdom_dontaudit_use_user_ptys(system_mail_t)
  
  	optional_policy(`
@@ -270,24 +141,11 @@ Index: refpolicy-2.20210203/policy/modules/services/mta.te
  	')
  ')
  
-Index: refpolicy-2.20210203/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20220325/policy/modules/services/postfix.te
 ===================================================================
---- refpolicy-2.20210203.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20210203/policy/modules/roles/sysadm.te
-@@ -1312,7 +1312,7 @@ ifndef(`distro_redhat',`
- 	')
- 
- 	optional_policy(`
--		cron_admin_role(sysadm_r, sysadm_t)
-+		cron_role(sysadm_r, sysadm)
- 	')
- 
- 	optional_policy(`
-Index: refpolicy-2.20210203/policy/modules/services/postfix.te
-===================================================================
---- refpolicy-2.20210203.orig/policy/modules/services/postfix.te
-+++ refpolicy-2.20210203/policy/modules/services/postfix.te
-@@ -654,6 +654,7 @@ optional_policy(`
+--- refpolicy-2.20220325.orig/policy/modules/services/postfix.te
++++ refpolicy-2.20220325/policy/modules/services/postfix.te
+@@ -642,6 +642,7 @@ optional_policy(`
  
  optional_policy(`
  	cron_system_entry(postfix_postdrop_t, postfix_postdrop_exec_t)

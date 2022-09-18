@@ -63,14 +63,14 @@ Description: MLS (Multi Level Security) variant of the SELinux policy
 
 Package: selinux-policy-src
 Architecture: all
-Depends: checkpolicy (>= 3.3),
+Depends: checkpolicy (>= 3.0),
          gawk,
          make,
-         policycoreutils (>= 3.3),
-         policycoreutils-python-utils (>= 3.3),
+         policycoreutils (>= 3.0),
+         policycoreutils-python-utils (>= 3.0),
          python3,
          ${misc:Depends}
-Recommends: policycoreutils-dev (>= 3.3), setools
+Recommends: policycoreutils-dev (>= 3.0), setools
 Suggests: logcheck, syslog-summary
 Description: Source of the SELinux reference policy for customization
  The SELinux Reference Policy (refpolicy) is a complete SELinux
@@ -95,15 +95,15 @@ Description: Source of the SELinux reference policy for customization
 
 Package: selinux-policy-dev
 Architecture: all
-Depends: checkpolicy (>= 3.3),
+Depends: checkpolicy (>= 3.0),
          gawk,
          m4,
          make,
-         policycoreutils (>= 3.3),
-         policycoreutils-dev (>= 3.3),
-         policycoreutils-python-utils (>= 3.3),
+         policycoreutils (>= 3.0),
+         policycoreutils-dev (>= 3.0),
+         policycoreutils-python-utils (>= 3.0),
          python3,
-         selinux-utils (>= 3.3),
+         selinux-utils (>= 3.0),
          ${misc:Depends}
 Recommends: setools
 Description: Headers from the SELinux reference policy for building modules
