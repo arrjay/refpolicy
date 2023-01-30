@@ -171,6 +171,6 @@ install-src: conf-src
 	  rm -rf selinux-policy-src/support/__pycache__/; \
 	  find selinux-policy-src -type f -print0 | xargs -0r chmod 0644; \
 	  find selinux-policy-src -type d -print0 | xargs -0r chmod 0755; \
-	  TZ=UTC tar cf - --sort=name --mtime="$(BUILD_DATE)" selinux-policy-src | zstd -9 > $(CURDIR)/debian/tmp/usr/src/selinux-policy-src.tar.zst)
+	  TZ=UTC tar cf - --sort=name --mtime="$(BUILD_DATE)" --owner=0 --group=0 --numeric-owner selinux-policy-src | zstd -9 > $(CURDIR)/debian/tmp/usr/src/selinux-policy-src.tar.zst)
 	rm -rf               $(CURDIR)/debian/tmp/etc/selinux/default/src/
 	touch $@
