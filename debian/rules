@@ -63,6 +63,8 @@ override_dh_auto_build: $(patsubst %, build-%-policy, $(FLAVOURS))
 
 override_dh_auto_install: $(patsubst %, install-%-policy, $(FLAVOURS)) install-default-dev install-docs install-src
 
+override_dh_auto_test: $(patsubst %, test-%-policy, $(FLAVOURS))
+
 conf-%-policy:
 	test ! -d $(CURDIR)/debian/build-$* ||                             \
             rm -rf $(CURDIR)/debian/build-$*
@@ -109,6 +111,11 @@ conf-src:
 build-%-policy: conf-%-policy
 	(cd $(CURDIR)/debian/build-$* ;                          \
              $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) policy)
+	touch $@
+
+test-%-policy: build-%-policy
+	(cd $(CURDIR)/debian/build-$*; \
+	    $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) validate)
 	touch $@
 
 install-%-policy: build-%-policy
