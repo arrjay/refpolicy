@@ -1619,18 +1619,6 @@ Index: refpolicy-2.20221101/policy/modules/services/mta.te
 +	postfix_read_config(admin_mail_t)
 +	postfix_list_spool(admin_mail_t)
 +')
-Index: refpolicy-2.20221101/policy/modules/services/spamassassin.fc
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/services/spamassassin.fc
-+++ refpolicy-2.20221101/policy/modules/services/spamassassin.fc
-@@ -39,6 +39,7 @@ HOME_DIR/\.spamd(/.*)?			gen_context(sys
- /var/log/spamd\.log.*		--	gen_context(system_u:object_r:spamd_log_t,s0)
- /var/log/rspamd(/.*)?		gen_context(system_u:object_r:spamd_log_t,s0)
- /var/log/rspamd\.log.*		--	gen_context(system_u:object_r:spamd_log_t,s0)
-+/var/log/rspamd(/.*)?			gen_context(system_u:object_r:spamd_log_t,s0)
- /var/log/mimedefang.*		--	gen_context(system_u:object_r:spamd_log_t,s0)
- 
- /var/vmail/\.spamassassin(/.*)?		gen_context(system_u:object_r:spamassassin_home_t,s0)
 Index: refpolicy-2.20221101/policy/modules/services/courier.fc
 ===================================================================
 --- refpolicy-2.20221101.orig/policy/modules/services/courier.fc
