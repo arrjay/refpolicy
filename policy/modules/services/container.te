@@ -31,6 +31,13 @@ gen_tunable(container_manage_public_content, false)
 gen_tunable(container_read_public_content, false)
 
 ## <desc>
+##      <p>
+##      Allow containers to use eCryptfs filesystems.
+##      </p>
+## </desc>
+gen_tunable(container_use_ecryptfs, false)
+
+## <desc>
 ##	<p>
 ##	Allow containers to use NFS filesystems.
 ##	</p>
@@ -96,6 +103,9 @@ role system_r types spc_t;
 
 type spc_user_t, container_domain, container_net_domain, container_user_domain, privileged_container_domain;
 domain_type(spc_user_t)
+
+type container_engine_unit_t;
+init_unit_file(container_engine_unit_t)
 
 type container_unit_t;
 init_unit_file(container_unit_t)
@@ -165,6 +175,8 @@ corenet_port(container_port_t)
 allow container_domain self:capability { dac_override kill setgid setuid sys_boot sys_chroot };
 allow container_domain self:cap_userns { chown dac_override dac_read_search fowner kill setgid setuid };
 allow container_domain self:process { execstack execmem getattr getsched getsession setsched setcap setpgid signal_perms };
+allow container_domain self:dir rw_dir_perms;
+allow container_domain self:file create_file_perms;
 allow container_domain self:fifo_file manage_fifo_file_perms;
 allow container_domain self:sem create_sem_perms;
 allow container_domain self:shm create_shm_perms;
@@ -189,9 +201,11 @@ allow container_domain container_ro_file_t:lnk_file read_lnk_file_perms;
 allow container_domain container_ro_file_t:sock_file read_sock_file_perms;
 
 can_exec(container_domain, container_file_t)
+corecmd_watch_bin_dirs(container_domain)
 
 kernel_getattr_proc(container_domain)
 kernel_list_all_proc(container_domain)
+kernel_associate_proc(container_domain)
 kernel_read_kernel_sysctls(container_domain)
 kernel_rw_net_sysctls(container_domain)
 kernel_read_system_state(container_domain)
@@ -254,6 +268,13 @@ tunable_policy(`container_manage_public_content',`
 tunable_policy(`container_read_public_content',`
 	miscfiles_read_public_files(container_domain)
 	miscfiles_watch_public_dirs(container_domain)
+')
+
+tunable_policy(`container_use_ecryptfs',`
+        fs_manage_ecryptfs_dirs(container_domain)
+        fs_manage_ecryptfs_files(container_domain)
+        fs_manage_ecryptfs_named_sockets(container_domain)
+        fs_list_ecryptfs(container_domain)
 ')
 
 tunable_policy(`container_use_nfs',`
@@ -408,12 +429,16 @@ corecmd_dontaudit_exec_all_executables(container_engine_domain)
 
 corenet_tcp_bind_generic_node(container_engine_domain)
 corenet_tcp_connect_http_port(container_engine_domain)
+corenet_tcp_connect_http_cache_port(container_engine_domain)
 corenet_tcp_bind_all_ports(container_engine_domain)
+corenet_udp_bind_generic_node(container_engine_domain)
 corenet_udp_bind_all_ports(container_engine_domain)
 corenet_rw_tun_tap_dev(container_engine_domain)
 
 dev_getattr_all_blk_files(container_engine_domain)
 dev_getattr_all_chr_files(container_engine_domain)
+dev_getattr_generic_blk_files(container_engine_domain)
+dev_getattr_generic_chr_files(container_engine_domain)
 dev_setattr_null_dev(container_engine_domain)
 dev_getattr_fs(container_engine_domain)
 dev_remount_fs(container_engine_domain)
@@ -502,10 +527,13 @@ can_exec(container_engine_domain, container_engine_exec_type)
 list_dirs_pattern(container_engine_domain, container_config_t, container_config_t)
 read_files_pattern(container_engine_domain, container_config_t, container_config_t)
 read_lnk_files_pattern(container_engine_domain, container_config_t, container_config_t)
+allow container_engine_domain container_config_t:{ dir file } watch;
 
 allow container_engine_domain container_engine_tmp_t:dir manage_dir_perms;
 allow container_engine_domain container_engine_tmp_t:file manage_file_perms;
 allow container_engine_domain container_engine_tmp_t:fifo_file manage_fifo_file_perms;
+# podman uses temporary symlinks when loading container images
+allow container_engine_domain container_engine_tmp_t:lnk_file manage_lnk_file_perms;
 # needed when manually spawning processes inside containers
 allow container_engine_domain container_engine_tmp_t:sock_file manage_sock_file_perms;
 files_tmp_filetrans(container_engine_domain, container_engine_tmp_t, { dir file sock_file })
@@ -524,6 +552,7 @@ allow container_engine_domain container_file_t:blk_file { manage_blk_file_perms 
 allow container_engine_domain container_file_t:chr_file { manage_chr_file_perms relabel_chr_file_perms };
 allow container_engine_domain container_file_t:fifo_file { manage_fifo_file_perms relabel_fifo_file_perms };
 allow container_engine_domain container_file_t:lnk_file { manage_lnk_file_perms relabel_lnk_file_perms };
+allow container_engine_domain container_file_t:sock_file { manage_sock_file_perms relabel_sock_file_perms };
 allow container_engine_domain container_file_t:filesystem { getattr relabelfrom relabelto mount unmount remount };
 
 allow container_engine_domain container_ro_file_t:dir { manage_dir_perms relabel_dir_perms };

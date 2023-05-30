@@ -772,6 +772,25 @@ interface(`fs_list_cgroup_dirs', `
 
 ########################################
 ## <summary>
+##	Ioctl cgroup directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_ioctl_cgroup_dirs', `
+	gen_require(`
+		type cgroup_t;
+	')
+
+	allow $1 cgroup_t:dir ioctl;
+	dev_search_sysfs($1)
+')
+
+########################################
+## <summary>
 ##	Delete cgroup directories.
 ## </summary>
 ## <param name="domain">
@@ -2174,6 +2193,84 @@ interface(`fs_manage_dos_files',`
 	')
 
 	manage_files_pattern($1, dosfs_t, dosfs_t)
+')
+
+########################################
+## <summary>
+##      Read symbolic links on an eCryptfs filesystem.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_list_ecryptfs',`
+        gen_require(`
+                type ecryptfs_t;
+        ')
+
+        allow $1 ecryptfs_t:dir list_dir_perms;
+        read_lnk_files_pattern($1, ecryptfs_t, ecryptfs_t)
+')
+
+########################################
+## <summary>
+##      Create, read, write, and delete directories
+##      on an eCryptfs filesystem.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_manage_ecryptfs_dirs',`
+        gen_require(`
+                type ecryptfs_t;
+        ')
+
+        allow $1 ecryptfs_t:dir manage_dir_perms;
+')
+
+########################################
+## <summary>
+##      Create, read, write, and delete files
+##      on an eCryptfs filesystem.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+## <rolecap/>
+#
+interface(`fs_manage_ecryptfs_files',`
+        gen_require(`
+                type ecryptfs_t;
+        ')
+
+        manage_files_pattern($1, ecryptfs_t, ecryptfs_t)
+')
+
+########################################
+## <summary>
+##      Create, read, write, and delete named sockets
+##      on an eCryptfs filesystem.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain allowed access.
+##      </summary>
+## </param>
+#
+interface(`fs_manage_ecryptfs_named_sockets',`
+        gen_require(`
+                type ecryptfs_t;
+        ')
+
+        manage_sock_files_pattern($1, ecryptfs_t, ecryptfs_t)
 ')
 
 ########################################
@@ -3924,6 +4021,24 @@ interface(`fs_rw_nfsd_fs',`
 
 ########################################
 ## <summary>
+##	Get the attributes of nsfs inodes (e.g. /proc/pid/ns/uts)
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_getattr_nsfs_files',`
+	gen_require(`
+		type nsfs_t;
+	')
+
+	allow $1 nsfs_t:file getattr_file_perms;
+')
+
+########################################
+## <summary>
 ##	Read nsfs inodes (e.g. /proc/pid/ns/uts)
 ## </summary>
 ## <param name="domain">
@@ -3938,6 +4053,24 @@ interface(`fs_read_nsfs_files',`
 	')
 
 	allow $1 nsfs_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	Watch NFS server files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_watch_nfsd_files',`
+	gen_require(`
+		type nfsd_fs_t;
+	')
+
+	allow $1 nfsd_fs_t:file watch;
 ')
 
 ########################################
@@ -4585,6 +4718,24 @@ interface(`fs_rw_rpc_named_pipes',`
 	')
 
 	allow $1 rpc_pipefs_t:fifo_file rw_fifo_file_perms;
+')
+
+########################################
+## <summary>
+##	Watch RPC pipe filesystem directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`fs_watch_rpc_pipefs_dirs',`
+	gen_require(`
+		type rpc_pipefs_t;
+	')
+
+	allow $1 rpc_pipefs_t:dir watch;
 ')
 
 ########################################

@@ -568,8 +568,8 @@ interface(`files_mounton_non_security',`
 		attribute non_security_file_type;
 	')
 
-	allow $1 non_security_file_type:dir mounton;
-	allow $1 non_security_file_type:file mounton;
+	allow $1 non_security_file_type:dir { getattr search mounton };
+	allow $1 non_security_file_type:file { getattr mounton };
 ')
 
 ########################################
@@ -606,6 +606,24 @@ interface(`files_manage_non_security_dirs',`
 	')
 
 	allow $1 non_security_file_type:dir manage_dir_perms;
+')
+
+########################################
+## <summary>
+##	Create non-security directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_create_non_security_dirs',`
+	gen_require(`
+		attribute non_security_file_type;
+	')
+
+	create_dirs_pattern($1, non_security_file_type, non_security_file_type)
 ')
 
 ########################################
@@ -787,6 +805,46 @@ interface(`files_read_non_security_files',`
 	')
 
 	read_files_pattern($1, non_security_file_type, non_security_file_type)
+	read_lnk_files_pattern($1, non_security_file_type, non_security_file_type)
+')
+
+########################################
+## <summary>
+##	Write all non-security files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`files_write_non_security_files',`
+	gen_require(`
+		attribute non_security_file_type;
+	')
+
+	write_files_pattern($1, non_security_file_type, non_security_file_type)
+	read_lnk_files_pattern($1, non_security_file_type, non_security_file_type)
+')
+
+########################################
+## <summary>
+##	Create all non-security files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`files_create_non_security_files',`
+	gen_require(`
+		attribute non_security_file_type;
+	')
+
+	create_files_pattern($1, non_security_file_type, non_security_file_type)
 	read_lnk_files_pattern($1, non_security_file_type, non_security_file_type)
 ')
 
@@ -1239,10 +1297,6 @@ interface(`files_manage_all_files',`
 	manage_lnk_files_pattern($1, { file_type $2 }, { file_type $2 })
 	manage_fifo_files_pattern($1, { file_type $2 }, { file_type $2 })
 	manage_sock_files_pattern($1, { file_type $2 }, { file_type $2 })
-
-	# satisfy the assertions:
-	seutil_create_bin_policy($1)
-	files_manage_kernel_modules($1)
 ')
 
 ########################################
@@ -1513,10 +1567,6 @@ interface(`files_manage_non_auth_files',`
 	manage_lnk_files_pattern($1, non_auth_file_type, non_auth_file_type)
 	manage_fifo_files_pattern($1, non_auth_file_type, non_auth_file_type)
 	manage_sock_files_pattern($1, non_auth_file_type, non_auth_file_type)
-
-	# satisfy the assertions:
-	seutil_create_bin_policy($1)
-	files_manage_kernel_modules($1)
 ')
 
 ########################################
@@ -1850,6 +1900,60 @@ interface(`files_dontaudit_list_all_mountpoints',`
 	')
 
 	dontaudit $1 mountpoint:dir list_dir_perms;
+')
+
+########################################
+## <summary>
+##	Watch all mountpoints.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_watch_all_mountpoints',`
+	gen_require(`
+		attribute mountpoint;
+	')
+
+	allow $1 mountpoint:dir watch_mount;
+')
+
+########################################
+## <summary>
+##	Watch all mountpoints.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_watch_all_mount_perm',`
+	gen_require(`
+		attribute mountpoint;
+	')
+
+	allow $1 mountpoint:dir watch_with_perm;
+')
+
+########################################
+## <summary>
+##	Check if all mountpoints are writable.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_write_all_mountpoints',`
+	gen_require(`
+		attribute mountpoint;
+	')
+
+	allow $1 mountpoint:dir write;
 ')
 
 ########################################
@@ -2234,6 +2338,25 @@ interface(`files_mounton_root',`
 	')
 
 	allow $1 root_t:dir mounton;
+')
+
+########################################
+## <summary>
+##	Get the attributes of a filesystem
+##	mounted on /boot.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_getattr_boot_fs',`
+	gen_require(`
+		type boot_t;
+	')
+
+	allow $1 boot_t:filesystem getattr;
 ')
 
 ########################################
@@ -3013,6 +3136,24 @@ interface(`files_mounton_etc_dirs',`
 
 ########################################
 ## <summary>
+##	Remount etc filesystems.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_remount_etc',`
+	gen_require(`
+		type etc_t;
+	')
+
+	allow $1 etc_t:filesystem remount;
+')
+
+########################################
+## <summary>
 ##	Watch /etc directories
 ## </summary>
 ## <param name="domain">
@@ -3229,6 +3370,24 @@ interface(`files_exec_etc_files',`
 	allow $1 etc_t:dir list_dir_perms;
 	read_lnk_files_pattern($1, etc_t, etc_t)
 	exec_files_pattern($1, etc_t, etc_t)
+')
+
+########################################
+## <summary>
+##	Watch /etc files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_watch_etc_files', `
+	gen_require(`
+		type etc_t;
+	')
+
+	allow $1 etc_t:file watch;
 ')
 
 ########################################
@@ -5001,6 +5160,25 @@ interface(`files_purge_tmp',`
 	delete_lnk_files_pattern($1, tmpfile, tmpfile)
 	delete_fifo_files_pattern($1, tmpfile, tmpfile)
 	delete_sock_files_pattern($1, tmpfile, tmpfile)
+')
+
+########################################
+## <summary>
+##	Get the attributes of all tmpfs files.
+## </summary>
+## <param name="type">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_getattr_all_tmpfs_files',`
+	gen_require(`
+		attribute tmpfsfile;
+	')
+
+	getattr_files_pattern($1, tmpfsfile, tmpfsfile)
+	fs_search_tmpfs($1)
 ')
 
 ########################################
