@@ -1,7 +1,9 @@
+0000-deprecated
 0000-seusers-sddm
 0001-Make-default-and-root-mcs-seusers-unconfined.patch
-0002-upstream
-0003-strict
+0002-strict
+0003-motd
+0004-fwupd
 0009-misc-kernel-system
 0010-difficult-kernel-system
 0015-cron-trivial
@@ -9,7 +11,6 @@
 0025-systemd
 0027-services
 0028-misc
-0029-sympa
 0030-user-sddm
 0031-cockpit
 0110-gpg

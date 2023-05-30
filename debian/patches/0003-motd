@@ -1,0 +1,89 @@
+Index: refpolicy-2.20221101/policy/modules/system/authlogin.fc
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/authlogin.fc
++++ refpolicy-2.20221101/policy/modules/system/authlogin.fc
+@@ -53,6 +53,7 @@ ifdef(`distro_suse', `
+ /run/motd		--	gen_context(system_u:object_r:pam_motd_runtime_t,s0)
+ /run/motd\.dynamic	--	gen_context(system_u:object_r:pam_motd_runtime_t,s0)
+ /run/motd\.dynamic\.new	--	gen_context(system_u:object_r:pam_motd_runtime_t,s0)
++/run/motd\.d(/.*)?		gen_context(system_u:object_r:pam_motd_runtime_t,s0)
+ /run/pam_mount(/.*)?	gen_context(system_u:object_r:pam_runtime_t,s0)
+ /run/pam_ssh(/.*)?		gen_context(system_u:object_r:var_auth_t,s0)
+ /run/sepermit(/.*)? 	gen_context(system_u:object_r:pam_runtime_t,s0)
+Index: refpolicy-2.20221101/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20221101/policy/modules/system/authlogin.if
+@@ -120,6 +120,44 @@ interface(`auth_use_pam_motd_dynamic',`
+ 
+ ########################################
+ ## <summary>
++##	Write files in /run/motd.d directory
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_write_pam_motd_files',`
++	gen_require(`
++		type pam_motd_runtime_t;
++	')
++
++	allow $1 pam_motd_runtime_t:dir rw_dir_perms;
++	allow $1 pam_motd_runtime_t:file manage_file_perms;
++')
++
++########################################
++## <summary>
++##	Read files in /run/motd.d directory
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`auth_read_pam_motd_files',`
++	gen_require(`
++		type pam_motd_runtime_t;
++	')
++
++	allow $1 pam_motd_runtime_t:dir list_dir_perms;
++	allow $1 pam_motd_runtime_t:file read_file_perms;
++')
++
++########################################
++## <summary>
+ ##	Make the specified domain used for a login program.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/ssh.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/ssh.te
++++ refpolicy-2.20221101/policy/modules/services/ssh.te
+@@ -260,7 +260,11 @@ corenet_sendrecv_xserver_server_packets(
+ 
+ ifdef(`distro_debian',`
+ 	allow sshd_t self:process { getcap setcap };
++	auth_read_pam_motd_files(sshd_t)
+ 	auth_use_pam_motd_dynamic(sshd_t)
++
++	# for unattended-upgrades notices.  Should we have a domain transition?
++	files_read_var_lib_files(sshd_t)
+ ',`
+ 	dontaudit sshd_t self:process { getcap setcap };
+ ')
+Index: refpolicy-2.20221101/policy/modules/system/locallogin.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20221101/policy/modules/system/locallogin.te
+@@ -154,6 +154,7 @@ ifdef(`init_systemd',`
+ ')
+ 
+ ifdef(`distro_debian',`
++	auth_read_pam_motd_files(local_login_t)
+ 	auth_use_pam_motd_dynamic(local_login_t)
+ ')
+ 

@@ -1,0 +1,310 @@
+Index: refpolicy-2.20221101/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20221101/policy/modules/system/userdomain.if
+@@ -69,6 +69,8 @@ template(`userdom_base_user_template',`
+ 	dontaudit $1_t user_tty_device_t:chr_file ioctl;
+ 
+ 	kernel_read_kernel_sysctls($1_t)
++	kernel_read_crypto_sysctls($1_t)
++	kernel_read_vm_overcommit_sysctl($1_t)
+ 	kernel_dontaudit_list_unlabeled($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_files($1_t)
+ 	kernel_dontaudit_getattr_unlabeled_symlinks($1_t)
+@@ -3664,6 +3666,25 @@ interface(`userdom_relabelfrom_user_runt
+ ')
+ 
+ ########################################
++## <summary>
++##     write user runtime socket files
++## </summary>
++## <param name="domain">
++##     <summary>
++##     Domain allowed access.
++##     </summary>
++## </param>
++#
++interface(`userdom_write_all_user_runtime_named_sockets',`
++	gen_require(`
++		attribute user_runtime_content_type;
++	')
++
++	allow $1 user_runtime_content_type:dir list_dir_perms;
++	allow $1 user_runtime_content_type:sock_file write;
++')
++
++########################################
+ ## <summary>
+ ##	delete user runtime files
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/roles/sysadm.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20221101/policy/modules/roles/sysadm.te
+@@ -33,11 +33,22 @@ ifndef(`enable_mls',`
+ # Local policy
+ #
+ 
++allow sysadm_t self:netlink_generic_socket { create setopt bind write read };
++
++# for ptrace
++allow sysadm_t self:netlink_tcpdiag_socket { create write nlmsg_read read };
++
++allow sysadm_t self:capability audit_write;
++allow sysadm_t self:system status;
++
+ corecmd_exec_shell(sysadm_t)
+ 
+ corenet_ib_access_unlabeled_pkeys(sysadm_t)
+ corenet_ib_manage_subnet_unlabeled_endports(sysadm_t)
+ 
++domain_getsched_all_domains(sysadm_t)
++
++dev_read_cpuid(sysadm_t)
+ dev_read_kmsg(sysadm_t)
+ dev_rw_ipmi_dev(sysadm_t)
+ 
+@@ -59,6 +70,9 @@ init_admin(sysadm_t)
+ userdom_manage_user_home_dirs(sysadm_t)
+ userdom_home_filetrans_user_home_dir(sysadm_t)
+ 
++# for systemd-analyze
++files_get_etc_unit_status(sysadm_t)
++
+ ifdef(`direct_sysadm_daemon',`
+ 	optional_policy(`
+ 		init_run_daemon(sysadm_t, sysadm_r)
+@@ -1053,6 +1067,10 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_dbus_chat_logind(sysadm_t)
++')
++
++optional_policy(`
+ 	tboot_run_txtstat(sysadm_t, sysadm_r)
+ ')
+ 
+@@ -1120,6 +1138,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	dev_rw_generic_usb_dev(sysadm_t)
+ 	usbmodules_run(sysadm_t, sysadm_r)
+ ')
+ 
+Index: refpolicy-2.20221101/policy/modules/services/xserver.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20221101/policy/modules/services/xserver.if
+@@ -111,6 +111,7 @@ template(`xserver_restricted_role',`
+ 	xserver_xsession_entry_type($2)
+ 	xserver_dontaudit_write_log($2)
+ 	xserver_stream_connect_xdm($2)
++	xserver_use_user_fonts($2)
+ 	# certain apps want to read xdm.pid file
+ 	xserver_read_xdm_runtime_files($2)
+ 	# gnome-session creates socket under /tmp/.ICE-unix/
+@@ -169,7 +170,7 @@ template(`xserver_role',`
+ 	gen_require(`
+ 		type iceauth_home_t, xserver_t, xserver_tmp_t, xserver_tmpfs_t, xauth_home_t;
+ 		type user_fonts_t, user_fonts_cache_t, user_fonts_config_t;
+-		type mesa_shader_cache_t;
++		type mesa_shader_cache_t, xdm_t;
+ 	')
+ 
+ 	xserver_restricted_role($1, $2, $3, $4)
+@@ -212,6 +213,8 @@ template(`xserver_role',`
+ 
+ 	xserver_read_xkb_libs($2)
+ 
++	allow $2 xdm_t:unix_stream_socket accept;
++
+ 	optional_policy(`
+ 		systemd_user_app_status($1, xserver_t)
+ 	')
+@@ -1241,6 +1244,7 @@ interface(`xserver_read_xkb_libs',`
+ 	allow $1 xkb_var_lib_t:dir list_dir_perms;
+ 	read_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
+ 	read_lnk_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
++	allow $1 xkb_var_lib_t:file map;
+ ')
+ 
+ ########################################
+Index: refpolicy-2.20221101/policy/modules/services/dbus.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20221101/policy/modules/services/dbus.if
+@@ -85,6 +85,7 @@ template(`dbus_role_template',`
+ 
+ 	allow $3 $1_dbusd_t:unix_stream_socket connectto;
+ 	allow $3 $1_dbusd_t:dbus { send_msg acquire_svc };
++	allow $1_dbusd_t $3:dbus send_msg;
+ 	allow $3 $1_dbusd_t:fd use;
+ 
+ 	dontaudit $1_dbusd_t self:process getcap;
+@@ -105,9 +106,13 @@ template(`dbus_role_template',`
+ 
+ 	allow $1_dbusd_t $3:process sigkill;
+ 
++	allow $1_dbusd_t self:process getcap;
++
+ 	corecmd_bin_domtrans($1_dbusd_t, $3)
+ 	corecmd_shell_domtrans($1_dbusd_t, $3)
+ 
++	dev_read_sysfs($1_dbusd_t)
++
+ 	auth_use_nsswitch($1_dbusd_t)
+ 
+ 	optional_policy(`
+@@ -115,6 +120,15 @@ template(`dbus_role_template',`
+ 		systemd_user_daemon_domain($1, dbusd_exec_t, $1_dbusd_t)
+ 		systemd_user_unix_stream_activated_socket($1_dbusd_t, session_dbusd_runtime_t)
+ 	')
++
++	optional_policy(`
++		init_dbus_chat($1_dbusd_t)
++		dbus_system_bus_client($1_dbusd_t)
++	')
++
++	optional_policy(`
++		xdg_read_data_files($1_dbusd_t)
++	')
+ ')
+ 
+ #######################################
+Index: refpolicy-2.20221101/policy/modules/services/ssh.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/ssh.if
++++ refpolicy-2.20221101/policy/modules/services/ssh.if
+@@ -470,6 +470,7 @@ template(`ssh_role_template',`
+ 		xserver_use_xdm_fds($1_ssh_agent_t)
+ 		xserver_rw_xdm_pipes($1_ssh_agent_t)
+ 		xserver_sigchld_xdm($1_ssh_agent_t)
++		xserver_write_inherited_xsession_log($1_ssh_agent_t)
+ 	')
+ ')
+ 
+Index: refpolicy-2.20221101/policy/modules/kernel/corecommands.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/kernel/corecommands.te
++++ refpolicy-2.20221101/policy/modules/kernel/corecommands.te
+@@ -13,7 +13,7 @@ attribute exec_type;
+ #
+ # bin_t is the type of files in the system bin/sbin directories.
+ #
+-type bin_t alias { ls_exec_t sbin_t };
++type bin_t alias { ls_exec_t sbin_t systemd_analyze_exec_t };
+ typealias bin_t alias { systemd_detect_virt_t systemd_run_exec_t };
+ corecmd_executable_file(bin_t)
+ dev_associate(bin_t)	#For /dev/MAKEDEV
+Index: refpolicy-2.20221101/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20221101/policy/modules/system/systemd.te
+@@ -64,10 +64,6 @@ type systemd_activate_t;
+ type systemd_activate_exec_t;
+ init_system_domain(systemd_activate_t, systemd_activate_exec_t)
+ 
+-type systemd_analyze_t;
+-type systemd_analyze_exec_t;
+-init_daemon_domain(systemd_analyze_t, systemd_analyze_exec_t)
+-
+ type systemd_backlight_t;
+ type systemd_backlight_exec_t;
+ init_system_domain(systemd_backlight_t, systemd_backlight_exec_t)
+@@ -1702,6 +1698,7 @@ tunable_policy(`systemd_tmpfiles_manage_
+ ')
+ 
+ optional_policy(`
++	dbus_manage_lib_files(systemd_tmpfiles_t)
+ 	dbus_read_lib_files(systemd_tmpfiles_t)
+ 	dbus_relabel_lib_dirs(systemd_tmpfiles_t)
+ ')
+Index: refpolicy-2.20221101/policy/modules/services/cron.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/cron.te
++++ refpolicy-2.20221101/policy/modules/services/cron.te
+@@ -483,6 +483,7 @@ allow system_cronjob_t crond_tmp_t:file
+ kernel_getattr_core_if(system_cronjob_t)
+ kernel_getattr_message_if(system_cronjob_t)
+ 
++kernel_read_fs_sysctls(system_cronjob_t)
+ kernel_read_irq_sysctls(system_cronjob_t)
+ kernel_read_kernel_sysctls(system_cronjob_t)
+ kernel_read_network_state(system_cronjob_t)
+Index: refpolicy-2.20221101/policy/modules/apps/pulseaudio.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/apps/pulseaudio.te
++++ refpolicy-2.20221101/policy/modules/apps/pulseaudio.te
+@@ -156,6 +156,7 @@ userdom_search_user_home_content(pulseau
+ userdom_manage_user_tmp_dirs(pulseaudio_t)
+ userdom_manage_user_tmp_files(pulseaudio_t)
+ userdom_manage_user_tmp_sockets(pulseaudio_t)
++userdom_write_all_user_runtime_named_sockets(pulseaudio_t)
+ 
+ tunable_policy(`pulseaudio_execmem',`
+ 	allow pulseaudio_t self:process execmem;
+Index: refpolicy-2.20221101/policy/modules/services/ntp.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/ntp.te
++++ refpolicy-2.20221101/policy/modules/services/ntp.te
+@@ -131,6 +131,7 @@ term_use_ptmx(ntpd_t)
+ auth_use_nsswitch(ntpd_t)
+ 
+ init_exec_script_files(ntpd_t)
++init_get_generic_units_status(ntpd_t)
+ 
+ logging_send_syslog_msg(ntpd_t)
+ 
+Index: refpolicy-2.20221101/policy/modules/system/unconfined.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/unconfined.if
++++ refpolicy-2.20221101/policy/modules/system/unconfined.if
+@@ -51,6 +51,12 @@ interface(`unconfined_domain_noaudit',`
+ 	# Write access is for setting attributes under /proc/self/attr.
+ 	allow $1 self:file rw_file_perms;
+ 
++	# used by Chrome for some reason
++	allow $1 self:dir manage_dir_perms;
++
++	# for io_uring
++	allow $1 self:anon_inode { create map read write };
++
+ 	# Userland object managers
+ 	allow $1 self:nscd { getpwd getgrp gethost getstat admin shmempwd shmemgrp shmemhost getserv shmemserv };
+ 	allow $1 self:dbus { acquire_svc send_msg };
+Index: refpolicy-2.20221101/policy/modules/apps/mozilla.te
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/apps/mozilla.te
++++ refpolicy-2.20221101/policy/modules/apps/mozilla.te
+@@ -115,11 +115,13 @@ allow mozilla_t mozilla_plugin_rw_t:lnk_
+ stream_connect_pattern(mozilla_t, mozilla_plugin_tmpfs_t, mozilla_plugin_tmpfs_t, mozilla_plugin_t)
+ 
+ manage_files_pattern(mozilla_t, mozilla_xdg_cache_t, mozilla_xdg_cache_t)
++allow mozilla_t mozilla_xdg_cache_t:file map;
+ manage_dirs_pattern(mozilla_t, mozilla_xdg_cache_t, mozilla_xdg_cache_t)
+ xdg_cache_filetrans(mozilla_t, mozilla_xdg_cache_t, dir, "mozilla")
+ 
+ can_exec(mozilla_t, { mozilla_exec_t mozilla_plugin_rw_t mozilla_plugin_home_t })
+ 
++kernel_read_device_sysctls(mozilla_t)
+ kernel_read_kernel_sysctls(mozilla_t)
+ kernel_read_network_state(mozilla_t)
+ kernel_read_system_state(mozilla_t)
+@@ -132,6 +134,7 @@ corecmd_exec_bin(mozilla_t)
+ corenet_all_recvfrom_netlabel(mozilla_t)
+ corenet_tcp_sendrecv_generic_if(mozilla_t)
+ corenet_tcp_sendrecv_generic_node(mozilla_t)
++corenet_udp_bind_generic_node(mozilla_t)
+ 
+ corenet_sendrecv_http_client_packets(mozilla_t)
+ corenet_tcp_connect_http_port(mozilla_t)
+@@ -267,6 +270,7 @@ optional_policy(`
+ optional_policy(`
+ 	dbus_all_session_bus_client(mozilla_t)
+ 	dbus_connect_all_session_bus(mozilla_t)
++	dbus_write_session_runtime_socket(mozilla_t)
+ 	dbus_system_bus_client(mozilla_t)
+ 
+ 	optional_policy(`

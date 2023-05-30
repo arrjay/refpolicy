@@ -1,0 +1,3679 @@
+Index: refpolicy-2.20221101/policy/modules/kernel/selinux.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/kernel/selinux.if
++++ refpolicy-2.20221101/policy/modules/kernel/selinux.if
+@@ -699,28 +699,6 @@ interface(`selinux_use_status_page',`
+ 
+ ########################################
+ ## <summary>
+-##	Allows caller to map secuirty_t files. (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-
+-interface(`selinux_map_security_files',`
+-	gen_require(`
+-		type security_t;
+-	')
+-
+-	refpolicywarn(`$0() has been deprecated, use selinux_use_status_page() instead.')
+-
+-	dev_search_sysfs($1)
+-	allow $1 security_t:file map;
+-')
+-
+-########################################
+-## <summary>
+ ##	Unconfined access to the SELinux kernel security server.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/networkmanager.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/networkmanager.if
++++ refpolicy-2.20221101/policy/modules/services/networkmanager.if
+@@ -273,21 +273,6 @@ interface(`networkmanager_append_log_fil
+ 
+ ########################################
+ ## <summary>
+-##	Read networkmanager pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`networkmanager_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use networkmanager_read_runtime_files() instead.')
+-	networkmanager_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read networkmanager runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20221101/policy/modules/system/authlogin.if
+@@ -1111,95 +1111,6 @@ interface(`auth_manage_var_auth',`
+ 
+ ########################################
+ ## <summary>
+-##	Read PAM PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`auth_read_pam_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use auth_read_pam_runtime_files() instead.')
+-	auth_read_pam_runtime_files($1)
+-')
+-
+-#######################################
+-## <summary>
+-##	Do not audit attempts to read PAM PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`auth_dontaudit_read_pam_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use auth_dontaudit_read_pam_runtime_files() instead.')
+-	auth_dontaudit_read_pam_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create specified objects in
+-##	pid directories with the pam var
+-##      run file type using a
+-##      file type transition.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`auth_pid_filetrans_pam_var_run',`
+-	refpolicywarn(`$0($*) has been deprecated, please use auth_runtime_filetrans_pam_runtime() instead.')
+-	auth_runtime_filetrans_pam_runtime($1, $2, $3)
+-')
+-
+-########################################
+-## <summary>
+-##	Delete pam PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`auth_delete_pam_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use auth_delete_pam_runtime_files() instead.')
+-	auth_delete_pam_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Manage pam PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`auth_manage_pam_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use auth_manage_pam_runtime_dirs(); auth_manage_pam_runtime_files() instead.')
+-	auth_manage_pam_runtime_dirs($1)
+-	auth_manage_pam_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Manage pam runtime dirs.
+ ## </summary>
+ ## <param name="domain">
+@@ -1480,34 +1391,6 @@ interface(`auth_delete_pam_console_data'
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Create specified objects in
+-##	pid directories with the pam var
+-##      console pid file type using a
+-##      file type transition.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`auth_pid_filetrans_pam_var_console',`
+-	refpolicywarn(`$0($*) has been deprecated, please use auth_runtime_filetrans_pam_var_console() instead.')
+-	auth_runtime_filetrans_pam_var_console($1, $2, $3)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Create specified objects in generic
+ ##	runtime directories with the pam var
+Index: refpolicy-2.20221101/policy/modules/system/init.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/init.if
++++ refpolicy-2.20221101/policy/modules/system/init.if
+@@ -640,33 +640,6 @@ interface(`init_dyntrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Mark the file type as a daemon pid file, allowing initrc_t
+-##	to create it  (Deprecated)
+-## </summary>
+-## <param name="filetype">
+-##	<summary>
+-##	Type to mark as a daemon pid file
+-##	</summary>
+-## </param>
+-## <param name="class">
+-##	<summary>
+-##	Class on which the type is applied
+-##	</summary>
+-## </param>
+-## <param name="filename">
+-##	<summary>
+-##	Filename of the file that the init script creates
+-##	</summary>
+-## </param>
+-#
+-interface(`init_daemon_pid_file',`
+-	refpolicywarn(`$0($*) has been deprecated, please use init_daemon_runtime_file() instead.')
+-	init_daemon_runtime_file($1, $2, $3)
+-
+-')
+-
+-########################################
+-## <summary>
+ ##	Mark the file type as a daemon runtime file, allowing initrc_t
+ ##	to create it
+ ## </summary>
+@@ -1533,127 +1506,6 @@ interface(`init_var_lib_filetrans',`
+ ')
+ 
+ ######################################
+-## <summary>
+-##	Allow search  directory in the /run/systemd directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_search_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use init_search_runtime() instead.')
+-	init_search_runtime($1)
+-')
+-
+-######################################
+-## <summary>
+-##  Allow listing of the /run/systemd directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_list_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use init_list_runtime() instead.')
+-	init_list_runtime($1)
+-')
+-
+-######################################
+-## <summary>
+-##  Create symbolic links in the /run/systemd directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_manage_pid_symlinks', `
+-	refpolicywarn(`$0($*) has been deprecated, please use init_manage_runtime_symlinks() instead.')
+-	init_manage_runtime_symlinks($1)
+-')
+-
+-######################################
+-## <summary>
+-##  Create files in the /run/systemd directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_create_pid_files', `
+-	refpolicywarn(`$0($*) has been deprecated, please use init_create_runtime_files() instead.')
+-	init_create_runtime_files($1)
+-')
+-
+-######################################
+-## <summary>
+-##  Write files in the /run/systemd directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_write_pid_files', `
+-	refpolicywarn(`$0($*) has been deprecated, please use init_write_runtime_files() instead.')
+-	init_write_runtime_files($1)
+-')
+-
+-######################################
+-## <summary>
+-##  Create, read, write, and delete
+-##  directories in the /run/systemd directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_manage_pid_dirs', `
+-	refpolicywarn(`$0($*) has been deprecated, please use init_manage_runtime_dirs() instead.')
+-	init_manage_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create files in an init PID directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="file_type">
+-##	<summary>
+-##	The type of the object to be created
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	The object class.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`init_pid_filetrans',`
+-	refpolicywarn(`$0($*) has been deprecated, please use init_runtime_filetrans() instead.')
+-	init_runtime_filetrans($*)
+-')
+-
+-######################################
+ ## <summary>
+ ##	Search init runtime directories, e.g. /run/systemd.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/system/ipsec.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/ipsec.if
++++ refpolicy-2.20221101/policy/modules/system/ipsec.if
+@@ -248,37 +248,6 @@ interface(`ipsec_setcontext_default_spd'
+ 
+ ########################################
+ ## <summary>
+-##	write the ipsec_runtime_t files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`ipsec_write_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use ipsec_write_runtime_files() instead.')
+-	ipsec_write_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete the IPSEC pid files.
+-##	(Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`ipsec_manage_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use ipsec_manage_runtime_files() instead.')
+-	ipsec_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Write ipsec runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/system/iptables.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/iptables.if
++++ refpolicy-2.20221101/policy/modules/system/iptables.if
+@@ -164,21 +164,6 @@ interface(`iptables_manage_config',`
+ 
+ ########################################
+ ## <summary>
+-##	dontaudit reading iptables_runtime_t  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`iptables_dontaudit_read_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use iptables_dontaudit_read_runtime_files() instead.')
+-	iptables_dontaudit_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Do not audit reading iptables runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/system/logging.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/logging.if
++++ refpolicy-2.20221101/policy/modules/system/logging.if
+@@ -846,21 +846,6 @@ interface(`logging_watch_runtime_dirs',`
+ 
+ ########################################
+ ## <summary>
+-##	Create, read, write, and delete syslog PID sockets.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`logging_manage_pid_sockets',`
+-	refpolicywarn(`$0($*) has been deprecated, please use logging_manage_runtime_sockets() instead.')
+-	logging_manage_runtime_sockets($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Create, read, write, and delete syslog PID sockets.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/system/lvm.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/lvm.if
++++ refpolicy-2.20221101/policy/modules/system/lvm.if
+@@ -172,20 +172,6 @@ interface(`lvm_create_lock_dirs',`
+ 	files_add_entry_lock_dirs($1)
+ ')
+ 
+-########################################
+-## <summary>
+-##      Read and write a lvm unnamed pipe.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`lvm_rw_inherited_pid_pipes',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ ######################################
+ ## <summary>
+ ##	All of the rules required to
+Index: refpolicy-2.20221101/policy/modules/system/modutils.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/modutils.if
++++ refpolicy-2.20221101/policy/modules/system/modutils.if
+@@ -40,21 +40,6 @@ interface(`modutils_read_module_deps',`
+ 
+ ########################################
+ ## <summary>
+-##	Read the kernel modules.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`modutils_read_module_objects',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_mmap_read_kernel_modules() instead.')
+-	files_mmap_read_kernel_modules($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read the configuration options used when
+ ##	loading modules.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/system/raid.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/raid.if
++++ refpolicy-2.20221101/policy/modules/system/raid.if
+@@ -48,37 +48,6 @@ interface(`raid_run_mdadm',`
+ 
+ ########################################
+ ## <summary>
+-##	read mdadm pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`raid_read_mdadm_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use raid_read_mdadm_runtime_files() instead.')
+-	raid_read_mdadm_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	mdadm pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`raid_manage_mdadm_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use raid_manage_mdadm_runtime_files() instead.')
+-	raid_manage_mdadm_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read mdadm runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/system/sysnetwork.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/sysnetwork.if
++++ refpolicy-2.20221101/policy/modules/system/sysnetwork.if
+@@ -550,36 +550,6 @@ interface(`sysnet_manage_config',`
+ 
+ #######################################
+ ## <summary>
+-##	Read the dhcp client pid file.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`sysnet_read_dhcpc_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use sysnet_read_dhcpc_runtime_files() instead.')
+-	sysnet_read_dhcpc_runtime_files($1)
+-')
+-
+-#######################################
+-## <summary>
+-##	Delete the dhcp client pid file.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`sysnet_delete_dhcpc_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use sysnet_delete_dhcpc_runtime_files() instead.')
+-	sysnet_delete_dhcpc_runtime_files($1)
+-')
+-
+-#######################################
+-## <summary>
+ ##	Read dhcp client runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20221101/policy/modules/system/systemd.if
+@@ -1115,51 +1115,6 @@ interface(`systemd_map_hwdb',`
+ 
+ ######################################
+ ## <summary>
+-##   Read systemd_login PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`systemd_read_logind_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use systemd_read_logind_runtime_files() instead.')
+-	systemd_read_logind_runtime_files($1)
+-')
+-
+-######################################
+-## <summary>
+-##   Manage systemd_login PID pipes.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`systemd_manage_logind_pid_pipes',`
+-	refpolicywarn(`$0($*) has been deprecated, please use systemd_manage_logind_runtime_pipes() instead.')
+-	systemd_manage_logind_runtime_pipes($1)
+-')
+-
+-######################################
+-## <summary>
+-##     Write systemd_login named pipe.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`systemd_write_logind_pid_pipes',`
+-	refpolicywarn(`$0($*) has been deprecated, please use systemd_write_logind_runtime_pipes() instead.')
+-	systemd_write_logind_runtime_pipes($1)
+-')
+-
+-######################################
+-## <summary>
+ ##   Watch systemd-logind runtime dirs.
+ ## </summary>
+ ## <param name="domain">
+@@ -1710,21 +1665,6 @@ interface(`systemd_watch_passwd_runtime_
+ ')
+ 
+ ########################################
+-## <summary>
+-##      manage systemd unit dirs and the files in them  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`systemd_manage_all_units',`
+-	refpolicywarn(`$0() has been deprecated, use init_manage_all_unit_files() instead.')
+-	init_manage_all_unit_files($1)
+-')
+-
+-########################################
+ ## <summary>
+ ##      Allow domain to list the contents of systemd_journal_t dirs
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/system/udev.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/udev.if
++++ refpolicy-2.20221101/policy/modules/system/udev.if
+@@ -244,193 +244,6 @@ interface(`udev_relabel_rules_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Do not audit search of udev database directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_dontaudit_search_db',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Read the udev device table.  (Deprecated)
+-## </summary>
+-## <desc>
+-##	<p>
+-##	Allow the specified domain to read the udev device table.  (Deprecated)
+-##	</p>
+-## </desc>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <infoflow type="read" weight="10"/>
+-#
+-interface(`udev_read_db',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Allow process to modify list of devices.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_rw_db',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##      Allow process to relabelto udev database  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_relabelto_db',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Allow process to relabelto sockets in /run/udev  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_relabelto_db_sockets',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Search through udev pid content  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_search_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use udev_search_runtime() instead.')
+-	udev_search_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##      list udev pid content  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_list_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use udev_list_runtime() instead.')
+-	udev_list_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	udev pid directories  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_manage_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use udev_manage_runtime_dirs() instead.')
+-	udev_manage_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read udev pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use udev_read_runtime_files() instead.')
+-	udev_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	dontaudit attempts to read/write udev pidfiles  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_dontaudit_rw_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use udev_dontaudit_rw_runtime_files() instead.')
+-	udev_dontaudit_rw_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	udev pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use udev_manage_runtime_files() instead.')
+-	udev_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create directories in the run location with udev_runtime_t type  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	Name of the directory that is created
+-##	</summary>
+-## </param>
+-#
+-interface(`udev_generic_pid_filetrans_run_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Search through udev runtime dirs.
+ ## </summary>
+ ## <param name="domain">
+@@ -565,43 +378,6 @@ interface(`udev_domtrans_udevadm',`
+ 
+ ########################################
+ ## <summary>
+-##	Execute udev admin in the udevadm domain.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed to transition.
+-##	</summary>
+-## </param>
+-#
+-interface(`udevadm_domtrans',`
+-	refpolicywarn(`$0($*) has been deprecated, use udev_domtrans_udevadm() instead.')
+-	udev_domtrans_udevadm($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Execute udevadm in the udevadm domain, and
+-##	allow the specified role the udevadm domain.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed to transition.
+-##	</summary>
+-## </param>
+-## <param name="role">
+-##	<summary>
+-##	Role allowed access.
+-##	</summary>
+-## </param>
+-## <rolecap/>
+-#
+-interface(`udevadm_run',`
+-	refpolicywarn(`$0($*) has been deprecated, use udev_run_udevadm() instead.')
+-	udev_run_udevadm($1, $2)
+-')
+-
+-########################################
+-## <summary>
+ ##	Execute udevadm in the udevadm domain, and
+ ##	allow the specified role the udevadm domain.
+ ## </summary>
+@@ -627,21 +403,6 @@ interface(`udev_run_udevadm',`
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Execute udevadm in the caller domain.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`udevadm_exec',`
+-	refpolicywarn(`$0($*) has been deprecated, use udev_exec_udevadm() instead.')
+-	udev_exec_udevadm($1)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Execute udevadm in the caller domain.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20221101/policy/modules/system/userdomain.if
+@@ -3848,33 +3848,6 @@ interface(`userdom_delete_all_user_runti
+ 
+ ########################################
+ ## <summary>
+-##	Create objects in the pid directory
+-##	with an automatic type transition to
+-##	the user runtime root type.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	The class of the object to be created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`userdom_pid_filetrans_user_runtime_root',`
+-	refpolicywarn(`$0($*) has been deprecated, please use userdom_runtime_filetrans_user_runtime_root() instead.')
+-	userdom_runtime_filetrans_user_runtime_root($1, $2, $3)
+-')
+-
+-########################################
+-## <summary>
+ ##	Create objects in the runtime directory
+ ##	with an automatic type transition to
+ ##	the user runtime root type.
+Index: refpolicy-2.20221101/policy/modules/system/xen.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/system/xen.if
++++ refpolicy-2.20221101/policy/modules/system/xen.if
+@@ -178,21 +178,6 @@ interface(`xen_manage_log',`
+ 
+ #######################################
+ ## <summary>
+-##	Read xenstored pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`xen_read_xenstored_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use xen_read_xenstored_runtime_files() instead.')
+-	xen_read_xenstored_runtime_files($1)
+-')
+-
+-#######################################
+-## <summary>
+ ##	Read xenstored runtime files.
+ ## </summary>
+ ## <param name="domain">
+@@ -273,31 +258,6 @@ interface(`xen_stream_connect',`
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Create in a xend_runtime_t directory  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="private type">
+-##	<summary>
+-##	The type of the object to be created.
+-##	</summary>
+-## </param>
+-## <param name="object">
+-##	<summary>
+-##	The object class of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`xen_pid_filetrans',`
+-	refpolicywarn(`$0($*) has been deprecated, please use xen_runtime_filetrans() instead.')
+-	xen_runtime_filetrans($1, $2, $3)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Create in a xend_runtime_t directory
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/cron.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/cron.if
++++ refpolicy-2.20221101/policy/modules/services/cron.if
+@@ -665,21 +665,6 @@ interface(`cron_search_spool',`
+ 
+ ########################################
+ ## <summary>
+-##	Create, read, write, and delete
+-##	crond pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`cron_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Execute anacron in the cron
+ ##	system domain.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/memcached.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/memcached.if
++++ refpolicy-2.20221101/policy/modules/services/memcached.if
+@@ -22,36 +22,6 @@ interface(`memcached_domtrans',`
+ ########################################
+ ## <summary>
+ ##	Create, read, write, and delete
+-##	memcached pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`memcached_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use memcached_manage_runtime_files() instead.')
+-	memcached_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read memcached pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`memcached_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+ ##	memcached runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/mysql.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/mysql.if
++++ refpolicy-2.20221101/policy/modules/services/mysql.if
+@@ -386,35 +386,6 @@ interface(`mysql_domtrans_mysql_safe',`
+ 	domtrans_pattern($1, mysqld_safe_exec_t, mysqld_safe_t)
+ ')
+ 
+-#####################################
+-## <summary>
+-##	Read mysqld pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`mysql_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-#####################################
+-## <summary>
+-##	Search mysqld pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-##
+-#
+-interface(`mysql_search_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ ########################################
+ ## <summary>
+ ##	All of the rules required to
+Index: refpolicy-2.20221101/policy/modules/services/nis.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/nis.if
++++ refpolicy-2.20221101/policy/modules/services/nis.if
+@@ -212,21 +212,6 @@ interface(`nis_list_var_yp',`
+ 
+ ########################################
+ ## <summary>
+-##	Read ypbind pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`nis_read_ypbind_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use nis_read_ypbind_runtime_files() instead.')
+-	nis_read_ypbind_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read ypbind runtime files.
+ ## </summary>
+ ## <param name="domain">
+@@ -245,20 +230,6 @@ interface(`nis_read_ypbind_runtime_files
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Delete ypbind pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`nis_delete_ypbind_pid',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+ ## <summary>
+ ##	Read ypserv configuration files.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/nscd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/nscd.if
++++ refpolicy-2.20221101/policy/modules/services/nscd.if
+@@ -175,37 +175,6 @@ interface(`nscd_use',`
+ ########################################
+ ## <summary>
+ ##	Do not audit attempts to search
+-##	nscd pid directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`nscd_dontaudit_search_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use nscd_dontaudit_search_runtime() instead.')
+-	nscd_dontaudit_search_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read nscd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`nscd_read_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use nscd_read_runtime_files() instead.')
+-	nscd_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to search
+ ##	nscd runtime directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/nslcd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/nslcd.if
++++ refpolicy-2.20221101/policy/modules/services/nslcd.if
+@@ -39,20 +39,6 @@ interface(`nslcd_initrc_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read nslcd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`nslcd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Connect to nslcd over an unix
+ ##	domain stream socket.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/openct.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/openct.if
++++ refpolicy-2.20221101/policy/modules/services/openct.if
+@@ -58,21 +58,6 @@ interface(`openct_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read openct pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`openct_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use openct_read_runtime_files() instead.')
+-	openct_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read openct runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/openvswitch.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/openvswitch.if
++++ refpolicy-2.20221101/policy/modules/services/openvswitch.if
+@@ -21,21 +21,6 @@ interface(`openvswitch_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read openvswitch pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`openvswitch_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use openvswitch_read_runtime_files() instead.')
+-	openvswitch_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read openvswitch runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/pcscd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/pcscd.if
++++ refpolicy-2.20221101/policy/modules/services/pcscd.if
+@@ -21,21 +21,6 @@ interface(`pcscd_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read pcscd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`pcscd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use pcscd_read_runtime_files() instead.')
+-	pcscd_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read pcscd runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/plymouthd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/plymouthd.if
++++ refpolicy-2.20221101/policy/modules/services/plymouthd.if
+@@ -233,36 +233,6 @@ interface(`plymouthd_manage_lib_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Read plymouthd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`plymouthd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use plymouthd_read_runtime_files() instead.')
+-	plymouthd_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Delete the plymouthd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`plymouthd_delete_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use plymouthd_delete_runtime_files() instead.')
+-	plymouthd_delete_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read plymouthd runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/ppp.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/ppp.if
++++ refpolicy-2.20221101/policy/modules/services/ppp.if
+@@ -355,63 +355,6 @@ interface(`ppp_read_secrets',`
+ 
+ ########################################
+ ## <summary>
+-##	Read ppp pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`ppp_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use ppp_read_runtime_files() instead.')
+-	ppp_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	ppp pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`ppp_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use ppp_manage_runtime_files() instead.')
+-	ppp_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create specified pppd pid objects
+-##	with a type transition.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`ppp_pid_filetrans',`
+-	refpolicywarn(`$0($*) has been deprecated, please use ppp_runtime_filetrans() instead.')
+-	ppp_runtime_filetrans($1, $2, $3)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read ppp runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/psad.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/psad.if
++++ refpolicy-2.20221101/policy/modules/services/psad.if
+@@ -100,34 +100,6 @@ interface(`psad_manage_config',`
+ 
+ ########################################
+ ## <summary>
+-##	Read psad pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`psad_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Read and write psad pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`psad_rw_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Read psad log content.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/qpid.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/qpid.if
++++ refpolicy-2.20221101/policy/modules/services/qpid.if
+@@ -76,20 +76,6 @@ interface(`qpidd_initrc_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read qpidd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`qpidd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Search qpidd lib directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/rhsmcertd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/rhsmcertd.if
++++ refpolicy-2.20221101/policy/modules/services/rhsmcertd.if
+@@ -177,20 +177,6 @@ interface(`rhsmcertd_manage_lib_dirs',`
+ 	manage_dirs_pattern($1, rhsmcertd_var_lib_t, rhsmcertd_var_lib_t)
+ ')
+ 
+-########################################
+-## <summary>
+-##	Read rhsmcertd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`rhsmcertd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ ####################################
+ ## <summary>
+ ##	Connect to rhsmcertd with a
+Index: refpolicy-2.20221101/policy/modules/services/rpcbind.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/rpcbind.if
++++ refpolicy-2.20221101/policy/modules/services/rpcbind.if
+@@ -41,20 +41,6 @@ interface(`rpcbind_stream_connect',`
+ 
+ ########################################
+ ## <summary>
+-##	Read rpcbind pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`rpcbind_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Search rpcbind lib directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/samba.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/samba.if
++++ refpolicy-2.20221101/policy/modules/services/samba.if
+@@ -707,21 +707,6 @@ interface(`samba_run_winbind_helper',`
+ 
+ ########################################
+ ## <summary>
+-##	Read winbind pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`samba_read_winbind_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use samba_read_winbind_runtime_files() instead.')
+-	samba_read_winbind_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read winbind runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/sanlock.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/sanlock.if
++++ refpolicy-2.20221101/policy/modules/services/sanlock.if
+@@ -38,21 +38,6 @@ interface(`sanlock_initrc_domtrans',`
+ 	init_labeled_script_domtrans($1, sanlock_initrc_exec_t)
+ ')
+ 
+-######################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	sanlock pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`sanlock_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ ########################################
+ ## <summary>
+ ##	Connect to sanlock with a unix
+Index: refpolicy-2.20221101/policy/modules/services/smokeping.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/smokeping.if
++++ refpolicy-2.20221101/policy/modules/services/smokeping.if
+@@ -40,35 +40,6 @@ interface(`smokeping_initrc_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read smokeping pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`smokeping_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	smokeping pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`smokeping_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Get attributes of smokeping lib files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/spamassassin.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/spamassassin.if
++++ refpolicy-2.20221101/policy/modules/services/spamassassin.if
+@@ -365,21 +365,6 @@ interface(`spamassassin_manage_lib_files
+ 
+ ########################################
+ ## <summary>
+-##	Read spamd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`spamassassin_read_spamd_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use spamassassin_read_spamd_runtime_files() instead.')
+-	spamassassin_read_spamd_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read spamd runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/sssd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/sssd.if
++++ refpolicy-2.20221101/policy/modules/services/sssd.if
+@@ -157,36 +157,6 @@ interface(`sssd_manage_public_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Read sssd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`sssd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use sssd_read_runtime_files() instead.')
+-	sssd_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	sssd pid content.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`sssd_manage_pids',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Read sssd runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/tuned.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/tuned.if
++++ refpolicy-2.20221101/policy/modules/services/tuned.if
+@@ -38,35 +38,6 @@ interface(`tuned_exec',`
+ 	can_exec($1, tuned_exec_t)
+ ')
+ 
+-######################################
+-## <summary>
+-##	Read tuned pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`tuned_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-#######################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	tuned pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`tuned_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ ########################################
+ ## <summary>
+ ##	Execute tuned init scripts in
+Index: refpolicy-2.20221101/policy/modules/services/uuidd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/uuidd.if
++++ refpolicy-2.20221101/policy/modules/services/uuidd.if
+@@ -118,20 +118,6 @@ interface(`uuidd_manage_lib_dirs',`
+ 
+ ########################################
+ ## <summary>
+-##	Read uuidd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`uuidd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Connect to uuidd with an unix
+ ##	domain stream socket.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/vdagent.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/vdagent.if
++++ refpolicy-2.20221101/policy/modules/services/vdagent.if
+@@ -56,20 +56,6 @@ interface(`vdagent_getattr_log',`
+ 	allow $1 vdagent_log_t:file getattr_file_perms;
+ ')
+ 
+-########################################
+-## <summary>
+-##	Read vdagent pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`vdagent_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ #####################################
+ ## <summary>
+ ##	Connect to vdagent with a unix
+Index: refpolicy-2.20221101/policy/modules/services/vhostmd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/vhostmd.if
++++ refpolicy-2.20221101/policy/modules/services/vhostmd.if
+@@ -117,35 +117,6 @@ interface(`vhostmd_manage_tmpfs_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Read vhostmd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`vhostmd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	vhostmd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`vhostmd_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Connect to vhostmd with a unix
+ ##	domain stream socket.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/virt.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/virt.if
++++ refpolicy-2.20221101/policy/modules/services/virt.if
+@@ -737,36 +737,6 @@ interface(`virt_home_filetrans_virt_home
+ 
+ ########################################
+ ## <summary>
+-##	Read virt pid files.  (Depprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`virt_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use virt_read_runtime_files() instead.')
+-	virt_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	virt pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`virt_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Read virt runtime files.
+ ## </summary>
+ ## <param name="domain">
+@@ -878,38 +848,6 @@ interface(`virt_manage_lib_files',`
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Create objects in virt pid
+-##	directories with a private type.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="private type">
+-##	<summary>
+-##	The type of the object to be created.
+-##	</summary>
+-## </param>
+-## <param name="object">
+-##	<summary>
+-##	The object class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-## <infoflow type="write" weight="10"/>
+-#
+-interface(`virt_pid_filetrans',`
+-	refpolicywarn(`$0($*) has been deprecated, please use virt_runtime_filetrans() instead.')
+-	virt_runtime_filetrans($1, $2, $3, $4)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Read virt log files.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/zabbix.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/zabbix.if
++++ refpolicy-2.20221101/policy/modules/services/zabbix.if
+@@ -80,20 +80,6 @@ interface(`zabbix_append_log',`
+ 
+ ########################################
+ ## <summary>
+-##	Read zabbix pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`zabbix_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Connect to zabbix agent on the TCP network.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/admin/kismet.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/admin/kismet.if
++++ refpolicy-2.20221101/policy/modules/admin/kismet.if
+@@ -84,37 +84,6 @@ interface(`kismet_run',`
+ 
+ ########################################
+ ## <summary>
+-##	Read kismet pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`kismet_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use kismet_read_runtime_files() instead.')
+-	kismet_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	kismet pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`kismet_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use kismet_manage_runtime_files() instead.')
+-	kismet_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read kismet runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/admin/rpm.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/admin/rpm.if
++++ refpolicy-2.20221101/policy/modules/admin/rpm.if
+@@ -527,61 +527,6 @@ interface(`rpm_dontaudit_manage_db',`
+ 
+ #####################################
+ ## <summary>
+-##	Read rpm pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`rpm_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-#####################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	rpm pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`rpm_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use rpm_manage_runtime_files() instead.')
+-	rpm_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create specified objects in pid directories
+-##	with the rpm pid file type.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`rpm_pid_filetrans_rpm_pid',`
+-	refpolicywarn(`$0($*) has been deprecated')
+-')
+-
+-#####################################
+-## <summary>
+ ##	Create, read, write, and delete
+ ##	rpm runtime files.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/admin/samhain.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/admin/samhain.if
++++ refpolicy-2.20221101/policy/modules/admin/samhain.if
+@@ -173,21 +173,6 @@ interface(`samhain_manage_log_files',`
+ 	manage_files_pattern($1, samhain_log_t, samhain_log_t)
+ ')
+ 
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	samhain pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`samhain_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ #######################################
+ ## <summary>
+ ##	All of the rules required to
+Index: refpolicy-2.20221101/policy/modules/admin/sblim.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/admin/sblim.if
++++ refpolicy-2.20221101/policy/modules/admin/sblim.if
+@@ -21,20 +21,6 @@ interface(`sblim_domtrans_gatherd',`
+ 
+ ########################################
+ ## <summary>
+-##	Read gatherd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`sblim_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	All of the rules required to
+ ##	administrate an sblim environment.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/apps/qemu.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/apps/qemu.if
++++ refpolicy-2.20221101/policy/modules/apps/qemu.if
+@@ -89,7 +89,7 @@ template(`qemu_domain_template',`
+ 	optional_policy(`
+ 		xserver_stream_connect($1_t)
+ 		xserver_read_xdm_tmp_files($1_t)
+-		xserver_read_xdm_pid($1_t)
++		xserver_read_xdm_runtime_files($1_t)
+ #		xserver_xdm_rw_shm($1_t)
+ 	')
+ ')
+@@ -281,21 +281,6 @@ interface(`qemu_stream_connect',`
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Unlink qemu socket  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`qemu_delete_pid_sock_file',`
+-	refpolicywarn(`$0($*) has been deprecated, please use qemu_delete_runtime_sock_files() instead.')
+-	qemu_delete_runtime_sock_files($1)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Unlink qemu runtime sockets.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/kernel/corenetwork.if.m4
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/kernel/corenetwork.if.m4
++++ refpolicy-2.20221101/policy/modules/kernel/corenetwork.if.m4
+@@ -463,112 +463,6 @@ interface(`corenet_udp_bind_$1_node',`
+ define(`create_port_interfaces',``
+ ########################################
+ ## <summary>
+-##	Send and receive TCP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <infoflow type="both" weight="10"/>
+-#
+-interface(`corenet_tcp_sendrecv_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+-##	Send UDP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <infoflow type="write" weight="10"/>
+-#
+-interface(`corenet_udp_send_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to send UDP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-## <infoflow type="none"/>
+-#
+-interface(`corenet_dontaudit_udp_send_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+-##	Receive UDP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <infoflow type="read" weight="10"/>
+-#
+-interface(`corenet_udp_receive_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to receive UDP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-## <infoflow type="none"/>
+-#
+-interface(`corenet_dontaudit_udp_receive_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+-##	Send and receive UDP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <infoflow type="both" weight="10"/>
+-#
+-interface(`corenet_udp_sendrecv_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to send and receive
+-##	UDP traffic on the $1 port.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-## <infoflow type="none"/>
+-#
+-interface(`corenet_dontaudit_udp_sendrecv_$1_port',`
+-	refpolicywarn(`dollarszero() has been deprecated, please remove.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Bind TCP sockets to the $1 port.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/kernel/devices.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/kernel/devices.if
++++ refpolicy-2.20221101/policy/modules/kernel/devices.if
+@@ -3384,51 +3384,6 @@ interface(`dev_rw_mtrr',`
+ 
+ ########################################
+ ## <summary>
+-##	Get the attributes of the network control device  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`dev_getattr_netcontrol_dev',`
+-	refpolicywarn(`$0() has been deprecated, use dev_getattr_pmqos_dev() instead.')
+-	dev_getattr_pmqos_dev($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read the network control identity.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`dev_read_netcontrol',`
+-	refpolicywarn(`$0() has been deprecated, use dev_read_pmqos() instead.')
+-	dev_read_pmqos($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read and write the the network control device.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`dev_rw_netcontrol',`
+-	refpolicywarn(`$0() has been deprecated, use dev_rw_pmqos() instead.')
+-	dev_rw_pmqos($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Get the attributes of the null device nodes.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20221101/policy/modules/kernel/files.if
+@@ -192,50 +192,6 @@ interface(`files_security_mountpoint',`
+ ########################################
+ ## <summary>
+ ##	Make the specified type usable for
+-##	runtime process ID files.  (Deprecated)
+-## </summary>
+-## <desc>
+-##	<p>
+-##	Make the specified type usable for runtime process ID files,
+-##	typically found in /var/run.
+-##	This will also make the type usable for files, making
+-##	calls to files_type() redundant.  Failure to use this interface
+-##	for a PID file type may result in problems with starting
+-##	or stopping services.
+-##	</p>
+-##	<p>
+-##	Related interfaces:
+-##	</p>
+-##	<ul>
+-##		<li>files_runtime_filetrans()</li>
+-##	</ul>
+-##	<p>
+-##	Example usage with a domain that can create and
+-##	write its PID file with a private PID file type in the
+-##	/var/run directory:
+-##	</p>
+-##	<p>
+-##	type mypidfile_t;
+-##	files_runtime_file(mypidfile_t)
+-##	allow mydomain_t mypidfile_t:file { create_file_perms write_file_perms };
+-##	files_runtime_filetrans(mydomain_t, mypidfile_t, file)
+-##	</p>
+-## </desc>
+-## <param name="type">
+-##	<summary>
+-##	Type to be used for PID files.
+-##	</summary>
+-## </param>
+-## <infoflow type="none"/>
+-#
+-interface(`files_pid_file',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_runtime_file() instead.')
+-	files_runtime_file($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Make the specified type usable for
+ ##	runtime process ID files.
+ ## </summary>
+ ## <desc>
+@@ -6653,130 +6609,6 @@ interface(`files_lock_filetrans',`
+ ########################################
+ ## <summary>
+ ##	Do not audit attempts to get the attributes
+-##	of the /var/run directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_dontaudit_getattr_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_dontaudit_getattr_runtime_dirs() instead.')
+-	files_dontaudit_getattr_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	mounton a /var/run directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_mounton_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_mounton_runtime_dirs() instead.')
+-	files_mounton_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Set the attributes of the /var/run directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_setattr_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_setattr_runtime_dirs() instead.')
+-	files_setattr_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Search the contents of runtime process
+-##	ID directories (/var/run).  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_search_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_search_runtime() instead.')
+-	files_search_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to search
+-##	the /var/run directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_dontaudit_search_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_dontaudit_search_runtime() instead.')
+-	files_dontaudit_search_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##	List the contents of the runtime process
+-##	ID directories (/var/run).  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_list_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_list_runtime() instead.')
+-	files_list_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Check write access on /var/run directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_check_write_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_check_write_runtime_dirs() instead.')
+-	files_check_write_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create a /var/run directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_create_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_create_runtime_dirs() instead.')
+-	files_create_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to get the attributes
+ ##	of the /var/run directory.
+ ## </summary>
+ ## <param name="domain">
+@@ -6947,286 +6779,6 @@ interface(`files_watch_runtime_dirs',`
+ 
+ ########################################
+ ## <summary>
+-##	Read generic process ID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_read_generic_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_read_runtime_files() instead.')
+-	files_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Write named generic process ID pipes.   (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_write_generic_pid_pipes',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_write_runtime_pipes() instead.')
+-	files_write_runtime_pipes($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create an object in the process ID directory, with a private type.  (Deprecated)
+-## </summary>
+-## <desc>
+-##	<p>
+-##	Create an object in the process ID directory (e.g., /var/run)
+-##	with a private type.  Typically this is used for creating
+-##	private PID files in /var/run with the private type instead
+-##	of the general PID file type. To accomplish this goal,
+-##	either the program must be SELinux-aware, or use this interface.
+-##	</p>
+-##	<p>
+-##	Related interfaces:
+-##	</p>
+-##	<ul>
+-##		<li>files_runtime_file()</li>
+-##	</ul>
+-##	<p>
+-##	Example usage with a domain that can create and
+-##	write its PID file with a private PID file type in the
+-##	/var/run directory:
+-##	</p>
+-##	<p>
+-##	type mypidfile_t;
+-##	files_runtime_file(mypidfile_t)
+-##	allow mydomain_t mypidfile_t:file { create_file_perms write_file_perms };
+-##	files_runtime_filetrans(mydomain_t, mypidfile_t, file)
+-##	</p>
+-## </desc>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="private type">
+-##	<summary>
+-##	The type of the object to be created.
+-##	</summary>
+-## </param>
+-## <param name="object">
+-##	<summary>
+-##	The object class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-## <infoflow type="write" weight="10"/>
+-#
+-interface(`files_pid_filetrans',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_runtime_filetrans() instead.')
+-	files_runtime_filetrans($1, $2, $3, $4)
+-')
+-
+-########################################
+-## <summary>
+-## 	Create a generic lock directory within the run directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_pid_filetrans_lock_dir',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_runtime_filetrans_lock_dir() instead.')
+-	files_runtime_filetrans_lock_dir($1, $2)
+-')
+-
+-########################################
+-## <summary>
+-##	Read and write generic process ID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_rw_generic_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_rw_runtime_files() instead.')
+-	files_rw_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to get the attributes of
+-##	daemon runtime data files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_dontaudit_getattr_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_dontaudit_getattr_all_runtime_files() instead.')
+-	files_dontaudit_getattr_all_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to write to daemon runtime data files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_dontaudit_write_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_dontaudit_write_all_runtime_files() instead.')
+-	files_dontaudit_write_all_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to ioctl daemon runtime data files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_dontaudit_ioctl_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_dontaudit_ioctl_all_runtime_files() instead.')
+-	files_dontaudit_ioctl_all_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##     manage all pidfile directories
+-##     in the /var/run directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_manage_all_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_manage_all_runtime_dirs() instead.')
+-	files_manage_all_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read all process ID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <rolecap/>
+-#
+-interface(`files_read_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_read_all_runtime_files() instead.')
+-	files_read_all_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##     Execute generic programs in /var/run in the caller domain.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_exec_generic_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_exec_runtime() instead.')
+-	files_exec_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##     Relabel all pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_relabel_all_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_relabel_all_runtime_files() instead.')
+-	files_relabel_all_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Delete all process IDs.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <rolecap/>
+-#
+-interface(`files_delete_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_delete_runtime_symlinks(); files_delete_all_runtime_files(); files_delete_all_runtime_dirs(); files_delete_all_runtime_sockets(); files_delete_all_runtime_pipes(); instead.')
+-	files_delete_runtime_symlinks($1)
+-	files_delete_all_runtime_files($1)
+-	files_delete_all_runtime_dirs($1)
+-	files_delete_all_runtime_sockets($1)
+-	files_delete_all_runtime_pipes($1)
+-')
+-
+-########################################
+-## <summary>
+-##     Create all pid sockets.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_create_all_pid_sockets',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_create_all_runtime_sockets() instead.')
+-	files_create_all_runtime_sockets($1)
+-')
+-
+-########################################
+-## <summary>
+-##     Create all pid named pipes.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_create_all_pid_pipes',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_create_all_runtime_pipes() instead.')
+-	files_create_all_runtime_pipes($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read generic runtime files.
+ ## </summary>
+ ## <param name="domain">
+@@ -7784,86 +7336,6 @@ interface(`files_delete_all_spool_socket
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Delete all process ID directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_delete_all_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_delete_all_runtime_dirs() instead.')
+-	files_delete_all_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write and delete all
+-##	var_run (pid) content  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_manage_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_manage_all_runtime_dirs(); files_manage_all_runtime_files(); files_manage_all_runtime_symlinks() instead.')
+-	files_manage_all_runtime_dirs($1)
+-	files_manage_all_runtime_files($1)
+-	files_manage_all_runtime_symlinks($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Relabel to/from all var_run (pid) directories  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_relabel_all_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_relabel_all_runtime_dirs() instead.')
+-	files_relabel_all_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Relabel to/from all var_run (pid) socket files  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_relabel_all_pid_sock_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_relabel_all_runtime_sockets() instead.')
+-	files_relabel_all_runtime_sockets($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Relabel to/from all var_run (pid) files and directories  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`files_relabel_all_pids',`
+-	refpolicywarn(`$0($*) has been deprecated, please use files_relabel_all_runtime_dirs(); files_relabel_all_runtime_files(); files_relabel_all_runtime_symlinks() instead.')
+-	files_relabel_all_runtime_dirs($1)
+-	files_relabel_all_runtime_files($1)
+-	files_relabel_all_runtime_symlinks($1)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Mount filesystems on all polyinstantiation
+ ##	member directories.
+Index: refpolicy-2.20221101/policy/modules/kernel/filesystem.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20221101/policy/modules/kernel/filesystem.if
+@@ -5344,21 +5344,6 @@ interface(`fs_relabel_tmpfs_chr_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Relabel character nodes on tmpfs filesystems.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`fs_relabel_tmpfs_chr_file',`
+-	refpolicywarn(`$0($*) has been deprecated, please use fs_relabel_tmpfs_chr_files() instead.')
+-	fs_relabel_tmpfs_chr_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read and write block nodes on tmpfs filesystems.
+ ## </summary>
+ ## <param name="domain">
+@@ -5396,21 +5381,6 @@ interface(`fs_relabel_tmpfs_blk_files',`
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Relabel block nodes on tmpfs filesystems.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`fs_relabel_tmpfs_blk_file',`
+-	refpolicywarn(`$0($*) has been deprecated, please use fs_relabel_tmpfs_blk_files() instead.')
+-	fs_relabel_tmpfs_blk_files($1)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Relabel named pipes on tmpfs filesystems.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/abrt.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/abrt.if
++++ refpolicy-2.20221101/policy/modules/services/abrt.if
+@@ -223,36 +223,6 @@ interface(`abrt_read_log',`
+ 
+ ######################################
+ ## <summary>
+-##	Read abrt PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`abrt_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-######################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	abrt PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`abrt_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use abrt_manage_runtime_files() instead.')
+-	abrt_manage_runtime_files($1)
+-')
+-
+-######################################
+-## <summary>
+ ##	Create, read, write, and delete
+ ##	abrt runtime files.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/amavis.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/amavis.if
++++ refpolicy-2.20221101/policy/modules/services/amavis.if
+@@ -173,36 +173,6 @@ interface(`amavis_manage_lib_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Set attributes of amavis pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`amavis_setattr_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use amavis_setattr_runtime_files() instead.')
+-	amavis_setattr_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create amavis pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`amavis_create_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use amavis_create_runtime_files() instead.')
+-	amavis_create_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Set attributes of amavis runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/apcupsd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/apcupsd.if
++++ refpolicy-2.20221101/policy/modules/services/apcupsd.if
+@@ -41,20 +41,6 @@ interface(`apcupsd_initrc_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read apcupsd PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`apcupsd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Read apcupsd log files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/asterisk.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/asterisk.if
++++ refpolicy-2.20221101/policy/modules/services/asterisk.if
+@@ -79,21 +79,6 @@ interface(`asterisk_setattr_logs',`
+ 	logging_search_logs($1)
+ ')
+ 
+-#######################################
+-## <summary>
+-##	Set attributes of the asterisk
+-##	PID content.
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`asterisk_setattr_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+ ########################################
+ ## <summary>
+ ##	All of the rules required to
+Index: refpolicy-2.20221101/policy/modules/services/avahi.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/avahi.if
++++ refpolicy-2.20221101/policy/modules/services/avahi.if
+@@ -135,36 +135,6 @@ interface(`avahi_stream_connect',`
+ 
+ ########################################
+ ## <summary>
+-##	Create avahi pid directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`avahi_create_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use avahi_create_runtime_dirs() instead.')
+-	avahi_create_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Set attributes of avahi pid directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`avahi_setattr_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use avahi_setattr_runtime_dirs() instead.')
+-	avahi_setattr_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Set attributes of avahi runtime directories.
+ ## </summary>
+ ## <param name="domain">
+@@ -202,63 +172,6 @@ interface(`avahi_create_runtime_dirs',`
+ ')
+ 
+ ########################################
+-## <summary>
+-##	Create, read, and write avahi pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`avahi_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use avahi_manage_runtime_files() instead.')
+-	avahi_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Do not audit attempts to search
+-##	avahi pid directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain to not audit.
+-##	</summary>
+-## </param>
+-#
+-interface(`avahi_dontaudit_search_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use avahi_dontaudit_search_runtime() instead.')
+-	avahi_dontaudit_search_runtime($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create specified objects in generic
+-##	pid directories with the avahi pid file type.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="object_class">
+-##	<summary>
+-##	Class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`avahi_filetrans_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use avahi_filetrans_runtime() instead.')
+-	avahi_filetrans_runtime($*)
+-')
+-
+-########################################
+ ## <summary>
+ ##	Create, read, and write avahi runtime files.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/bind.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/bind.if
++++ refpolicy-2.20221101/policy/modules/services/bind.if
+@@ -256,20 +256,6 @@ interface(`bind_manage_cache',`
+ 
+ ########################################
+ ## <summary>
+-##	Set attributes of bind pid directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`bind_setattr_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Set attributes of bind zone directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/certmonger.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/certmonger.if
++++ refpolicy-2.20221101/policy/modules/services/certmonger.if
+@@ -61,20 +61,6 @@ interface(`certmonger_initrc_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read certmonger PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`certmonger_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Search certmonger lib directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/clamav.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/clamav.if
++++ refpolicy-2.20221101/policy/modules/services/clamav.if
+@@ -89,21 +89,6 @@ interface(`clamav_append_log',`
+ 
+ ########################################
+ ## <summary>
+-##	Create, read, write, and delete
+-##	clamav pid content.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`clamav_manage_pid_content',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Read clamav configuration files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/consolesetup.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/consolesetup.if
++++ refpolicy-2.20221101/policy/modules/services/consolesetup.if
+@@ -86,23 +86,6 @@ interface(`consolesetup_manage_runtime',
+ ########################################
+ ## <summary>
+ ##  Create a console-setup directory in
+-##  the runtime directory.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <rolecap/>
+-#
+-interface(`consolesetup_pid_filetrans_runtime', `
+-	refpolicywarn(`$0($*) has been deprecated, please use consolesetup_runtime_filetrans_runtime_dir() instead.')
+-	consolesetup_runtime_filetrans_runtime_dir($1)
+-')
+-
+-########################################
+-## <summary>
+-##  Create a console-setup directory in
+ ##  the runtime directory.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/couchdb.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/couchdb.if
++++ refpolicy-2.20221101/policy/modules/services/couchdb.if
+@@ -59,21 +59,6 @@ interface(`couchdb_read_conf_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Read couchdb pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`couchdb_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use couchdb_read_runtime_files() instead.')
+-	couchdb_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read couchdb runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/cups.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/cups.if
++++ refpolicy-2.20221101/policy/modules/services/cups.if
+@@ -96,21 +96,6 @@ interface(`cups_dbus_chat',`
+ 
+ ########################################
+ ## <summary>
+-##	Read cups PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`cups_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use cups_read_runtime_files() instead.')
+-	cups_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read cups runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/devicekit.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/devicekit.if
++++ refpolicy-2.20221101/policy/modules/services/devicekit.if
+@@ -201,37 +201,6 @@ interface(`devicekit_relabel_log_files',
+ 
+ ########################################
+ ## <summary>
+-##	Read devicekit PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`devicekit_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use devicekit_read_runtime_files() instead.')
+-	devicekit_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	devicekit PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`devicekit_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use devicekit_manage_runtime_files() instead.')
+-	devicekit_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read devicekit runtime files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/dnsmasq.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/dnsmasq.if
++++ refpolicy-2.20221101/policy/modules/services/dnsmasq.if
+@@ -137,101 +137,6 @@ interface(`dnsmasq_write_config',`
+ 
+ ########################################
+ ## <summary>
+-##	Delete dnsmasq pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-#
+-interface(`dnsmasq_delete_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use dnsmasq_delete_runtime_files() instead.')
+-	dnsmasq_delete_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	dnsmasq pid files  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`dnsmasq_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use dnsmasq_manage_runtime_files() instead.')
+-	dnsmasq_manage_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Read dnsmasq pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-#
+-interface(`dnsmasq_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated, please use dnsmasq_read_runtime_files() instead.')
+-	dnsmasq_read_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create dnsmasq pid directories.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`dnsmasq_create_pid_dirs',`
+-	refpolicywarn(`$0($*) has been deprecated, please use dnsmasq_create_runtime_dirs() instead.')
+-	dnsmasq_create_runtime_dirs($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create specified objects in specified
+-##	directories with a type transition to
+-##	the dnsmasq pid file type.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-## <param name="file_type">
+-##	<summary>
+-##	Directory to transition on.
+-##	</summary>
+-## </param>
+-## <param name="object">
+-##	<summary>
+-##	The object class of the object being created.
+-##	</summary>
+-## </param>
+-## <param name="name" optional="true">
+-##	<summary>
+-##	The name of the object being created.
+-##	</summary>
+-## </param>
+-#
+-interface(`dnsmasq_spec_filetrans_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use dnsmasq_virt_runtime_filetrans_runtime() instead.')
+-	dnsmasq_virt_runtime_filetrans_runtime($1, $3, $4)
+-')
+-
+-########################################
+-## <summary>
+ ##	Create dnsmasq runtime directories.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/exim.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/exim.if
++++ refpolicy-2.20221101/policy/modules/services/exim.if
+@@ -105,20 +105,6 @@ interface(`exim_read_tmp_files',`
+ 
+ ########################################
+ ## <summary>
+-##	Read exim pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`exim_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Read exim log files.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/fail2ban.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/fail2ban.if
++++ refpolicy-2.20221101/policy/modules/services/fail2ban.if
+@@ -222,20 +222,6 @@ interface(`fail2ban_append_log',`
+ 
+ ########################################
+ ## <summary>
+-##	Read fail2ban pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`fail2ban_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	All of the rules required to
+ ##	administrate an fail2ban environment.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/glance.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/glance.if
++++ refpolicy-2.20221101/policy/modules/services/glance.if
+@@ -181,35 +181,6 @@ interface(`glance_manage_lib_dirs',`
+ 
+ ########################################
+ ## <summary>
+-##	Read glance pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`glance_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+-##	glance pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`glance_manage_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	All of the rules required to
+ ##	administrate an glance environment.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/gssproxy.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/gssproxy.if
++++ refpolicy-2.20221101/policy/modules/services/gssproxy.if
+@@ -97,20 +97,6 @@ interface(`gssproxy_manage_lib_dirs',`
+ 
+ ########################################
+ ## <summary>
+-##	Read gssproxy PID files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`gssproxy_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Connect to gssproxy over an unix
+ ##	domain stream socket.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/icecast.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/icecast.if
++++ refpolicy-2.20221101/policy/modules/services/icecast.if
+@@ -57,20 +57,6 @@ interface(`icecast_initrc_domtrans',`
+ 
+ ########################################
+ ## <summary>
+-##	Read icecast pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`icecast_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	Create, read, write, and delete
+ ##	icecast pid files.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/ifplugd.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/ifplugd.if
++++ refpolicy-2.20221101/policy/modules/services/ifplugd.if
+@@ -79,20 +79,6 @@ interface(`ifplugd_manage_config',`
+ 
+ ########################################
+ ## <summary>
+-##	Read ifplugd pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`ifplugd_read_pid_files',`
+-	refpolicywarn(`$0($*) has been deprecated.')
+-')
+-
+-########################################
+-## <summary>
+ ##	All of the rules required to
+ ##	administrate an ifplugd environment.
+ ## </summary>
+Index: refpolicy-2.20221101/policy/modules/services/inn.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/inn.if
++++ refpolicy-2.20221101/policy/modules/services/inn.if
+@@ -89,24 +89,6 @@ interface(`inn_generic_log_filetrans_inn
+ ########################################
+ ## <summary>
+ ##	Create, read, write, and delete
+-##	innd pid content.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`inn_manage_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use inn_manage_runtime_dirs(); inn_manage_runtime_files()inn_manage_runtime_sockets() instead.')
+-	inn_manage_runtime_dirs($1)
+-	inn_manage_runtime_files($1)
+-	inn_manage_runtime_sockets($1)
+-')
+-
+-########################################
+-## <summary>
+-##	Create, read, write, and delete
+ ##	innd runtime dirs.
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20221101/policy/modules/services/xserver.if
+===================================================================
+--- refpolicy-2.20221101.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20221101/policy/modules/services/xserver.if
+@@ -996,21 +996,6 @@ interface(`xserver_delete_xdm_tmp_socket
+ 
+ ########################################
+ ## <summary>
+-##	Read XDM pid files.  (Deprecated)
+-## </summary>
+-## <param name="domain">
+-##	<summary>
+-##	Domain allowed access.
+-##	</summary>
+-## </param>
+-#
+-interface(`xserver_read_xdm_pid',`
+-	refpolicywarn(`$0($*) has been deprecated, please use xserver_read_xdm_runtime_files() instead.')
+-	xserver_read_xdm_runtime_files($1)
+-')
+-
+-########################################
+-## <summary>
+ ##	Read XDM runtime files.
+ ## </summary>
+ ## <param name="domain">

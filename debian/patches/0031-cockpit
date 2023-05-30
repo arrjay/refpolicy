@@ -1,7 +1,7 @@
-Index: refpolicy-2.20220216/policy/modules/services/cockpit.fc
+Index: refpolicy-2.20220918/policy/modules/services/cockpit.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20220216/policy/modules/services/cockpit.fc
++++ refpolicy-2.20220918/policy/modules/services/cockpit.fc
 @@ -0,0 +1,18 @@
 +# cockpit stuff
 +
@@ -21,10 +21,10 @@ Index: refpolicy-2.20220216/policy/modules/services/cockpit.fc
 +
 +/var/run/cockpit(/.*)?   gen_context(system_u:object_r:cockpit_runtime_t,s0)
 +/var/run/cockpit-ws(/.*)?   gen_context(system_u:object_r:cockpit_runtime_t,s0)
-Index: refpolicy-2.20220216/policy/modules/services/cockpit.if
+Index: refpolicy-2.20220918/policy/modules/services/cockpit.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20220216/policy/modules/services/cockpit.if
++++ refpolicy-2.20220918/policy/modules/services/cockpit.if
 @@ -0,0 +1,279 @@
 +## <summary>Cockpit web management system for Linux</summary>
 +
@@ -305,10 +305,10 @@ Index: refpolicy-2.20220216/policy/modules/services/cockpit.if
 +		systemd_read_fifo_file_passwd_run($1)
 +	')
 +')
-Index: refpolicy-2.20220216/policy/modules/services/cockpit.te
+Index: refpolicy-2.20220918/policy/modules/services/cockpit.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20220216/policy/modules/services/cockpit.te
++++ refpolicy-2.20220918/policy/modules/services/cockpit.te
 @@ -0,0 +1,176 @@
 +policy_module(cockpit, 1.0.0)
 +
