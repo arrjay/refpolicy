@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+tmpdir=$(mktemp -d)
+
+cd "${tmpdir}"
+
+cp /usr/share/selinux/default/*.pp.bz2 .
+
+bzip2 -d *.pp.bz2
+
+mv base.pp base
+
+semodule_link -o test.lnk base *.pp
+semodule_expand test.lnk policy.bin
