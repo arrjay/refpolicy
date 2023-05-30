@@ -1,3 +1,174 @@
+refpolicy (2:2.20221101-9) unstable; urgency=medium
+
+  * Added git and thunderbird to the not default modules list
+  * Add filetrans to make dpkg_script_t create /var/lib/ntpsec/ as ntp_drift_t
+    also add fc entry for /var/lib/ntpsec
+  * Allow ndc_t to read vm_overcommit_state and sysfs files
+  * Dontaudit certbot_t net_admin capability, it doesn't need to change
+    network stuff, probably changing buffer sizes.
+  * Allow aptcacher_t to getsched for itself
+  * Allow boinc_t to to connect to unconfinged stream sockets for X access
+  * Allow systemd_locale_t to talk to unconfined users by dbus
+  * Allow xdm_t to talk to systemd-locale via dbus
+  * Allow systemd_generator_t to manage files and dirs of type
+    systemd_user_runtime_unit_t and to read crypto sysctls
+  * Dontaudit writing to lib dirs for fail2ban_t and fail2ban_client_t for
+    python attempts to generate cache files
+  * Dontaudit mysqld_safe (mysql startup script) attempts to write to root dir
+  * Change all toolchain dependencies to >= version 3.4
+  * Allow jabberd_domain to create jabberd_var_lib_t:sock_file for prosody
+  * Allow dkim_milter_t and clamd_t to get their own scheduling status
+  * Allow auditd_t to map it's config files to avoid recursion when dontaudit
+    rules are disabled
+  * Allow groupadd_t to stat /proc
+  * Allow matrixd_t to read sysfs for CPU information
+  * Give postfwd_milter_t kill capability
+  * Allow unconfined domains the self:anon_inode access.
+    Also allow them to manage dirs in their own domain, Chrome does this
+  * Allow the postfix_map_t domain to read /dev/urandom
+  * Allow mozilla to bind UDP generic nodes, write dbus session runtime
+    sockets, read device sysctls for video hardware specs, and map it's cache
+    files.
+  * Allow fsadm_t to write to boot_t for fstrim
+  * Gave nfsd_t the lease capability, taking leases on files is necessary
+  * dontaudit bootloader_t accessing /dev/mem, mdadm does this for some reason
+    but doesn't need it
+  * Allow fwupd_t to read the vm overcommit sysctl
+  * Allow setfiles_t to read the vm overcommit sysctl
+  * Allow vnstatd_t to read urandom
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 19 Apr 2023 20:24:14 +1000
+
+refpolicy (2:2.20221101-8) unstable; urgency=medium
+
+  * Fix automated tests error on cron.if line 118 mismatched quotes.
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 21 Mar 2023 14:35:34 +1100
+
+refpolicy (2:2.20221101-7) unstable; urgency=medium
+
+  * new upload due to signature problems
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 20 Mar 2023 17:53:37 +1100
+
+refpolicy (2:2.20221101-6) unstable; urgency=medium
+
+  * More work on cron policy
+  * Run bzip2 in a way that works with firebuild
+  * Allow sshd_t to read the apt database for motd with unattended-upgrades
+  * Allow system_dbusd_t to connect to systemd-machined
+  * dontaudit crond connectint to systemd-machined
+  * Allow mon_t to read xdg config files and to signal itself and getsched
+    for sending xmpp alerts
+  * allow fwupd_t to access user tty devices
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 15 Mar 2023 23:19:01 +1100
+
+refpolicy (2:2.20221101-5) unstable; urgency=medium
+
+  * Allow fwupd_t to rw the Intel MEI device
+  * Allow rasdaemon_t to rw cpu microcode, the sys_rawio capability, and
+    self getsched.
+  * Run bzip compression with $(NUMJOBS) in parallel
+  * Allow memlockd to read net config so it can lock those config files
+  * Label /var/lib/unattended-upgrades as apt_var_lib_t
+  * Allow chromium_t to dbus chat to systemd_logind_t for PrepareForSleep
+  * dontaudit postfix domains connecting to systemd-machined
+  * Allow policykit_t to connect to systemd-machined
+  * Made the crontab command work for all login domains
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 13 Mar 2023 03:11:03 +1100
+
+refpolicy (2:2.20221101-4) unstable; urgency=medium
+
+  * Allow sshd_t to read var_lib_t files for motd generation
+  * Allow systemd_binfmt_t to statfs binfmt filesystems
+  * Allow systemd_nspawn_t all_unix_dgram_socket_perms to itself
+  * Allow groupdadd_t to read sysctl_kernel_t files
+  * Allow local_login_t to read pam motd files
+  * Allow nfsd_t to read directories of RPC file system pipes
+  * Allow mysqld_t (Mariadb) to create map read write anon_inode objects it creates
+  * Allow kmod_t to read modules_conf_t symlinks, for DKMS
+  * Remove unused debian/gen-deps.sh script.
+    Change to Debhelper compat level 13
+    Removed an attempt to delete a non-existant pyplate.pyc file
+    Changed to zstd for selinux-policy-src and stopped using a variable for
+    compression options.  Why do we even have selinux-policy-src?
+    Removed unneeded build depends and changed the SE Linux build depends
+    to version >=3.4
+    Change VCS to Vcs in debian/control
+    Change lintian overrides to match new format
+    Change build to not need root
+    Tell Lintian to ignore some very long lines in source
+    Fix copyright URLs
+    Removed trailing whitespace in changelog
+    Use kernel_load_module(brctl_t) instead of just adding a capability
+    Add autopkgtest.  Closes: #1012841
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 29 Jan 2023 15:07:05 +1100
+
+refpolicy (2:2.20221101-3) unstable; urgency=medium
+
+  * Add auth_write_pam_motd_files() interface for writing to /run/motd.d and
+    correctly label /run/motd.d
+  * Add policy for fwupd (firmware update)
+  * Allow groupadd_t to search kernel fs sysctls
+  * Allow rasdaemon to read sysfs_t
+  * Allow systemd_machined_t to talk to policykit via dbus
+  * Allow systemd_locale_t to write to /run/systemd/notify
+  * Allow systemd_sysctl_t and systemd_tmpfiles_t to search ramfs
+  * Allow systemd_generator_t udp setopt and sysnet_read_config for postconf
+  * Allow systemd_generator_t to stat usr_t files
+  * Allow systemd_modules_load_t to search debugfs
+  * Allow systemd_sysusers_t to use apt ptys
+  * Allow acpid to getsched
+  * Add support for /run/motd.d/
+  * Allow Chrome to read sysctl_dev_t and write to dbus session runtime
+    socket.  Label the Chrome libvulkan.so.1 file as lib_t
+  * Allow systemd_logind_t to delete user tmpfs files and manage tmpfs dirs
+  * Allow systemd_locale_t to talk to unconfined via dbus
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 09 Jan 2023 18:05:47 +1100
+
+refpolicy (2:2.20221101-2) unstable; urgency=medium
+
+  * Allow $1_dbusd_t to create sock_files under /tmp
+  * Remove the deprecated interfaces that had been in Bullseye
+  * Allow $1_wm_t to read/write input devices and use logind fds
+  * Added systemd_dbus_chat_locale() and allowed xdm and user domains to do it.
+  * Allow user domains to unlink xdm_tmp_t socket files
+  * Allow systemd-coredump, chkpwd_t, and setfiles_t to statfs /proc
+  * Label /usr/lib/NetworkManager/nm-dispatcher* as NetworkManager_exec_t
+  * Label /sbin/fstrim as fsadm_exec_t
+  * Allow setfiles_t to read bin_t links
+  * Make ssh_sysadm_login default to true.  Closes: #1012755
+  * Allow fsadm_t to statfs cgroup filesystems and to read /proc/1/environ
+    for systemd-fsckd.  Also dontaudit net_admin capability for systemd-fsckd
+    trying to change buffer sizes.
+  * Allow systemd_sysusers_t to use inherited user terminals and inherit file
+    handles from unconfined_t and give it domain_obj_id_change_exemption()
+  * Made init_runtime_t an init unit file, for automatically generated units
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 02 Jan 2023 22:02:36 +1100
+
+refpolicy (2:2.20221101-1) unstable; urgency=medium
+
+  * New upstream release
+  * Label /lib/systemd/systemd-fsckd as fsadm_exec_t
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 06 Nov 2022 23:02:25 +1100
+
+refpolicy (2:2.20220520-5) unstable; urgency=medium
+
+  * label apt.systemd.daily and apt-helper as apt_exec_t for systemd cron jobs
+  * Allow apt_t to get init, systemd-networkd, and network-manager unit status
+  * give systemd_generator_t access to nfsd_fs_t files and
+    systemd_transient_unit_t dirs
+  * Allow kmod_t to read ssl generit certs
+  * Allow systemd_machined_t to get status of systemd_transient_t units
+
+ -- Russell Coker <russell@coker.com.au>  Mon, 26 Sep 2022 19:59:14 +1000
+
 refpolicy (2:2.20220520-4) unstable; urgency=medium
 
   * Add label for /etc/dkimkeys Closes: #900188
@@ -203,7 +374,7 @@ refpolicy (2:2.20210203-4) unstable; urgency=medium
     Allow chromium to run naclhelper with nnp_transition
     Allow chromium to watch root dirs
     Allow chromium to read/write unix sockets from the calling domain
-  * Make Postgresql use postgresql_tmpfs_t for tmpfs files and make 
+  * Make Postgresql use postgresql_tmpfs_t for tmpfs files and make
     mon_local_test_t and systemd_logind_t not have getattr access to tmpfs
     files audited.
   * Allow systemd_user_runtime_dir_t to unlink device nodes of type
@@ -286,7 +457,7 @@ refpolicy (2:2.20210126-1) unstable; urgency=medium
     consoletype dcc ddcprobe denyhosts dspam firstboot howl imaze jockey
     ktalk lockdev lsm mailscanner mcelog oav polipo pyicqt resmgr rhcs
     rhsmcertd ricci rpm vhostmd
-  * Don't enable by default: amtu bugzilla condor 
+  * Don't enable by default: amtu bugzilla condor
   * Added SE Linux "user" named xdm for the "sddm" Unix account to be used
     by the sddm greeter process.  This makes the greeter run as xdm_t
     instead of unconfined_t.
@@ -625,7 +796,7 @@ refpolicy (2:2.20161023.1-8) unstable; urgency=medium
  -- Russell Coker <russell@coker.com.au>  Mon, 23 Jan 2017 01:55:57 +1100
 
 refpolicy (2:2.20161023.1-7) unstable; urgency=medium
-    
+
   [ Laurent Bigonville and cgzones ]
    * Sort the files in the files in the selinux-policy-src.tar.gz tarball by
      name, this should fix the last issue for reproducible build
@@ -971,7 +1142,7 @@ refpolicy (2:2.20140421-12) jessie; urgency=medium
   * Allow kernel_t to setattr/getattr/unlink tty_device_t for kdevtmpfs
   * Label /usr/share/bug/.* files as bin_t for reportbug in strict configuration
   * Label /run/tmpfiles.d/kmod.conf as kmod_var_run_t and allow insmod_t to create it
-  * apache_unlink_var_lib() now includes write access to httpd_var_lib_t:dir 
+  * apache_unlink_var_lib() now includes write access to httpd_var_lib_t:dir
   * Allow apache to read sysctl_vm_t for overcommit_memory
     Allow httpd_sys_script_t to read sysfs_t. allow httpd_t to manage httpd_log_t files
     and directories for mod_pagespeed.
@@ -2118,18 +2289,18 @@ refpolicy (2:0.2.20091013-1) unstable; urgency=low
     + Allow udev_t to access anon_inodefs_t
     These changes take care of most of the problems encountered in recent
     reference policy packages in Debian. Thanks to Russell Coker for the
-    fixes. 
+    fixes.
 
  -- Manoj Srivastava <srivasta@debian.org>  Tue, 13 Oct 2009 15:29:54 -0500
 
 refpolicy (2:0.2.20090828-1) unstable; urgency=low
 
   * New upstream snapshot.
-    - Deprecated the userdom_xwindwos_client_template(). 
+    - Deprecated the userdom_xwindwos_client_template().
   * Modified the list of modules we build (added consolekit, and added a
     dependency on consolekit to the devicekit policymodule. Turned off
     ddcprobe, since it needs kudzu.
-  * Bug fix: "linking policy fails", thanks to Jonathan Nieder 
+  * Bug fix: "linking policy fails", thanks to Jonathan Nieder
                                                         (Closes: #544079).
   * Bug fix: "linking policy fails (with a statement to file a bug)",
     thanks to Philipp Kern                              (Closes: #543148).
@@ -2137,7 +2308,7 @@ refpolicy (2:0.2.20090828-1) unstable; urgency=low
     Russell Coker                                       (Closes: #539855).
   * Bug fix: "SELinux prevented console-kit-dae from using the terminal
     /dev/tty0", thanks to Ritesh Raj Sarraf. We now have:
-    policy/modules/services/consolekit.te:term_use_all_terms(consolekit_t) 
+    policy/modules/services/consolekit.te:term_use_all_terms(consolekit_t)
     This should allow access to all terms and ttys.     (Closes: #515167).
   * Bug fix: "SELinux is preventing pulseaudio from loading
     /usr/lib/libFLAC.so.8.2.0 which requires text relocation", thanks to

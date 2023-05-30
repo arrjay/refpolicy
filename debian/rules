@@ -22,10 +22,6 @@ endif
 
 override_dh_auto_configure: $(patsubst %, conf-%-policy, $(FLAVOURS)) conf-docs conf-src
 
-override_dh_install:
-	dh_install
-	dh_missing --fail-missing
-
 override_dh_fixperms:
 	dh_fixperms
 	chmod +x $(CURDIR)/debian/selinux-policy-dev/usr/share/selinux/devel/include/support/segenxml.py
@@ -36,9 +32,7 @@ override_dh_fixperms:
 override_dh_compress:
 	dh_compress
 	for flavour in $(FLAVOURS) ; do \
-	  for f in $(CURDIR)/debian/selinux-policy-$$flavour/usr/share/selinux/$$flavour/*.pp ; do \
-	    bzip2 -9f $$f; \
-	  done; \
+	  find $(CURDIR)/debian/selinux-policy-$$flavour/usr/share/selinux/$$flavour/ -name "*.pp" | xargs -P $(NUMJOBS) -I STR sh -c "bzip2 -9 < STR > STR.bz2 && rm STR" ; \
 	done
 
 override_dh_installdeb:
@@ -164,13 +158,12 @@ install-src: conf-src
 	      mv modules.conf modules.conf.dist;                          \
 	  fi;                                                             \
 	  ln -sf modules.conf.mls modules.conf)
-	install -p -o root -g root -m 644      debian/build.conf.default                   \
+	install -p -m 644      debian/build.conf.default                   \
 	                     $(CURDIR)/debian/tmp/etc/selinux/default/src/policy/build.conf
 	(cd $(CURDIR)/debian/tmp/etc/selinux/default/src/; mv policy selinux-policy-src;   \
 	  rm -rf selinux-policy-src/support/__pycache__/; \
-	  rm selinux-policy-src/support/pyplate.pyc; \
 	  find selinux-policy-src -type f -print0 | xargs -0r chmod 0644; \
 	  find selinux-policy-src -type d -print0 | xargs -0r chmod 0755; \
-	  TZ=UTC GZIP="-9n" tar zfc $(CURDIR)/debian/tmp/usr/src/selinux-policy-src.tar.gz --sort=name --mtime="$(BUILD_DATE)" selinux-policy-src)
+	  TZ=UTC tar cf - --sort=name --mtime="$(BUILD_DATE)" selinux-policy-src | zstd -9 > $(CURDIR)/debian/tmp/usr/src/selinux-policy-src.tar.zst)
 	rm -rf               $(CURDIR)/debian/tmp/etc/selinux/default/src/
 	touch $@

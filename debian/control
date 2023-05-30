@@ -1,32 +1,30 @@
 Source: refpolicy
-VCS-Git: https://salsa.debian.org/selinux-team/refpolicy.git
-VCS-Browser: https://salsa.debian.org/selinux-team/refpolicy
+Vcs-Git: https://salsa.debian.org/selinux-team/refpolicy.git
+Vcs-Browser: https://salsa.debian.org/selinux-team/refpolicy
 Priority: optional
 Section: admin
 Homepage: https://github.com/SELinuxProject/refpolicy/releases
 Maintainer: Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>
 Uploaders: Russell Coker <russell@coker.com.au>
 Standards-Version: 4.4.0
-Build-Depends: debhelper (>= 11)
+Rules-Requires-Root: no
+Build-Depends: debhelper (>= 13)
 Build-Depends-Indep: bzip2,
-                     checkpolicy (>= 3.3),
+                     checkpolicy (>= 3.4),
                      gawk,
-                     libsepol2 (>= 3.3),
                      m4,
-                     policycoreutils (>= 3.3),
-                     policycoreutils-python-utils (>= 3.3),
+                     policycoreutils (>= 3.4),
+                     policycoreutils-python-utils (>= 3.4),
                      python3,
-# Needed for the --sort=name option, can probably be removed when this version
-# hits stable.
-                     tar (>= 1.28)
+		     zstd
 
 Package: selinux-policy-default
 Architecture: all
-Depends: libselinux1 (>= 3.3),
-         libsemanage2 (>= 3.3),
-         libsepol2 (>= 3.3),
-         policycoreutils (>= 3.3),
-         selinux-utils (>= 3.3),
+Depends: libselinux1 (>= 3.4),
+         libsemanage2 (>= 3.4),
+         libsepol2 (>= 3.4),
+         policycoreutils (>= 3.4),
+         selinux-utils (>= 3.4),
          ${misc:Depends}
 Recommends: checkpolicy, setools
 Suggests: logcheck, syslog-summary
@@ -42,11 +40,11 @@ Description: Strict and Targeted variants of the SELinux policy
 
 Package: selinux-policy-mls
 Architecture: all
-Depends: libselinux1 (>= 3.3),
-         libsemanage2 (>= 3.3),
-         libsepol2 (>= 3.3),
-         policycoreutils (>= 3.3),
-         selinux-utils (>= 3.3),
+Depends: libselinux1 (>= 3.4),
+         libsemanage2 (>= 3.4),
+         libsepol2 (>= 3.4),
+         policycoreutils (>= 3.4),
+         selinux-utils (>= 3.4),
          ${misc:Depends}
 Recommends: checkpolicy, setools
 Suggests: logcheck, syslog-summary
@@ -63,14 +61,14 @@ Description: MLS (Multi Level Security) variant of the SELinux policy
 
 Package: selinux-policy-src
 Architecture: all
-Depends: checkpolicy (>= 3.0),
+Depends: checkpolicy (>= 3.4),
          gawk,
          make,
-         policycoreutils (>= 3.0),
-         policycoreutils-python-utils (>= 3.0),
+         policycoreutils (>= 3.4),
+         policycoreutils-python-utils (>= 3.4),
          python3,
          ${misc:Depends}
-Recommends: policycoreutils-dev (>= 3.0), setools
+Recommends: policycoreutils-dev (>= 3.4), setools
 Suggests: logcheck, syslog-summary
 Description: Source of the SELinux reference policy for customization
  The SELinux Reference Policy (refpolicy) is a complete SELinux
@@ -95,15 +93,15 @@ Description: Source of the SELinux reference policy for customization
 
 Package: selinux-policy-dev
 Architecture: all
-Depends: checkpolicy (>= 3.0),
+Depends: checkpolicy (>= 3.4),
          gawk,
          m4,
          make,
-         policycoreutils (>= 3.0),
-         policycoreutils-dev (>= 3.0),
-         policycoreutils-python-utils (>= 3.0),
+         policycoreutils (>= 3.4),
+         policycoreutils-dev (>= 3.4),
+         policycoreutils-python-utils (>= 3.4),
          python3,
-         selinux-utils (>= 3.0),
+         selinux-utils (>= 3.4),
          ${misc:Depends}
 Recommends: setools
 Description: Headers from the SELinux reference policy for building modules

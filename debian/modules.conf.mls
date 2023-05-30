@@ -803,6 +803,13 @@ fprintd = module
 # 
 ftp = module
 
+# Layer: system
+# Module: fwupd
+#
+# firmware update service
+# 
+fwupd = module
+
 # Layer: contrib
 # Module: games
 #

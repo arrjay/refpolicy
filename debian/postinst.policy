@@ -19,7 +19,7 @@ priority=100
 
 # modules which are not enabled by default, because they are usually
 # not needed on a debian system
-notdefault="amtu bugzilla cobbler condor cyphesis ksmtuned likewise livecd nessus numad oddjob openca soundserver updfstab usernetctl"
+notdefault="amtu bugzilla cobbler condor cyphesis git ksmtuned likewise livecd nessus numad oddjob openca soundserver thunderbird updfstab usernetctl"
 
 . /etc/selinux/config
 

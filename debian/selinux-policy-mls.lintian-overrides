@@ -1,1 +1,1 @@
-selinux-policy-mls: non-standard-dir-perm var/lib/selinux/mls/ 0700 != 0755
+selinux-policy-mls: non-standard-dir-perm 0700 != 0755 [var/lib/selinux/mls/]

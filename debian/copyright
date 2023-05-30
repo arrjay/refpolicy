@@ -1,5 +1,5 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Source: http://oss.tresys.com/projects/refpolicy
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/SELinuxProject/refpolicy
 License: GPL-2+
 
 Files: *
