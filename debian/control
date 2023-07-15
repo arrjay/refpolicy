@@ -6,7 +6,7 @@ Section: admin
 Homepage: https://github.com/SELinuxProject/refpolicy/releases
 Maintainer: Debian SELinux maintainers <selinux-devel@lists.alioth.debian.org>
 Uploaders: Russell Coker <russell@coker.com.au>
-Standards-Version: 4.4.0
+Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Build-Depends: debhelper (>= 13)
 Build-Depends-Indep: bzip2,
