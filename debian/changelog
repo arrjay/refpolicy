@@ -1,3 +1,20 @@
+refpolicy (2:2.20221101-10) unstable; urgency=medium
+
+  * Team upload.
+  [ Christian Göttsche ]
+  * d/patches: drop addition of existent file context (Closes: #1038968)
+  * d/tests: simulate policy building
+  * d/rules: validate build policy (Closes: #1030804)
+
+  [ Vagrant Cascadian ]
+  * debian/rules: Pass arguments to tar to use a consistent uid and gid.
+    (Closes: #1030057)
+
+  [ Laurent Bigonville ]
+  * debian/control: Bump Standards-Version to 4.6.2 (no further changes)
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 15 Jul 2023 09:47:27 +0200
+
 refpolicy (2:2.20221101-9) unstable; urgency=medium
 
   * Added git and thunderbird to the not default modules list
