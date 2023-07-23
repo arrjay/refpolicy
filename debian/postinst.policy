@@ -81,6 +81,45 @@ case "$1" in
 	    echo " failed."
 	    exit $ret
 	fi
+	FC=/etc/selinux/$flavour/contexts/files/file_contexts
+	OLDFC=$FC.old
+	if [ -f $OLDFC ]; then
+	    OLDSORT=$(mktemp)
+	    NEWSORT=$(mktemp)
+	    sort < $OLDFC > $OLDSORT
+	    sort < $FC > $NEWSORT
+	    ORIGDIFF=$(mktemp)
+	    diff $OLDSORT $NEWSORT | grep -v ^[0-9] > $ORIGDIFF || true
+	    rm $OLDSORT $NEWSORT
+	    if [ -s $ORIGDIFF ]; then
+		DIFF=$(mktemp)
+		cut -f2 -d\  < $ORIGDIFF > $DIFF
+		GOOD=$(mktemp)
+		grep -v ^/run $DIFF |grep -v ^/dev | grep "/.*/" > $GOOD || true
+		if [ -s $GOOD ]; then
+		    echo "Relabeling matches for the following file context changes:"
+		    cat $GOOD
+		    FILES=$(cat $GOOD | sed -e 's/(\.\*\/).*$//' -e 's/(.*$//' -e 's/\/[^/]*$//')
+		    echo The following directories: $FILES
+		    restorecon -R -v $FILES || echo "restorecon gave an error but package is still ok"
+		fi
+		rm $GOOD
+		PROB=$(mktemp)
+		grep ^../run $ORIGDIFF > $PROB || true
+		grep ^../dev $ORIGDIFF >> $PROB || true
+		grep -v "/.*/" $ORIGDIFF >> $PROB || true
+
+		if [ -s $PROB ]; then
+		    echo "The following lines have changes that can't be automatically applied, consider"
+		    echo "manually relabelling them if appropriate:"
+		    cat $PROB
+		fi
+		rm $DIFF $PROB
+	    else
+		echo "No changes to file contexts"
+	    fi
+	    rm $ORIGDIFF $OLDFC
+	fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
