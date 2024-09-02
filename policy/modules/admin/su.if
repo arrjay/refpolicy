@@ -31,22 +31,24 @@
 template(`su_restricted_domain_template', `
 	gen_require(`
 		type su_exec_t;
+		attribute sudomain;
 	')
 
-	type $1_su_t;
+	type $1_su_t, sudomain;
 	domain_entry_file($1_su_t, su_exec_t)
 	domain_type($1_su_t)
 	domain_interactive_fd($1_su_t)
 	role $3 types $1_su_t;
 
 	allow $2 $1_su_t:process signal;
+	allow $1_su_t $2:process { sigkill signal };
 
 	allow $1_su_t self:capability { audit_control audit_write chown dac_override fowner net_bind_service setgid setuid sys_nice sys_resource };
 	dontaudit $1_su_t self:capability sys_tty_config;
 	allow $1_su_t self:key { search write };
-	allow $1_su_t self:process { setexec setsched setrlimit };
+	allow $1_su_t self:process { setexec setrlimit setsched signal };
 	allow $1_su_t self:fifo_file rw_fifo_file_perms;
-	allow $1_su_t self:netlink_audit_socket { nlmsg_relay create_netlink_socket_perms };
+	allow $1_su_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 	allow $1_su_t self:unix_stream_socket create_stream_socket_perms;
 
 	# Transition from the user domain to this domain.
@@ -77,7 +79,11 @@ template(`su_restricted_domain_template', `
 	auth_domtrans_chk_passwd($1_su_t)
 	auth_dontaudit_read_shadow($1_su_t)
 	auth_use_nsswitch($1_su_t)
+	auth_create_faillog_files($1_su_t)
 	auth_rw_faillog($1_su_t)
+	auth_setattr_faillog_files($1_su_t)
+	auth_rw_lastlog($1_su_t)
+	auth_write_login_records($1_su_t)
 
 	domain_use_interactive_fds($1_su_t)
 
@@ -143,18 +149,21 @@ template(`su_restricted_domain_template', `
 template(`su_role_template',`
 	gen_require(`
 		type su_exec_t;
+		attribute sudomain;
 	')
 
-	type $1_su_t;
+	type $1_su_t, sudomain;
 	userdom_user_application_domain($1_su_t, su_exec_t)
 	domain_interactive_fd($1_su_t)
 	role $4 types $1_su_t;
 
+	allow $1_su_t $2:process { sigkill signal };
+
 	allow $1_su_t self:capability { audit_control audit_write chown dac_override fowner net_bind_service setgid setuid sys_nice sys_resource };
 	dontaudit $1_su_t self:capability { net_admin sys_tty_config };
-	allow $1_su_t self:process { setexec setsched setrlimit };
+	allow $1_su_t self:process { setexec setrlimit setsched signal };
 	allow $1_su_t self:fifo_file rw_fifo_file_perms;
-	allow $1_su_t self:netlink_audit_socket { nlmsg_relay create_netlink_socket_perms };
+	allow $1_su_t self:netlink_audit_socket { create_netlink_socket_perms nlmsg_relay };
 	allow $1_su_t self:key { search write };
 
 	# By default, revert to the calling domain when a shell is executed.
@@ -178,7 +187,11 @@ template(`su_role_template',`
 	auth_domtrans_chk_passwd($1_su_t)
 	auth_dontaudit_read_shadow($1_su_t)
 	auth_use_nsswitch($1_su_t)
+	auth_create_faillog_files($1_su_t)
 	auth_rw_faillog($1_su_t)
+	auth_setattr_faillog_files($1_su_t)
+	auth_rw_lastlog($1_su_t)
+	auth_write_login_records($1_su_t)
 
 	corecmd_search_bin($1_su_t)
 
@@ -297,4 +310,22 @@ interface(`su_exec',`
 
 	corecmd_search_bin($1)
 	can_exec($1, su_exec_t)
+')
+
+#######################################
+## <summary>
+##	Send signals to all su domains.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`su_signal_all',`
+	gen_require(`
+		attribute sudomain;
+	')
+
+	allow $1 sudomain:process signal;
 ')

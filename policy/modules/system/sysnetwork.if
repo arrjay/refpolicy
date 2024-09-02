@@ -85,6 +85,25 @@ interface(`sysnet_dontaudit_use_dhcpc_fds',`
 
 ########################################
 ## <summary>
+##      Do not audit attempts to read/write to the
+##      dhcp unix datagram socket descriptors.
+## </summary>
+## <param name="domain">
+##      <summary>
+##      Domain to not audit.
+##      </summary>
+## </param>
+#
+interface(`sysnet_dontaudit_rw_dhcpc_dgram_sockets',`
+        gen_require(`
+                type dhcpc_t;
+        ')
+
+        dontaudit $1 dhcpc_t:unix_dgram_socket { read write };
+')
+
+########################################
+## <summary>
 ##	Do not audit attempts to read/write to the
 ##	dhcp unix stream socket descriptors.
 ## </summary>
@@ -470,6 +489,7 @@ interface(`sysnet_create_config',`
 	')
 
 	files_search_etc($1)
+	allow $1 net_conf_t:dir { add_entry_dir_perms create_dir_perms };
 	allow $1 net_conf_t:file create_file_perms;
 ')
 
@@ -518,6 +538,35 @@ interface(`sysnet_etc_filetrans_config',`
 
 #######################################
 ## <summary>
+##	Create files in /run with the type used for
+##	the network config files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="object">
+##	<summary>
+##	The object class of the object being created.
+##	</summary>
+## </param>
+## <param name="name" optional="true">
+##	<summary>
+##	The name of the object being created.
+##	</summary>
+## </param>
+#
+interface(`sysnet_runtime_filetrans_config',`
+	gen_require(`
+		type net_conf_t;
+	')
+
+	files_runtime_filetrans($1, net_conf_t, $2, $3)
+')
+
+#######################################
+## <summary>
 ##	Create, read, write, and delete network config files.
 ## </summary>
 ## <param name="domain">
@@ -550,32 +599,20 @@ interface(`sysnet_manage_config',`
 
 #######################################
 ## <summary>
-##	Read the dhcp client pid file.  (Deprecated)
+##     Watch a network config dir
 ## </summary>
 ## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
+##     <summary>
+##     Domain allowed access.
+##     </summary>
 ## </param>
 #
-interface(`sysnet_read_dhcpc_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use sysnet_read_dhcpc_runtime_files() instead.')
-	sysnet_read_dhcpc_runtime_files($1)
-')
+interface(`sysnet_watch_config_dirs',`
+	gen_require(`
+		type net_conf_t;
+	')
 
-#######################################
-## <summary>
-##	Delete the dhcp client pid file.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`sysnet_delete_dhcpc_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use sysnet_delete_dhcpc_runtime_files() instead.')
-	sysnet_delete_dhcpc_runtime_files($1)
+	allow $1 net_conf_t:dir watch;
 ')
 
 #######################################

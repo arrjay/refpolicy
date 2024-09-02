@@ -44,8 +44,6 @@ template(`xserver_restricted_role',`
 
 	allow xserver_t $2:process signal;
 
-	allow xserver_t $2:shm rw_shm_perms;
-
 	allow $2 user_fonts_t:dir list_dir_perms;
 	allow $2 user_fonts_t:file read_file_perms;
 
@@ -111,6 +109,7 @@ template(`xserver_restricted_role',`
 	xserver_xsession_entry_type($2)
 	xserver_dontaudit_write_log($2)
 	xserver_stream_connect_xdm($2)
+	xserver_use_user_fonts($2)
 	# certain apps want to read xdm.pid file
 	xserver_read_xdm_runtime_files($2)
 	# gnome-session creates socket under /tmp/.ICE-unix/
@@ -125,8 +124,12 @@ template(`xserver_restricted_role',`
 	# Client write xserver shm
 	tunable_policy(`allow_write_xshm',`
 		allow $2 xserver_t:shm rw_shm_perms;
+	')
+
+	tunable_policy(`allow_write_xshm || xserver_client_writes_xserver_tmpfs',`
 		allow $2 xserver_tmpfs_t:file rw_file_perms;
 	')
+
 	tunable_policy(`xserver_allow_dri',`
 		dev_rw_dri($2)
 	')
@@ -169,14 +172,20 @@ template(`xserver_role',`
 	gen_require(`
 		type iceauth_home_t, xserver_t, xserver_tmp_t, xserver_tmpfs_t, xauth_home_t;
 		type user_fonts_t, user_fonts_cache_t, user_fonts_config_t;
-		type mesa_shader_cache_t;
+		type mesa_shader_cache_t, xdm_t;
 	')
 
 	xserver_restricted_role($1, $2, $3, $4)
 
 	# Communicate via System V shared memory.
-	allow $2 xserver_t:shm rw_shm_perms;
-	allow $2 xserver_tmpfs_t:file rw_file_perms;
+	tunable_policy(`allow_write_xshm',`
+		# Communicate via System V shared memory.
+		allow $2 xserver_t:shm rw_shm_perms;
+	')
+
+	tunable_policy(`allow_write_xshm || xserver_client_writes_xserver_tmpfs',`
+		allow $2 xserver_tmpfs_t:file rw_file_perms;
+	')
 
 	# XCB Event Queue: used by the Qt library for example
 	allow $2 xserver_tmp_t:file rw_file_perms;
@@ -212,6 +221,8 @@ template(`xserver_role',`
 
 	xserver_read_xkb_libs($2)
 
+	allow $2 xdm_t:unix_stream_socket accept;
+
 	optional_policy(`
 		systemd_user_app_status($1, xserver_t)
 	')
@@ -246,7 +257,7 @@ interface(`xserver_ro_session',`
 	# Xserver read/write client shm
 	allow xserver_t $1:fd use;
 	allow xserver_t $1:shm rw_shm_perms;
-	allow xserver_t $2:file { rw_file_perms map };
+	allow xserver_t $2:file { map rw_file_perms };
 
 	# Connect to xserver
 	allow $1 xserver_t:unix_stream_socket connectto;
@@ -266,8 +277,8 @@ interface(`xserver_ro_session',`
 #######################################
 ## <summary>
 ##	Create sessions on the X server, with read and write
-##	access to the X server shared
-##	memory segments.
+##	access to the X server shared memory segments, but
+##	do not bypass existing tunable policy logic.
 ## </summary>
 ## <param name="domain">
 ##	<summary>
@@ -286,8 +297,14 @@ interface(`xserver_rw_session',`
 	')
 
 	xserver_ro_session($1,$2)
-	allow $1 xserver_t:shm rw_shm_perms;
-	allow $1 xserver_tmpfs_t:file rw_file_perms;
+
+	tunable_policy(`allow_write_xshm',`
+		allow $1 xserver_t:shm rw_shm_perms;
+	')
+
+	tunable_policy(`allow_write_xshm || xserver_client_writes_xserver_tmpfs',`
+		allow $1 xserver_tmpfs_t:file rw_file_perms;
+	')
 ')
 
 #######################################
@@ -302,7 +319,7 @@ interface(`xserver_rw_session',`
 #
 interface(`xserver_non_drawing_client',`
 	gen_require(`
-		class x_drawable { getattr get_property };
+		class x_drawable { get_property getattr };
 		class x_extension { query use };
 		class x_gc { create setattr };
 		class x_property read;
@@ -317,7 +334,7 @@ interface(`xserver_non_drawing_client',`
 	allow $1 xserver_t:unix_stream_socket connectto;
 
 	allow $1 xextension_t:x_extension { query use };
-	allow $1 root_xdrawable_t:x_drawable { getattr get_property };
+	allow $1 root_xdrawable_t:x_drawable { get_property getattr };
 	allow $1 xproperty_t:x_property read;
 ')
 
@@ -350,7 +367,7 @@ template(`xserver_common_x_domain_template',`
 		attribute input_xevent_type;
 
 		class x_drawable all_x_drawable_perms;
-		class x_property all_x_property_perms;
+		#class x_property all_x_property_perms;
 		class x_event all_x_event_perms;
 		class x_synthetic_event all_x_synthetic_event_perms;
 	')
@@ -482,6 +499,9 @@ template(`xserver_user_x_domain_template',`
 	# Client write xserver shm
 	tunable_policy(`allow_write_xshm',`
 		allow $2 xserver_t:shm rw_shm_perms;
+	')
+
+	tunable_policy(`allow_write_xshm || xserver_client_writes_xserver_tmpfs',`
 		allow $2 xserver_tmpfs_t:file rw_file_perms;
 	')
 ')
@@ -744,6 +764,39 @@ interface(`xserver_relabel_console_pipes',`
 
 ########################################
 ## <summary>
+##	Create xdm authorization files
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="file_type">
+##	<summary>
+##	The type of the object to be created
+##	</summary>
+## </param>
+## <param name="object_class">
+##	<summary>
+##	The object class.
+##	</summary>
+## </param>
+## <param name="name" optional="true">
+##	<summary>
+##	The name of the object being created.
+##	</summary>
+## </param>
+#
+interface(`xserver_xdm_auth_filetrans',`
+	gen_require(`
+		type xdm_auth_t;
+	')
+
+	filetrans_pattern($1, xdm_auth_t, $2, $3, $4)
+')
+
+########################################
+## <summary>
 ##	Use file descriptors for xdm.
 ## </summary>
 ## <param name="domain">
@@ -996,21 +1049,6 @@ interface(`xserver_delete_xdm_tmp_sockets',`
 
 ########################################
 ## <summary>
-##	Read XDM pid files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`xserver_read_xdm_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use xserver_read_xdm_runtime_files() instead.')
-	xserver_read_xdm_runtime_files($1)
-')
-
-########################################
-## <summary>
 ##	Read XDM runtime files.
 ## </summary>
 ## <param name="domain">
@@ -1025,7 +1063,7 @@ interface(`xserver_read_xdm_runtime_files',`
 	')
 
 	files_search_runtime($1)
-	allow $1 xdm_var_run_t:file read_file_perms;
+	read_files_pattern($1, xdm_var_run_t, xdm_var_run_t)
 ')
 
 ########################################
@@ -1256,6 +1294,7 @@ interface(`xserver_read_xkb_libs',`
 	allow $1 xkb_var_lib_t:dir list_dir_perms;
 	read_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
 	read_lnk_files_pattern($1, xkb_var_lib_t, xkb_var_lib_t)
+	allow $1 xkb_var_lib_t:file map;
 ')
 
 ########################################
@@ -1478,7 +1517,9 @@ interface(`xserver_rw_shm',`
 		type xserver_t;
 	')
 
-	allow $1 xserver_t:shm rw_shm_perms;
+	tunable_policy(`allow_write_xshm',`
+		allow $1 xserver_t:shm rw_shm_perms;
+	')
 ')
 
 ########################################
@@ -1598,7 +1639,7 @@ interface(`xserver_manage_core_devices',`
 		class x_keyboard all_x_keyboard_perms;
 	')
 
-	allow $1 xserver_t:{ x_device x_pointer x_keyboard } { getattr setattr use read write getfocus setfocus bell force_cursor freeze grab manage list_property get_property set_property add remove create destroy };
+	allow $1 xserver_t:{ x_device x_pointer x_keyboard } { add bell create destroy force_cursor freeze get_property getattr getfocus grab list_property manage read remove set_property setattr setfocus use write };
 ')
 
 ########################################
@@ -1638,7 +1679,7 @@ interface(`xserver_rw_xdm_keys',`
 		type xdm_t;
 	')
 
-	allow $1 xdm_t:key { read write setattr };
+	allow $1 xdm_t:key { read setattr write };
 ')
 
 ########################################

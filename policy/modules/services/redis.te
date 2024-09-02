@@ -29,7 +29,7 @@ files_type(redis_var_lib_t)
 # Local policy
 #
 
-allow redis_t self:process { setrlimit signal_perms getsched };
+allow redis_t self:process { getsched setrlimit signal_perms };
 allow redis_t self:fifo_file rw_fifo_file_perms;
 allow redis_t self:unix_stream_socket create_stream_socket_perms;
 allow redis_t self:tcp_socket create_stream_socket_perms;
@@ -49,6 +49,8 @@ files_search_var_lib(redis_t)
 manage_dirs_pattern(redis_t, redis_runtime_t, redis_runtime_t)
 manage_files_pattern(redis_t, redis_runtime_t, redis_runtime_t)
 manage_lnk_files_pattern(redis_t, redis_runtime_t, redis_runtime_t)
+manage_sock_files_pattern(redis_t, redis_runtime_t, redis_runtime_t)
+files_runtime_filetrans(redis_t, redis_runtime_t, { dir file lnk_file sock_file })
 
 kernel_read_net_sysctls(redis_t)
 kernel_read_system_state(redis_t)

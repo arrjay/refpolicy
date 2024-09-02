@@ -75,6 +75,9 @@ neverallow ~can_relabelto_shadow_passwords shadow_t:file relabelto;
 type shadow_lock_t;
 files_lock_file(shadow_lock_t)
 
+type shadow_history_t;
+files_auth_file(shadow_history_t)
+
 type updpwd_t;
 type updpwd_exec_t;
 domain_type(updpwd_t)
@@ -137,7 +140,9 @@ term_dontaudit_use_unallocated_ttys(chkpwd_t)
 term_dontaudit_use_generic_ptys(chkpwd_t)
 term_dontaudit_use_all_ptys(chkpwd_t)
 
+auth_read_shadow_history(chkpwd_t)
 auth_use_nsswitch(chkpwd_t)
+auth_use_pam_systemd(chkpwd_t)
 
 logging_send_audit_msgs(chkpwd_t)
 logging_send_syslog_msg(chkpwd_t)
@@ -173,7 +178,7 @@ optional_policy(`
 # PAM local policy
 #
 
-allow pam_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow pam_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
 dontaudit pam_t self:capability sys_tty_config;
 
 allow pam_t self:fd use;
@@ -185,7 +190,7 @@ allow pam_t self:unix_stream_socket connectto;
 allow pam_t self:shm create_shm_perms;
 allow pam_t self:sem create_sem_perms;
 allow pam_t self:msgq create_msgq_perms;
-allow pam_t self:msg { send receive };
+allow pam_t self:msg { receive send };
 
 delete_files_pattern(pam_t, pam_runtime_t, pam_runtime_t)
 read_files_pattern(pam_t, pam_runtime_t, pam_runtime_t)
@@ -265,7 +270,7 @@ optional_policy(`
 allow pam_console_t self:capability { chown fowner fsetid };
 dontaudit pam_console_t self:capability sys_tty_config;
 
-allow pam_console_t self:process { sigchld sigkill sigstop signull signal };
+allow pam_console_t self:process { sigchld sigkill signal signull sigstop };
 
 # for /var/run/console.lock checking
 read_files_pattern(pam_console_t, pam_var_console_t, pam_var_console_t)
@@ -382,6 +387,9 @@ allow updpwd_t self:fifo_file rw_fifo_file_perms;
 allow updpwd_t self:unix_stream_socket create_stream_socket_perms;
 allow updpwd_t self:unix_dgram_socket create_socket_perms;
 
+files_etc_filetrans(updpwd_t, shadow_history_t, file)
+allow updpwd_t shadow_history_t:file manage_file_perms;
+
 kernel_read_system_state(updpwd_t)
 
 dev_read_urand(updpwd_t)
@@ -449,6 +457,7 @@ optional_policy(`
 optional_policy(`
 	xserver_use_xdm_fds(utempter_t)
 	xserver_rw_xdm_pipes(utempter_t)
+	xserver_write_inherited_xsession_log(utempter_t)
 ')
 
 #######################################

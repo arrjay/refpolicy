@@ -61,12 +61,27 @@ interface(`mount_exec',`
 		type mount_exec_t;
 	')
 
-	# cjp: this should be removed:
-	allow $1 mount_exec_t:dir list_dir_perms;
-
 	allow $1 mount_exec_t:lnk_file read_lnk_file_perms;
 	corecmd_search_bin($1)
 	can_exec($1, mount_exec_t)
+')
+
+########################################
+## <summary>
+##	Read the process state (/proc/pid) of mount.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`mount_read_state',`
+	gen_require(`
+		type mount_t;
+	')
+
+	ps_process_pattern($1, mount_t)
 ')
 
 ########################################
@@ -310,4 +325,22 @@ interface(`mount_rw_runtime_files',`
 	')
 
 	rw_files_pattern($1, mount_runtime_t, mount_runtime_t)
+')
+
+########################################
+## <summary>
+##	Manage mount runtime files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`mount_manage_runtime_files',`
+	gen_require(`
+		type mount_runtime_t;
+	')
+
+	manage_files_pattern($1, mount_runtime_t, mount_runtime_t)
 ')

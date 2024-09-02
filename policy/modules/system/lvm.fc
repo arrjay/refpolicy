@@ -15,6 +15,8 @@
 /etc/lvmtab(/.*)?			gen_context(system_u:object_r:lvm_metadata_t,s0)
 /etc/lvmtab\.d(/.*)?			gen_context(system_u:object_r:lvm_metadata_t,s0)
 
+/etc/multipath(/.*)?                    gen_context(system_u:object_r:lvm_metadata_t,s0)
+
 #
 # /usr
 #
@@ -71,6 +73,10 @@
 /usr/bin/vgscan\.static		--	gen_context(system_u:object_r:lvm_exec_t,s0)
 /usr/bin/vgsplit		--	gen_context(system_u:object_r:lvm_exec_t,s0)
 /usr/bin/vgwrapper		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+
+ifdef(`distro_gentoo',`
+/usr/bin/dmeventd		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+')
 
 /usr/lib/lvm-10/.*				--	gen_context(system_u:object_r:lvm_exec_t,s0)
 /usr/lib/lvm-200/.*				--	gen_context(system_u:object_r:lvm_exec_t,s0)
@@ -142,6 +148,7 @@
 /var/cache/multipathd(/.*)?		gen_context(system_u:object_r:lvm_metadata_t,s0)
 /var/lib/multipath(/.*)?		gen_context(system_u:object_r:lvm_var_lib_t,s0)
 /var/lock/lvm(/.*)?			gen_context(system_u:object_r:lvm_lock_t,s0)
+/run/cryptsetup(/.*)?			gen_context(system_u:object_r:lvm_runtime_t,s0)
 /run/multipathd\.sock		-s	gen_context(system_u:object_r:lvm_runtime_t,s0)
 /run/dmevent.*				gen_context(system_u:object_r:lvm_runtime_t,s0)
 /run/lvm(/.*)?				gen_context(system_u:object_r:lvm_runtime_t,s0)

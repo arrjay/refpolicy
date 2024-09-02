@@ -90,12 +90,13 @@ xdg_cache_content(chromium_xdg_cache_t)
 #
 
 # execmem for load in plugins
-allow chromium_t self:process { execmem getsched getcap setcap setrlimit setsched sigkill signal signull };
-allow chromium_t self:dir { write add_name };
+allow chromium_t self:process { execmem getcap getsched setcap setrlimit setsched sigkill signal signull };
+allow chromium_t self:dir { add_name write };
 allow chromium_t self:file create;
 allow chromium_t self:fifo_file rw_fifo_file_perms;
 allow chromium_t self:sem create_sem_perms;
 allow chromium_t self:netlink_kobject_uevent_socket client_stream_socket_perms;
+allow chromium_t self:user_namespace create;
 # cap_userns sys_admin for the sandbox
 allow chromium_t self:cap_userns { sys_admin sys_chroot sys_ptrace };
 
@@ -218,7 +219,7 @@ xserver_manage_mesa_shader_cache(chromium_t)
 tunable_policy(`chromium_bind_tcp_unreserved_ports',`
 	corenet_tcp_bind_generic_node(chromium_t)
 	corenet_tcp_bind_all_unreserved_ports(chromium_t)
-	allow chromium_t self:tcp_socket { listen accept };
+	allow chromium_t self:tcp_socket { accept listen };
 ')
 
 tunable_policy(`chromium_dri', `
@@ -378,6 +379,7 @@ allow chromium_sandbox_t chromium_naclhelper_t:process share;
 # Chromium nacl helper local policy
 #
 
+allow chromium_naclhelper_t self:user_namespace create;
 allow chromium_naclhelper_t chromium_t:unix_stream_socket { getattr read write };
 allow chromium_naclhelper_t chromium_sandbox_t:unix_stream_socket { getattr read write };
 

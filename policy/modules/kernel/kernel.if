@@ -111,6 +111,25 @@ interface(`kernel_rootfs_mountpoint',`
 
 ########################################
 ## <summary>
+##	Read the process state (/proc/pid)
+##	of kernel threads.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_read_state',`
+	gen_require(`
+		type kernel_t;
+	')
+
+	ps_process_pattern($1, kernel_t)
+')
+
+########################################
+## <summary>
 ##	Set the process group of kernel threads.
 ## </summary>
 ## <param name="domain">
@@ -344,7 +363,7 @@ interface(`kernel_rw_unix_dgram_sockets',`
 		type kernel_t;
 	')
 
-	allow $1 kernel_t:unix_dgram_socket { read write ioctl };
+	allow $1 kernel_t:unix_dgram_socket { ioctl read write };
 ')
 
 ########################################
@@ -1421,7 +1440,7 @@ interface(`kernel_mounton_message_if',`
 	')
 
 	allow $1 proc_t:dir list_dir_perms;
-	allow $1 proc_kmsg_t:file { getattr mounton };
+	allow $1 proc_kmsg_t:file mounton_file_perms;
 ')
 
 ########################################
@@ -1514,6 +1533,51 @@ interface(`kernel_read_network_state_symlinks',`
 	read_lnk_files_pattern($1, { proc_t proc_net_t }, proc_net_t)
 
 	list_dirs_pattern($1, proc_t, proc_net_t)
+')
+
+########################################
+## <summary>
+##	Allow caller to receive pressure stall information (PSI).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_read_psi',`
+	gen_require(`
+		type proc_t, proc_psi_t;
+	')
+
+	read_files_pattern($1, { proc_t proc_psi_t }, proc_psi_t)
+	read_lnk_files_pattern($1, { proc_t proc_psi_t }, proc_psi_t)
+	list_dirs_pattern($1, { proc_t proc_psi_t }, proc_psi_t)
+')
+
+########################################
+## <summary>
+##	Allow caller to set up pressure stall information (PSI).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_rw_psi',`
+	gen_require(`
+		type proc_t, proc_psi_t;
+	')
+
+	rw_files_pattern($1, { proc_t proc_psi_t }, proc_psi_t)
+	read_lnk_files_pattern($1, { proc_t proc_psi_t }, proc_psi_t)
+	list_dirs_pattern($1, { proc_t proc_psi_t }, proc_psi_t)
+
+	# kernel requires writers to have CAP_SYS_RESOURCE
+	allow $1 self:capability sys_resource;
 ')
 
 ########################################
@@ -1728,7 +1792,7 @@ interface(`kernel_mounton_sysctl_dirs',`
 	')
 
 	allow $1 proc_t:dir list_dir_perms;
-	allow $1 sysctl_t:dir { getattr mounton };
+	allow $1 sysctl_t:dir mounton_dir_perms;
 ')
 
 ########################################
@@ -1768,7 +1832,7 @@ interface(`kernel_mounton_sysctl_files',`
 	')
 
 	allow $1 { proc_t sysctl_t }:dir list_dir_perms;
-	allow $1 sysctl_t:file { getattr mounton };
+	allow $1 sysctl_t:file mounton_file_perms;
 ')
 
 ########################################
@@ -1955,6 +2019,25 @@ interface(`kernel_rw_net_sysctls',`
 
 ########################################
 ## <summary>
+##	Allow caller to mount on network sysctl directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_mounton_net_sysctl_dirs',`
+	gen_require(`
+		type sysctl_net_t;
+	')
+
+	allow $1 sysctl_net_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Allow caller to read unix domain
 ##	socket sysctls.
 ## </summary>
@@ -2119,6 +2202,25 @@ interface(`kernel_dontaudit_read_kernel_sysctl',`
 
 ########################################
 ## <summary>
+##	Allow caller to mount on kernel sysctl directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <rolecap/>
+#
+interface(`kernel_mounton_kernel_sysctl_dirs',`
+	gen_require(`
+		type sysctl_kernel_t;
+	')
+
+	allow $1 sysctl_kernel_t:dir mounton;
+')
+
+########################################
+## <summary>
 ##	Read generic crypto sysctls.
 ## </summary>
 ## <param name="domain">
@@ -2234,7 +2336,7 @@ interface(`kernel_mounton_kernel_sysctl_files',`
 	')
 
 	allow $1 { proc_t sysctl_t sysctl_kernel_t }:dir list_dir_perms;
-	allow $1 sysctl_kernel_t:file { getattr mounton };
+	allow $1 sysctl_kernel_t:file mounton_file_perms;
 ')
 
 ########################################
@@ -2785,6 +2887,24 @@ interface(`kernel_rw_unlabeled_dirs',`
 
 ########################################
 ## <summary>
+##	Create unlabeled directories.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_create_unlabeled_dirs',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	allow $1 unlabeled_t:dir create_dir_perms;
+')
+
+########################################
+## <summary>
 ##	Delete unlabeled directories.
 ## </summary>
 ## <param name="domain">
@@ -2834,7 +2954,7 @@ interface(`kernel_mounton_unlabeled_dirs',`
 		type unlabeled_t;
 	')
 
-	allow $1 unlabeled_t:dir { search_dir_perms mounton };
+	allow $1 unlabeled_t:dir { mounton search_dir_perms };
 ')
 
 ########################################
@@ -3390,6 +3510,25 @@ interface(`kernel_relabelfrom_unlabeled_chr_devs',`
 
 ########################################
 ## <summary>
+##	Allow caller set the attributes on all unlabeled
+##	directory and file objects.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`kernel_setattr_all_unlabeled',`
+	gen_require(`
+		type unlabeled_t;
+	')
+
+	allow $1 unlabeled_t:dir_file_class_set setattr;
+')
+
+########################################
+## <summary>
 ##	Send and receive messages from an
 ##	unlabeled IPSEC association.
 ## </summary>
@@ -3418,7 +3557,7 @@ interface(`kernel_sendrecv_unlabeled_association',`
 		type unlabeled_t;
 	')
 
-	allow $1 unlabeled_t:association { sendto recvfrom };
+	allow $1 unlabeled_t:association { recvfrom sendto };
 ')
 
 ########################################
@@ -3451,7 +3590,7 @@ interface(`kernel_dontaudit_sendrecv_unlabeled_association',`
 		type unlabeled_t;
 	')
 
-	dontaudit $1 unlabeled_t:association { sendto recvfrom };
+	dontaudit $1 unlabeled_t:association { recvfrom sendto };
 ')
 
 ########################################
@@ -3649,7 +3788,7 @@ interface(`kernel_sendrecv_unlabeled_packets',`
 		type unlabeled_t;
 	')
 
-	allow $1 unlabeled_t:packet { send recv };
+	allow $1 unlabeled_t:packet { recv send };
 ')
 
 ########################################
@@ -3721,28 +3860,28 @@ interface(`kernel_dontaudit_recvfrom_unlabeled_peer',`
 interface(`kernel_relabelfrom_unlabeled_database',`
 	gen_require(`
 		type unlabeled_t;
-		class db_database { setattr relabelfrom };
-		class db_schema { setattr relabelfrom };
-		class db_table { setattr relabelfrom };
-		class db_sequence { setattr relabelfrom };
-		class db_view { setattr relabelfrom };
-		class db_procedure { setattr relabelfrom };
-		class db_language { setattr relabelfrom };
-		class db_column { setattr relabelfrom };
-		class db_tuple { update relabelfrom };
-		class db_blob { setattr relabelfrom };
+		class db_database { relabelfrom setattr };
+		class db_schema { relabelfrom setattr };
+		class db_table { relabelfrom setattr };
+		class db_sequence { relabelfrom setattr };
+		class db_view { relabelfrom setattr };
+		class db_procedure { relabelfrom setattr };
+		class db_language { relabelfrom setattr };
+		class db_column { relabelfrom setattr };
+		class db_tuple { relabelfrom update };
+		class db_blob { relabelfrom setattr };
 	')
 
-	allow $1 unlabeled_t:db_database { setattr relabelfrom };
-	allow $1 unlabeled_t:db_schema { setattr relabelfrom };
-	allow $1 unlabeled_t:db_table { setattr relabelfrom };
-	allow $1 unlabeled_t:db_sequence { setattr relabelfrom };
-	allow $1 unlabeled_t:db_view { setattr relabelfrom };
-	allow $1 unlabeled_t:db_procedure { setattr relabelfrom };
-	allow $1 unlabeled_t:db_language { setattr relabelfrom };
-	allow $1 unlabeled_t:db_column { setattr relabelfrom };
-	allow $1 unlabeled_t:db_tuple { update relabelfrom };
-	allow $1 unlabeled_t:db_blob { setattr relabelfrom };
+	allow $1 unlabeled_t:db_database { relabelfrom setattr };
+	allow $1 unlabeled_t:db_schema { relabelfrom setattr };
+	allow $1 unlabeled_t:db_table { relabelfrom setattr };
+	allow $1 unlabeled_t:db_sequence { relabelfrom setattr };
+	allow $1 unlabeled_t:db_view { relabelfrom setattr };
+	allow $1 unlabeled_t:db_procedure { relabelfrom setattr };
+	allow $1 unlabeled_t:db_language { relabelfrom setattr };
+	allow $1 unlabeled_t:db_column { relabelfrom setattr };
+	allow $1 unlabeled_t:db_tuple { relabelfrom update };
+	allow $1 unlabeled_t:db_blob { relabelfrom setattr };
 ')
 
 ########################################

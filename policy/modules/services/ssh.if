@@ -56,15 +56,15 @@ template(`ssh_basic_client_template',`
 	#
 
 	allow $1_ssh_t self:capability { dac_override dac_read_search setgid setuid };
-	allow $1_ssh_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+	allow $1_ssh_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
 	allow $1_ssh_t self:fd use;
 	allow $1_ssh_t self:fifo_file rw_inherited_fifo_file_perms;
 	allow $1_ssh_t self:unix_dgram_socket { create_socket_perms sendto };
-	allow $1_ssh_t self:unix_stream_socket { create_stream_socket_perms connectto };
+	allow $1_ssh_t self:unix_stream_socket { connectto create_stream_socket_perms };
 	allow $1_ssh_t self:shm create_shm_perms;
 	allow $1_ssh_t self:sem create_sem_perms;
 	allow $1_ssh_t self:msgq create_msgq_perms;
-	allow $1_ssh_t self:msg { send receive };
+	allow $1_ssh_t self:msg { receive send };
 	allow $1_ssh_t self:tcp_socket create_stream_socket_perms;
 
 	# for rsync
@@ -198,14 +198,14 @@ template(`ssh_server_template', `
 	# net_admin is for SO_SNDBUFFORCE
 	dontaudit $1_t self:capability net_admin;
 	allow $1_t self:fifo_file rw_fifo_file_perms;
-	allow $1_t self:process { signal getsched setsched setrlimit setexec setkeycreate };
+	allow $1_t self:process { getsched setexec setkeycreate setrlimit setsched signal };
 	allow $1_t self:tcp_socket create_stream_socket_perms;
 	allow $1_t self:udp_socket create_socket_perms;
 	# ssh agent connections:
 	allow $1_t self:unix_stream_socket create_stream_socket_perms;
 	allow $1_t self:shm create_shm_perms;
 
-	allow $1_t $1_devpts_t:chr_file { rw_chr_file_perms setattr getattr relabelfrom };
+	allow $1_t $1_devpts_t:chr_file { getattr relabelfrom rw_chr_file_perms setattr };
 	term_create_pty($1_t, $1_devpts_t)
 
 	manage_files_pattern($1_t, $1_tmpfs_t, $1_tmpfs_t)
@@ -380,7 +380,7 @@ template(`ssh_role_template',`
 
 	allow $1_ssh_agent_t { $1_ssh_agent_t $3 }:process signull;
 
-	allow $1_ssh_agent_t self:unix_stream_socket { create_stream_socket_perms connectto };
+	allow $1_ssh_agent_t self:unix_stream_socket { connectto create_stream_socket_perms };
 
 	manage_dirs_pattern($1_ssh_agent_t, ssh_agent_tmp_t, ssh_agent_tmp_t)
 	manage_sock_files_pattern($1_ssh_agent_t, ssh_agent_tmp_t, ssh_agent_tmp_t)
@@ -412,6 +412,7 @@ template(`ssh_role_template',`
 
 	files_read_etc_files($1_ssh_agent_t)
 	files_read_etc_runtime_files($1_ssh_agent_t)
+	files_read_usr_files($1_ssh_agent_t)
 	files_search_home($1_ssh_agent_t)
 
 	libs_read_lib_files($1_ssh_agent_t)
@@ -452,6 +453,12 @@ template(`ssh_role_template',`
 	')
 
 	optional_policy(`
+		cockpit_use_session_fds($1_ssh_agent_t)
+		cockpit_rw_session_pipes($1_ssh_agent_t)
+		cockpit_send_signal($1_ssh_agent_t)
+	')
+	
+	optional_policy(`
 		nis_use_ypbind($1_ssh_agent_t)
 	')
 
@@ -470,6 +477,7 @@ template(`ssh_role_template',`
 		xserver_use_xdm_fds($1_ssh_agent_t)
 		xserver_rw_xdm_pipes($1_ssh_agent_t)
 		xserver_sigchld_xdm($1_ssh_agent_t)
+		xserver_write_inherited_xsession_log($1_ssh_agent_t)
 	')
 ')
 
@@ -525,6 +533,25 @@ interface(`ssh_signull',`
 	')
 
 	allow $1 sshd_t:process signull;
+')
+
+########################################
+## <summary>
+##	Use PIDFD file descriptors from the
+##	ssh server.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`ssh_use_sshd_pidfds',`
+	gen_require(`
+		type sshd_t;
+	')
+
+	allow $1 sshd_t:fd use;
 ')
 
 ########################################
@@ -803,6 +830,31 @@ interface(`ssh_domtrans_keygen',`
 	')
 
 	domtrans_pattern($1, ssh_keygen_exec_t, ssh_keygen_t)
+')
+
+######################################
+## <summary>
+##	Execute the ssh key generator in the ssh keygen domain,
+##	and allow the specified	role the ssh keygen domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+## <param name="role">
+##	<summary>
+##	Role allowed access.
+##	</summary>
+## </param>
+#
+interface(`ssh_run_keygen',`
+	gen_require(`
+		type ssh_keygen_t;
+	')
+
+	ssh_domtrans_keygen($1)
+	role $2 types ssh_keygen_t;
 ')
 
 ########################################

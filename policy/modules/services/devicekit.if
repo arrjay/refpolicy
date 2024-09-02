@@ -155,7 +155,7 @@ interface(`devicekit_append_inherited_log_files',`
 	')
 
 	logging_search_logs($1)
-	allow $1 devicekit_var_log_t:file { getattr_file_perms append };
+	allow $1 devicekit_var_log_t:file { append getattr_file_perms };
 
 	devicekit_use_fds_power($1)
 ')
@@ -197,37 +197,6 @@ interface(`devicekit_relabel_log_files',`
 
 	logging_search_logs($1)
 	relabel_files_pattern($1, devicekit_var_log_t, devicekit_var_log_t)
-')
-
-########################################
-## <summary>
-##	Read devicekit PID files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`devicekit_read_pid_files',`
-	refpolicywarn(`$0($*) has been deprecated, please use devicekit_read_runtime_files() instead.')
-	devicekit_read_runtime_files($1)
-')
-
-########################################
-## <summary>
-##	Create, read, write, and delete
-##	devicekit PID files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`devicekit_manage_pid_files',`
-	refpolicywarn(`$0($*) has been deprecated, please use devicekit_manage_runtime_files() instead.')
-	devicekit_manage_runtime_files($1)
 ')
 
 ########################################

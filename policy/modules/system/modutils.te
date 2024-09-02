@@ -34,7 +34,7 @@ ifdef(`init_systemd',`
 #
 
 allow kmod_t self:capability { dac_override net_raw sys_nice sys_tty_config };
-allow kmod_t self:process { execmem sigchld sigkill sigstop signull signal };
+allow kmod_t self:process { execmem sigchld sigkill signal signull sigstop };
 # for the radeon/amdgpu modules
 dontaudit kmod_t self:capability sys_admin;
 
@@ -63,6 +63,7 @@ kernel_read_debugfs(kmod_t)
 # Rules for /proc/sys/kernel/tainted
 kernel_read_kernel_sysctls(kmod_t)
 kernel_rw_kernel_sysctl(kmod_t)
+kernel_rw_net_sysctls(kmod_t)
 kernel_read_hotplug_sysctls(kmod_t)
 kernel_setsched(kmod_t)
 # for when /var is not mounted early in the boot:

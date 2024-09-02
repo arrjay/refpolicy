@@ -90,6 +90,10 @@ interface(`auth_use_pam_systemd',`
 	dbus_system_bus_client($1)
 	systemd_connect_machined($1)
 	systemd_dbus_chat_logind($1)
+	systemd_read_logind_state($1)
+
+	# to read /etc/machine-id
+	files_read_etc_runtime_files($1)
 ')
 
 ########################################
@@ -115,7 +119,27 @@ interface(`auth_use_pam_motd_dynamic',`
 	corecmd_exec_shell($1)
 
 	allow $1 pam_motd_runtime_t:file manage_file_perms;
+	allow $1 pam_motd_runtime_t:dir rw_dir_perms;
 	files_runtime_filetrans($1, pam_motd_runtime_t, file, "motd.dynamic.new")
+')
+
+########################################
+## <summary>
+##	Read the pam module motd with dynamic support during authentication.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_read_pam_motd_dynamic',`
+	gen_require(`
+		type pam_motd_runtime_t;
+	')
+
+	files_search_runtime($1)
+	allow $1 pam_motd_runtime_t:file read_file_perms;
 ')
 
 ########################################
@@ -558,6 +582,7 @@ interface(`auth_dontaudit_getattr_shadow',`
 #
 interface(`auth_read_shadow',`
 	auth_can_read_shadow_passwords($1)
+	auth_read_shadow_history($1)
 	auth_tunable_read_shadow($1)
 ')
 
@@ -690,6 +715,8 @@ interface(`auth_manage_shadow',`
 		type shadow_t;
 	')
 
+	files_rw_etc_dirs($1)
+	auth_manage_shadow_history($1)
 	auth_rw_shadow_lock($1)
 	allow $1 shadow_t:file manage_file_perms;
 	typeattribute $1 can_read_shadow_passwords, can_write_shadow_passwords;
@@ -716,6 +743,63 @@ interface(`auth_etc_filetrans_shadow',`
 	')
 
 	files_etc_filetrans($1, shadow_t, file, $2)
+')
+
+########################################
+## <summary>
+##	Get the attributes of the shadow history file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_getattr_shadow_history',`
+	gen_require(`
+		type shadow_history_t;
+	')
+
+	files_search_etc($1)
+	allow $1 shadow_history_t:file getattr;
+')
+
+########################################
+## <summary>
+##	Read the shadow history file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_read_shadow_history',`
+	gen_require(`
+		type shadow_history_t;
+	')
+
+	files_search_etc($1)
+	allow $1 shadow_history_t:file read_file_perms;
+')
+
+########################################
+## <summary>
+##	Manage the shadow history file.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_manage_shadow_history',`
+	gen_require(`
+		type shadow_history_t;
+	')
+
+	files_search_etc($1)
+	allow $1 shadow_history_t:file manage_file_perms;
 ')
 
 #######################################
@@ -778,6 +862,24 @@ interface(`auth_rw_shadow_lock',`
 	')
 
 	rw_files_pattern($1, shadow_lock_t, shadow_lock_t)
+')
+
+########################################
+## <summary>
+##	Search faillock directory (/run/faillock).
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`auth_search_faillog',`
+	gen_require(`
+		type faillog_t;
+	')
+
+	allow $1 faillog_t:dir search_dir_perms;
 ')
 
 #######################################
@@ -947,7 +1049,7 @@ interface(`auth_rw_lastlog',`
 	')
 
 	logging_search_logs($1)
-	allow $1 lastlog_t:file { rw_file_perms lock setattr };
+	allow $1 lastlog_t:file { lock rw_file_perms setattr };
 ')
 
 ########################################
@@ -1107,95 +1209,6 @@ interface(`auth_manage_var_auth',`
 	allow $1 var_auth_t:dir manage_dir_perms;
 	allow $1 var_auth_t:file rw_file_perms;
 	allow $1 var_auth_t:lnk_file rw_lnk_file_perms;
-')
-
-########################################
-## <summary>
-##	Read PAM PID files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`auth_read_pam_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use auth_read_pam_runtime_files() instead.')
-	auth_read_pam_runtime_files($1)
-')
-
-#######################################
-## <summary>
-##	Do not audit attempts to read PAM PID files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain to not audit.
-##	</summary>
-## </param>
-#
-interface(`auth_dontaudit_read_pam_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use auth_dontaudit_read_pam_runtime_files() instead.')
-	auth_dontaudit_read_pam_runtime_files($1)
-')
-
-########################################
-## <summary>
-##	Create specified objects in
-##	pid directories with the pam var
-##      run file type using a
-##      file type transition.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-## <param name="object_class">
-##	<summary>
-##	Class of the object being created.
-##	</summary>
-## </param>
-## <param name="name" optional="true">
-##	<summary>
-##	The name of the object being created.
-##	</summary>
-## </param>
-#
-interface(`auth_pid_filetrans_pam_var_run',`
-	refpolicywarn(`$0($*) has been deprecated, please use auth_runtime_filetrans_pam_runtime() instead.')
-	auth_runtime_filetrans_pam_runtime($1, $2, $3)
-')
-
-########################################
-## <summary>
-##	Delete pam PID files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`auth_delete_pam_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use auth_delete_pam_runtime_files() instead.')
-	auth_delete_pam_runtime_files($1)
-')
-
-########################################
-## <summary>
-##	Manage pam PID files.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`auth_manage_pam_pid',`
-	refpolicywarn(`$0($*) has been deprecated, please use auth_manage_pam_runtime_dirs(); auth_manage_pam_runtime_files() instead.')
-	auth_manage_pam_runtime_dirs($1)
-	auth_manage_pam_runtime_files($1)
 ')
 
 ########################################
@@ -1481,34 +1494,6 @@ interface(`auth_delete_pam_console_data',`
 
 ########################################
 ## <summary>
-##	Create specified objects in
-##	pid directories with the pam var
-##      console pid file type using a
-##      file type transition.  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-## <param name="object_class">
-##	<summary>
-##	Class of the object being created.
-##	</summary>
-## </param>
-## <param name="name" optional="true">
-##	<summary>
-##	The name of the object being created.
-##	</summary>
-## </param>
-#
-interface(`auth_pid_filetrans_pam_var_console',`
-	refpolicywarn(`$0($*) has been deprecated, please use auth_runtime_filetrans_pam_var_console() instead.')
-	auth_runtime_filetrans_pam_var_console($1, $2, $3)
-')
-
-########################################
-## <summary>
 ##	Create specified objects in generic
 ##	runtime directories with the pam var
 ##      console runtime file type using a
@@ -1710,7 +1695,7 @@ interface(`auth_write_login_records',`
 		type wtmp_t;
 	')
 
-	allow $1 wtmp_t:file { write_file_perms lock };
+	allow $1 wtmp_t:file { lock write_file_perms };
 ')
 
 ########################################

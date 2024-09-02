@@ -55,13 +55,14 @@ logging_log_file(openvpn_var_log_t)
 #
 
 allow openvpn_t self:capability { dac_override dac_read_search ipc_lock net_admin setgid setuid sys_chroot sys_nice sys_tty_config };
-allow openvpn_t self:process { signal getsched setsched };
+allow openvpn_t self:process { getsched setsched signal };
 allow openvpn_t self:fifo_file rw_fifo_file_perms;
 allow openvpn_t self:unix_dgram_socket sendto;
 allow openvpn_t self:unix_stream_socket { accept connectto listen };
 allow openvpn_t self:tcp_socket server_stream_socket_perms;
 allow openvpn_t self:tun_socket { create_socket_perms relabelfrom relabelto };
 allow openvpn_t self:netlink_route_socket nlmsg_write;
+allow openvpn_t self:netlink_generic_socket create_socket_perms;
 
 allow openvpn_t openvpn_etc_t:dir list_dir_perms;
 allow openvpn_t openvpn_etc_t:file read_file_perms;
@@ -128,6 +129,7 @@ files_read_etc_runtime_files(openvpn_t)
 
 fs_getattr_all_fs(openvpn_t)
 fs_search_auto_mountpoints(openvpn_t)
+fs_search_tmpfs(openvpn_t)
 
 auth_use_pam(openvpn_t)
 

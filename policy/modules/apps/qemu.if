@@ -28,7 +28,7 @@ template(`qemu_domain_template',`
 	#
 
 	allow $1_t self:capability { dac_override dac_read_search };
-	allow $1_t self:process { execstack execmem signal getsched };
+	allow $1_t self:process { execmem execstack getsched signal };
 	allow $1_t self:fifo_file rw_fifo_file_perms;
 	allow $1_t self:shm create_shm_perms;
 	allow $1_t self:unix_stream_socket create_stream_socket_perms;
@@ -89,7 +89,7 @@ template(`qemu_domain_template',`
 	optional_policy(`
 		xserver_stream_connect($1_t)
 		xserver_read_xdm_tmp_files($1_t)
-		xserver_read_xdm_pid($1_t)
+		xserver_read_xdm_runtime_files($1_t)
 #		xserver_xdm_rw_shm($1_t)
 	')
 ')
@@ -278,21 +278,6 @@ interface(`qemu_stream_connect',`
 
 	files_search_runtime($1)
 	stream_connect_pattern($1, qemu_runtime_t, qemu_runtime_t, qemu_t)
-')
-
-########################################
-## <summary>
-##	Unlink qemu socket  (Deprecated)
-## </summary>
-## <param name="domain">
-##	<summary>
-##	Domain allowed access.
-##	</summary>
-## </param>
-#
-interface(`qemu_delete_pid_sock_file',`
-	refpolicywarn(`$0($*) has been deprecated, please use qemu_delete_runtime_sock_files() instead.')
-	qemu_delete_runtime_sock_files($1)
 ')
 
 ########################################

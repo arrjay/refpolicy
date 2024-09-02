@@ -33,7 +33,7 @@ files_runtime_file(quota_nld_runtime_t)
 # Local policy
 #
 
-allow quota_t self:capability { dac_override sys_admin linux_immutable };
+allow quota_t self:capability { dac_override linux_immutable sys_admin};
 dontaudit quota_t self:capability sys_tty_config;
 allow quota_t self:process signal_perms;
 
@@ -71,6 +71,8 @@ fs_set_xattr_fs_quotas(quota_t)
 fs_getattr_xattr_fs(quota_t)
 fs_remount_xattr_fs(quota_t)
 fs_search_auto_mountpoints(quota_t)
+
+miscfiles_read_localization(quota_t)
 
 mls_file_read_all_levels(quota_t)
 

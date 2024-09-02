@@ -33,6 +33,9 @@ ifndef(`enable_mls',`
 # Local policy
 #
 
+# for networkctl and possibly other networking tools
+allow sysadm_t self:netlink_route_socket rw_netlink_socket_perms;
+
 corecmd_exec_shell(sysadm_t)
 
 corenet_ib_access_unlabeled_pkeys(sysadm_t)
@@ -82,6 +85,12 @@ ifndef(`enable_mls',`
 ')
 
 ifdef(`init_systemd',`
+	# Allow managing runtime units, for example mount units generated
+	# from /etc/fstab.
+	init_get_runtime_units_status(sysadm_t)
+	init_start_runtime_units(sysadm_t)
+	init_stop_runtime_units(sysadm_t)
+
 	# Allow sysadm to resolve the username of dynamic users by calling
 	# LookupDynamicUserByUID on org.freedesktop.systemd1.
 	init_dbus_chat(sysadm_t)
@@ -275,6 +284,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	cockpit_admin(sysadm_t)
+')
+
+optional_policy(`
 	collectd_admin(sysadm_t, sysadm_r)
 ')
 
@@ -460,6 +473,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	haproxy_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
 	hddtemp_admin(sysadm_t, sysadm_r)
 ')
 
@@ -548,6 +565,10 @@ optional_policy(`
 
 optional_policy(`
 	ksmtuned_admin(sysadm_t, sysadm_r)
+')
+
+optional_policy(`
+	kubernetes_admin(sysadm_t, sysadm_r)
 ')
 
 optional_policy(`

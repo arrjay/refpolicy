@@ -54,7 +54,7 @@ ifdef(`distro_redhat',`
 
 /etc/mail/make			--	gen_context(system_u:object_r:bin_t,s0)
 
-/etc/mcelog/.*-error-trigger	--	gen_context(system_u:object_r:bin_t,s0)
+/etc/mcelog/.*-trigger		--	gen_context(system_u:object_r:bin_t,s0)
 /etc/mcelog/.*\.local		--	gen_context(system_u:object_r:bin_t,s0)
 
 ifdef(`distro_redhat',`
@@ -109,6 +109,8 @@ ifdef(`distro_redhat',`
 /etc/xen/qemu-ifup		--	gen_context(system_u:object_r:bin_t,s0)
 /etc/xen/scripts(/.*)?			gen_context(system_u:object_r:bin_t,s0)
 
+/etc/zfs/zfs-functions		--      gen_context(system_u:object_r:bin_t,s0)
+
 ifdef(`distro_debian',`
 /etc/mysql/debian-start		--	gen_context(system_u:object_r:bin_t,s0)
 ')
@@ -121,6 +123,9 @@ ifdef(`distro_debian',`
 /opt/(.*/)?libexec(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 
 /opt/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+
+/opt/brother/Printers/[^/]+/lpd(/.*)?	gen_context(system_u:object_r:bin_t,s0)
+/opt/brother/Printers/[^/]+/cupswrapper(/.*)?	gen_context(system_u:object_r:bin_t,s0)
 
 /opt/google/talkplugin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 
@@ -307,7 +312,6 @@ ifdef(`distro_debian',`
 /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
 
-/usr/share/mdadm/checkarray	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/ajaxterm\.py.* --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/ajaxterm/qweb\.py.* --	gen_context(system_u:object_r:bin_t,s0)
@@ -323,6 +327,7 @@ ifdef(`distro_debian',`
 /usr/share/cluster/.*\.sh		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/ocf-shellfuncs --	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cluster/svclib_nfslock --	gen_context(system_u:object_r:bin_t,s0)
+/usr/share/cockpit/motd/update-motd    -- gen_context(system_u:object_r:bin_t,s0)
 /usr/share/cvs/contrib/rcs2log	--	gen_context(system_u:object_r:bin_t,s0)
 /usr/share/e16/misc(/.*)?		gen_context(system_u:object_r:bin_t,s0)
 /usr/share/gedit/plugins/externaltools/tools(/.*)? gen_context(system_u:object_r:bin_t,s0)

@@ -51,7 +51,7 @@ template(`chromium_role',`
 	allow $3 chromium_renderer_t:process signal_perms;
 	allow $3 chromium_sandbox_t:process signal_perms;
 	allow $3 chromium_naclhelper_t:process signal_perms;
-	allow chromium_t $3:process { signull signal };
+	allow chromium_t $3:process { signal signull };
 
 	allow $3 chromium_t:unix_stream_socket connectto;
 
@@ -136,7 +136,6 @@ interface(`chromium_domtrans',`
 	gen_require(`
 		type chromium_t;
 		type chromium_exec_t;
-		class dbus send_msg;
 	')
 
 	corecmd_search_bin($1)

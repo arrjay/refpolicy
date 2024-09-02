@@ -61,7 +61,7 @@ template(`wm_role_template',`
 	allow $3 $1_wm_t:process { ptrace signal_perms };
 	ps_process_pattern($3, $1_wm_t)
 
-	allow $1_wm_t $3:process { signull sigkill };
+	allow $1_wm_t $3:process { sigkill signull };
 
 	domtrans_pattern($3, wm_exec_t, $1_wm_t)
 
@@ -75,6 +75,8 @@ template(`wm_role_template',`
 	mls_fd_use_all_levels($1_wm_t)
 
 	auth_use_nsswitch($1_wm_t)
+
+	miscfiles_manage_fonts_cache($1_wm_t)
 
 	xserver_role($1, $1_wm_t, $3, $4)
 	xserver_manage_core_devices($1_wm_t)
@@ -110,6 +112,10 @@ template(`wm_role_template',`
 
 	optional_policy(`
 		systemd_user_app_status($1, $1_wm_t)
+	')
+
+	optional_policy(`
+		xscreensaver_run($1_wm_t, $4)
 	')
 ')
 

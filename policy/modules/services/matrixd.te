@@ -20,6 +20,16 @@ gen_tunable(matrix_allow_federation, true)
 ## </desc>
 gen_tunable(matrix_postgresql_connect, false)
 
+## <desc>
+##  <p>
+##  Determine whether Matrixd is allowed to bind all
+##  TCP ports. This is intended for more complex Matrix
+##	server configurations (e.g. Synapse workers) and may
+##	be used in lieu of manually labeling each port.
+##  </p>
+## </desc>
+gen_tunable(matrix_bind_all_unreserved_tcp_ports, false)
+
 type matrixd_t;
 type matrixd_exec_t;
 init_daemon_domain(matrixd_t, matrixd_exec_t)
@@ -49,9 +59,9 @@ allow matrixd_t self:udp_socket create_socket_perms;
 allow matrixd_t self:unix_dgram_socket create_socket_perms;
 # execmem is needed for Python callbacks
 # https://cffi.readthedocs.io/en/latest/using.html#callbacks
-allow matrixd_t self:process { getsched execmem };
+allow matrixd_t self:process { execmem getsched };
 
-allow matrixd_t matrixd_tmp_t:file { manage_file_perms map };
+allow matrixd_t matrixd_tmp_t:file mmap_manage_file_perms;
 files_tmp_filetrans(matrixd_t, matrixd_tmp_t, file)
 fs_tmpfs_filetrans(matrixd_t, matrixd_tmp_t, file)
 
@@ -83,6 +93,7 @@ corenet_udp_bind_generic_node(matrixd_t)
 corenet_udp_bind_generic_port(matrixd_t)
 corenet_udp_bind_reserved_port(matrixd_t)
 
+dev_read_sysfs(matrixd_t)
 dev_read_urand(matrixd_t)
 
 files_read_etc_files(matrixd_t)
@@ -116,7 +127,11 @@ tunable_policy(`matrix_postgresql_connect',`
 	postgresql_tcp_connect(matrixd_t)
 ')
 
+tunable_policy(`matrix_bind_all_unreserved_tcp_ports',`
+	corenet_tcp_bind_all_unreserved_ports(matrixd_t)
+')
+
 optional_policy(`
 	apache_search_config(matrixd_t)
 ')
- 
+

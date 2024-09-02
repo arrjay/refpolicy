@@ -281,7 +281,7 @@ optional_policy(`
 # Alarm local policy
 #
 
-allow evolution_alarm_t self:process { signal getsched };
+allow evolution_alarm_t self:process { getsched signal };
 allow evolution_alarm_t self:fifo_file rw_fifo_file_perms;
 
 allow evolution_alarm_t evolution_alarm_tmpfs_t:dir rw_dir_perms;
@@ -302,6 +302,8 @@ stream_connect_pattern(evolution_alarm_t, evolution_exchange_orbit_tmp_t, evolut
 stream_connect_pattern(evolution_alarm_t, evolution_server_orbit_tmp_t, evolution_server_orbit_tmp_t, evolution_server_t)
 
 kernel_dontaudit_read_system_state(evolution_alarm_t)
+
+corecmd_exec_bin(evolution_alarm_t)
 
 dev_read_urand(evolution_alarm_t)
 

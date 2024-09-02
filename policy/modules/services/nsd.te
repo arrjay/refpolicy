@@ -34,7 +34,7 @@ files_type(nsd_zone_t)
 # Local policy
 #
 
-allow nsd_t self:capability { chown dac_override kill setgid setuid dac_read_search net_admin };
+allow nsd_t self:capability { chown dac_override dac_read_search kill net_admin setgid setuid };
 dontaudit nsd_t self:capability sys_tty_config;
 allow nsd_t self:process signal_perms;
 allow nsd_t self:fifo_file rw_fifo_file_perms;
@@ -44,7 +44,7 @@ allow nsd_t nsd_conf_t:dir list_dir_perms;
 allow nsd_t nsd_conf_t:file read_file_perms;
 allow nsd_t nsd_conf_t:lnk_file read_lnk_file_perms;
 
-allow nsd_t nsd_db_t:file { manage_file_perms map };
+allow nsd_t nsd_db_t:file mmap_manage_file_perms;
 filetrans_pattern(nsd_t, nsd_zone_t, nsd_db_t, file)
 
 manage_files_pattern(nsd_t, nsd_runtime_t, nsd_runtime_t)

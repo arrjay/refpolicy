@@ -91,7 +91,6 @@ files_type(system_cron_spool_t)
 type system_cronjob_t alias system_crond_t;
 init_daemon_domain(system_cronjob_t, anacron_exec_t)
 corecmd_shell_entry_type(system_cronjob_t)
-domain_entry_file(system_cronjob_t, system_cron_spool_t)
 
 type system_cronjob_lock_t alias system_crond_lock_t;
 files_lock_file(system_cronjob_lock_t)
@@ -207,7 +206,7 @@ allow crond_t self:capability { chown dac_override dac_read_search fowner setgid
 # net_admin for changing buffer sizes
 dontaudit crond_t self:capability { net_admin sys_resource sys_tty_config };
 
-allow crond_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow crond_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setexec setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh signal_perms transition };
 allow crond_t self:fd use;
 allow crond_t self:fifo_file rw_fifo_file_perms;
 allow crond_t self:unix_dgram_socket sendto;
@@ -215,8 +214,8 @@ allow crond_t self:unix_stream_socket { accept connectto listen };
 allow crond_t self:shm create_shm_perms;
 allow crond_t self:sem create_sem_perms;
 allow crond_t self:msgq create_msgq_perms;
-allow crond_t self:msg { send receive };
-allow crond_t self:key { search write link };
+allow crond_t self:msg { receive send };
+allow crond_t self:key { link search write };
 dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
 
 allow crond_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
@@ -248,7 +247,7 @@ allow crond_t system_cronjob_t:process transition;
 allow crond_t system_cronjob_t:fd use;
 allow crond_t system_cronjob_t:key manage_key_perms;
 
-dontaudit crond_t { cronjob_t system_cronjob_t }:process { noatsecure siginh rlimitinh };
+dontaudit crond_t { cronjob_t system_cronjob_t }:process { noatsecure rlimitinh siginh };
 
 domtrans_pattern(crond_t, anacron_exec_t, system_cronjob_t)
 
@@ -431,6 +430,8 @@ optional_policy(`
 	systemd_dbus_chat_logind(system_cronjob_t)
 	systemd_read_journal_files(system_cronjob_t)
 	systemd_write_inherited_logind_sessions_pipes(system_cronjob_t)
+	# for runuser
+	init_search_keys(system_cronjob_t)
 	# so cron jobs can restart daemons
 	init_stream_connect(system_cronjob_t)
 	init_manage_script_service(system_cronjob_t)
@@ -442,7 +443,7 @@ optional_policy(`
 #
 
 allow system_cronjob_t self:capability { chown dac_override dac_read_search fowner fsetid net_admin net_bind_service setgid setuid sys_nice sys_resource };
-allow system_cronjob_t self:process { signal_perms getsched setsched setrlimit };
+allow system_cronjob_t self:process { getsched setrlimit setsched signal_perms };
 allow system_cronjob_t self:fd use;
 allow system_cronjob_t self:fifo_file rw_fifo_file_perms;
 allow system_cronjob_t self:passwd rootok;
@@ -457,6 +458,7 @@ allow system_cronjob_t cron_runtime_t:file manage_file_perms;
 files_runtime_filetrans(system_cronjob_t, cron_runtime_t, file)
 
 manage_files_pattern(system_cronjob_t, system_cron_spool_t, system_cron_spool_t)
+allow system_cronjob_t system_cron_spool_t:file entrypoint;
 
 allow system_cronjob_t system_cronjob_lock_t:file manage_file_perms;
 allow system_cronjob_t system_cronjob_lock_t:lnk_file manage_lnk_file_perms;
@@ -486,6 +488,7 @@ kernel_getattr_message_if(system_cronjob_t)
 kernel_read_irq_sysctls(system_cronjob_t)
 kernel_read_kernel_sysctls(system_cronjob_t)
 kernel_read_network_state(system_cronjob_t)
+kernel_read_rpc_sysctls(system_cronjob_t)
 kernel_read_system_state(system_cronjob_t)
 kernel_read_software_raid_state(system_cronjob_t)
 
@@ -530,6 +533,7 @@ files_read_usr_files(system_cronjob_t)
 files_read_var_files(system_cronjob_t)
 files_dontaudit_search_runtime(system_cronjob_t)
 files_manage_generic_spool(system_cronjob_t)
+files_manage_var_lib_dirs(system_cronjob_t)
 files_create_boot_flag(system_cronjob_t)
 files_read_var_lib_symlinks(system_cronjob_t)
 
@@ -549,6 +553,7 @@ logging_manage_generic_logs(system_cronjob_t)
 logging_send_audit_msgs(system_cronjob_t)
 logging_send_syslog_msg(system_cronjob_t)
 
+miscfiles_read_generic_certs(system_cronjob_t)
 miscfiles_read_localization(system_cronjob_t)
 
 seutil_read_config(system_cronjob_t)
@@ -650,6 +655,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	ntp_read_config(system_cronjob_t)
+')
+
+optional_policy(`
 	postfix_read_config(system_cronjob_t)
 ')
 
@@ -673,6 +682,8 @@ optional_policy(`
 
 	# for gpg-connect-agent to access /run/user/0
 	userdom_manage_user_runtime_dirs(system_cronjob_t)
+	# for /run/user/0/gnupg
+	userdom_manage_user_tmp_dirs(system_cronjob_t)
 ')
 
 ########################################
@@ -680,7 +691,7 @@ optional_policy(`
 # Cronjob local policy
 #
 
-allow cronjob_t self:process { signal_perms setsched };
+allow cronjob_t self:process { setsched signal_perms };
 allow cronjob_t self:fifo_file rw_fifo_file_perms;
 allow cronjob_t self:unix_stream_socket create_stream_socket_perms;
 allow cronjob_t self:unix_dgram_socket create_socket_perms;
@@ -763,7 +774,7 @@ type unconfined_cronjob_t;
 domain_type(unconfined_cronjob_t)
 domain_cron_exemption_target(unconfined_cronjob_t)
 
-dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
+dontaudit crond_t unconfined_cronjob_t:process { noatsecure rlimitinh siginh };
 
 tunable_policy(`cron_userdomain_transition',`
 	dontaudit crond_t unconfined_cronjob_t:process transition;

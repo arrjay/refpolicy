@@ -70,14 +70,14 @@ role useradd_roles types useradd_t;
 #
 
 allow chfn_t self:capability { chown dac_override fsetid setgid setuid sys_resource };
-allow chfn_t self:process { transition sigkill sigstop signull signal getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow chfn_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh sigkill signal signull sigstop transition };
 allow chfn_t self:fd use;
 allow chfn_t self:fifo_file rw_fifo_file_perms;
 allow chfn_t self:sock_file read_sock_file_perms;
 allow chfn_t self:shm create_shm_perms;
 allow chfn_t self:sem create_sem_perms;
 allow chfn_t self:msgq create_msgq_perms;
-allow chfn_t self:msg { send receive };
+allow chfn_t self:msg { receive send };
 allow chfn_t self:unix_dgram_socket create_socket_perms;
 allow chfn_t self:unix_stream_socket create_stream_socket_perms;
 allow chfn_t self:unix_dgram_socket sendto;
@@ -190,17 +190,21 @@ optional_policy(`
 
 allow groupadd_t self:capability { audit_write chown dac_override fsetid kill setuid sys_resource };
 dontaudit groupadd_t self:capability { fsetid net_admin sys_tty_config };
-allow groupadd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow groupadd_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh signal_perms transition };
 allow groupadd_t self:fd use;
 allow groupadd_t self:fifo_file rw_fifo_file_perms;
 allow groupadd_t self:shm create_shm_perms;
 allow groupadd_t self:sem create_sem_perms;
 allow groupadd_t self:msgq create_msgq_perms;
-allow groupadd_t self:msg { send receive };
+allow groupadd_t self:msg { receive send };
 allow groupadd_t self:unix_dgram_socket create_socket_perms;
 allow groupadd_t self:unix_stream_socket create_stream_socket_perms;
 allow groupadd_t self:unix_dgram_socket sendto;
 allow groupadd_t self:unix_stream_socket connectto;
+
+# for getting the number of groups
+kernel_read_kernel_sysctls(groupadd_t)
+kernel_dontaudit_getattr_proc(groupadd_t)
 
 fs_getattr_xattr_fs(groupadd_t)
 fs_search_auto_mountpoints(groupadd_t)
@@ -226,6 +230,9 @@ files_manage_etc_files(groupadd_t)
 files_relabel_etc_files(groupadd_t)
 files_read_etc_runtime_files(groupadd_t)
 files_read_usr_symlinks(groupadd_t)
+
+kernel_getattr_proc(groupadd_t)
+kernel_read_kernel_sysctls(groupadd_t)
 
 # Execute /usr/bin/{passwd, chfn, chsh} and /usr/sbin/{useradd, vipw}.
 corecmd_exec_bin(groupadd_t)
@@ -256,6 +263,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	cloudinit_write_inherited_tmp_files(groupadd_t)
+')
+
+optional_policy(`
 	dbus_system_bus_client(groupadd_t)
 ')
 
@@ -275,6 +286,8 @@ optional_policy(`
 optional_policy(`
 	rpm_use_fds(groupadd_t)
 	rpm_rw_pipes(groupadd_t)
+	rpm_read_tmp_files(groupadd_t)
+	rpm_append_tmp_files(groupadd_t)
 ')
 
 optional_policy(`
@@ -282,7 +295,7 @@ optional_policy(`
 ')
 
 optional_policy(`
-	unconfined_use_fds(groupadd_t)
+	unconfined_write_inherited_pipes(groupadd_t)
 ')
 
 ########################################
@@ -292,7 +305,7 @@ optional_policy(`
 
 allow passwd_t self:capability { chown dac_override fsetid setgid setuid sys_nice sys_resource };
 dontaudit passwd_t self:capability sys_tty_config;
-allow passwd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow passwd_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh signal_perms transition };
 allow passwd_t self:fd use;
 allow passwd_t self:fifo_file rw_fifo_file_perms;
 allow passwd_t self:sock_file read_sock_file_perms;
@@ -303,9 +316,10 @@ allow passwd_t self:unix_stream_socket connectto;
 allow passwd_t self:shm create_shm_perms;
 allow passwd_t self:sem create_sem_perms;
 allow passwd_t self:msgq create_msgq_perms;
-allow passwd_t self:msg { send receive };
+allow passwd_t self:msg { receive send };
 
 allow passwd_t crack_db_t:dir list_dir_perms;
+read_lnk_files_pattern(passwd_t, crack_db_t, crack_db_t)
 read_files_pattern(passwd_t, crack_db_t, crack_db_t)
 
 kernel_read_kernel_sysctls(passwd_t)
@@ -332,6 +346,7 @@ term_use_all_ttys(passwd_t)
 term_use_all_ptys(passwd_t)
 
 auth_run_chk_passwd(passwd_t, passwd_roles)
+auth_run_upd_passwd(passwd_t, passwd_roles)
 auth_manage_shadow(passwd_t)
 auth_relabel_shadow(passwd_t)
 auth_etc_filetrans_shadow(passwd_t)
@@ -381,7 +396,7 @@ optional_policy(`
 #
 
 allow sysadm_passwd_t self:capability { chown dac_override fsetid setgid setuid sys_resource };
-allow sysadm_passwd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow sysadm_passwd_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh signal_perms transition };
 allow sysadm_passwd_t self:fd use;
 allow sysadm_passwd_t self:fifo_file rw_fifo_file_perms;
 allow sysadm_passwd_t self:sock_file read_sock_file_perms;
@@ -392,7 +407,7 @@ allow sysadm_passwd_t self:unix_stream_socket connectto;
 allow sysadm_passwd_t self:shm create_shm_perms;
 allow sysadm_passwd_t self:sem create_sem_perms;
 allow sysadm_passwd_t self:msgq create_msgq_perms;
-allow sysadm_passwd_t self:msg { send receive };
+allow sysadm_passwd_t self:msg { receive send };
 
 # allow vipw to create temporary files under /var/tmp/vi.recover
 manage_dirs_pattern(sysadm_passwd_t, sysadm_passwd_tmp_t, sysadm_passwd_tmp_t)
@@ -464,15 +479,15 @@ optional_policy(`
 #
 
 allow useradd_t self:capability { chown dac_override fowner fsetid kill setuid sys_resource };
-dontaudit useradd_t self:capability { net_admin sys_tty_config };
+dontaudit useradd_t self:capability { net_admin sys_ptrace sys_tty_config };
 dontaudit useradd_t self:cap_userns sys_ptrace;
-allow useradd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setfscreate noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+allow useradd_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
 allow useradd_t self:fd use;
 allow useradd_t self:fifo_file rw_fifo_file_perms;
 allow useradd_t self:shm create_shm_perms;
 allow useradd_t self:sem create_sem_perms;
 allow useradd_t self:msgq create_msgq_perms;
-allow useradd_t self:msg { send receive };
+allow useradd_t self:msg { receive send };
 allow useradd_t self:unix_dgram_socket create_socket_perms;
 allow useradd_t self:unix_stream_socket create_stream_socket_perms;
 allow useradd_t self:unix_dgram_socket sendto;
@@ -561,6 +576,10 @@ optional_policy(`
 ')
 
 optional_policy(`
+	cloudinit_write_inherited_tmp_files(useradd_t)
+')
+
+optional_policy(`
 	dbus_system_bus_client(useradd_t)
 ')
 
@@ -586,8 +605,10 @@ optional_policy(`
 optional_policy(`
 	rpm_use_fds(useradd_t)
 	rpm_rw_pipes(useradd_t)
+	rpm_read_tmp_files(useradd_t)
+	rpm_append_tmp_files(useradd_t)
 ')
 
 optional_policy(`
-	unconfined_use_fds(useradd_t)
+	unconfined_write_inherited_pipes(useradd_t)
 ')

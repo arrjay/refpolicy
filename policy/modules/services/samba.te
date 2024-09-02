@@ -201,7 +201,7 @@ files_tmp_file(winbind_tmp_t)
 
 allow samba_net_t self:capability { dac_override dac_read_search sys_chroot sys_nice };
 allow samba_net_t self:capability2 block_suspend;
-allow samba_net_t self:process { sigkill getsched setsched };
+allow samba_net_t self:process { getsched setsched sigkill };
 allow samba_net_t self:unix_stream_socket { accept listen };
 allow samba_net_t self:fifo_file rw_inherited_fifo_file_perms;
 
@@ -268,11 +268,11 @@ optional_policy(`
 #
 
 allow smbd_t self:capability { chown dac_override dac_read_search fowner fsetid kill lease setgid setuid sys_admin sys_chroot sys_nice sys_resource };
-dontaudit smbd_t self:capability { sys_tty_config net_admin };
-allow smbd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+dontaudit smbd_t self:capability { net_admin sys_tty_config };
+allow smbd_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setkeycreate setpgid setrlimit setsched setsockcreate share siginh signal_perms transition };
 allow smbd_t self:fd use;
 allow smbd_t self:fifo_file rw_fifo_file_perms;
-allow smbd_t self:msg { send receive };
+allow smbd_t self:msg { receive send };
 allow smbd_t self:msgq create_msgq_perms;
 allow smbd_t self:sem create_sem_perms;
 allow smbd_t self:shm create_shm_perms;
@@ -408,11 +408,13 @@ tunable_policy(`samba_create_home_dirs',`
 ')
 
 tunable_policy(`samba_enable_home_dirs',`
+	files_watch_home(smbd_t)
 	userdom_manage_user_home_content_dirs(smbd_t)
 	userdom_manage_user_home_content_files(smbd_t)
 	userdom_manage_user_home_content_symlinks(smbd_t)
 	userdom_manage_user_home_content_sockets(smbd_t)
 	userdom_manage_user_home_content_pipes(smbd_t)
+	userdom_watch_user_home_dirs(smbd_t)
 ')
 
 tunable_policy(`samba_portmapper',`
@@ -444,11 +446,13 @@ tunable_policy(`samba_export_all_ro',`
 	fs_read_noxattr_fs_files(smbd_t)
 	files_list_non_auth_dirs(smbd_t)
 	files_read_non_auth_files(smbd_t)
+	files_watch_all_dirs(smbd_t)
 ')
 
 tunable_policy(`samba_export_all_rw',`
 	fs_read_noxattr_fs_files(smbd_t)
 	files_manage_non_auth_files(smbd_t)
+	files_watch_all_dirs(smbd_t)
 ')
 
 optional_policy(`
@@ -514,11 +518,11 @@ optional_policy(`
 # Nmbd Local policy
 #
 
-dontaudit nmbd_t self:capability { sys_tty_config net_admin };
-allow nmbd_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr noatsecure siginh rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+dontaudit nmbd_t self:capability { net_admin sys_tty_config };
+allow nmbd_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
 allow nmbd_t self:fd use;
 allow nmbd_t self:fifo_file rw_fifo_file_perms;
-allow nmbd_t self:msg { send receive };
+allow nmbd_t self:msg { receive send };
 allow nmbd_t self:msgq create_msgq_perms;
 allow nmbd_t self:sem create_sem_perms;
 allow nmbd_t self:shm create_shm_perms;
@@ -617,13 +621,17 @@ optional_policy(`
 allow smbcontrol_t self:process signal;
 allow smbcontrol_t self:fifo_file rw_fifo_file_perms;
 allow smbcontrol_t self:unix_stream_socket create_stream_socket_perms;
+allow smbcontrol_t self:unix_dgram_socket create_socket_perms;
 allow smbcontrol_t self:process { signal signull };
 
 allow smbcontrol_t { winbind_t nmbd_t smbd_t }:process { signal signull };
-read_files_pattern(smbcontrol_t, samba_runtime_t, samba_runtime_t)
+allow smbcontrol_t { smbd_t nmbd_t }:unix_dgram_socket sendto;
+manage_files_pattern(smbcontrol_t, samba_runtime_t, samba_runtime_t)
+allow smbcontrol_t samba_runtime_t:file map;
 allow smbcontrol_t samba_runtime_t:dir rw_dir_perms;
 
 manage_files_pattern(smbcontrol_t, samba_var_t, samba_var_t)
+allow smbcontrol_t samba_var_t:sock_file manage_sock_file_perms;
 
 samba_read_config(smbcontrol_t)
 samba_search_var(smbcontrol_t)
@@ -639,6 +647,7 @@ files_search_var_lib(smbcontrol_t)
 term_use_console(smbcontrol_t)
 
 init_use_fds(smbcontrol_t)
+init_rw_inherited_stream_socket(smbcontrol_t)
 
 miscfiles_read_localization(smbcontrol_t)
 
@@ -737,7 +746,7 @@ allow swat_t self:unix_stream_socket connectto;
 allow swat_t { nmbd_t smbd_t }:process { signal signull };
 
 allow swat_t samba_runtime_t:file read_file_perms;
-allow swat_t samba_runtime_t:file { lock delete_file_perms };
+allow swat_t samba_runtime_t:file { delete_file_perms lock };
 
 rw_files_pattern(swat_t, samba_etc_t, samba_etc_t)
 read_lnk_files_pattern(swat_t, samba_etc_t, samba_etc_t)
@@ -844,7 +853,7 @@ optional_policy(`
 allow winbind_t self:capability { dac_override ipc_lock setuid sys_nice };
 dontaudit winbind_t self:capability sys_tty_config;
 dontaudit winbind_t self:cap_userns kill;
-allow winbind_t self:process { signal_perms getsched setsched };
+allow winbind_t self:process { getsched setsched signal_perms };
 allow winbind_t self:fifo_file rw_fifo_file_perms;
 allow winbind_t self:unix_stream_socket { accept listen };
 allow winbind_t self:tcp_socket { accept listen };
