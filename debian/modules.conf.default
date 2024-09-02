@@ -125,6 +125,13 @@ ubac = base
 bootloader = module
 
 # Layer: admin
+# Module: consolesetup
+#
+# setup the console
+# 
+consolesetup = base
+
+# Layer: admin
 # Module: consoletype
 #
 # Determine of the console connected to the controlling terminal.
@@ -384,6 +391,13 @@ boinc = module
 brctl = module
 
 # Layer: contrib
+# Module: bubblewrap
+#
+# sandboxing
+# 
+bubblewrap = module
+
+# Layer: contrib
 # Module: bugzilla
 #
 # Bugtracker.
@@ -522,6 +536,13 @@ comsat = module
 # High-Throughput Computing System.
 # 
 condor = module
+
+# Layer: contrib
+# Module: container
+#
+# base container policy
+# 
+container = module
 
 # Layer: contrib
 # Module: corosync
@@ -706,6 +727,13 @@ dmidecode = module
 dnsmasq = module
 
 # Layer: contrib
+# Module: docker
+#
+# docker container system
+# 
+docker = module
+
+# Layer: contrib
 # Module: dovecot
 #
 # POP and IMAP mail server.
@@ -725,6 +753,13 @@ dpkg = base
 # Mirrors a block device over the network to another machine.
 # 
 drbd = module
+
+# Layer: contrib
+# Module: eg25manager
+#
+# Daemon for configuring the Quectel EG25 modem
+# 
+eg25manager = module
 
 # Layer: contrib
 # Module: entropyd
@@ -760,6 +795,13 @@ fail2ban = module
 # Fibre Channel over Ethernet utilities.
 # 
 fcoe = module
+
+# Layer: contrib
+# Module: feedbackd
+#
+# haptik feedback for phones
+# 
+feedbackd = module
 
 # Layer: contrib
 # Module: fetchmail
@@ -830,6 +872,13 @@ gatekeeper = module
 # GNUstep distributed object mapper.
 # 
 gdomap = module
+
+# Layer: contrib
+# Module: geoclue
+#
+# GeoClue is a D-Bus geoinformation service
+# 
+geoclue = module
 
 # Layer: contrib
 # Module: git
@@ -909,11 +958,25 @@ guest = module
 hadoop = off
 
 # Layer: contrib
+# Module: haproxy
+#
+# Software for reliable, scalable, distributed computing.
+# 
+haproxy = module
+
+# Layer: contrib
 # Module: hddtemp
 #
 # Hard disk temperature tool running as a daemon.
 # 
 hddtemp = module
+
+# Layer: contrib
+# Module: hostapd
+#
+# Wifi AP daemon
+# 
+hostapd = module
 
 # Layer: contrib
 # Module: hypervkvp
@@ -942,6 +1005,13 @@ icecast = module
 # Bring up/down ethernet interfaces based on cable detection.
 # 
 ifplugd = module
+
+# Layer: contrib
+# Module: iiosensorproxy
+#
+# IIO sensors to D-Bus proxy
+# 
+iiosensorproxy = module
 
 # Layer: contrib
 # Module: inetd
@@ -1124,6 +1194,13 @@ logrotate = module
 # System log analyzer and reporter.
 # 
 logwatch = module
+
+# Layer: contrib
+# Module: lowmemorymonitor
+#
+# daemon to monitor low memory and manage kernel OOM
+# 
+lowmemorymonitor = module
 
 # Layer: contrib
 # Module: lpd
@@ -1579,6 +1656,13 @@ postfixpolicyd = module
 # Postfix grey-listing server.
 # 
 postgrey = module
+
+# Layer: contrib
+# Module: powerprofiles
+#
+# daemon for setting power profiles
+# 
+powerprofiles = module
 
 # Layer: contrib
 # Module: ppp
@@ -2120,6 +2204,13 @@ tgtd = module
 thunderbird = module
 
 # Layer: contrib
+# Module: thunderbolt
+#
+# Thunderbolt management daemon
+# 
+thunderbolt = module
+
+# Layer: contrib
 # Module: timidity
 #
 # MIDI to WAV converter and player configured as a service.
@@ -2636,6 +2727,13 @@ setrans = module
 # Policy for network configuration: ifconfig and dhcp client.
 # 
 sysnetwork = base
+
+# Layer: contrib
+# Module: switcheroo
+#
+# daemon to switch between discrete and integrated GPUs
+# 
+switcheroo = module
 
 # Layer: system
 # Module: udev

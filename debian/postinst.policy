@@ -19,7 +19,50 @@ priority=100
 
 # modules which are not enabled by default, because they are usually
 # not needed on a debian system
-notdefault="amtu bugzilla cobbler condor cyphesis git ksmtuned likewise livecd nessus numad oddjob openca soundserver thunderbird updfstab usernetctl"
+notdefault="aisexec amtu bugzilla cobbler condor cyphesis git ksmtuned likewise livecd nessus numad oddjob openca rlogin rshd soundserver telnet publicfile thunderbird updfstab usernetctl"
+
+platform=$(hostnamectl chassis) || true
+case "$platform" in
+  handset|watch|embedded)
+# dont need staff role
+    notdefault="$notdefault staff"
+# dont need hardware specific things for non phone hardware
+    notdefault="$notdefault acpi cdrecord fcoe iscsi isns openct raid rasdaemon tgtd tvtime vbetool"
+# dont need VM things
+    notdefault="$notdefault hypervkvp"
+# dont need serious server daemons
+    notdefault="$notdefault afs aide amanda amavis apcupsd aptcacher asterisk awstats bacula bind bird bitlbee boinc cachefilesd calamaris certbot cfengine clamav cockpit corosync couchdb courier ctdb cvs cyrus dbadm dictd distcc djbdns dkim dmidecode docker dovecot drbd fetchmail gitosis glance glusterfs haproxy inn irc ircd jabber kerberos keystone ldap lightsquid mailman matrixd mediawiki memcached milter minidlna mojomojo mongodb monop mrtg munin nagios nis nsd nslcd ntop nut openhpi openvswitch pacemaker passenger pcscd pegasus perdition pingd portmap portslave postfixpolicyd postgresql postgrey prelude procmail puppet pxe pyzor qemu qmail qpid quantum rabbitmq radius radvd razor realmd redis rsync samba samhain sanlock sasl sblim secadm shibboleth snort spamassassin squid stunnel svnserve sympa tftp tripwire uml uucp uwimap varnishd virt vmware wdmd webadm webalizer xen zabbix zarafa zebra"
+# dont need time sharing system daemons
+    notdefault="$notdefault comsat finger oident rwho slocate slrnpull uptime quota"
+  ;;
+  vm|container)
+# dont need hardware specific things for vms
+    notdefault="$notdefault acpi cdrecord fcoe iscsi isns openct raid rasdaemon tgtd tvtime vbetool"
+# dont need handset stuff
+    notdefault="$notdefault eg25manager feedbackd geoclue iiosensorproxy"
+  ;;
+  desktop)
+# dont need VM things
+    notdefault="$notdefault hypervkvp"
+# dont need portable stuff
+    notdefault="$notdefault geoclue"
+# dont need handset stuff
+    notdefault="$notdefault eg25manager feedbackd iiosensorproxy"
+  ;;
+  laptop|convertible)
+# dont need VM things
+    notdefault="$notdefault hypervkvp"
+# dont need handset stuff
+    notdefault="$notdefault eg25manager feedbackd"
+  ;;
+  server)
+# dont need handset stuff
+    notdefault="$notdefault eg25manager feedbackd iiosensorproxy"
+  ;;
+  *)
+    echo "Unknown output from hostnamectl or not running systemd"
+  ;;
+esac
 
 . /etc/selinux/config
 
@@ -97,11 +140,13 @@ case "$1" in
 		GOOD=$(mktemp)
 		grep -v ^/run $DIFF |grep -v ^/dev | grep "/.*/" > $GOOD || true
 		if [ -s $GOOD ]; then
+		    echo ""
 		    echo "Relabeling matches for the following file context changes:"
 		    cat $GOOD
-		    FILES=$(cat $GOOD | sed -e 's/(\.\*\/).*$//' -e 's/(.*$//' -e 's/\/[^/]*$//')
-		    echo The following directories: $FILES
-		    restorecon -R -v $FILES || echo "restorecon gave an error but package is still ok"
+		    echo ""
+		    DIRS=$(cat $GOOD | sed -e 's/(\.\*\/).*$//' -e 's/(.*$//' -e 's/\/[^/]*$//' -e 's/\/[0-9a-z]*\[.*$//' | sort -u | /usr/libexec/selinux/remove-leaf-dirs)
+		    echo The following directories: $DIRS
+		    restorecon -R -v $DIRS || echo "restorecon gave an error but package is still ok"
 		fi
 		rm $GOOD
 		PROB=$(mktemp)

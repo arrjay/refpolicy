@@ -1,16 +1,17 @@
-Index: refpolicy-2.20221101/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20240817/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20221101/policy/modules/kernel/corecommands.fc
-@@ -307,7 +307,6 @@ ifdef(`distro_debian',`
- /usr/sbin/sesh			--	gen_context(system_u:object_r:shell_exec_t,s0)
- /usr/sbin/smrsh			--	gen_context(system_u:object_r:shell_exec_t,s0)
+--- refpolicy-2.20240817.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20240817/policy/modules/kernel/corecommands.fc
+@@ -52,6 +52,8 @@ ifdef(`distro_redhat',`
+ /etc/kde/env(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ /etc/kde/shutdown(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
--/usr/share/mdadm/checkarray	--	gen_context(system_u:object_r:bin_t,s0)
- /usr/share/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
- /usr/share/ajaxterm/ajaxterm\.py.* --	gen_context(system_u:object_r:bin_t,s0)
- /usr/share/ajaxterm/qweb\.py.* --	gen_context(system_u:object_r:bin_t,s0)
-@@ -364,6 +363,7 @@ ifdef(`distro_debian',`
++/etc/letsencrypt/renewal-hooks/.* --	gen_context(system_u:object_r:bin_t,s0)
++
+ /etc/mail/make			--	gen_context(system_u:object_r:bin_t,s0)
+ 
+ /etc/mcelog/.*-trigger		--	gen_context(system_u:object_r:bin_t,s0)
+@@ -370,6 +372,7 @@ ifdef(`distro_debian',`
  /usr/share/texlive/texmf-dist/scripts/yplan/yplan -- gen_context(system_u:object_r:bin_t,s0)
  /usr/share/texmf-dist/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  /usr/share/turboprint/lib(/.*)?	--	gen_context(system_u:object_r:bin_t,s0)
@@ -18,39 +19,10 @@ Index: refpolicy-2.20221101/policy/modules/kernel/corecommands.fc
  /usr/share/vhostmd/scripts(/.*)?	gen_context(system_u:object_r:bin_t,s0)
  
  /usr/X11R6/lib(64)?/X11/xkb/xkbcomp --	gen_context(system_u:object_r:bin_t,s0)
-Index: refpolicy-2.20221101/policy/modules/kernel/devices.if
+Index: refpolicy-2.20240817/policy/modules/kernel/domain.if
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/devices.if
-+++ refpolicy-2.20221101/policy/modules/kernel/devices.if
-@@ -4388,6 +4388,24 @@ interface(`dev_remount_sysfs',`
- 
- ########################################
- ## <summary>
-+##     unmount a sysfs filesystem
-+## </summary>
-+## <param name="domain">
-+##     <summary>
-+##     Domain allowed access.
-+##     </summary>
-+## </param>
-+#
-+interface(`dev_unmount_sysfs',`
-+	gen_require(`
-+		type sysfs_t;
-+	')
-+
-+	allow $1 sysfs_t:filesystem unmount;
-+')
-+
-+########################################
-+## <summary>
- ##	Do not audit getting the attributes of sysfs filesystem
- ## </summary>
- ## <param name="domain">
-Index: refpolicy-2.20221101/policy/modules/kernel/domain.if
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/domain.if
-+++ refpolicy-2.20221101/policy/modules/kernel/domain.if
+--- refpolicy-2.20240817.orig/policy/modules/kernel/domain.if
++++ refpolicy-2.20240817/policy/modules/kernel/domain.if
 @@ -631,7 +631,7 @@ interface(`domain_read_all_domains_state
  
  ########################################
@@ -60,70 +32,11 @@ Index: refpolicy-2.20221101/policy/modules/kernel/domain.if
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-Index: refpolicy-2.20221101/policy/modules/kernel/files.if
+Index: refpolicy-2.20240817/policy/modules/system/authlogin.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/files.if
-+++ refpolicy-2.20221101/policy/modules/kernel/files.if
-@@ -5676,6 +5676,25 @@ interface(`files_delete_kernel_symbol_ta
- 
- ########################################
- ## <summary>
-+##	Delete a system.map in the /boot directory.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`files_mounton_kernel_symbol_table',`
-+	gen_require(`
-+		type boot_t, system_map_t;
-+	')
-+
-+	allow $1 boot_t:dir search_dir_perms;
-+	allow $1 system_map_t:file mounton_file_perms;
-+')
-+
-+########################################
-+## <summary>
- ##	Search the contents of /var.
- ## </summary>
- ## <param name="domain">
-Index: refpolicy-2.20221101/policy/modules/kernel/selinux.if
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/selinux.if
-+++ refpolicy-2.20221101/policy/modules/kernel/selinux.if
-@@ -159,6 +159,24 @@ interface(`selinux_unmount_fs',`
- 
- ########################################
- ## <summary>
-+##	Mount on the selinuxfs filesystem.
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`selinux_mounton_fs',`
-+	gen_require(`
-+		type security_t;
-+	')
-+
-+	allow $1 security_t:dir mounton_dir_perms;
-+')
-+
-+########################################
-+## <summary>
- ##	Get the attributes of the selinuxfs filesystem
- ## </summary>
- ## <param name="domain">
-Index: refpolicy-2.20221101/policy/modules/system/authlogin.te
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/authlogin.te
-+++ refpolicy-2.20221101/policy/modules/system/authlogin.te
-@@ -114,6 +114,7 @@ dontaudit chkpwd_t self:process getcap;
+--- refpolicy-2.20240817.orig/policy/modules/system/authlogin.te
++++ refpolicy-2.20240817/policy/modules/system/authlogin.te
+@@ -117,6 +117,7 @@ dontaudit chkpwd_t self:process getcap;
  allow chkpwd_t shadow_t:file read_file_perms;
  files_list_etc(chkpwd_t)
  
@@ -131,7 +44,7 @@ Index: refpolicy-2.20221101/policy/modules/system/authlogin.te
  kernel_dontaudit_search_kernel_sysctl(chkpwd_t)
  kernel_dontaudit_read_kernel_sysctl(chkpwd_t)
  kernel_dontaudit_getattr_proc(chkpwd_t)
-@@ -129,6 +130,7 @@ files_read_etc_files(chkpwd_t)
+@@ -132,6 +133,7 @@ files_read_etc_files(chkpwd_t)
  files_dontaudit_search_var(chkpwd_t)
  
  fs_dontaudit_getattr_xattr_fs(chkpwd_t)
@@ -139,53 +52,24 @@ Index: refpolicy-2.20221101/policy/modules/system/authlogin.te
  
  selinux_get_enforce_mode(chkpwd_t)
  
-Index: refpolicy-2.20221101/policy/modules/system/fstools.te
+Index: refpolicy-2.20240817/policy/modules/system/fstools.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/fstools.te
-+++ refpolicy-2.20221101/policy/modules/system/fstools.te
-@@ -161,6 +161,8 @@ miscfiles_read_localization(fsadm_t)
+--- refpolicy-2.20240817.orig/policy/modules/system/fstools.te
++++ refpolicy-2.20240817/policy/modules/system/fstools.te
+@@ -177,6 +177,8 @@ miscfiles_read_localization(fsadm_t)
  # for /run/mount/utab
- mount_getattr_runtime_files(fsadm_t)
+ mount_read_runtime_files(fsadm_t)
  
 +mount_rw_runtime_files(fsadm_t)
 +
  seutil_read_config(fsadm_t)
  
  userdom_use_user_terminals(fsadm_t)
-Index: refpolicy-2.20221101/policy/modules/system/init.if
+Index: refpolicy-2.20240817/policy/modules/system/init.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/init.if
-+++ refpolicy-2.20221101/policy/modules/system/init.if
-@@ -3645,6 +3645,24 @@ interface(`init_linkable_keyring',`
- 
- ########################################
- ## <summary>
-+##	stat systemd unit files
-+## </summary>
-+## <param name="domain">
-+##	<summary>
-+##	Domain allowed access.
-+##	</summary>
-+## </param>
-+#
-+interface(`init_getattr_all_unit_files',`
-+	gen_require(`
-+		attribute systemdunit;
-+	')
-+
-+	allow $1 systemdunit:file getattr;
-+')
-+
-+########################################
-+## <summary>
- ##      Allow unconfined access to send instructions to init
- ## </summary>
- ## <param name="domain">
-Index: refpolicy-2.20221101/policy/modules/system/init.te
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/init.te
-+++ refpolicy-2.20221101/policy/modules/system/init.te
-@@ -158,6 +158,9 @@ allow init_t self:capability2 { wake_ala
+--- refpolicy-2.20240817.orig/policy/modules/system/init.te
++++ refpolicy-2.20240817/policy/modules/system/init.te
+@@ -167,6 +167,9 @@ allow init_t self:capability2 { block_su
  
  allow init_t self:fifo_file rw_fifo_file_perms;
  
@@ -195,7 +79,7 @@ Index: refpolicy-2.20221101/policy/modules/system/init.te
  # Re-exec itself
  can_exec(init_t, init_exec_t)
  
-@@ -310,6 +313,9 @@ ifdef(`init_systemd',`
+@@ -327,6 +330,9 @@ ifdef(`init_systemd',`
  	# slices when containers are started and stopped
  	domain_setpriority_all_domains(init_t)
  
@@ -205,7 +89,7 @@ Index: refpolicy-2.20221101/policy/modules/system/init.te
  	allow init_t init_runtime_t:{ dir file } watch;
  	manage_files_pattern(init_t, init_runtime_t, init_runtime_t)
  	manage_lnk_files_pattern(init_t, init_runtime_t, init_runtime_t)
-@@ -1138,6 +1144,7 @@ ifdef(`init_systemd',`
+@@ -1178,6 +1184,7 @@ ifdef(`init_systemd',`
  	init_get_all_units_status(initrc_t)
  	init_manage_var_lib_files(initrc_t)
  	init_rw_stream_sockets(initrc_t)
@@ -213,33 +97,36 @@ Index: refpolicy-2.20221101/policy/modules/system/init.te
  
  	# Create /etc/audit.rules.prev after firstboot remediation
  	logging_manage_audit_config(initrc_t)
-Index: refpolicy-2.20221101/policy/modules/system/logging.te
+Index: refpolicy-2.20240817/policy/modules/system/logging.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/logging.te
-+++ refpolicy-2.20221101/policy/modules/system/logging.te
-@@ -528,7 +528,8 @@ ifdef(`init_systemd',`
- 	allow syslogd_t self:capability audit_control;
+--- refpolicy-2.20240817.orig/policy/modules/system/logging.te
++++ refpolicy-2.20240817/policy/modules/system/logging.te
+@@ -507,10 +507,10 @@ userdom_dontaudit_search_user_home_dirs(
+ 
+ ifdef(`init_systemd',`
+ 	# for systemd-journal
+-	allow syslogd_t self:capability audit_control;
  	allow syslogd_t self:netlink_audit_socket connected_socket_perms;
  	allow syslogd_t self:capability2 audit_read;
 -	allow syslogd_t self:capability { chown setgid setuid sys_ptrace };
 +	allow syslogd_t self:capability { chown setgid setuid sys_ptrace audit_control };
 +	allow syslogd_t self:cap_userns sys_ptrace;
- 	allow syslogd_t self:netlink_audit_socket { getattr getopt read setopt write nlmsg_write };
+ 	allow syslogd_t self:netlink_audit_socket { getattr getopt nlmsg_write read setopt write };
  
  	# remove /run/log/journal when switching to permanent storage
-@@ -547,6 +548,7 @@ ifdef(`init_systemd',`
+@@ -529,6 +529,7 @@ ifdef(`init_systemd',`
  
  	domain_getattr_all_domains(syslogd_t)
  	domain_read_all_domains_state(syslogd_t)
 +	domain_signull_all_domains(syslogd_t)
  
- 	init_create_runtime_dirs(syslogd_t)
- 	init_daemon_runtime_file(syslogd_runtime_t, dir, "syslogd")
-Index: refpolicy-2.20221101/policy/modules/system/lvm.te
+ 	fs_list_cgroup_dirs(syslogd_t)
+ 	fs_watch_memory_pressure(syslogd_t)
+Index: refpolicy-2.20240817/policy/modules/system/lvm.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/lvm.te
-+++ refpolicy-2.20221101/policy/modules/system/lvm.te
-@@ -238,6 +238,8 @@ optional_policy(`
+--- refpolicy-2.20240817.orig/policy/modules/system/lvm.te
++++ refpolicy-2.20240817/policy/modules/system/lvm.te
+@@ -243,6 +243,8 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -248,33 +135,32 @@ Index: refpolicy-2.20221101/policy/modules/system/lvm.te
  	dpkg_script_rw_pipes(lvm_t)
  ')
  
-Index: refpolicy-2.20221101/policy/modules/system/miscfiles.fc
+Index: refpolicy-2.20240817/policy/modules/system/miscfiles.fc
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/miscfiles.fc
-+++ refpolicy-2.20221101/policy/modules/system/miscfiles.fc
-@@ -14,6 +14,8 @@ ifdef(`distro_gentoo',`
+--- refpolicy-2.20240817.orig/policy/modules/system/miscfiles.fc
++++ refpolicy-2.20240817/policy/modules/system/miscfiles.fc
+@@ -12,6 +12,7 @@ ifdef(`distro_gentoo',`
+ /etc/httpd/alias/[^/]*\.db(\.[^/]*)* -- gen_context(system_u:object_r:cert_t,s0)
+ /etc/httpd/conf/ssl(/.*)?	--	gen_context(system_u:object_r:tls_privkey_t,s0)
+ /etc/httpd/conf/ssl/.*\.crt	--	gen_context(system_u:object_r:cert_t,s0)
++/etc/letsencrypt(/.*)?		gen_context(system_u:object_r:tls_privkey_t,s0)
+ /etc/localtime		--	gen_context(system_u:object_r:locale_t,s0)
  /etc/pki(/.*)?			gen_context(system_u:object_r:cert_t,s0)
  /etc/pki/.*/private(/.*)?	gen_context(system_u:object_r:tls_privkey_t,s0)
- /etc/ssl(/.*)?			gen_context(system_u:object_r:cert_t,s0)
-+/etc/ssl/private(/.*)?		gen_context(system_u:object_r:tls_privkey_t,s0)
-+/etc/letsencrypt(/.*)?		gen_context(system_u:object_r:tls_privkey_t,s0)
- /etc/timezone		--	gen_context(system_u:object_r:locale_t,s0)
- 
- ifdef(`distro_debian',`
-Index: refpolicy-2.20221101/policy/modules/system/modutils.te
+Index: refpolicy-2.20240817/policy/modules/system/modutils.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/modutils.te
-+++ refpolicy-2.20221101/policy/modules/system/modutils.te
+--- refpolicy-2.20240817.orig/policy/modules/system/modutils.te
++++ refpolicy-2.20240817/policy/modules/system/modutils.te
 @@ -33,7 +33,7 @@ ifdef(`init_systemd',`
  # insmod local policy
  #
  
 -allow kmod_t self:capability { dac_override net_raw sys_nice sys_tty_config };
 +allow kmod_t self:capability { dac_override dac_read_search net_raw sys_nice sys_tty_config };
- allow kmod_t self:process { execmem sigchld sigkill sigstop signull signal };
+ allow kmod_t self:process { execmem sigchld sigkill signal signull sigstop };
  # for the radeon/amdgpu modules
  dontaudit kmod_t self:capability sys_admin;
-@@ -109,6 +109,7 @@ init_use_script_ptys(kmod_t)
+@@ -110,6 +110,7 @@ init_use_script_ptys(kmod_t)
  logging_send_syslog_msg(kmod_t)
  logging_search_logs(kmod_t)
  
@@ -282,7 +168,7 @@ Index: refpolicy-2.20221101/policy/modules/system/modutils.te
  miscfiles_read_localization(kmod_t)
  
  seutil_read_file_contexts(kmod_t)
-@@ -140,6 +141,8 @@ optional_policy(`
+@@ -141,6 +142,8 @@ optional_policy(`
  	dpkg_manage_script_tmp_files(kmod_t)
  	dpkg_map_script_tmp_files(kmod_t)
  	dpkg_read_script_tmp_symlinks(kmod_t)
@@ -291,11 +177,20 @@ Index: refpolicy-2.20221101/policy/modules/system/modutils.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20221101/policy/modules/system/mount.te
+Index: refpolicy-2.20240817/policy/modules/system/mount.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/mount.te
-+++ refpolicy-2.20221101/policy/modules/system/mount.te
-@@ -229,6 +229,14 @@ optional_policy(`
+--- refpolicy-2.20240817.orig/policy/modules/system/mount.te
++++ refpolicy-2.20240817/policy/modules/system/mount.te
+@@ -105,6 +105,8 @@ files_dontaudit_write_all_mountpoints(mo
+ files_dontaudit_setattr_all_mountpoints(mount_t)
+ 
+ fs_getattr_all_fs(mount_t)
++fs_getattr_configfs_dirs(mount_t)
++fs_getattr_tracefs_dirs(mount_t)
+ fs_getattr_all_dirs(mount_t)
+ fs_mount_all_fs(mount_t)
+ fs_unmount_all_fs(mount_t)
+@@ -242,6 +244,14 @@ optional_policy(`
  	samba_run_smbmount(mount_t, mount_roles)
  ')
  
@@ -310,82 +205,40 @@ Index: refpolicy-2.20221101/policy/modules/system/mount.te
  ########################################
  #
  # Unconfined mount local policy
-Index: refpolicy-2.20221101/policy/modules/system/raid.fc
+Index: refpolicy-2.20240817/policy/modules/system/systemd.fc
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/raid.fc
-+++ refpolicy-2.20221101/policy/modules/system/raid.fc
-@@ -11,6 +11,8 @@
- /usr/bin/mdmpd	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
- /usr/bin/raid-check	--	gen_context(system_u:object_r:mdadm_exec_t,s0)
- 
-+/usr/share/mdadm/checkarray --	gen_context(system_u:object_r:mdadm_exec_t,s0)
-+
- # Systemd unit files
- /usr/lib/systemd/system/[^/]*mdadm-.*	--	gen_context(system_u:object_r:mdadm_unit_t,s0)
- /usr/lib/systemd/system/[^/]*mdmon.*	--	gen_context(system_u:object_r:mdadm_unit_t,s0)
-Index: refpolicy-2.20221101/policy/modules/system/raid.te
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/raid.te
-+++ refpolicy-2.20221101/policy/modules/system/raid.te
-@@ -55,6 +55,7 @@ dev_dontaudit_getattr_all_blk_files(mdad
- dev_dontaudit_getattr_all_chr_files(mdadm_t)
- dev_read_realtime_clock(mdadm_t)
- 
-+domain_dontaudit_search_all_domains_state(mdadm_t)
- domain_use_interactive_fds(mdadm_t)
- 
- files_read_etc_files(mdadm_t)
-@@ -91,6 +92,7 @@ userdom_dontaudit_search_user_home_conte
- 
- optional_policy(`
- 	cron_system_entry(mdadm_t, mdadm_exec_t)
-+	cron_rw_tmp_files(mdadm_t)
- ')
- 
- optional_policy(`
-Index: refpolicy-2.20221101/policy/modules/system/systemd.fc
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/systemd.fc
-+++ refpolicy-2.20221101/policy/modules/system/systemd.fc
-@@ -5,7 +5,6 @@
- 
+--- refpolicy-2.20240817.orig/policy/modules/system/systemd.fc
++++ refpolicy-2.20240817/policy/modules/system/systemd.fc
+@@ -6,7 +6,6 @@
  /run/log/journal(/.*)?				gen_context(system_u:object_r:systemd_journal_t,s0)
  
+ /usr/bin/journalctl				--	gen_context(system_u:object_r:systemd_journalctl_exec_t,s0)
 -/usr/bin/systemd-analyze		--	gen_context(system_u:object_r:systemd_analyze_exec_t,s0)
  /usr/bin/systemd-cgtop			--	gen_context(system_u:object_r:systemd_cgtop_exec_t,s0)
  /usr/bin/systemd-coredump		--	gen_context(system_u:object_r:systemd_coredump_exec_t,s0)
  /usr/bin/systemd-hwdb			--	gen_context(system_u:object_r:systemd_hw_exec_t,s0)
-Index: refpolicy-2.20221101/policy/modules/system/systemd.te
+Index: refpolicy-2.20240817/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20221101/policy/modules/system/systemd.te
-@@ -418,7 +418,7 @@ ifdef(`enable_mls',`
- # coredump local policy
- #
- 
--allow systemd_coredump_t self:capability { setgid setuid setpcap sys_ptrace };
-+allow systemd_coredump_t self:capability { dac_override dac_read_search setgid setuid setpcap sys_ptrace };
- allow systemd_coredump_t self:cap_userns { sys_admin sys_ptrace };
- allow systemd_coredump_t self:process { getcap setcap setfscreate };
- allow systemd_coredump_t self:unix_dgram_socket { create write connect getopt setopt };
-@@ -449,6 +449,7 @@ files_mounton_root(systemd_coredump_t)
- fs_getattr_xattr_fs(systemd_coredump_t)
+--- refpolicy-2.20240817.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20240817/policy/modules/system/systemd.te
+@@ -510,6 +510,7 @@ files_mounton_root(systemd_coredump_t)
+ fs_getattr_all_fs(systemd_coredump_t)
  fs_getattr_nsfs_files(systemd_coredump_t)
  fs_search_cgroup_dirs(systemd_coredump_t)
 +fs_search_tmpfs(systemd_coredump_t)
- fs_getattr_cgroup(systemd_coredump_t)
  
- selinux_getattr_fs(systemd_coredump_t)
-@@ -471,6 +472,8 @@ allow systemd_generator_t self:fifo_file
- allow systemd_generator_t self:capability { dac_override sys_admin };
- allow systemd_generator_t self:process setfscreate;
+ init_list_var_lib_dirs(systemd_coredump_t)
+ init_read_state(systemd_coredump_t)
+@@ -529,6 +530,8 @@ allow systemd_generator_t self:fifo_file
+ allow systemd_generator_t self:capability { dac_override sys_admin sys_resource };
+ allow systemd_generator_t self:process { getcap getsched setfscreate signal };
  
 +allow systemd_generator_t systemd_unit_t:file getattr;
 +
  corecmd_exec_shell(systemd_generator_t)
  corecmd_exec_bin(systemd_generator_t)
  
-@@ -483,6 +486,7 @@ files_read_etc_files(systemd_generator_t
+@@ -544,6 +547,7 @@ files_read_etc_runtime_files(systemd_gen
  files_search_runtime(systemd_generator_t)
  files_list_boot(systemd_generator_t)
  files_read_boot_files(systemd_generator_t)
@@ -393,7 +246,7 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  files_search_all_mountpoints(systemd_generator_t)
  files_list_usr(systemd_generator_t)
  files_dontaudit_getattr_all_dirs(systemd_generator_t)
-@@ -492,6 +496,8 @@ fs_list_efivars(systemd_generator_t)
+@@ -553,6 +557,8 @@ fs_list_efivars(systemd_generator_t)
  fs_getattr_all_fs(systemd_generator_t)
  
  init_create_runtime_files(systemd_generator_t)
@@ -402,7 +255,7 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  init_manage_runtime_dirs(systemd_generator_t)
  init_manage_runtime_symlinks(systemd_generator_t)
  init_read_runtime_files(systemd_generator_t)
-@@ -879,6 +885,7 @@ init_start_all_units(systemd_logind_t)
+@@ -999,6 +1005,7 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_start_system(systemd_logind_t)
  init_stop_system(systemd_logind_t)
@@ -410,35 +263,7 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  
  miscfiles_read_localization(systemd_logind_t)
  
-@@ -1167,6 +1174,9 @@ allow systemd_nspawn_t self:capability {
- allow systemd_nspawn_t self:capability2 wake_alarm;
- allow systemd_nspawn_t self:unix_dgram_socket connected_socket_perms;
- allow systemd_nspawn_t self:unix_stream_socket create_stream_socket_perms;
-+allow systemd_nspawn_t self:netlink_route_socket create_netlink_socket_perms;
-+allow systemd_nspawn_t self:netlink_generic_socket create_socket_perms;
-+allow systemd_nspawn_t self:udp_socket { create ioctl };
- 
- allow systemd_nspawn_t systemd_journal_t:dir search;
- 
-@@ -1203,6 +1213,9 @@ dev_getattr_fs(systemd_nspawn_t)
- dev_manage_sysfs_dirs(systemd_nspawn_t)
- dev_mounton_sysfs_dirs(systemd_nspawn_t)
- dev_mount_sysfs(systemd_nspawn_t)
-+dev_remount_sysfs(systemd_nspawn_t)
-+dev_unmount_sysfs(systemd_nspawn_t)
-+dev_read_sysfs(systemd_nspawn_t)
- dev_read_rand(systemd_nspawn_t)
- dev_read_urand(systemd_nspawn_t)
- 
-@@ -1215,6 +1228,7 @@ files_mounton_tmp(systemd_nspawn_t)
- files_read_kernel_symbol_table(systemd_nspawn_t)
- files_setattr_runtime_dirs(systemd_nspawn_t)
- 
-+fs_getattr_cgroup(systemd_nspawn_t)
- fs_getattr_tmpfs(systemd_nspawn_t)
- fs_manage_tmpfs_chr_files(systemd_nspawn_t)
- fs_mount_tmpfs(systemd_nspawn_t)
-@@ -1238,6 +1252,7 @@ init_write_runtime_socket(systemd_nspawn
+@@ -1416,6 +1423,7 @@ init_write_runtime_socket(systemd_nspawn
  init_spec_domtrans_script(systemd_nspawn_t)
  
  miscfiles_manage_localization(systemd_nspawn_t)
@@ -446,39 +271,16 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  
  # for writing inside chroot
  sysnet_manage_config(systemd_nspawn_t)
-@@ -1254,8 +1269,14 @@ tunable_policy(`systemd_nspawn_labeled_n
- 	# manage etc symlinks for /etc/localtime
- 	files_manage_etc_symlinks(systemd_nspawn_t)
- 	files_mounton_runtime_dirs(systemd_nspawn_t)
-+	files_mounton_kernel_symbol_table(systemd_nspawn_t)
- 	files_search_home(systemd_nspawn_t)
- 
-+	files_tmp_filetrans(systemd_nspawn_t, systemd_nspawn_runtime_t, fifo_file)
-+	allow systemd_nspawn_t systemd_nspawn_runtime_t:fifo_file manage_fifo_file_perms;
-+	fs_tmpfs_filetrans(systemd_nspawn_t, systemd_nspawn_runtime_t, sock_file)
-+	allow systemd_nspawn_t systemd_nspawn_runtime_t:sock_file manage_sock_file_perms;
-+
- 	fs_getattr_cgroup(systemd_nspawn_t)
- 	fs_manage_cgroup_dirs(systemd_nspawn_t)
- 	fs_manage_tmpfs_dirs(systemd_nspawn_t)
-@@ -1273,6 +1294,7 @@ tunable_policy(`systemd_nspawn_labeled_n
- 	selinux_getattr_fs(systemd_nspawn_t)
- 	selinux_remount_fs(systemd_nspawn_t)
- 	selinux_search_fs(systemd_nspawn_t)
-+	selinux_mounton_fs(systemd_nspawn_t)
- 
- 	init_domtrans(systemd_nspawn_t)
- 
-@@ -1300,7 +1322,7 @@ optional_policy(`
+@@ -1484,7 +1492,7 @@ optional_policy(`
  # systemd_passwd_agent_t local policy
  #
  
--allow systemd_passwd_agent_t self:capability { chown sys_tty_config dac_override };
-+allow systemd_passwd_agent_t self:capability { chown sys_tty_config dac_override sys_resource };
+-allow systemd_passwd_agent_t self:capability { chown dac_override sys_tty_config };
++allow systemd_passwd_agent_t self:capability { chown dac_override sys_tty_config sys_resource };
  allow systemd_passwd_agent_t self:process { setfscreate setsockcreate signal };
  allow systemd_passwd_agent_t self:unix_dgram_socket create_socket_perms;
  
-@@ -1311,14 +1333,19 @@ manage_sock_files_pattern(systemd_passwd
+@@ -1495,14 +1503,19 @@ manage_sock_files_pattern(systemd_passwd
  manage_fifo_files_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
  init_runtime_filetrans(systemd_passwd_agent_t, systemd_passwd_runtime_t, { dir fifo_file file })
  
@@ -498,7 +300,7 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  files_read_etc_files(systemd_passwd_agent_t)
  
  fs_getattr_xattr_fs(systemd_passwd_agent_t)
-@@ -1327,6 +1354,7 @@ selinux_get_enforce_mode(systemd_passwd_
+@@ -1511,6 +1524,7 @@ selinux_get_enforce_mode(systemd_passwd_
  selinux_getattr_fs(systemd_passwd_agent_t)
  
  term_read_console(systemd_passwd_agent_t)
@@ -506,16 +308,16 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  
  auth_use_nsswitch(systemd_passwd_agent_t)
  
-@@ -1385,7 +1413,7 @@ logging_send_syslog_msg(systemd_pstore_t
+@@ -1607,7 +1621,7 @@ logging_send_syslog_msg(systemd_pstore_t
  # Rfkill local policy
  #
  
--allow systemd_rfkill_t self:netlink_kobject_uevent_socket { bind create getattr read setopt };
+-allow systemd_rfkill_t self:netlink_kobject_uevent_socket { bind create getattr getopt read setopt };
 +allow systemd_rfkill_t self:netlink_kobject_uevent_socket create_socket_perms;
  
  manage_dirs_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
  manage_files_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_var_lib_t)
-@@ -1596,6 +1624,8 @@ allow systemd_tmpfiles_t systemd_tmpfile
+@@ -1824,6 +1838,8 @@ allow systemd_tmpfiles_t systemd_tmpfile
  allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:dir search_dir_perms;
  allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:file read_file_perms;
  
@@ -524,7 +326,7 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  kernel_getattr_proc(systemd_tmpfiles_t)
  kernel_read_kernel_sysctls(systemd_tmpfiles_t)
  kernel_read_network_state(systemd_tmpfiles_t)
-@@ -1912,6 +1942,8 @@ userdom_delete_all_user_runtime_chr_file
+@@ -2147,6 +2163,8 @@ userdom_delete_all_user_runtime_chr_file
  userdom_manage_user_tmp_dirs(systemd_user_runtime_dir_t)
  userdom_manage_user_tmp_files(systemd_user_runtime_dir_t)
  
@@ -533,11 +335,11 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
  userdom_search_user_runtime_root(systemd_user_runtime_dir_t)
  userdom_user_runtime_root_filetrans_user_runtime(systemd_user_runtime_dir_t, dir)
  userdom_manage_user_runtime_dirs(systemd_user_runtime_dir_t)
-Index: refpolicy-2.20221101/policy/modules/system/udev.te
+Index: refpolicy-2.20240817/policy/modules/system/udev.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/udev.te
-+++ refpolicy-2.20221101/policy/modules/system/udev.te
-@@ -401,6 +401,10 @@ dev_read_urand(udevadm_t)
+--- refpolicy-2.20240817.orig/policy/modules/system/udev.te
++++ refpolicy-2.20240817/policy/modules/system/udev.te
+@@ -418,6 +418,10 @@ dev_read_urand(udevadm_t)
  
  domain_use_interactive_fds(udevadm_t)
  
@@ -548,11 +350,11 @@ Index: refpolicy-2.20221101/policy/modules/system/udev.te
  files_read_etc_files(udevadm_t)
  files_read_usr_files(udevadm_t)
  
-Index: refpolicy-2.20221101/policy/modules/system/unconfined.te
+Index: refpolicy-2.20240817/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20221101/policy/modules/system/unconfined.te
-@@ -90,6 +90,10 @@ optional_policy(`
+--- refpolicy-2.20240817.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20240817/policy/modules/system/unconfined.te
+@@ -99,6 +99,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -563,30 +365,10 @@ Index: refpolicy-2.20221101/policy/modules/system/unconfined.te
  	cron_unconfined_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
  ')
  
-Index: refpolicy-2.20221101/policy/support/obj_perm_sets.spt
+Index: refpolicy-2.20240817/policy/modules/system/lvm.if
 ===================================================================
---- refpolicy-2.20221101.orig/policy/support/obj_perm_sets.spt
-+++ refpolicy-2.20221101/policy/support/obj_perm_sets.spt
-@@ -142,6 +142,7 @@ define(`manage_dir_perms',`{ create open
- define(`relabelfrom_dir_perms',`{ getattr relabelfrom }')
- define(`relabelto_dir_perms',`{ getattr relabelto }')
- define(`relabel_dir_perms',`{ getattr relabelfrom relabelto }')
-+define(`mounton_dir_perms',`{ getattr mounton }')
- 
- #
- # Regular file (file)
-@@ -170,6 +171,7 @@ define(`manage_file_perms',`{ create ope
- define(`relabelfrom_file_perms',`{ getattr relabelfrom }')
- define(`relabelto_file_perms',`{ getattr relabelto }')
- define(`relabel_file_perms',`{ getattr relabelfrom relabelto }')
-+define(`mounton_file_perms',`{ getattr mounton }')
- 
- #
- # Symbolic link (lnk_file)
-Index: refpolicy-2.20221101/policy/modules/system/lvm.if
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/lvm.if
-+++ refpolicy-2.20221101/policy/modules/system/lvm.if
+--- refpolicy-2.20240817.orig/policy/modules/system/lvm.if
++++ refpolicy-2.20240817/policy/modules/system/lvm.if
 @@ -61,6 +61,7 @@ interface(`lvm_run',`
  
  	lvm_domtrans($1)
@@ -595,10 +377,10 @@ Index: refpolicy-2.20221101/policy/modules/system/lvm.if
  ')
  
  ########################################
-Index: refpolicy-2.20221101/policy/modules/kernel/corenetwork.if.in
+Index: refpolicy-2.20240817/policy/modules/kernel/corenetwork.if.in
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/corenetwork.if.in
-+++ refpolicy-2.20221101/policy/modules/kernel/corenetwork.if.in
+--- refpolicy-2.20240817.orig/policy/modules/kernel/corenetwork.if.in
++++ refpolicy-2.20240817/policy/modules/kernel/corenetwork.if.in
 @@ -1440,10 +1440,10 @@ interface(`corenet_udp_bind_generic_port
  #
  interface(`corenet_tcp_connect_generic_port',`
@@ -612,11 +394,11 @@ Index: refpolicy-2.20221101/policy/modules/kernel/corenetwork.if.in
  ')
  
  ########################################
-Index: refpolicy-2.20221101/policy/modules/kernel/storage.fc
+Index: refpolicy-2.20240817/policy/modules/kernel/storage.fc
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/kernel/storage.fc
-+++ refpolicy-2.20221101/policy/modules/kernel/storage.fc
-@@ -32,6 +32,7 @@
+--- refpolicy-2.20240817.orig/policy/modules/kernel/storage.fc
++++ refpolicy-2.20240817/policy/modules/kernel/storage.fc
+@@ -33,6 +33,7 @@
  /dev/mmcblk.*		-b	gen_context(system_u:object_r:removable_device_t,s0)
  /dev/mmcblk.*		-c	gen_context(system_u:object_r:removable_device_t,s0)
  /dev/mspblk.*		-b	gen_context(system_u:object_r:removable_device_t,s0)
@@ -624,11 +406,11 @@ Index: refpolicy-2.20221101/policy/modules/kernel/storage.fc
  /dev/mtd.*		-b	gen_context(system_u:object_r:fixed_disk_device_t,mls_systemhigh)
  /dev/mtd.*		-c	gen_context(system_u:object_r:fixed_disk_device_t,mls_systemhigh)
  /dev/nb[^/]+		-b	gen_context(system_u:object_r:fixed_disk_device_t,mls_systemhigh)
-Index: refpolicy-2.20221101/policy/modules/system/iptables.te
+Index: refpolicy-2.20240817/policy/modules/system/iptables.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/iptables.te
-+++ refpolicy-2.20221101/policy/modules/system/iptables.te
-@@ -151,3 +151,7 @@ optional_policy(`
+--- refpolicy-2.20240817.orig/policy/modules/system/iptables.te
++++ refpolicy-2.20240817/policy/modules/system/iptables.te
+@@ -158,3 +158,7 @@ optional_policy(`
  	# this is for iptables_t to inherit a file handle from xen vif-bridge
  	udev_manage_runtime_files(iptables_t)
  ')
@@ -636,24 +418,19 @@ Index: refpolicy-2.20221101/policy/modules/system/iptables.te
 +optional_policy(`
 +	unconfined_use_fds(iptables_t)
 +')
-Index: refpolicy-2.20221101/policy/modules/services/rpc.te
+Index: refpolicy-2.20240817/policy/modules/system/fstools.fc
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/services/rpc.te
-+++ refpolicy-2.20221101/policy/modules/services/rpc.te
-@@ -306,7 +306,7 @@ optional_policy(`
- # NFSD local policy
- #
- 
--allow nfsd_t self:capability { dac_override dac_read_search sys_admin sys_resource };
-+allow nfsd_t self:capability { dac_override dac_read_search setpcap sys_admin sys_resource };
- 
- allow nfsd_t exports_t:file read_file_perms;
- allow nfsd_t { nfsd_rw_t nfsd_ro_t }:dir list_dir_perms;
-Index: refpolicy-2.20221101/policy/modules/system/fstools.fc
-===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/fstools.fc
-+++ refpolicy-2.20221101/policy/modules/system/fstools.fc
-@@ -73,6 +73,7 @@
+--- refpolicy-2.20240817.orig/policy/modules/system/fstools.fc
++++ refpolicy-2.20240817/policy/modules/system/fstools.fc
+@@ -2,6 +2,7 @@
+ /usr/bin/badblocks		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/blkid			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/blockdev		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
++/usr/bin/btrfs			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/cfdisk			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/clubufflush		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/delpart		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+@@ -73,6 +74,7 @@
  /usr/sbin/fatsort		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/sbin/fdisk			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/sbin/findfs		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
@@ -661,13 +438,22 @@ Index: refpolicy-2.20221101/policy/modules/system/fstools.fc
  /usr/sbin/fsck.*		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/sbin/gdisk			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/sbin/hdparm		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
-Index: refpolicy-2.20221101/policy/modules/admin/usermanage.te
+Index: refpolicy-2.20240817/policy/modules/admin/usermanage.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/admin/usermanage.te
-+++ refpolicy-2.20221101/policy/modules/admin/usermanage.te
-@@ -202,6 +202,10 @@ allow groupadd_t self:unix_stream_socket
- allow groupadd_t self:unix_dgram_socket sendto;
- allow groupadd_t self:unix_stream_socket connectto;
+--- refpolicy-2.20240817.orig/policy/modules/admin/usermanage.te
++++ refpolicy-2.20240817/policy/modules/admin/usermanage.te
+@@ -69,7 +69,7 @@ role useradd_roles types useradd_t;
+ # Chfn local policy
+ #
+ 
+-allow chfn_t self:capability { chown dac_override fsetid setgid setuid sys_resource };
++allow chfn_t self:capability { chown dac_override fsetid setgid setuid sys_ptrace sys_resource };
+ allow chfn_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh sigkill signal signull sigstop transition };
+ allow chfn_t self:fd use;
+ allow chfn_t self:fifo_file rw_fifo_file_perms;
+@@ -206,6 +206,10 @@ allow groupadd_t self:unix_stream_socket
+ kernel_read_kernel_sysctls(groupadd_t)
+ kernel_dontaudit_getattr_proc(groupadd_t)
  
 +kernel_getattr_proc(groupadd_t)
 +kernel_read_kernel_sysctls(groupadd_t)
@@ -676,3 +462,156 @@ Index: refpolicy-2.20221101/policy/modules/admin/usermanage.te
  fs_getattr_xattr_fs(groupadd_t)
  fs_search_auto_mountpoints(groupadd_t)
  
+Index: refpolicy-2.20240817/policy/modules/admin/netutils.te
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/admin/netutils.te
++++ refpolicy-2.20240817/policy/modules/admin/netutils.te
+@@ -161,7 +161,7 @@ optional_policy(`
+ 
+ allow traceroute_t self:capability { net_admin net_raw setgid setuid };
+ allow traceroute_t self:fifo_file rw_inherited_fifo_file_perms;
+-allow traceroute_t self:process signal;
++allow traceroute_t self:process { signal getsched };
+ allow traceroute_t self:netlink_generic_socket create_socket_perms;
+ allow traceroute_t self:rawip_socket create_socket_perms;
+ allow traceroute_t self:packet_socket { create_socket_perms map };
+Index: refpolicy-2.20240817/policy/modules/system/sysnetwork.te
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20240817/policy/modules/system/sysnetwork.te
+@@ -135,6 +135,7 @@ corenet_sendrecv_icmp_packets(dhcpc_t)
+ 
+ dev_read_sysfs(dhcpc_t)
+ # for SSP:
++dev_read_rand(dhcpc_t)
+ dev_read_urand(dhcpc_t)
+ 
+ domain_use_interactive_fds(dhcpc_t)
+Index: refpolicy-2.20240817/policy/modules/services/ssh.if
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/services/ssh.if
++++ refpolicy-2.20240817/policy/modules/services/ssh.if
+@@ -180,7 +180,7 @@ template(`ssh_server_template', `
+ 	##	Allow sshd to use remote port forwarding (bind to any TCP port)
+ 	## </p>
+ 	## </desc>
+-	gen_tunable($1_port_forwarding, false)
++	gen_tunable(`$1_port_forwarding', false)
+ 
+ 	type $1_t, ssh_server;
+ 	auth_login_pgm_domain($1_t)
+Index: refpolicy-2.20240817/policy/modules/kernel/devices.fc
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/kernel/devices.fc
++++ refpolicy-2.20240817/policy/modules/kernel/devices.fc
+@@ -66,6 +66,7 @@
+ /dev/loop-control	-c	gen_context(system_u:object_r:loop_control_device_t,s0)
+ /dev/lp.*		-c	gen_context(system_u:object_r:printer_device_t,s0)
+ /dev/mcelog		-c	gen_context(system_u:object_r:kmsg_device_t,mls_systemhigh)
++/dev/media[0-9]		-c	gen_context(system_u:object_r:v4l_device_t,s0)
+ /dev/mei[0-9]*	-c	gen_context(system_u:object_r:mei_device_t,s0)
+ /dev/mem		-c	gen_context(system_u:object_r:memory_device_t,mls_systemhigh)
+ /dev/memory_bandwidth	-c	gen_context(system_u:object_r:pmqos_device_t,s0)
+@@ -132,6 +133,7 @@
+ ifdef(`distro_suse', `
+ /dev/usbscanner		-c	gen_context(system_u:object_r:scanner_device_t,s0)
+ ')
++/dev/v4l-subdev[0-9]+	-c	gen_context(system_u:object_r:v4l_device_t,s0)
+ /dev/vbi.*		-c	gen_context(system_u:object_r:v4l_device_t,s0)
+ /dev/vbox.*		-c	gen_context(system_u:object_r:xserver_misc_device_t,s0)
+ /dev/vfio/.+		-c      gen_context(system_u:object_r:vfio_device_t,s0)
+Index: refpolicy-2.20240817/policy/modules/kernel/filesystem.te
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/kernel/filesystem.te
++++ refpolicy-2.20240817/policy/modules/kernel/filesystem.te
+@@ -281,6 +281,7 @@ type dosfs_t;
+ fs_noxattr_type(dosfs_t)
+ files_mountpoint(dosfs_t)
+ allow dosfs_t fs_t:filesystem associate;
++genfscon exfat / gen_context(system_u:object_r:dosfs_t,s0)
+ genfscon fat / gen_context(system_u:object_r:dosfs_t,s0)
+ genfscon hfs / gen_context(system_u:object_r:dosfs_t,s0)
+ genfscon hfsplus / gen_context(system_u:object_r:dosfs_t,s0)
+Index: refpolicy-2.20240817/policy/modules/kernel/filesystem.if
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20240817/policy/modules/kernel/filesystem.if
+@@ -2227,6 +2227,25 @@ interface(`fs_cifs_domtrans',`
+ ##	</summary>
+ ## </param>
+ #
++interface(`fs_getattr_configfs_dirs',`
++	gen_require(`
++		type configfs_t;
++	')
++
++	allow $1 configfs_t:dir getattr;
++')
++
++#######################################
++## <summary>
++##	Create, read, write, and delete dirs
++##	on a configfs filesystem.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
+ interface(`fs_manage_configfs_dirs',`
+ 	gen_require(`
+ 		type configfs_t;
+Index: refpolicy-2.20240817/policy/modules/services/iiosensorproxy.te
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/services/iiosensorproxy.te
++++ refpolicy-2.20240817/policy/modules/services/iiosensorproxy.te
+@@ -37,7 +37,8 @@ init_daemon_domain(iiosensorproxy_t, iio
+ # Local policy
+ #
+ 
+-allow iiosensorproxy_t self:netlink_kobject_uevent_socket { bind create getattr read setopt };
++dontaudit iiosensorproxy_t self:capability net_admin;
++allow iiosensorproxy_t self:netlink_kobject_uevent_socket { getopt bind create getattr read setopt };
+ allow iiosensorproxy_t self:process { getsched setsched };
+ allow iiosensorproxy_t self:unix_dgram_socket { create write };
+ 
+@@ -48,6 +49,8 @@ dev_read_iio(iiosensorproxy_t)
+ # for /sys/bus/iio/devices/* (which links to /sys/devices/pci*)
+ dev_read_sysfs(iiosensorproxy_t)
+ 
++dev_write_sysfs_dirs(iiosensorproxy_t)
++
+ # for writing to current_trigger and to enable devices
+ # /sys/devices/pci0000:00/0000:00:13.0/{33AECD58-B679-4E54-9BD9-A04D34F0C226}/001F:8087:0AC2.0005/HID-SENSOR-200083.21.auto/iio:device8/buffer/enable
+ dev_write_sysfs(iiosensorproxy_t)
+Index: refpolicy-2.20240817/policy/modules/services/plymouthd.te
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/services/plymouthd.te
++++ refpolicy-2.20240817/policy/modules/services/plymouthd.te
+@@ -59,11 +59,13 @@ manage_dirs_pattern(plymouthd_t, plymout
+ manage_files_pattern(plymouthd_t, plymouthd_runtime_t, plymouthd_runtime_t)
+ files_runtime_filetrans(plymouthd_t, plymouthd_runtime_t, { file dir })
+ 
++kernel_read_ring_buffer(plymouthd_t)
+ kernel_read_system_state(plymouthd_t)
+ kernel_request_load_module(plymouthd_t)
+ kernel_change_ring_buffer_level(plymouthd_t)
+ 
+ dev_rw_dri(plymouthd_t)
++dev_rw_kmsg(plymouthd_t)
+ dev_read_sysfs(plymouthd_t)
+ dev_read_framebuffer(plymouthd_t)
+ dev_write_framebuffer(plymouthd_t)
+Index: refpolicy-2.20240817/policy/modules/kernel/kernel.te
+===================================================================
+--- refpolicy-2.20240817.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20240817/policy/modules/kernel/kernel.te
+@@ -238,6 +238,7 @@ sid tcp_socket		gen_context(system_u:obj
+ #
+ 
+ allow kernel_t self:capability { audit_control audit_write chown dac_override dac_read_search fowner fsetid ipc_lock ipc_owner kill lease linux_immutable mknod net_admin net_bind_service net_broadcast net_raw setfcap setgid setpcap setuid sys_admin sys_boot sys_chroot sys_nice sys_pacct sys_ptrace sys_rawio sys_resource sys_time sys_tty_config };
++allow kernel_t self:capability2 checkpoint_restore;
+ allow kernel_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setkeycreate setpgid setsched setsockcreate share siginh signal_perms transition };
+ allow kernel_t self:shm create_shm_perms;
+ allow kernel_t self:sem create_sem_perms;

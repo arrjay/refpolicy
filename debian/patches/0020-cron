@@ -2,10 +2,10 @@ Description: cron patches
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2017-02-21
 
-Index: refpolicy-2.20221101/policy/modules/services/cron.if
+Index: refpolicy-2.20240629/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20221101/policy/modules/services/cron.if
+--- refpolicy-2.20240629.orig/policy/modules/services/cron.if
++++ refpolicy-2.20240629/policy/modules/services/cron.if
 @@ -21,23 +21,32 @@ template(`cron_common_crontab_template',
  	# Declarations
  	#
@@ -154,7 +154,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.if
  	#
  
 -	role $4 types { unconfined_cronjob_t crontab_t };
-+	role $4 types { unconfined_cronjob_t};
++	role $4 types { unconfined_cronjob_t };
  
  	##############################
  	#
@@ -164,7 +164,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.if
 -	domtrans_pattern($2, crontab_exec_t, crontab_t)
 +	can_exec($2, crontab_exec_t)
  
- 	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
+ 	dontaudit crond_t $2:process { noatsecure rlimitinh siginh };
  	allow $2 crond_t:process sigchld;
  
 -	allow $2 user_cron_spool_t:file rw_inherited_file_perms;
@@ -228,7 +228,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.if
  	##############################
  	#
 @@ -276,7 +239,7 @@ template(`cron_admin_role',`
- 	dontaudit crond_t $2:process { noatsecure siginh rlimitinh };
+ 	dontaudit crond_t $2:process { noatsecure rlimitinh siginh };
  	allow $2 crond_t:process sigchld;
  
 -	allow $2 user_cron_spool_t:file rw_inherited_file_perms;
@@ -333,10 +333,10 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.if
  
  	files_search_spool($1)
  	admin_pattern($1, cron_spool_type)
-Index: refpolicy-2.20221101/policy/modules/services/cron.te
+Index: refpolicy-2.20240629/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20221101/policy/modules/services/cron.te
+--- refpolicy-2.20240629.orig/policy/modules/services/cron.te
++++ refpolicy-2.20240629/policy/modules/services/cron.te
 @@ -25,15 +25,6 @@ gen_tunable(cron_can_relabel, false)
  ##	the generic cronjob domain.
  ##	</p>
@@ -380,7 +380,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
  
  type system_cron_spool_t, cron_spool_type;
  files_type(system_cron_spool_t)
-@@ -105,21 +91,9 @@ files_tmp_file(system_cronjob_tmp_t)
+@@ -104,21 +90,9 @@ files_tmp_file(system_cronjob_tmp_t)
  type system_cronjob_var_lib_t;
  files_type(system_cronjob_var_lib_t)
  
@@ -402,7 +402,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
  ')
  
  ##############################
-@@ -131,9 +105,6 @@ allow crontab_domain self:capability { c
+@@ -130,9 +104,6 @@ allow crontab_domain self:capability { c
  allow crontab_domain self:process { getcap setsched signal_perms };
  allow crontab_domain self:fifo_file rw_fifo_file_perms;
  
@@ -412,7 +412,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
  allow crontab_domain cron_spool_t:dir setattr_dir_perms;
  
  allow crontab_domain crond_t:process signal;
-@@ -174,38 +145,14 @@ userdom_manage_user_tmp_dirs(crontab_dom
+@@ -173,38 +144,14 @@ userdom_manage_user_tmp_dirs(crontab_dom
  userdom_manage_user_tmp_files(crontab_domain)
  userdom_use_user_terminals(crontab_domain)
  
@@ -451,17 +451,17 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
 -dontaudit crond_t self:capability { net_admin sys_resource sys_tty_config };
 +dontaudit crond_t self:capability { net_admin sys_tty_config };
  
- allow crond_t self:process { transition signal_perms getsched setsched getsession getpgid setpgid getcap setcap share getattr setexec setfscreate noatsecure siginh setrlimit rlimitinh dyntransition setkeycreate setsockcreate getrlimit };
+ allow crond_t self:process { dyntransition getattr getcap getpgid getrlimit getsched getsession noatsecure rlimitinh setcap setexec setfscreate setkeycreate setpgid setrlimit setsched setsockcreate share siginh signal_perms transition };
  allow crond_t self:fd use;
-@@ -219,6 +166,7 @@ allow crond_t self:msg { send receive };
- allow crond_t self:key { search write link };
+@@ -218,6 +165,7 @@ allow crond_t self:msg { receive send };
+ allow crond_t self:key { link search write };
  dontaudit crond_t self:netlink_audit_socket nlmsg_tty_audit;
  
 +allow crond_t cron_spool_type:file read_file_perms;
  allow crond_t cron_log_t:file { append_file_perms create_file_perms setattr_file_perms };
  logging_log_filetrans(crond_t, cron_log_t, file)
  
-@@ -237,18 +185,11 @@ read_files_pattern(crond_t, system_cron_
+@@ -236,18 +184,11 @@ read_files_pattern(crond_t, system_cron_
  allow crond_t system_cron_spool_t:dir watch;
  allow crond_t system_cron_spool_t:file watch;
  
@@ -476,12 +476,12 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
  allow crond_t system_cronjob_t:fd use;
  allow crond_t system_cronjob_t:key manage_key_perms;
  
--dontaudit crond_t { cronjob_t system_cronjob_t }:process { noatsecure siginh rlimitinh };
-+dontaudit crond_t { system_cronjob_t }:process { noatsecure siginh rlimitinh };
+-dontaudit crond_t { cronjob_t system_cronjob_t }:process { noatsecure rlimitinh siginh };
++dontaudit crond_t { system_cronjob_t }:process { noatsecure rlimitinh siginh };
  
  domtrans_pattern(crond_t, anacron_exec_t, system_cronjob_t)
  
-@@ -316,16 +257,6 @@ miscfiles_read_localization(crond_t)
+@@ -315,16 +256,6 @@ miscfiles_read_localization(crond_t)
  
  userdom_list_user_home_dirs(crond_t)
  
@@ -498,7 +498,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
  ifdef(`distro_debian',`
  	allow crond_t self:process setrlimit;
  
-@@ -352,12 +283,6 @@ tunable_policy(`allow_polyinstantiation'
+@@ -351,12 +282,6 @@ tunable_policy(`allow_polyinstantiation'
  	files_polyinstantiate_all(crond_t)
  ')
  
@@ -511,7 +511,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
  optional_policy(`
  	apache_search_sys_content(crond_t)
  ')
-@@ -689,106 +614,3 @@ optional_policy(`
+@@ -687,106 +612,3 @@ optional_policy(`
  	userdom_manage_user_tmp_dirs(system_cronjob_t)
  ')
  
@@ -520,7 +520,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
 -# Cronjob local policy
 -#
 -
--allow cronjob_t self:process { signal_perms setsched };
+-allow cronjob_t self:process { setsched signal_perms };
 -allow cronjob_t self:fifo_file rw_fifo_file_perms;
 -allow cronjob_t self:unix_stream_socket create_stream_socket_perms;
 -allow cronjob_t self:unix_dgram_socket create_socket_perms;
@@ -603,7 +603,7 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
 -domain_type(unconfined_cronjob_t)
 -domain_cron_exemption_target(unconfined_cronjob_t)
 -
--dontaudit crond_t unconfined_cronjob_t:process { noatsecure siginh rlimitinh };
+-dontaudit crond_t unconfined_cronjob_t:process { noatsecure rlimitinh siginh };
 -
 -tunable_policy(`cron_userdomain_transition',`
 -	dontaudit crond_t unconfined_cronjob_t:process transition;
@@ -618,10 +618,10 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.te
 -optional_policy(`
 -	unconfined_domain(unconfined_cronjob_t)
 -')
-Index: refpolicy-2.20221101/policy/modules/services/cron.fc
+Index: refpolicy-2.20240629/policy/modules/services/cron.fc
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/services/cron.fc
-+++ refpolicy-2.20221101/policy/modules/services/cron.fc
+--- refpolicy-2.20240629.orig/policy/modules/services/cron.fc
++++ refpolicy-2.20240629/policy/modules/services/cron.fc
 @@ -7,21 +7,14 @@
  /usr/bin/at	--	gen_context(system_u:object_r:crontab_exec_t,s0)
  /usr/bin/atd	--	gen_context(system_u:object_r:crond_exec_t,s0)
@@ -675,11 +675,11 @@ Index: refpolicy-2.20221101/policy/modules/services/cron.fc
  ifdef(`distro_debian',`
  /var/spool/cron/atjobs	-d	gen_context(system_u:object_r:cron_spool_t,s0)
  /var/spool/cron/atjobs/[^/]*	--	<<none>>
-Index: refpolicy-2.20221101/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20240629/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20221101/policy/modules/roles/sysadm.te
-@@ -1269,7 +1269,7 @@ ifndef(`distro_redhat',`
+--- refpolicy-2.20240629.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20240629/policy/modules/roles/sysadm.te
+@@ -1290,7 +1290,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -688,11 +688,11 @@ Index: refpolicy-2.20221101/policy/modules/roles/sysadm.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20221101/policy/modules/system/unconfined.te
+Index: refpolicy-2.20240629/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20221101/policy/modules/system/unconfined.te
-@@ -94,7 +94,7 @@ optional_policy(`
+--- refpolicy-2.20240629.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20240629/policy/modules/system/unconfined.te
+@@ -103,7 +103,7 @@ optional_policy(`
  ')
  
  optional_policy(`

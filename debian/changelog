@@ -1,3 +1,176 @@
+refpolicy (2:2.20240830-1) unstable; urgency=medium
+
+  * Latest git policy, mostly container related changes
+  * allow fwupd to write to fixed disks and fwupdmgr to dbus talk to network
+    manager
+  * Allow systemd_nspawn_t to sendto it's own unix dgram sockets, search
+    autofs mounts, and write to systemd notify socket
+  * Give ndc_t access to anon_inode and io_uring
+  * Label shared objects under /opt/brother/scanner/brscan5/ as lib_t
+  * Added label for /usr/libexec/qemu/qemu-bridge-helper for version
+    1:9.0.2+ds-2 of qemu-system-common
+  * Allow fwupd_t to get it's scheduling, create udp sockets, and read sysnet config
+  * Allow rasdaemon to write sysfs files for
+    /sys/devices/system/memory/soft_offline_page
+  * Allow bubblewrap domains to read sysctl_t for max_user_namespaces
+  * Label /usr/sbin/fsidd as nfsd_exec_t
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 30 Aug 2024 13:31:54 +1000
+
+refpolicy (2:2.20240723-2) unstable; urgency=medium
+
+  * Allow chromium_t execheap access which Chrome now needs, presumably for
+    JIT
+  * Allow systemd_coredump_t to read cgroup dirs.  Dontaudit it for sys_admin
+    capability
+  * Allow all users to chat to fprintd via dbus
+  * Allow boinc_t self getsched
+  * Allow mysqld to read/write memory_pressure_t files
+  * Label /usr/lib/openssh/sshd-session as sshd_exec_t for openssh-server >=
+    1:9.8p1-1
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 01 Aug 2024 22:30:43 +1000
+
+refpolicy (2:2.20240723-1) unstable; urgency=medium
+
+  * Latest git policy which reorders many process permissions so lots of
+    patches needed changes.  Also added haproxy module
+  * Label btrfs utility as fsadm_exec_t
+  * Changed to debhelper-compat in build-depends
+  * Allow virtd_t anon_inode access, to read cpuid, to watch etc dirs, also
+    allow it to read vm sysctls
+  * Allow virtlockd_t and virtlogd_t to self getsched, to create unix dgram
+    sockets, to read sysfs files, to read kernel sysfs files, stat /proc, and
+    log to syslogd
+  * Allow systemd_generator_t to create vsock_socket objects
+  * Added some policy for fprintd_t
+  * Label nm-dispatcher as NetworkManager_exec_t
+  * Allow user_systemd_t etc to do netlink_route_socket operations (needed for
+    KDE login)
+  * Allow systemd_logind_t to search it's own proc dirs
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 26 Jul 2024 08:34:15 +1000
+
+refpolicy (2:2.20240607-1) unstable; urgency=medium
+
+  * Latest git policy with patches needed for latest systemd
+  * Allow apt to setattr it's lib dirs, map it's cache, getsched for itself,
+    and manage apt_tmp_t link files
+    Allow apt to read init state for ischroot
+  * dontaudit apt net_admin because of buffer tweaking
+  * Allow dpkg_script_t to map the man cache, read the apt cache, watch
+    passwd runtime dirs, sys_resource capability, setrlimit, getattr procfs,
+    relabel non auth files, read fonts, stat tmpfs, and be a system bus client
+  * Allow dpkg and dpkg_script_t to read selinux status and file contexts
+  * Allow apt_t to receive logind fds and write to logind pipes
+  * Allow plymouth_t the checkpoint_restore and to signal init
+  * Allow systemd_backlight_t to talk to polkit and unconfined domains via
+    dbus, and read localisation files
+  * Made /usr/lib/kauth/libexec/backlighthelper run in systemd_backlight_t
+  * Allow networkmanager to watch it's main config dir
+  * Allow systemd_t to send dgrams to itself - needed for GUI login with
+    latest systemd setup.  Allow it to statfs /proc and stat /usr files
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 12 Jun 2024 11:50:27 +1000
+
+refpolicy (2:2.20240415-1) unstable; urgency=medium
+
+  * Latest git policy, works with latest systemd
+  * Allow eg25manager_t to use pipes
+  * Allow kernel_t the new capability2 checkpoint_restore permission
+  * Added label for/var/lib/phog - xdm greeter
+  * Added labels for ms-edge
+  * Include module iiosensorproxy for laptops as touch screens need it
+  * Allow systemd_locale_t to read SE Linux config
+  * Give unconfined domains the checkpoint_restore capability
+  * Allow devicekit_disk_t to read generic certificates
+  * Allow local_login_t to receive file handles from systemd-logind, and read
+    apt db
+  * Allow sshd to stat the systemd notify socket
+  * Allow systemd_resolved to write to systemd notify socket
+  * Allow users anon_inode { create read write map } for user mysql etc
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 18 Apr 2024 16:38:02 +1000
+
+refpolicy (2:2.20240202-1) unstable; urgency=medium
+
+  * label /run/boltd
+  * label /etc/letsencrypt/renewal-hooks files as bin_t
+  * Add label for /usr/lib/chromium/chrome_crashpad_handler
+  * Enabled module hostapd
+  * Changed fwupd policy to have a separate domain for fwupdmgr
+  * Lots of policy needed to support login with the latest systemd-user
+  * Latest git policy
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 02 Feb 2024 16:55:45 +1100
+
+refpolicy (2:2.20231119-2) unstable; urgency=medium
+
+  * Allow initrc_t to mounton memory_pressure_t files
+    Hopefully the last thing needed to make the latest systemd work correctly
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 19 Nov 2023 22:39:04 +1100
+
+refpolicy (2:2.20231119-1) unstable; urgency=medium
+
+  * new git ver
+  * systemd 255~rc2-1 in unstable uses initrc_t to launch daemons so needed
+    transition rules for that, initrc_t needs to watch unallocated ttys as
+    part of the getty launch operation, and it needs nnp_transition to all
+    daemon domains for the combination of systemd restrictions on privileges
+    and SE Linux domain transition.
+    Also domains need access to unix_stream_socket file handles created by
+    initrc_t.
+    Systemd versions after 254.5-1 break badly without this.
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 19 Nov 2023 17:27:44 +1100
+
+refpolicy (2:2.20231010-1) unstable; urgency=medium
+
+  * new git ver
+  * Added more checks for "hostnamectl chassis" output, conainer is vm,
+    convertible/watch/embedded are considered as handset for now, and server
+    has an entry.
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 22 Oct 2023 15:31:53 +1100
+
+refpolicy (2:2.20230929-1) unstable; urgency=medium
+
+  * new git ver
+  * Upstream merged powerprofiles and rasdaemon and anti-spam and motd patches
+  * Changed preinst to work when /etc/selinux/config doesn't exist
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 29 Sep 2023 01:15:21 +1000
+
+refpolicy (2:2.20230919-1) unstable; urgency=medium
+
+  * new git ver
+  * Upstream merged eg25manager, iiosensorproxy, lowmemorymonitor, switcheroo,
+    and thunderbolt
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 19 Sep 2023 15:01:19 +1000
+
+refpolicy (2:2.20230821-1) unstable; urgency=medium
+
+  * new git ver
+  * Add policy for Mobian
+    Allow system_r:init_t:s0 to transition to user context xdm_r:xdm_t:s0 for
+    systemd --user
+    Add consolesetup, eg25manager, feedbackd, geoclue, and iiosensorproxy
+    policy modules for Mobian
+    Lots of other policy changes related to Mobian
+  * Added msdos_t label for exfat
+  * Add bubblewrap, container, and docker modules
+    Consider bubblewrap exerimental at this time
+  * Add support for relabelling files on policy package changes to file
+    contexts, made the policy packages depend on policycoreutils >= 3.5-2 for
+    /usr/libexec/selinux/remove-leaf-dirs
+  * Use -19 and -T0 for zstd for policy source
+  * Use "hostnamectl chassis" to determine list of default policy modules,
+    exclude many things from "handset".
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 26 Aug 2023 12:54:10 +1000
+
 refpolicy (2:2.20221101-10) unstable; urgency=medium
 
   * Team upload.

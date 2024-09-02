@@ -1,7 +1,7 @@
-Index: refpolicy-2.20221101/policy/modules/system/init.if
+Index: refpolicy-2.20240817/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/init.if
-+++ refpolicy-2.20221101/policy/modules/system/init.if
+--- refpolicy-2.20240817.orig/policy/modules/system/init.if
++++ refpolicy-2.20240817/policy/modules/system/init.if
 @@ -178,7 +178,11 @@ interface(`init_domain',`
  
  	role system_r types $1;
@@ -15,11 +15,11 @@ Index: refpolicy-2.20221101/policy/modules/system/init.if
  
  	allow init_t $1:process rlimitinh;
  
-Index: refpolicy-2.20221101/policy/modules/system/fstools.te
+Index: refpolicy-2.20240817/policy/modules/system/fstools.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/fstools.te
-+++ refpolicy-2.20221101/policy/modules/system/fstools.te
-@@ -162,6 +162,11 @@ init_dontaudit_getattr_initctl(fsadm_t)
+--- refpolicy-2.20240817.orig/policy/modules/system/fstools.te
++++ refpolicy-2.20240817/policy/modules/system/fstools.te
+@@ -170,6 +170,11 @@ init_dontaudit_getattr_initctl(fsadm_t)
  init_read_state(fsadm_t)
  init_rw_script_stream_sockets(fsadm_t)
  
@@ -31,11 +31,11 @@ Index: refpolicy-2.20221101/policy/modules/system/fstools.te
  logging_send_syslog_msg(fsadm_t)
  
  miscfiles_read_localization(fsadm_t)
-Index: refpolicy-2.20221101/policy/modules/system/sysnetwork.te
+Index: refpolicy-2.20240817/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20221101/policy/modules/system/sysnetwork.te
-@@ -358,6 +358,11 @@ files_dontaudit_read_root_files(ifconfig
+--- refpolicy-2.20240817.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20240817/policy/modules/system/sysnetwork.te
+@@ -365,6 +365,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
  
@@ -47,10 +47,10 @@ Index: refpolicy-2.20221101/policy/modules/system/sysnetwork.te
  logging_send_syslog_msg(ifconfig_t)
  
  miscfiles_read_localization(ifconfig_t)
-Index: refpolicy-2.20221101/config/appconfig-mcs/default_contexts
+Index: refpolicy-2.20240817/config/appconfig-mcs/default_contexts
 ===================================================================
---- refpolicy-2.20221101.orig/config/appconfig-mcs/default_contexts
-+++ refpolicy-2.20221101/config/appconfig-mcs/default_contexts
+--- refpolicy-2.20240817.orig/config/appconfig-mcs/default_contexts
++++ refpolicy-2.20240817/config/appconfig-mcs/default_contexts
 @@ -2,7 +2,7 @@ system_r:crond_t:s0		user_r:user_t:s0 st
  system_r:init_t:s0		user_r:user_systemd_t:s0 staff_r:staff_systemd_t:s0 sysadm_r:sysadm_systemd_t:s0 unconfined_r:unconfined_t:s0
  system_r:local_login_t:s0	user_r:user_t:s0 staff_r:staff_t:s0 sysadm_r:sysadm_t:s0 unconfined_r:unconfined_t:s0
@@ -60,11 +60,11 @@ Index: refpolicy-2.20221101/config/appconfig-mcs/default_contexts
  system_r:sulogin_t:s0		sysadm_r:sysadm_t:s0
  system_r:xdm_t:s0		user_r:user_t:s0 staff_r:staff_t:s0 sysadm_r:sysadm_t:s0 unconfined_r:unconfined_t:s0
  
-Index: refpolicy-2.20221101/Makefile
+Index: refpolicy-2.20240817/Makefile
 ===================================================================
---- refpolicy-2.20221101.orig/Makefile
-+++ refpolicy-2.20221101/Makefile
-@@ -244,6 +244,7 @@ M4PARAM += -D mls_num_sens=$(MLS_SENS) -
+--- refpolicy-2.20240817.orig/Makefile
++++ refpolicy-2.20240817/Makefile
+@@ -256,6 +256,7 @@ M4PARAM += -D mls_num_sens=$(MLS_SENS) -
  # differently on different distros
  ifeq ($(DISTRO),debian)
  	CTAGS := ctags-exuberant
@@ -72,11 +72,11 @@ Index: refpolicy-2.20221101/Makefile
  endif
  
  ifeq ($(DISTRO),gentoo)
-Index: refpolicy-2.20221101/policy/modules/system/systemd.te
+Index: refpolicy-2.20240817/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20221101/policy/modules/system/systemd.te
-@@ -2174,3 +2174,7 @@ optional_policy(`
+--- refpolicy-2.20240817.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20240817/policy/modules/system/systemd.te
+@@ -2410,3 +2410,7 @@ optional_policy(`
  optional_policy(`
  	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
  ')
@@ -84,11 +84,11 @@ Index: refpolicy-2.20221101/policy/modules/system/systemd.te
 +optional_policy(`
 +	userdom_unlink_user_tmp_devices(systemd_user_runtime_dir_t)
 +')
-Index: refpolicy-2.20221101/policy/modules/system/userdomain.if
+Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20221101/policy/modules/system/userdomain.if
-@@ -4775,6 +4775,25 @@ interface(`userdom_dontaudit_write_user_
+--- refpolicy-2.20240817.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20240817/policy/modules/system/userdomain.if
+@@ -4877,6 +4877,25 @@ interface(`userdom_dontaudit_write_user_
  
  ########################################
  ## <summary>
@@ -114,27 +114,11 @@ Index: refpolicy-2.20221101/policy/modules/system/userdomain.if
  ##	Do not audit attempts to use user ttys.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20221101/policy/modules/services/mta.if
+Index: refpolicy-2.20240817/policy/modules/services/mta.if
 ===================================================================
---- refpolicy-2.20221101.orig/policy/modules/services/mta.if
-+++ refpolicy-2.20221101/policy/modules/services/mta.if
-@@ -186,11 +186,15 @@ interface(`mta_admin_role',`
- 		attribute_role admin_mail_roles;
- 		type admin_mail_t, sendmail_exec_t, mail_home_t;
- 		type user_mail_tmp_t, mail_home_rw_t;
-+		type system_mail_t;
- 	')
- 	mta_base_role($1, $2)
- 
- 	roleattribute $1 admin_mail_roles;
- 
-+	# maybe not ideal but needed for exim postinst in Debian
-+	role $1 types system_mail_t;
-+
- 	domtrans_pattern($2, sendmail_exec_t, admin_mail_t)
- 	allow $2 sendmail_exec_t:lnk_file read_lnk_file_perms;
- 
-@@ -1280,3 +1284,22 @@ interface(`mta_rw_user_mail_stream_socke
+--- refpolicy-2.20240817.orig/policy/modules/services/mta.if
++++ refpolicy-2.20240817/policy/modules/services/mta.if
+@@ -1237,3 +1237,22 @@ interface(`mta_rw_user_mail_stream_socke
  
  	allow $1 user_mail_domain:unix_stream_socket rw_socket_perms;
  ')
