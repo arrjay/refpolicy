@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 apt-get update
-apt-get -y install build-essential debhelper devscripts \
+apt-get -y install build-essential debhelper devscripts zip \
   checkpolicy gawk policycoreutils policycoreutils-python-utils
 
 dch -U --noquery -v "2:${VERSION_TAG}" "automatic build"
