@@ -16,6 +16,7 @@ jobs:
       env:
         DISTRO: debian:bookworm
     steps:
+      - users: actions/checkout@v4
       - name: Build Debian Package
         run: bash .github/workflows/build-dpkg
       - name: Attach Package to Release
