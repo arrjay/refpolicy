@@ -1,6 +1,7 @@
 name: Build tests
 
-on: [push, pull_request]
+on:
+  workflow_call:
 
 env:
   # Minimum versions to build refpolicy.
