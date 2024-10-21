@@ -4,7 +4,7 @@ apt-get update
 apt-get -y install build-essential debhelper devscripts zip \
   checkpolicy gawk policycoreutils policycoreutils-python-utils
 
-dch -U --noquery -v "2:${VERSION_TAG}" "automatic build"
+dch -U --noquery -b -v "2:${VERSION_TAG}" "automatic build"
 debuild -b -uc -us
 mkdir /output
 mv ../*.deb /output
