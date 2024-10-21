@@ -1,0 +1,27 @@
+name: Build OS package
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  VERSION_TAG: ${{ startsWith(github.event.ref, 'refs/tags/') && github.ref_name || format('0.{0}', github.run_number) }}  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+      env:
+        DISTRO: debian:bookworm
+    steps:
+      - name: Build Debian Package
+        run: bash .github/workflows/build-dpkg
+      - name: Attach Package to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /output/packages.zip
+          asset_name: ${{ github.event.repository.name }}-debian-bookworm.zip
+          tag: ${{ github.ref }}
