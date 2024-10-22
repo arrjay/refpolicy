@@ -22,3 +22,4 @@ thunderbolt
 4000-bubblewrap
 5000-buildfail
 trixie
+8000-dracut-kmod

@@ -1,0 +1,16 @@
+diff --git a/policy/modules/system/modutils.te b/policy/modules/system/modutils.te
+index ce5e3c4b7..657580630 100644
+--- a/policy/modules/system/modutils.te
++++ b/policy/modules/system/modutils.te
+@@ -122,6 +122,11 @@ userdom_use_user_terminals(kmod_t)
+ 
+ userdom_dontaudit_search_user_home_dirs(kmod_t)
+ 
++userdom_manage_user_tmp_files(kmod_t)
++userdom_manage_user_tmp_pipes(kmod_t)
++userdom_manage_user_tmp_symlinks(kmod_t)
++userdom_manage_user_tmp_dirs(kmod_t)
++
+ ifdef(`init_systemd',`
+ 	# for /run/tmpfiles.d/kmod.conf
+ 	allow kmod_t kmod_tmpfiles_conf_t:file manage_file_perms;
