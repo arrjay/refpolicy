@@ -18,3 +18,4 @@ thunderbolt
 4000-bubblewrap
 8000-dracut-kmod
 8001-systemd-networkd
+8002-firewalld
