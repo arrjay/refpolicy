@@ -1,5 +1,5 @@
 diff --git a/policy/modules/services/firewalld.te b/policy/modules/services/firewalld.te
-index e686270b1..5fad73585 100644
+index e686270b1..62cc3e728 100644
 --- a/policy/modules/services/firewalld.te
 +++ b/policy/modules/services/firewalld.te
 @@ -62,6 +62,7 @@ files_runtime_filetrans(firewalld_t, firewalld_runtime_t, { dir file })
@@ -10,12 +10,15 @@ index e686270b1..5fad73585 100644
  mmap_read_files_pattern(firewalld_t, firewalld_tmpfs_t, firewalld_tmpfs_t)
  fs_tmpfs_filetrans(firewalld_t, firewalld_tmpfs_t, { dir file })
  
-@@ -96,6 +97,8 @@ seutil_read_file_contexts(firewalld_t)
- 
- sysnet_read_config(firewalld_t)
- 
-+dontaudit firewalld_t user_home_dir_t:dir search;
-+
+@@ -123,3 +124,11 @@ optional_policy(`
  optional_policy(`
- 	dbus_system_domain(firewalld_t, firewalld_exec_t)
- 
+ 	networkmanager_read_state(firewalld_t)
+ ')
++
++optional_policy(`
++	gen_require(`
++		type user_home_dir_t;
++	')
++
++	dontaudit firewalld_t user_home_dir_t:dir search;
++')
