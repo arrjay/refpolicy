@@ -1,0 +1,29 @@
+diff --git a/policy/modules/services/plymouthd.te b/policy/modules/services/plymouthd.te
+index 2756067e8..f6e08dad7 100644
+--- a/policy/modules/services/plymouthd.te
++++ b/policy/modules/services/plymouthd.te
+@@ -33,7 +33,7 @@ logging_log_file(plymouthd_var_log_t)
+ # Daemon local policy
+ #
+ 
+-allow plymouthd_t self:capability { sys_admin sys_tty_config };
++allow plymouthd_t self:capability { sys_admin sys_chroot sys_tty_config };
+ dontaudit plymouthd_t self:capability { dac_override net_admin };
+ allow plymouthd_t self:capability2 { checkpoint_restore block_suspend };
+ allow plymouthd_t self:process { getsched signal };
+@@ -131,12 +131,15 @@ term_use_console(plymouth_t)
+ term_use_ptmx(plymouth_t)
+ 
+ init_signal(plymouth_t)
++init_signal(plymouthd_t)
+ init_use_fds(plymouth_t)
+ 
+ miscfiles_read_localization(plymouth_t)
+ 
+ sysnet_read_config(plymouth_t)
+ 
++fs_search_tmpfs(plymouth_t)
++
+ optional_policy(`
+ 	lvm_domtrans(plymouth_t)
+ ')
