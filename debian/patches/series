@@ -17,3 +17,4 @@ thunderbolt
 3000-bookworm
 4000-bubblewrap
 8000-dracut-kmod
+8001-systemd-networkd

@@ -1,0 +1,15 @@
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 23669467c..507f8d660 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -1466,6 +1466,10 @@ tunable_policy(`systemd_networkd_dhcp_server',`
+ optional_policy(`
+ 	dbus_system_bus_client(systemd_networkd_t)
+ 	dbus_connect_system_bus(systemd_networkd_t)
++	# this allows handoff to systemd-networkd-dispatcher today, but that may also be running in the wrong context.
++	init_dbus_send_script(systemd_networkd_t)
++	# this seems to be from runing networkctl status
++	unconfined_dbus_send(systemd_networkd_t)
+ 	dbus_watch_system_bus_runtime_dirs(systemd_networkd_t)
+ 	dbus_watch_system_bus_runtime_named_sockets(systemd_networkd_t)
+ 
