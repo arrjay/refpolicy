@@ -1,0 +1,22 @@
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 507f8d660..f7600abd1 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -593,6 +593,9 @@ allow systemd_generator_t systemd_user_runtime_unit_t:dir manage_dir_perms;
+ allow systemd_generator_t systemd_user_runtime_unit_t:file manage_file_perms;
+ allow systemd_generator_t systemd_user_runtime_unit_t:lnk_file create;
+ 
++# this is needed to get autorelabel back off the root disk today...
++files_read_default_files(systemd_generator_t)
++
+ kernel_dontaudit_getattr_proc(systemd_generator_t)
+ kernel_read_crypto_sysctls(systemd_generator_t)
+ kernel_read_kernel_sysctls(systemd_generator_t)
+@@ -906,6 +909,7 @@ optional_policy(`
+ 	dbus_connect_system_bus(systemd_hostnamed_t)
+ 	dbus_system_bus_client(systemd_hostnamed_t)
+ 	init_dbus_chat(systemd_hostnamed_t)
++	init_dbus_chat_script(systemd_hostnamed_t)
+ ')
+ 
+ optional_policy(`
