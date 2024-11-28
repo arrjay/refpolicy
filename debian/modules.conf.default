@@ -2267,6 +2267,13 @@ tvtime = module
 tzdata = module
 
 # Layer: contrib
+# Module: ucarp
+#
+# Port of OpenBSD CARP virtual IP handler to Linux
+#
+ucarp = module
+
+# Layer: contrib
 # Module: ucspitcp
 #
 # UNIX Client-Server Program Interface for TCP.
