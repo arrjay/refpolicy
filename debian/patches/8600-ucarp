@@ -1,0 +1,117 @@
+diff --git a/policy/modules/services/ucarp.fc b/policy/modules/services/ucarp.fc
+new file mode 100644
+index 000000000..9c78a6cd3
+--- /dev/null
++++ b/policy/modules/services/ucarp.fc
+@@ -0,0 +1 @@
++/usr/sbin/ucarp		--	gen_context(system_u:object_r:ucarp_exec_t,s0)
+diff --git a/policy/modules/services/ucarp.if b/policy/modules/services/ucarp.if
+new file mode 100644
+index 000000000..081576395
+--- /dev/null
++++ b/policy/modules/services/ucarp.if
+@@ -0,0 +1,40 @@
++
++## <summary>policy for ucarp</summary>
++
++########################################
++## <summary>
++##	Execute ucarp_exec_t in the ucarp domain.
++## </summary>
++## <param name="domain">
++## <summary>
++##	Domain allowed to transition.
++## </summary>
++## </param>
++#
++interface(`ucarp_domtrans',`
++	gen_require(`
++		type ucarp_t, ucarp_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	domtrans_pattern($1, ucarp_exec_t, ucarp_t)
++')
++
++######################################
++## <summary>
++##	Execute ucarp in the caller domain.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`ucarp_exec',`
++	gen_require(`
++		type ucarp_exec_t;
++	')
++
++	corecmd_search_bin($1)
++	can_exec($1, ucarp_exec_t)
++')
+diff --git a/policy/modules/services/ucarp.te b/policy/modules/services/ucarp.te
+new file mode 100644
+index 000000000..ee775e0de
+--- /dev/null
++++ b/policy/modules/services/ucarp.te
+@@ -0,0 +1,58 @@
++policy_module(ucarp, 1.0.0)
++
++########################################
++#
++# Declarations
++#
++
++type ucarp_t;
++type ucarp_exec_t;
++init_daemon_domain(ucarp_t, ucarp_exec_t)
++
++########################################
++#
++# ucarp local policy
++#
++allow ucarp_t self:process { fork };
++allow ucarp_t self:fifo_file rw_fifo_file_perms;
++allow ucarp_t self:unix_stream_socket create_stream_socket_perms;
++
++domain_use_interactive_fds(ucarp_t)
++
++files_read_etc_files(ucarp_t)
++
++logging_send_syslog_msg(ucarp_t)
++
++miscfiles_read_localization(ucarp_t)
++
++# currently we've handed ucarp any shell script, it's not specific.
++optional_policy(`
++	corecmd_exec_all_executables(ucarp_t)
++')
++
++optional_policy(`
++	init_read_state(ucarp_t)
++	init_unix_stream_socket_connectto(ucarp_t)
++	init_manage_all_units(ucarp_t)
++	dev_read_sysfs(ucarp_t)
++')
++
++optional_policy(`
++	gen_require(`
++		type lib_t;
++	')
++	allow ucarp_t lib_t:file execute_no_trans;
++')
++
++optional_policy(`
++	gen_require(`
++		type proc_t;
++	')
++	allow ucarp_t proc_t:file read_file_perms;
++')
++
++allow ucarp_t self:capability { net_admin net_raw };
++allow ucarp_t self:netlink_generic_socket { create_socket_perms };
++allow ucarp_t self:netlink_route_socket { create_netlink_socket_perms };
++allow ucarp_t self:packet_socket { create_socket_perms map };
++allow ucarp_t self:udp_socket { create_socket_perms };
