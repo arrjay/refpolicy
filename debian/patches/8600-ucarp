@@ -53,10 +53,10 @@ index 000000000..081576395
 +')
 diff --git a/policy/modules/services/ucarp.te b/policy/modules/services/ucarp.te
 new file mode 100644
-index 000000000..ee775e0de
+index 000000000..b37706672
 --- /dev/null
 +++ b/policy/modules/services/ucarp.te
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,67 @@
 +policy_module(ucarp, 1.0.0)
 +
 +########################################
@@ -109,6 +109,15 @@ index 000000000..ee775e0de
 +	')
 +	allow ucarp_t proc_t:file read_file_perms;
 +')
++
++# you may *not* load kernel modules
++optional_policy(`
++	gen_require(`
++		type kernel_t;
++	')
++	dontaudit ucarp_t kernel_t:system module_request;
++')
++dontaudit ucarp_t self:capability sys_module;
 +
 +allow ucarp_t self:capability { net_admin net_raw };
 +allow ucarp_t self:netlink_generic_socket { create_socket_perms };
