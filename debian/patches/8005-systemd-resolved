@@ -1,0 +1,12 @@
+diff --git a/policy/modules/system/systemd.fc b/policy/modules/system/systemd.fc
+index d9a08113a..0df2e53e1 100644
+--- a/policy/modules/system/systemd.fc
++++ b/policy/modules/system/systemd.fc
+@@ -105,6 +105,7 @@ HOME_DIR/\.local/share/systemd(/.*)?		gen_context(system_u:object_r:systemd_data
+ 
+ /run/systemd/ask-password(/.*)?	gen_context(system_u:object_r:systemd_passwd_runtime_t,s0)
+ /run/systemd/ask-password-block(/.*)?	gen_context(system_u:object_r:systemd_passwd_runtime_t,s0)
++/run/systemd/dnssd(/.*)?  gen_context(system_u:object_r:systemd_resolved_runtime_t,s0)
+ /run/systemd/home(/.*)?         gen_context(system_u:object_r:systemd_homed_runtime_t,s0)
+ /run/systemd/network(/.*)?  gen_context(system_u:object_r:systemd_networkd_runtime_t,s0)
+ /run/systemd/notify		-s	gen_context(system_u:object_r:systemd_runtime_notify_t,s0)
