@@ -22,4 +22,5 @@ thunderbolt
 8003-plymouth
 8004-systemd
 8005-systemd-resolved
+8006-systemd-binfmt
 8600-ucarp

@@ -1,0 +1,14 @@
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index f7600abd1..39c6c06f4 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -477,6 +477,9 @@ corecmd_read_bin_files(systemd_binfmt_t)
+ # Allow to read /etc/binfmt.d/ files
+ files_read_etc_files(systemd_binfmt_t)
+ 
++# Allow to read other shipped binfmt.d files in usr
++files_read_usr_files(systemd_binfmt_t)
++
+ fs_register_binary_executable_type(systemd_binfmt_t)
+ 
+ fs_getattr_binfmt_misc_fs(systemd_binfmt_t)
