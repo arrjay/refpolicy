@@ -1,9 +1,11 @@
+cups-reduce
 0000-seusers-sddm
 newsystemd
 thunderbolt
 0001-Make-default-and-root-mcs-seusers-unconfined.patch
 0002-strict
 0004-fwupd
+0005-needrestart
 0005-latest
 0009-misc-kernel-system
 0020-cron
@@ -16,3 +18,4 @@ thunderbolt
 2000-hacks
 3000-bookworm
 4000-bubblewrap
+5000-buildfail

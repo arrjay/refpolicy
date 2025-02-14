@@ -1,7 +1,7 @@
-Index: refpolicy-2.20240817/policy/modules/apps/wm.if
+Index: refpolicy-2.20250122/policy/modules/apps/wm.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/apps/wm.if
-+++ refpolicy-2.20240817/policy/modules/apps/wm.if
+--- refpolicy-2.20250122.orig/policy/modules/apps/wm.if
++++ refpolicy-2.20250122/policy/modules/apps/wm.if
 @@ -58,12 +58,15 @@ template(`wm_role_template',`
  	allow $3 $1_wm_t:fd use;
  
@@ -28,7 +28,7 @@ Index: refpolicy-2.20240817/policy/modules/apps/wm.if
  	mls_file_read_all_levels($1_wm_t)
  	mls_file_write_all_levels($1_wm_t)
  	mls_xwin_read_all_levels($1_wm_t)
-@@ -95,10 +100,16 @@ template(`wm_role_template',`
+@@ -97,10 +102,16 @@ template(`wm_role_template',`
  
  	wm_write_pipes($1, $3)
  
@@ -45,7 +45,7 @@ Index: refpolicy-2.20240817/policy/modules/apps/wm.if
  
  		optional_policy(`
  			wm_dbus_chat($1, $3)
-@@ -140,6 +151,17 @@ template(`wm_role_template',`
+@@ -142,6 +153,17 @@ template(`wm_role_template',`
  	optional_policy(`
  		xdg_watch_config_files($1_wm_t)
  	')
@@ -63,11 +63,11 @@ Index: refpolicy-2.20240817/policy/modules/apps/wm.if
  ')
  
  ########################################
-Index: refpolicy-2.20240817/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20250122/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20240817/policy/modules/kernel/corecommands.fc
-@@ -265,6 +265,7 @@ ifdef(`distro_gentoo',`
+--- refpolicy-2.20250122.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20250122/policy/modules/kernel/corecommands.fc
+@@ -266,6 +266,7 @@ ifdef(`distro_gentoo',`
  /usr/lib/xfce4/session/xfsm-shutdown-helper -- gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/xfce4/xfconf/xfconfd	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/xfce4/xfwm4/helper-dialog --	gen_context(system_u:object_r:bin_t,s0)
@@ -75,10 +75,10 @@ Index: refpolicy-2.20240817/policy/modules/kernel/corecommands.fc
  
  ifdef(`distro_debian',`
  /usr/lib/[^/]+/tumbler-1/tumblerd --	gen_context(system_u:object_r:bin_t,s0)
-Index: refpolicy-2.20240817/policy/modules/system/unconfined.if
+Index: refpolicy-2.20250122/policy/modules/system/unconfined.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/unconfined.if
-+++ refpolicy-2.20240817/policy/modules/system/unconfined.if
+--- refpolicy-2.20250122.orig/policy/modules/system/unconfined.if
++++ refpolicy-2.20250122/policy/modules/system/unconfined.if
 @@ -39,6 +39,7 @@ interface(`unconfined_domain_noaudit',`
  	allow $1 self:{ capability cap_userns } { audit_control audit_write chown dac_override dac_read_search fowner fsetid ipc_lock ipc_owner kill lease linux_immutable mknod net_admin net_bind_service net_broadcast net_raw setfcap setgid setpcap setuid sys_admin sys_boot sys_chroot sys_nice sys_pacct sys_ptrace sys_rawio sys_resource sys_time sys_tty_config };
  	allow $1 self:{ capability2 cap2_userns } { bpf perfmon syslog wake_alarm checkpoint_restore };
@@ -87,23 +87,23 @@ Index: refpolicy-2.20240817/policy/modules/system/unconfined.if
  
  	# Manage most namespace capabilities
  	allow $1 self:user_namespace create;
-@@ -55,6 +56,12 @@ interface(`unconfined_domain_noaudit',`
+@@ -57,6 +58,12 @@ interface(`unconfined_domain_noaudit',`
+ 	allow $1 self:anon_inode { create map read write };
  
  	# used by Chrome for some reason
- 	allow $1 self:dir manage_dir_perms;
++	allow $1 self:dir manage_dir_perms;
 +
 +	# for io_uring
 +	allow $1 self:anon_inode { create map read write };
 +
 +	# used by Chrome for some reason
-+	allow $1 self:dir manage_dir_perms;
+ 	allow $1 self:dir manage_dir_perms;
  
  	# for io_uring
- 	allow $1 self:anon_inode { create map read write };
-Index: refpolicy-2.20240817/policy/modules/apps/gnome.if
+Index: refpolicy-2.20250122/policy/modules/apps/gnome.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/apps/gnome.if
-+++ refpolicy-2.20240817/policy/modules/apps/gnome.if
+--- refpolicy-2.20250122.orig/policy/modules/apps/gnome.if
++++ refpolicy-2.20250122/policy/modules/apps/gnome.if
 @@ -114,6 +114,10 @@ template(`gnome_role_template',`
  		')
  
@@ -137,10 +137,10 @@ Index: refpolicy-2.20240817/policy/modules/apps/gnome.if
 +
 +	allow $1 gnome_xdg_config_t:dir watch;
 +')
-Index: refpolicy-2.20240817/policy/modules/services/xserver.if
+Index: refpolicy-2.20250122/policy/modules/services/xserver.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/services/xserver.if
-+++ refpolicy-2.20240817/policy/modules/services/xserver.if
+--- refpolicy-2.20250122.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20250122/policy/modules/services/xserver.if
 @@ -224,7 +224,7 @@ template(`xserver_role',`
  
  	xserver_read_xkb_libs($2)
@@ -150,11 +150,11 @@ Index: refpolicy-2.20240817/policy/modules/services/xserver.if
  
  	optional_policy(`
  		systemd_user_app_status($1, xserver_t)
-Index: refpolicy-2.20240817/policy/modules/system/miscfiles.if
+Index: refpolicy-2.20250122/policy/modules/system/miscfiles.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/miscfiles.if
-+++ refpolicy-2.20240817/policy/modules/system/miscfiles.if
-@@ -653,6 +653,7 @@ interface(`miscfiles_watch_localization'
+--- refpolicy-2.20250122.orig/policy/modules/system/miscfiles.if
++++ refpolicy-2.20250122/policy/modules/system/miscfiles.if
+@@ -694,6 +694,7 @@ interface(`miscfiles_watch_localization'
  		type locale_t;
  	')
  
@@ -162,10 +162,10 @@ Index: refpolicy-2.20240817/policy/modules/system/miscfiles.if
  	allow $1 locale_t:file watch;
  ')
  
-Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
+Index: refpolicy-2.20250122/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20240817/policy/modules/system/userdomain.if
+--- refpolicy-2.20250122.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250122/policy/modules/system/userdomain.if
 @@ -122,6 +122,8 @@ template(`userdom_base_user_template',`
  	miscfiles_read_generic_certs($1_t)
  	miscfiles_watch_fonts_dirs($1_t)
@@ -210,7 +210,7 @@ Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
  	')
  
  	optional_policy(`
-@@ -1611,6 +1618,8 @@ template(`userdom_xdg_user_template',`
+@@ -1612,6 +1619,8 @@ template(`userdom_xdg_user_template',`
  	xdg_manage_all_data($1_t)
  	xdg_relabel_all_data($1_t)
  	xdg_watch_all_data_dirs($1_t)
@@ -219,7 +219,7 @@ Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
  
  	xdg_generic_user_home_dir_filetrans_cache($1_t, dir, ".cache")
  	xdg_generic_user_home_dir_filetrans_config($1_t, dir, ".config")
-@@ -3771,6 +3780,24 @@ interface(`userdom_delete_user_runtime_f
+@@ -3872,6 +3881,24 @@ interface(`userdom_delete_user_runtime_f
  
  ########################################
  ## <summary>
@@ -244,7 +244,7 @@ Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
  ##	Search users runtime directories.
  ## </summary>
  ## <param name="domain">
-@@ -4152,6 +4179,24 @@ interface(`userdom_manage_user_tmpfs_fil
+@@ -4253,6 +4280,24 @@ interface(`userdom_manage_user_tmpfs_fil
  ')
  
  ########################################
@@ -269,10 +269,10 @@ Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
  ## <summary>
  ##	Get the attributes of a user domain tty.
  ## </summary>
-Index: refpolicy-2.20240817/policy/modules/apps/pulseaudio.te
+Index: refpolicy-2.20250122/policy/modules/apps/pulseaudio.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/apps/pulseaudio.te
-+++ refpolicy-2.20240817/policy/modules/apps/pulseaudio.te
+--- refpolicy-2.20250122.orig/policy/modules/apps/pulseaudio.te
++++ refpolicy-2.20250122/policy/modules/apps/pulseaudio.te
 @@ -135,6 +135,8 @@ dev_rw_dri(pulseaudio_t)
  dev_read_video_dev(pulseaudio_t)
  dev_write_video_dev(pulseaudio_t)
@@ -282,7 +282,7 @@ Index: refpolicy-2.20240817/policy/modules/apps/pulseaudio.te
  files_read_usr_files(pulseaudio_t)
  files_map_usr_files(pulseaudio_t)
  
-@@ -254,6 +256,7 @@ optional_policy(`
+@@ -255,6 +257,7 @@ optional_policy(`
  	systemd_read_logind_sessions_files(pulseaudio_t)
  	# for /run/systemd/users/$PID
  	systemd_read_logind_runtime_files(pulseaudio_t)
@@ -290,10 +290,10 @@ Index: refpolicy-2.20240817/policy/modules/apps/pulseaudio.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20240817/policy/modules/system/xdg.if
+Index: refpolicy-2.20250122/policy/modules/system/xdg.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/xdg.if
-+++ refpolicy-2.20240817/policy/modules/system/xdg.if
+--- refpolicy-2.20250122.orig/policy/modules/system/xdg.if
++++ refpolicy-2.20250122/policy/modules/system/xdg.if
 @@ -729,6 +729,24 @@ interface(`xdg_watch_data_dirs',`
  
  ########################################
@@ -369,10 +369,10 @@ Index: refpolicy-2.20240817/policy/modules/system/xdg.if
  ## <summary>
  ##	Allow relabeling the xdg data home files, regardless of their type
  ## </summary>
-Index: refpolicy-2.20240817/policy/modules/apps/wm.te
+Index: refpolicy-2.20250122/policy/modules/apps/wm.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/apps/wm.te
-+++ refpolicy-2.20240817/policy/modules/apps/wm.te
+--- refpolicy-2.20250122.orig/policy/modules/apps/wm.te
++++ refpolicy-2.20250122/policy/modules/apps/wm.te
 @@ -7,6 +7,14 @@ policy_module(wm)
  
  attribute wm_domain;
@@ -388,10 +388,10 @@ Index: refpolicy-2.20240817/policy/modules/apps/wm.te
  type wm_exec_t;
  corecmd_executable_file(wm_exec_t)
  
-Index: refpolicy-2.20240817/policy/modules/apps/chromium.te
+Index: refpolicy-2.20250122/policy/modules/apps/chromium.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/apps/chromium.te
-+++ refpolicy-2.20240817/policy/modules/apps/chromium.te
+--- refpolicy-2.20250122.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20250122/policy/modules/apps/chromium.te
 @@ -283,6 +283,7 @@ optional_policy(`
  
  	optional_policy(`
@@ -400,10 +400,10 @@ Index: refpolicy-2.20240817/policy/modules/apps/chromium.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20240817/policy/modules/services/xserver.fc
+Index: refpolicy-2.20250122/policy/modules/services/xserver.fc
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/services/xserver.fc
-+++ refpolicy-2.20240817/policy/modules/services/xserver.fc
+--- refpolicy-2.20250122.orig/policy/modules/services/xserver.fc
++++ refpolicy-2.20250122/policy/modules/services/xserver.fc
 @@ -37,6 +37,7 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
  /etc/kde[34]?/kdm/backgroundrc	gen_context(system_u:object_r:xdm_var_run_t,s0)
  
@@ -412,42 +412,51 @@ Index: refpolicy-2.20240817/policy/modules/services/xserver.fc
  /etc/sddm/Xsession	--	gen_context(system_u:object_r:xsession_exec_t,s0)
  
  /etc/X11/[wx]dm/Xreset.* --	gen_context(system_u:object_r:xsession_exec_t,s0)
-@@ -87,6 +88,8 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
+@@ -46,6 +47,8 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
+ /etc/X11/wdm/Xstartup.*	--	gen_context(system_u:object_r:xsession_exec_t,s0)
+ /etc/X11/Xsession[^/]*	--	gen_context(system_u:object_r:xsession_exec_t,s0)
+ 
++/etc/xdg/Xwayland-session.d/.* -- gen_context(system_u:object_r:xsession_exec_t,s0)
++
+ #
+ # /opt
+ #
+@@ -87,6 +90,8 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
  /usr/lib/xorg-server/Xorg	--	gen_context(system_u:object_r:xserver_exec_t,s0)
  /usr/lib/xorg-server/Xorg\.wrap	--	gen_context(system_u:object_r:xserver_exec_t,s0)
  /usr/lib/X11/xdm/Xsession	--	gen_context(system_u:object_r:xsession_exec_t,s0)
 +/usr/lib/[^/]*/sddm/sddm-helper-start-wayland -- gen_context(system_u:object_r:xsession_exec_t,s0)
 +/usr/lib/[^/]*/sddm/sddm-helper-start-x11user -- gen_context(system_u:object_r:xsession_exec_t,s0)
  
- /usr/sbin/[xkw]dm	--	gen_context(system_u:object_r:xdm_exec_t,s0)
- /usr/sbin/gdm(3)?	--	gen_context(system_u:object_r:xdm_exec_t,s0)
-Index: refpolicy-2.20240817/config/appconfig-mcs/xdm_default_contexts
+ /usr/libexec/gdm-runtime-config --	gen_context(system_u:object_r:xdm_exec_t,s0)
+ /usr/libexec/gnome-remote-desktop-daemon --	gen_context(system_u:object_r:xdm_exec_t,s0)
+Index: refpolicy-2.20250122/config/appconfig-mcs/xdm_default_contexts
 ===================================================================
---- refpolicy-2.20240817.orig/config/appconfig-mcs/xdm_default_contexts
-+++ refpolicy-2.20240817/config/appconfig-mcs/xdm_default_contexts
+--- refpolicy-2.20250122.orig/config/appconfig-mcs/xdm_default_contexts
++++ refpolicy-2.20250122/config/appconfig-mcs/xdm_default_contexts
 @@ -1 +1,2 @@
 -system_r:xdm_t:s0		system_r:xdm_t:s0
 +system_r:xdm_t:s0		xdm_r:xdm_t:s0
 +system_r:init_t:s0		xdm_r:xdm_t:s0
-Index: refpolicy-2.20240817/config/appconfig-mls/xdm_default_contexts
+Index: refpolicy-2.20250122/config/appconfig-mls/xdm_default_contexts
 ===================================================================
---- refpolicy-2.20240817.orig/config/appconfig-mls/xdm_default_contexts
-+++ refpolicy-2.20240817/config/appconfig-mls/xdm_default_contexts
+--- refpolicy-2.20250122.orig/config/appconfig-mls/xdm_default_contexts
++++ refpolicy-2.20250122/config/appconfig-mls/xdm_default_contexts
 @@ -1 +1,2 @@
 -system_r:xdm_t:s0		system_r:xdm_t:s0
 +system_r:xdm_t:s0		xdm_r:xdm_t:s0
 +system_r:init_t:s0		xdm_r:xdm_t:s0
-Index: refpolicy-2.20240817/config/appconfig-standard/xdm_default_contexts
+Index: refpolicy-2.20250122/config/appconfig-standard/xdm_default_contexts
 ===================================================================
---- refpolicy-2.20240817.orig/config/appconfig-standard/xdm_default_contexts
-+++ refpolicy-2.20240817/config/appconfig-standard/xdm_default_contexts
+--- refpolicy-2.20250122.orig/config/appconfig-standard/xdm_default_contexts
++++ refpolicy-2.20250122/config/appconfig-standard/xdm_default_contexts
 @@ -1 +1 @@
 -system_r:xdm_t		system_r:xdm_t
 +system_r:xdm_t		xdm_r:xdm_t
-Index: refpolicy-2.20240817/policy/modules/services/xserver.te
+Index: refpolicy-2.20250122/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20240817/policy/modules/services/xserver.te
+--- refpolicy-2.20250122.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250122/policy/modules/services/xserver.te
 @@ -173,7 +173,7 @@ fs_associate_tmpfs(xconsole_device_t)
  files_associate_tmp(xconsole_device_t)
  

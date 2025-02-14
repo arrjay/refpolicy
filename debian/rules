@@ -112,12 +112,12 @@ conf-src:
 
 build-%-policy: conf-%-policy
 	(cd $(CURDIR)/debian/build-$* ;                          \
-             $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) policy)
+             $(MAKE) DESTDIR=$(CURDIR)/debian/build-$*/tmp NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) policy)
 	touch $@
 
 test-%-policy: build-%-policy
 	(cd $(CURDIR)/debian/build-$*; \
-	    $(MAKE) NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) validate)
+	    $(MAKE) DESTDIR=$(CURDIR)/debian/build-$*/tmp NAME=$* TYPE=$(TYPE_$*) UBAC=$(UBAC_$*) UNK_PERMS=$(UNK_PERMS_$*) $(COMMON_OPTIONS) validate)
 	touch $@
 
 install-%-policy: build-%-policy

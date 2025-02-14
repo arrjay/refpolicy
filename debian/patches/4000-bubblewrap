@@ -1,14 +1,14 @@
-Index: refpolicy-2.20240723/policy/modules/apps/bubblewrap.fc
+Index: refpolicy-2.20250115/policy/modules/apps/bubblewrap.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20240723/policy/modules/apps/bubblewrap.fc
++++ refpolicy-2.20250115/policy/modules/apps/bubblewrap.fc
 @@ -0,0 +1 @@
 +/usr/bin/bwrap	--	gen_context(system_u:object_r:bubblewrap_exec_t,s0)
-Index: refpolicy-2.20240723/policy/modules/apps/bubblewrap.if
+Index: refpolicy-2.20250115/policy/modules/apps/bubblewrap.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20240723/policy/modules/apps/bubblewrap.if
-@@ -0,0 +1,140 @@
++++ refpolicy-2.20250115/policy/modules/apps/bubblewrap.if
+@@ -0,0 +1,141 @@
 +## <summary>Run bubblewrap and then transition back to original domain</summary>
 +
 +########################################
@@ -109,6 +109,7 @@ Index: refpolicy-2.20240723/policy/modules/apps/bubblewrap.if
 +	userdom_read_user_home_content_symlinks($1_bubblewrap_t)
 +	userdom_manage_user_home_content_files($1_bubblewrap_t)
 +	userdom_use_user_ptys($1_bubblewrap_t)
++	userdom_use_user_ttys($1_bubblewrap_t)
 +
 +	ifndef(`enable_mls',`
 +		fs_search_removable($1_bubblewrap_t)
@@ -149,10 +150,10 @@ Index: refpolicy-2.20240723/policy/modules/apps/bubblewrap.if
 +	corecmd_search_bin($1)
 +	can_exec($1, bubblewrap_exec_t)
 +')
-Index: refpolicy-2.20240723/policy/modules/apps/bubblewrap.te
+Index: refpolicy-2.20250115/policy/modules/apps/bubblewrap.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20240723/policy/modules/apps/bubblewrap.te
++++ refpolicy-2.20250115/policy/modules/apps/bubblewrap.te
 @@ -0,0 +1,11 @@
 +policy_module(bubblewrap)
 +
@@ -165,10 +166,10 @@ Index: refpolicy-2.20240723/policy/modules/apps/bubblewrap.te
 +
 +type bubblewrap_exec_t;
 +application_executable_file(bubblewrap_exec_t)
-Index: refpolicy-2.20240723/policy/modules/roles/staff.te
+Index: refpolicy-2.20250115/policy/modules/roles/staff.te
 ===================================================================
---- refpolicy-2.20240723.orig/policy/modules/roles/staff.te
-+++ refpolicy-2.20240723/policy/modules/roles/staff.te
+--- refpolicy-2.20250115.orig/policy/modules/roles/staff.te
++++ refpolicy-2.20250115/policy/modules/roles/staff.te
 @@ -91,6 +91,10 @@ ifndef(`distro_redhat',`
  	')
  
@@ -180,11 +181,11 @@ Index: refpolicy-2.20240723/policy/modules/roles/staff.te
  		cdrecord_role(staff, staff_t, staff_application_exec_domain, staff_r)
  	')
  
-Index: refpolicy-2.20240723/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250115/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20240723.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20240723/policy/modules/roles/sysadm.te
-@@ -1289,6 +1289,10 @@ ifndef(`distro_redhat',`
+--- refpolicy-2.20250115.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250115/policy/modules/roles/sysadm.te
+@@ -1297,6 +1297,10 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -195,10 +196,10 @@ Index: refpolicy-2.20240723/policy/modules/roles/sysadm.te
  		cdrecord_role(sysadm, sysadm_t, sysadm_application_exec_domain, sysadm_r)
  	')
  
-Index: refpolicy-2.20240723/policy/modules/roles/unprivuser.te
+Index: refpolicy-2.20250115/policy/modules/roles/unprivuser.te
 ===================================================================
---- refpolicy-2.20240723.orig/policy/modules/roles/unprivuser.te
-+++ refpolicy-2.20240723/policy/modules/roles/unprivuser.te
+--- refpolicy-2.20250115.orig/policy/modules/roles/unprivuser.te
++++ refpolicy-2.20250115/policy/modules/roles/unprivuser.te
 @@ -51,6 +51,10 @@ ifndef(`distro_redhat',`
  	')
  

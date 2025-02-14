@@ -1405,6 +1405,13 @@ nagios = module
 # 
 ncftool = module
 
+# Layer: system
+# Module: needrestart
+#
+# Utility to restart daemons after system update
+# 
+needrestart = module
+
 # Layer: contrib
 # Module: nessus
 #

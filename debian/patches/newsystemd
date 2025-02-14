@@ -1,7 +1,7 @@
-Index: refpolicy-2.20240817/policy/modules/system/authlogin.if
+Index: refpolicy-2.20250122/policy/modules/system/authlogin.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/authlogin.if
-+++ refpolicy-2.20240817/policy/modules/system/authlogin.if
+--- refpolicy-2.20250122.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20250122/policy/modules/system/authlogin.if
 @@ -91,6 +91,7 @@ interface(`auth_use_pam_systemd',`
  	systemd_connect_machined($1)
  	systemd_dbus_chat_logind($1)
@@ -10,10 +10,10 @@ Index: refpolicy-2.20240817/policy/modules/system/authlogin.if
  
  	# to read /etc/machine-id
  	files_read_etc_runtime_files($1)
-Index: refpolicy-2.20240817/policy/modules/services/xserver.te
+Index: refpolicy-2.20250122/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20240817/policy/modules/services/xserver.te
+--- refpolicy-2.20250122.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250122/policy/modules/services/xserver.te
 @@ -584,6 +584,8 @@ optional_policy(`
  	')
  
@@ -23,11 +23,11 @@ Index: refpolicy-2.20240817/policy/modules/services/xserver.te
  		systemd_read_logind_runtime_files(xdm_t)
  	')
  ')
-Index: refpolicy-2.20240817/policy/modules/system/systemd.if
+Index: refpolicy-2.20250122/policy/modules/system/systemd.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/systemd.if
-+++ refpolicy-2.20240817/policy/modules/system/systemd.if
-@@ -1383,6 +1383,24 @@ interface(`systemd_use_logind_fds',`
+--- refpolicy-2.20250122.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20250122/policy/modules/system/systemd.if
+@@ -1405,6 +1405,24 @@ interface(`systemd_use_logind_fds',`
  
  ######################################
  ## <summary>
@@ -52,11 +52,11 @@ Index: refpolicy-2.20240817/policy/modules/system/systemd.if
  ##      Watch logind sessions dirs.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20240817/policy/modules/kernel/filesystem.if
+Index: refpolicy-2.20250122/policy/modules/kernel/filesystem.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/kernel/filesystem.if
-+++ refpolicy-2.20240817/policy/modules/kernel/filesystem.if
-@@ -1346,6 +1346,24 @@ interface(`fs_watch_memory_pressure',`
+--- refpolicy-2.20250122.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20250122/policy/modules/kernel/filesystem.if
+@@ -1364,6 +1364,24 @@ interface(`fs_watch_memory_pressure',`
  
  ########################################
  ## <summary>
@@ -81,10 +81,10 @@ Index: refpolicy-2.20240817/policy/modules/kernel/filesystem.if
  ##	Do not audit attempts to read
  ##	dirs on a CIFS or SMB filesystem.
  ## </summary>
-Index: refpolicy-2.20240817/policy/modules/system/locallogin.te
+Index: refpolicy-2.20250122/policy/modules/system/locallogin.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/locallogin.te
-+++ refpolicy-2.20240817/policy/modules/system/locallogin.te
+--- refpolicy-2.20250122.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20250122/policy/modules/system/locallogin.te
 @@ -131,8 +131,9 @@ auth_domtrans_pam_console(local_login_t)
  auth_read_pam_motd_dynamic(local_login_t)
  auth_read_shadow_history(local_login_t)
@@ -104,11 +104,11 @@ Index: refpolicy-2.20240817/policy/modules/system/locallogin.te
  
  	systemd_connect_machined(local_login_t)
  	systemd_dbus_chat_logind(local_login_t)
-Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
+Index: refpolicy-2.20250122/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20240817/policy/modules/system/userdomain.if
-@@ -4213,6 +4213,24 @@ interface(`userdom_dontaudit_setattr_use
+--- refpolicy-2.20250122.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250122/policy/modules/system/userdomain.if
+@@ -4276,6 +4276,24 @@ interface(`userdom_dontaudit_setattr_use
  
  ########################################
  ## <summary>
@@ -133,3 +133,26 @@ Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
  ##	Read and write a user domain tty.
  ## </summary>
  ## <param name="domain">
+Index: refpolicy-2.20250122/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250122/policy/modules/system/systemd.te
+@@ -1233,7 +1233,8 @@ optional_policy(`
+ # machine-id-setup local policy
+ #
+ 
+-allow systemd_machine_id_setup_t self:capability { setgid sys_admin sys_chroot };
++allow systemd_machine_id_setup_t self:capability { dac_override setgid sys_admin sys_chroot };
++allow systemd_machine_id_setup_t self:unix_dgram_socket create;
+ 
+ files_list_var(systemd_machine_id_setup_t)
+ files_mounton_root(systemd_machine_id_setup_t)
+@@ -1249,6 +1250,8 @@ kernel_dontaudit_getattr_proc(systemd_ma
+ kernel_read_kernel_sysctls(systemd_machine_id_setup_t)
+ kernel_read_system_state(systemd_machine_id_setup_t)
+ 
++dev_write_kmsg(systemd_machine_id_setup_t)
++
+ init_read_runtime_files(systemd_machine_id_setup_t)
+ init_read_state(systemd_machine_id_setup_t)
+ 

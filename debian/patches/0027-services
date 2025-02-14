@@ -1,7 +1,7 @@
-Index: refpolicy-2.20240821/policy/modules/services/accountsd.te
+Index: refpolicy-2.20250206/policy/modules/services/accountsd.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/accountsd.te
-+++ refpolicy-2.20240821/policy/modules/services/accountsd.te
+--- refpolicy-2.20250206.orig/policy/modules/services/accountsd.te
++++ refpolicy-2.20250206/policy/modules/services/accountsd.te
 @@ -21,8 +21,8 @@ files_type(accountsd_var_lib_t)
  # Local policy
  #
@@ -23,10 +23,10 @@ Index: refpolicy-2.20240821/policy/modules/services/accountsd.te
 +optional_policy(`
  	xserver_read_xdm_tmp_files(accountsd_t)
  ')
-Index: refpolicy-2.20240821/policy/modules/services/acpi.te
+Index: refpolicy-2.20250206/policy/modules/services/acpi.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/acpi.te
-+++ refpolicy-2.20240821/policy/modules/services/acpi.te
+--- refpolicy-2.20250206.orig/policy/modules/services/acpi.te
++++ refpolicy-2.20250206/policy/modules/services/acpi.te
 @@ -64,7 +64,10 @@ logging_send_syslog_msg(acpi_t)
  
  allow acpid_t self:capability { kill mknod sys_admin sys_nice sys_time };
@@ -63,11 +63,11 @@ Index: refpolicy-2.20240821/policy/modules/services/acpi.te
  	systemd_start_power_units(acpid_t)
  	systemd_status_power_units(acpid_t)
  ')
-Index: refpolicy-2.20240821/policy/modules/services/apache.fc
+Index: refpolicy-2.20250206/policy/modules/services/apache.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/apache.fc
-+++ refpolicy-2.20240821/policy/modules/services/apache.fc
-@@ -67,6 +67,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
+--- refpolicy-2.20250206.orig/policy/modules/services/apache.fc
++++ refpolicy-2.20250206/policy/modules/services/apache.fc
+@@ -70,6 +70,7 @@ HOME_DIR/((www)|(web)|(public_html))(/.*
  /usr/lib/systemd/system/apache[^/]*\.service		--	gen_context(system_u:object_r:httpd_unit_t,s0)
  /usr/lib/systemd/system/httpd.*\.service		--	gen_context(system_u:object_r:httpd_unit_t,s0)
  /usr/lib/systemd/system/jetty.*\.service		--	gen_context(system_u:object_r:httpd_unit_t,s0)
@@ -75,7 +75,7 @@ Index: refpolicy-2.20240821/policy/modules/services/apache.fc
  
  /usr/libexec/httpd-ssl-pass-dialog			--	gen_context(system_u:object_r:httpd_passwd_exec_t,s0)
  
-@@ -165,6 +166,7 @@ ifdef(`distro_suse',`
+@@ -168,6 +169,7 @@ ifdef(`distro_suse',`
  /var/log/glpi(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/hiawatha(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/mlogc(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -83,7 +83,7 @@ Index: refpolicy-2.20240821/policy/modules/services/apache.fc
  /var/log/httpd(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/horde2(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/lighttpd(/.*)?						gen_context(system_u:object_r:httpd_log_t,s0)
-@@ -173,7 +175,7 @@ ifdef(`distro_suse',`
+@@ -176,7 +178,7 @@ ifdef(`distro_suse',`
  /var/log/roundcubemail(/.*)?					gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/suphp\.log.*					--	gen_context(system_u:object_r:httpd_log_t,s0)
  /var/log/z-push(/.*)?						gen_context(system_u:object_r:httpd_sys_rw_content_t,s0)
@@ -92,10 +92,10 @@ Index: refpolicy-2.20240821/policy/modules/services/apache.fc
  
  /run/apache.*							gen_context(system_u:object_r:httpd_runtime_t,s0)
  /run/cherokee\.pid					--	gen_context(system_u:object_r:httpd_runtime_t,s0)
-Index: refpolicy-2.20240821/policy/modules/services/apache.te
+Index: refpolicy-2.20250206/policy/modules/services/apache.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/apache.te
-+++ refpolicy-2.20240821/policy/modules/services/apache.te
+--- refpolicy-2.20250206.orig/policy/modules/services/apache.te
++++ refpolicy-2.20250206/policy/modules/services/apache.te
 @@ -504,6 +504,7 @@ files_list_mnt(httpd_t)
  files_search_spool(httpd_t)
  files_read_var_symlinks(httpd_t)
@@ -121,10 +121,10 @@ Index: refpolicy-2.20240821/policy/modules/services/apache.te
  
  dontaudit httpd_sys_script_t httpd_config_t:dir search;
  
-Index: refpolicy-2.20240821/policy/modules/services/aptcacher.te
+Index: refpolicy-2.20250206/policy/modules/services/aptcacher.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/aptcacher.te
-+++ refpolicy-2.20240821/policy/modules/services/aptcacher.te
+--- refpolicy-2.20250206.orig/policy/modules/services/aptcacher.te
++++ refpolicy-2.20250206/policy/modules/services/aptcacher.te
 @@ -36,7 +36,7 @@ files_runtime_file(aptcacher_runtime_t)
  # Local policy
  #
@@ -175,10 +175,10 @@ Index: refpolicy-2.20240821/policy/modules/services/aptcacher.te
  corenet_tcp_connect_aptcacher_port(acngtool_t)
  
  auth_use_nsswitch(acngtool_t)
-Index: refpolicy-2.20240821/policy/modules/services/bluetooth.te
+Index: refpolicy-2.20250206/policy/modules/services/bluetooth.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/bluetooth.te
-+++ refpolicy-2.20240821/policy/modules/services/bluetooth.te
+--- refpolicy-2.20250206.orig/policy/modules/services/bluetooth.te
++++ refpolicy-2.20250206/policy/modules/services/bluetooth.te
 @@ -92,6 +92,7 @@ can_exec(bluetooth_t, bluetooth_helper_e
  
  bluetooth_use_inherited_helper_stream_sockets(bluetooth_t)
@@ -206,10 +206,10 @@ Index: refpolicy-2.20240821/policy/modules/services/bluetooth.te
 +optional_policy(`
  	xserver_user_x_domain_template(bluetooth_helper, bluetooth_helper_t, bluetooth_helper_tmpfs_t)
  ')
-Index: refpolicy-2.20240821/policy/modules/services/boinc.te
+Index: refpolicy-2.20250206/policy/modules/services/boinc.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/boinc.te
-+++ refpolicy-2.20240821/policy/modules/services/boinc.te
+--- refpolicy-2.20250206.orig/policy/modules/services/boinc.te
++++ refpolicy-2.20250206/policy/modules/services/boinc.te
 @@ -12,6 +12,13 @@ policy_module(boinc)
  ## </desc>
  gen_tunable(boinc_execmem, true)
@@ -233,16 +233,17 @@ Index: refpolicy-2.20240821/policy/modules/services/boinc.te
  allow boinc_t self:unix_stream_socket { accept listen };
  allow boinc_t self:tcp_socket { accept listen };
  allow boinc_t self:shm create_shm_perms;
-@@ -86,7 +93,7 @@ libs_legacy_use_ld_so(boinc_t)
+@@ -86,7 +93,8 @@ libs_legacy_use_ld_so(boinc_t)
  domtrans_pattern(boinc_t, boinc_project_var_lib_t, boinc_project_t)
  
  kernel_read_system_state(boinc_t)
 -kernel_search_vm_sysctl(boinc_t)
++kernel_read_vm_sysctls(boinc_t)
 +kernel_read_vm_overcommit_sysctl(boinc_t)
  kernel_read_kernel_sysctls(boinc_t)
  
  corenet_all_recvfrom_netlabel(boinc_t)
-@@ -98,6 +105,7 @@ corenet_sendrecv_boinc_client_packets(bo
+@@ -98,6 +106,7 @@ corenet_sendrecv_boinc_client_packets(bo
  corenet_sendrecv_boinc_server_packets(boinc_t)
  corenet_tcp_bind_boinc_port(boinc_t)
  corenet_tcp_connect_boinc_port(boinc_t)
@@ -250,7 +251,7 @@ Index: refpolicy-2.20240821/policy/modules/services/boinc.te
  
  corenet_sendrecv_boinc_client_server_packets(boinc_t)
  corenet_tcp_bind_boinc_client_port(boinc_t)
-@@ -117,7 +125,10 @@ corecmd_exec_shell(boinc_t)
+@@ -117,7 +126,10 @@ corecmd_exec_shell(boinc_t)
  dev_read_rand(boinc_t)
  dev_read_urand(boinc_t)
  dev_read_sysfs(boinc_t)
@@ -262,7 +263,7 @@ Index: refpolicy-2.20240821/policy/modules/services/boinc.te
  
  domain_read_all_domains_state(boinc_t)
  
-@@ -154,10 +165,13 @@ optional_policy(`
+@@ -154,10 +166,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -279,7 +280,7 @@ Index: refpolicy-2.20240821/policy/modules/services/boinc.te
  ')
  
  ########################################
-@@ -220,3 +234,7 @@ optional_policy(`
+@@ -220,3 +235,7 @@ optional_policy(`
  optional_policy(`
  	java_exec(boinc_project_t)
  ')
@@ -287,10 +288,10 @@ Index: refpolicy-2.20240821/policy/modules/services/boinc.te
 +optional_policy(`
 +	unconfined_stream_connect(boinc_t)
 +')
-Index: refpolicy-2.20240821/policy/modules/services/colord.te
+Index: refpolicy-2.20250206/policy/modules/services/colord.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/colord.te
-+++ refpolicy-2.20240821/policy/modules/services/colord.te
+--- refpolicy-2.20250206.orig/policy/modules/services/colord.te
++++ refpolicy-2.20250206/policy/modules/services/colord.te
 @@ -25,7 +25,7 @@ files_type(colord_var_lib_t)
  
  allow colord_t self:capability { dac_override dac_read_search };
@@ -331,10 +332,10 @@ Index: refpolicy-2.20240821/policy/modules/services/colord.te
  	xserver_read_xdm_state(colord_t)
  	xserver_use_xdm_fds(colord_t)
  ')
-Index: refpolicy-2.20240821/policy/modules/services/cups.te
+Index: refpolicy-2.20250206/policy/modules/services/cups.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/cups.te
-+++ refpolicy-2.20240821/policy/modules/services/cups.te
+--- refpolicy-2.20250206.orig/policy/modules/services/cups.te
++++ refpolicy-2.20250206/policy/modules/services/cups.te
 @@ -5,6 +5,13 @@ policy_module(cups)
  # Declarations
  #
@@ -382,10 +383,10 @@ Index: refpolicy-2.20240821/policy/modules/services/cups.te
  tunable_policy(`use_nfs_home_dirs',`
  	fs_manage_nfs_dirs(cups_pdf_t)
  	fs_manage_nfs_files(cups_pdf_t)
-Index: refpolicy-2.20240821/policy/modules/services/devicekit.te
+Index: refpolicy-2.20250206/policy/modules/services/devicekit.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/devicekit.te
-+++ refpolicy-2.20240821/policy/modules/services/devicekit.te
+--- refpolicy-2.20250206.orig/policy/modules/services/devicekit.te
++++ refpolicy-2.20250206/policy/modules/services/devicekit.te
 @@ -102,6 +102,7 @@ dev_getattr_mtrr_dev(devicekit_disk_t)
  dev_getattr_usbfs_dirs(devicekit_disk_t)
  dev_read_rand(devicekit_disk_t)
@@ -428,10 +429,10 @@ Index: refpolicy-2.20240821/policy/modules/services/devicekit.te
  allow devicekit_power_t self:fifo_file rw_fifo_file_perms;
  allow devicekit_power_t self:unix_dgram_socket create_socket_perms;
  allow devicekit_power_t self:unix_stream_socket create_socket_perms;
-Index: refpolicy-2.20240821/policy/modules/services/dirmngr.te
+Index: refpolicy-2.20250206/policy/modules/services/dirmngr.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/dirmngr.te
-+++ refpolicy-2.20240821/policy/modules/services/dirmngr.te
+--- refpolicy-2.20250206.orig/policy/modules/services/dirmngr.te
++++ refpolicy-2.20250206/policy/modules/services/dirmngr.te
 @@ -83,6 +83,7 @@ miscfiles_read_generic_certs(dirmngr_t)
  userdom_search_user_home_dirs(dirmngr_t)
  userdom_search_user_runtime(dirmngr_t)
@@ -448,10 +449,10 @@ Index: refpolicy-2.20240821/policy/modules/services/dirmngr.te
 +optional_policy(`
 +	corenet_tcp_connect_tor_port(dirmngr_t)
 +')
-Index: refpolicy-2.20240821/policy/modules/services/dovecot.te
+Index: refpolicy-2.20250206/policy/modules/services/dovecot.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/dovecot.te
-+++ refpolicy-2.20240821/policy/modules/services/dovecot.te
+--- refpolicy-2.20250206.orig/policy/modules/services/dovecot.te
++++ refpolicy-2.20250206/policy/modules/services/dovecot.te
 @@ -272,6 +272,8 @@ kernel_dontaudit_getattr_proc(dovecot_au
  
  kernel_getattr_proc(dovecot_auth_t)
@@ -461,10 +462,10 @@ Index: refpolicy-2.20240821/policy/modules/services/dovecot.te
  files_search_runtime(dovecot_auth_t)
  files_read_usr_files(dovecot_auth_t)
  files_read_var_lib_files(dovecot_auth_t)
-Index: refpolicy-2.20240821/policy/modules/services/fail2ban.te
+Index: refpolicy-2.20250206/policy/modules/services/fail2ban.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/fail2ban.te
-+++ refpolicy-2.20240821/policy/modules/services/fail2ban.te
+--- refpolicy-2.20250206.orig/policy/modules/services/fail2ban.te
++++ refpolicy-2.20250206/policy/modules/services/fail2ban.te
 @@ -92,6 +92,8 @@ fs_getattr_all_fs(fail2ban_t)
  
  auth_use_nsswitch(fail2ban_t)
@@ -492,10 +493,10 @@ Index: refpolicy-2.20240821/policy/modules/services/fail2ban.te
  logging_getattr_all_logs(fail2ban_client_t)
  logging_search_all_logs(fail2ban_client_t)
  
-Index: refpolicy-2.20240821/policy/modules/services/ftp.te
+Index: refpolicy-2.20250206/policy/modules/services/ftp.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/ftp.te
-+++ refpolicy-2.20240821/policy/modules/services/ftp.te
+--- refpolicy-2.20250206.orig/policy/modules/services/ftp.te
++++ refpolicy-2.20250206/policy/modules/services/ftp.te
 @@ -409,6 +409,13 @@ optional_policy(`
  	systemd_write_inherited_logind_sessions_pipes(ftpd_t)
  ')
@@ -510,10 +511,10 @@ Index: refpolicy-2.20240821/policy/modules/services/ftp.te
  ########################################
  #
  # Ctl local policy
-Index: refpolicy-2.20240821/policy/modules/services/kerneloops.te
+Index: refpolicy-2.20250206/policy/modules/services/kerneloops.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/kerneloops.te
-+++ refpolicy-2.20240821/policy/modules/services/kerneloops.te
+--- refpolicy-2.20250206.orig/policy/modules/services/kerneloops.te
++++ refpolicy-2.20250206/policy/modules/services/kerneloops.te
 @@ -43,6 +43,7 @@ corenet_tcp_connect_http_port(kerneloops
  
  auth_use_nsswitch(kerneloops_t)
@@ -522,10 +523,10 @@ Index: refpolicy-2.20240821/policy/modules/services/kerneloops.te
  logging_send_syslog_msg(kerneloops_t)
  logging_read_generic_logs(kerneloops_t)
  
-Index: refpolicy-2.20240821/policy/modules/services/mon.te
+Index: refpolicy-2.20250206/policy/modules/services/mon.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/mon.te
-+++ refpolicy-2.20240821/policy/modules/services/mon.te
+--- refpolicy-2.20250206.orig/policy/modules/services/mon.te
++++ refpolicy-2.20250206/policy/modules/services/mon.te
 @@ -108,6 +108,11 @@ optional_policy(`
  	xdg_read_config_files(mon_t)
  ')
@@ -558,10 +559,22 @@ Index: refpolicy-2.20240821/policy/modules/services/mon.te
  allow mon_local_test_t self:fifo_file rw_fifo_file_perms;
  allow mon_local_test_t self:process { getsched sigkill signal sigstop };
  allow mon_local_test_t self:cap_userns sys_ptrace;
-Index: refpolicy-2.20240821/policy/modules/services/networkmanager.te
+@@ -242,6 +251,11 @@ sysnet_read_config(mon_local_test_t)
+ userdom_dontaudit_read_user_tmpfs_files(mon_local_test_t)
+ 
+ optional_policy(`
++	dbus_system_bus_client(mon_local_test_t)
++	devicekit_dbus_chat_power(mon_local_test_t)
++')
++
++optional_policy(`
+ 	gpm_getattr_gpmctl(mon_local_test_t)
+ ')
+ 
+Index: refpolicy-2.20250206/policy/modules/services/networkmanager.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/networkmanager.te
-+++ refpolicy-2.20240821/policy/modules/services/networkmanager.te
+--- refpolicy-2.20250206.orig/policy/modules/services/networkmanager.te
++++ refpolicy-2.20250206/policy/modules/services/networkmanager.te
 @@ -66,6 +66,7 @@ allow NetworkManager_t wpa_cli_t:unix_dg
  allow NetworkManager_t NetworkManager_etc_t:dir list_dir_perms;
  allow NetworkManager_t NetworkManager_etc_t:file read_file_perms;
@@ -590,10 +603,10 @@ Index: refpolicy-2.20240821/policy/modules/services/networkmanager.te
  	chronyd_domtrans_cli(NetworkManager_t)
  ')
  
-Index: refpolicy-2.20240821/policy/modules/services/policykit.te
+Index: refpolicy-2.20250206/policy/modules/services/policykit.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/policykit.te
-+++ refpolicy-2.20240821/policy/modules/services/policykit.te
+--- refpolicy-2.20250206.orig/policy/modules/services/policykit.te
++++ refpolicy-2.20250206/policy/modules/services/policykit.te
 @@ -77,6 +77,7 @@ allow policykit_t self:unix_stream_socke
  rw_files_pattern(policykit_t, policykit_reload_t, policykit_reload_t)
  
@@ -602,7 +615,13 @@ Index: refpolicy-2.20240821/policy/modules/services/policykit.te
  
  manage_dirs_pattern(policykit_t, policykit_runtime_t, policykit_runtime_t)
  manage_files_pattern(policykit_t, policykit_runtime_t, policykit_runtime_t)
-@@ -137,6 +138,7 @@ optional_policy(`
+@@ -133,10 +134,13 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	systemd_get_user_manager_units_status(policykit_t)
++
+ 	# for /run/systemd/machines
  	systemd_connect_machined(policykit_t)
  	systemd_read_machines(policykit_t)
  	systemd_watch_machines_dirs(policykit_t)
@@ -610,11 +629,11 @@ Index: refpolicy-2.20240821/policy/modules/services/policykit.te
  
  	# for /run/systemd/seats/seat*
  	systemd_read_logind_sessions_files(policykit_t)
-Index: refpolicy-2.20240821/policy/modules/services/postfix.te
+Index: refpolicy-2.20250206/policy/modules/services/postfix.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/postfix.te
-+++ refpolicy-2.20240821/policy/modules/services/postfix.te
-@@ -758,6 +758,10 @@ optional_policy(`
+--- refpolicy-2.20250206.orig/policy/modules/services/postfix.te
++++ refpolicy-2.20250206/policy/modules/services/postfix.te
+@@ -770,6 +770,10 @@ optional_policy(`
  	systemd_use_nss(postfix_showq_t)
  ')
  
@@ -625,10 +644,10 @@ Index: refpolicy-2.20240821/policy/modules/services/postfix.te
  ########################################
  #
  # Smtp delivery local policy
-Index: refpolicy-2.20240821/policy/modules/services/sendmail.te
+Index: refpolicy-2.20250206/policy/modules/services/sendmail.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/sendmail.te
-+++ refpolicy-2.20240821/policy/modules/services/sendmail.te
+--- refpolicy-2.20250206.orig/policy/modules/services/sendmail.te
++++ refpolicy-2.20250206/policy/modules/services/sendmail.te
 @@ -173,6 +173,7 @@ optional_policy(`
  ')
  
@@ -637,10 +656,10 @@ Index: refpolicy-2.20240821/policy/modules/services/sendmail.te
  	postfix_domtrans_postdrop(sendmail_t)
  	postfix_domtrans_master(sendmail_t)
  	postfix_domtrans_postqueue(sendmail_t)
-Index: refpolicy-2.20240821/policy/modules/services/ssh.te
+Index: refpolicy-2.20250206/policy/modules/services/ssh.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/ssh.te
-+++ refpolicy-2.20240821/policy/modules/services/ssh.te
+--- refpolicy-2.20250206.orig/policy/modules/services/ssh.te
++++ refpolicy-2.20250206/policy/modules/services/ssh.te
 @@ -17,7 +17,7 @@ gen_tunable(allow_ssh_keysign, false)
  ## Allow ssh logins as sysadm_r:sysadm_t
  ## </p>
@@ -683,10 +702,10 @@ Index: refpolicy-2.20240821/policy/modules/services/ssh.te
  	daemontools_service_domain(sshd_t, sshd_exec_t)
  ')
  
-Index: refpolicy-2.20240821/policy/modules/services/virt.fc
+Index: refpolicy-2.20250206/policy/modules/services/virt.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/virt.fc
-+++ refpolicy-2.20240821/policy/modules/services/virt.fc
+--- refpolicy-2.20250206.orig/policy/modules/services/virt.fc
++++ refpolicy-2.20250206/policy/modules/services/virt.fc
 @@ -11,6 +11,9 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_
  
  /etc/qemu(/.*)?		gen_context(system_u:object_r:virt_etc_t,s0)
@@ -707,11 +726,11 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.fc
  /usr/libexec/libvirt_leaseshelper	--	gen_context(system_u:object_r:virt_leaseshelper_exec_t,s0)
  
  /usr/bin/condor_vm-gahp	--	gen_context(system_u:object_r:virtd_exec_t,s0)
-Index: refpolicy-2.20240821/policy/modules/services/virt.te
+Index: refpolicy-2.20250206/policy/modules/services/virt.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/virt.te
-+++ refpolicy-2.20240821/policy/modules/services/virt.te
-@@ -464,6 +464,7 @@ allow virtd_t self:packet_socket create_
+--- refpolicy-2.20250206.orig/policy/modules/services/virt.te
++++ refpolicy-2.20250206/policy/modules/services/virt.te
+@@ -466,6 +466,7 @@ allow virtd_t self:packet_socket create_
  allow virtd_t self:netlink_generic_socket create_socket_perms;
  allow virtd_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow virtd_t self:netlink_route_socket nlmsg_write;
@@ -719,7 +738,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  
  allow virtd_t virt_domain:process { getattr getsched rlimitinh setsched sigkill signal signull transition };
  dontaudit virtd_t virt_domain:process { noatsecure rlimitinh siginh };
-@@ -584,6 +585,7 @@ kernel_read_network_state(virtd_t)
+@@ -586,6 +587,7 @@ kernel_read_network_state(virtd_t)
  kernel_rw_net_sysctls(virtd_t)
  kernel_read_kernel_sysctls(virtd_t)
  kernel_read_vm_overcommit_sysctl(virtd_t)
@@ -727,7 +746,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  kernel_request_load_module(virtd_t)
  kernel_search_debugfs(virtd_t)
  kernel_setsched(virtd_t)
-@@ -610,6 +612,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
+@@ -612,6 +614,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
  corenet_rw_tun_tap_dev(virtd_t)
  
  dev_rw_sysfs(virtd_t)
@@ -735,7 +754,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  dev_read_urand(virtd_t)
  dev_read_rand(virtd_t)
  dev_rw_kvm(virtd_t)
-@@ -632,6 +635,7 @@ files_search_all(virtd_t)
+@@ -634,6 +637,7 @@ files_search_all(virtd_t)
  files_read_kernel_modules(virtd_t)
  files_read_usr_src_files(virtd_t)
  files_mounton_root(virtd_t)
@@ -743,7 +762,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  
  # Manages /etc/sysconfig/system-config-firewall
  # files_relabelto_system_conf_files(virtd_t)
-@@ -1120,6 +1124,9 @@ allow virt_bridgehelper_t self:tcp_socke
+@@ -1122,6 +1126,9 @@ allow virt_bridgehelper_t self:tcp_socke
  allow virt_bridgehelper_t self:tun_socket create_socket_perms;
  allow virt_bridgehelper_t self:unix_dgram_socket create_socket_perms;
  
@@ -753,7 +772,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  manage_files_pattern(virt_bridgehelper_t, svirt_home_t, svirt_home_t)
  
  kernel_read_network_state(virt_bridgehelper_t)
-@@ -1163,6 +1170,8 @@ files_read_etc_files(virt_leaseshelper_t
+@@ -1165,6 +1172,8 @@ files_read_etc_files(virt_leaseshelper_t
  allow virtlockd_t self:capability dac_override;
  allow virtlockd_t self:fifo_file rw_fifo_file_perms;
  allow virtlockd_t self:unix_stream_socket create_stream_socket_perms;
@@ -762,7 +781,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  
  allow virtlockd_t virtd_t:dir list_dir_perms;
  allow virtlockd_t virtd_t:file read_file_perms;
-@@ -1186,11 +1195,17 @@ files_runtime_filetrans(virtlockd_t, vir
+@@ -1188,11 +1197,17 @@ files_runtime_filetrans(virtlockd_t, vir
  
  can_exec(virtlockd_t, virtlockd_exec_t)
  
@@ -780,7 +799,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  miscfiles_read_localization(virtlockd_t)
  
  virt_append_log(virtlockd_t)
-@@ -1204,9 +1219,12 @@ virt_read_config(virtlockd_t)
+@@ -1206,9 +1221,12 @@ virt_read_config(virtlockd_t)
  allow virtlogd_t self:fifo_file rw_fifo_file_perms;
  allow virtlogd_t self:unix_stream_socket create_stream_socket_perms;
  
@@ -793,7 +812,7 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  
  can_exec(virtlogd_t, virtlogd_exec_t)
  
-@@ -1218,11 +1236,19 @@ files_runtime_filetrans(virtlogd_t, virt
+@@ -1220,11 +1238,19 @@ files_runtime_filetrans(virtlogd_t, virt
  allow virtlogd_t virt_common_runtime_t:file append_file_perms;
  manage_files_pattern(virtlogd_t, virt_common_runtime_t, virt_common_runtime_t)
  
@@ -813,15 +832,15 @@ Index: refpolicy-2.20240821/policy/modules/services/virt.te
  miscfiles_read_localization(virtlogd_t)
  
  sysnet_dns_name_resolve(virtlogd_t)
-Index: refpolicy-2.20240821/policy/modules/services/xserver.fc
+Index: refpolicy-2.20250206/policy/modules/services/xserver.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/xserver.fc
-+++ refpolicy-2.20240821/policy/modules/services/xserver.fc
+--- refpolicy-2.20250206.orig/policy/modules/services/xserver.fc
++++ refpolicy-2.20250206/policy/modules/services/xserver.fc
 @@ -72,6 +72,7 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
  /usr/bin/lxdm(-binary)? --	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/bin/[xkw]dm	--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/bin/sddm		--	gen_context(system_u:object_r:xdm_exec_t,s0)
-+/usr/bin/sddm-greeter	--	gen_context(system_u:object_r:xdm_exec_t,s0)
++/usr/bin/sddm-greeter(-qt6)?	--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/bin/gpe-dm		--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/bin/iceauth	--	gen_context(system_u:object_r:iceauth_exec_t,s0)
  /usr/bin/lightdm	--	gen_context(system_u:object_r:xdm_exec_t,s0)
@@ -841,10 +860,10 @@ Index: refpolicy-2.20240821/policy/modules/services/xserver.fc
  /var/lib/[xkw]dm(/.*)?		gen_context(system_u:object_r:xdm_var_lib_t,s0)
  /var/lib/xdm/authdir(/.*)?	gen_context(system_u:object_r:xdm_auth_t,s0)
  /var/lib/xkb(/.*)?		gen_context(system_u:object_r:xkb_var_lib_t,s0)
-Index: refpolicy-2.20240821/policy/modules/services/xserver.te
+Index: refpolicy-2.20250206/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20240821/policy/modules/services/xserver.te
+--- refpolicy-2.20250206.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250206/policy/modules/services/xserver.te
 @@ -306,6 +306,7 @@ term_use_ptmx(xauth_t)
  auth_use_nsswitch(xauth_t)
  
@@ -923,10 +942,10 @@ Index: refpolicy-2.20240821/policy/modules/services/xserver.te
  	# Do not audit attempts to check whether user root has email
  	mta_dontaudit_getattr_spool_files(xdm_t)
  ')
-Index: refpolicy-2.20240821/policy/modules/system/mount.if
+Index: refpolicy-2.20250206/policy/modules/system/mount.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/mount.if
-+++ refpolicy-2.20240821/policy/modules/system/mount.if
+--- refpolicy-2.20250206.orig/policy/modules/system/mount.if
++++ refpolicy-2.20250206/policy/modules/system/mount.if
 @@ -275,6 +275,24 @@ interface(`mount_watch_reads_runtime_fil
  
  ########################################
@@ -952,10 +971,10 @@ Index: refpolicy-2.20240821/policy/modules/system/mount.if
  ##     Getattr on mount_runtime_t files
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20240821/policy/modules/kernel/files.if
+Index: refpolicy-2.20250206/policy/modules/kernel/files.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/kernel/files.if
-+++ refpolicy-2.20240821/policy/modules/kernel/files.if
+--- refpolicy-2.20250206.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20250206/policy/modules/kernel/files.if
 @@ -454,6 +454,24 @@ interface(`files_dontaudit_getattr_all_t
  
  ########################################
@@ -981,7 +1000,7 @@ Index: refpolicy-2.20240821/policy/modules/kernel/files.if
  ##	Get the attributes of all directories.
  ## </summary>
  ## <param name="domain">
-@@ -1465,6 +1483,25 @@ interface(`files_watch_all_dirs',`
+@@ -1489,6 +1507,25 @@ interface(`files_watch_all_dirs',`
  
  ########################################
  ## <summary>
@@ -1007,7 +1026,7 @@ Index: refpolicy-2.20240821/policy/modules/kernel/files.if
  ##	Read all non-authentication related
  ##	directories.
  ## </summary>
-@@ -6331,6 +6368,24 @@ interface(`files_read_var_lib_files',`
+@@ -6390,6 +6427,24 @@ interface(`files_read_var_lib_files',`
  ')
  
  ########################################
@@ -1032,10 +1051,10 @@ Index: refpolicy-2.20240821/policy/modules/kernel/files.if
  ## <summary>
  ##	Read generic symbolic links in /var/lib
  ## </summary>
-Index: refpolicy-2.20240821/policy/modules/system/libraries.if
+Index: refpolicy-2.20250206/policy/modules/system/libraries.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/libraries.if
-+++ refpolicy-2.20240821/policy/modules/system/libraries.if
+--- refpolicy-2.20250206.orig/policy/modules/system/libraries.if
++++ refpolicy-2.20250206/policy/modules/system/libraries.if
 @@ -549,3 +549,21 @@ interface(`libs_watch_shared_libs_dirs',
  
  	allow $1 lib_t:dir watch;
@@ -1058,10 +1077,10 @@ Index: refpolicy-2.20240821/policy/modules/system/libraries.if
 +
 +	allow $1 lib_t:dir watch;
 +')
-Index: refpolicy-2.20240821/policy/modules/system/sysnetwork.if
+Index: refpolicy-2.20250206/policy/modules/system/sysnetwork.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/sysnetwork.if
-+++ refpolicy-2.20240821/policy/modules/system/sysnetwork.if
+--- refpolicy-2.20250206.orig/policy/modules/system/sysnetwork.if
++++ refpolicy-2.20250206/policy/modules/system/sysnetwork.if
 @@ -617,6 +617,24 @@ interface(`sysnet_watch_config_dirs',`
  
  #######################################
@@ -1087,11 +1106,11 @@ Index: refpolicy-2.20240821/policy/modules/system/sysnetwork.if
  ##	Read dhcp client runtime files.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20240821/policy/modules/kernel/filesystem.if
+Index: refpolicy-2.20250206/policy/modules/kernel/filesystem.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/kernel/filesystem.if
-+++ refpolicy-2.20240821/policy/modules/kernel/filesystem.if
-@@ -6991,3 +6991,21 @@ interface(`fs_unconfined',`
+--- refpolicy-2.20250206.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20250206/policy/modules/kernel/filesystem.if
+@@ -7028,3 +7028,21 @@ interface(`fs_unconfined',`
  
  	typeattribute $1 filesystem_unconfined_type;
  ')
@@ -1113,10 +1132,10 @@ Index: refpolicy-2.20240821/policy/modules/kernel/filesystem.if
 +
 +	allow $1 bpf_t:dir search;
 +')
-Index: refpolicy-2.20240821/policy/modules/services/acpi.fc
+Index: refpolicy-2.20250206/policy/modules/services/acpi.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/acpi.fc
-+++ refpolicy-2.20240821/policy/modules/services/acpi.fc
+--- refpolicy-2.20250206.orig/policy/modules/services/acpi.fc
++++ refpolicy-2.20250206/policy/modules/services/acpi.fc
 @@ -8,6 +8,7 @@
  /usr/lib/systemd/system/apmd.*\.service -- gen_context(system_u:object_r:acpid_unit_t,s0)
  
@@ -1125,10 +1144,10 @@ Index: refpolicy-2.20240821/policy/modules/services/acpi.fc
  /usr/sbin/apmd	--	gen_context(system_u:object_r:acpid_exec_t,s0)
  /usr/sbin/powersaved	--	gen_context(system_u:object_r:acpid_exec_t,s0)
  
-Index: refpolicy-2.20240821/policy/modules/system/selinuxutil.te
+Index: refpolicy-2.20250206/policy/modules/system/selinuxutil.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/selinuxutil.te
-+++ refpolicy-2.20240821/policy/modules/system/selinuxutil.te
+--- refpolicy-2.20250206.orig/policy/modules/system/selinuxutil.te
++++ refpolicy-2.20250206/policy/modules/system/selinuxutil.te
 @@ -388,6 +388,7 @@ selinux_compute_user_contexts(restorecon
  
  files_relabel_non_auth_files(restorecond_t )
@@ -1137,10 +1156,10 @@ Index: refpolicy-2.20240821/policy/modules/system/selinuxutil.te
  auth_use_nsswitch(restorecond_t)
  
  logging_send_syslog_msg(restorecond_t)
-Index: refpolicy-2.20240821/policy/modules/services/redis.fc
+Index: refpolicy-2.20250206/policy/modules/services/redis.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/redis.fc
-+++ refpolicy-2.20240821/policy/modules/services/redis.fc
+--- refpolicy-2.20250206.orig/policy/modules/services/redis.fc
++++ refpolicy-2.20250206/policy/modules/services/redis.fc
 @@ -3,6 +3,7 @@
  /etc/redis.*\.conf	--	gen_context(system_u:object_r:redis_conf_t,s0)
  
@@ -1149,10 +1168,10 @@ Index: refpolicy-2.20240821/policy/modules/services/redis.fc
  
  /usr/sbin/redis-server	--	gen_context(system_u:object_r:redis_exec_t,s0)
  
-Index: refpolicy-2.20240821/policy/modules/kernel/corenetwork.te.in
+Index: refpolicy-2.20250206/policy/modules/kernel/corenetwork.te.in
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/kernel/corenetwork.te.in
-+++ refpolicy-2.20240821/policy/modules/kernel/corenetwork.te.in
+--- refpolicy-2.20250206.orig/policy/modules/kernel/corenetwork.te.in
++++ refpolicy-2.20250206/policy/modules/kernel/corenetwork.te.in
 @@ -264,7 +264,7 @@ network_port(smtp, tcp,25,s0, tcp,465,s0
  network_port(snmp, udp,161,s0, udp,162,s0, tcp,199,s0, tcp,1161,s0)
  network_port(socks) # no defined portcon
@@ -1162,10 +1181,10 @@ Index: refpolicy-2.20240821/policy/modules/kernel/corenetwork.te.in
  network_port(speech, tcp,8036,s0)
  network_port(squid, udp,3401,s0, tcp,3401,s0, udp,4827,s0, tcp,4827,s0) # snmp and htcp
  network_port(ssdp, tcp,1900,s0, udp,1900,s0)
-Index: refpolicy-2.20240821/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20250206/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20240821/policy/modules/kernel/corecommands.fc
+--- refpolicy-2.20250206.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20250206/policy/modules/kernel/corecommands.fc
 @@ -43,6 +43,8 @@ ifdef(`distro_redhat',`
  /etc/cron\.monthly(/.*)?			gen_context(system_u:object_r:bin_t,s0)
  
@@ -1185,10 +1204,10 @@ Index: refpolicy-2.20240821/policy/modules/kernel/corecommands.fc
  /etc/X11/xdm/GiveConsole	--	gen_context(system_u:object_r:bin_t,s0)
  /etc/X11/xdm/TakeConsole	--	gen_context(system_u:object_r:bin_t,s0)
  /etc/X11/xdm/Xsetup_0		--	gen_context(system_u:object_r:bin_t,s0)
-Index: refpolicy-2.20240821/policy/modules/system/fstools.te
+Index: refpolicy-2.20250206/policy/modules/system/fstools.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/fstools.te
-+++ refpolicy-2.20240821/policy/modules/system/fstools.te
+--- refpolicy-2.20250206.orig/policy/modules/system/fstools.te
++++ refpolicy-2.20250206/policy/modules/system/fstools.te
 @@ -226,6 +226,10 @@ optional_policy(`
  ')
  
@@ -1211,10 +1230,10 @@ Index: refpolicy-2.20240821/policy/modules/system/fstools.te
  	mon_dontaudit_use_fds(fsadm_t)
  ')
  
-Index: refpolicy-2.20240821/policy/modules/apps/java.te
+Index: refpolicy-2.20250206/policy/modules/apps/java.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/apps/java.te
-+++ refpolicy-2.20240821/policy/modules/apps/java.te
+--- refpolicy-2.20250206.orig/policy/modules/apps/java.te
++++ refpolicy-2.20250206/policy/modules/apps/java.te
 @@ -128,11 +128,17 @@ tunable_policy(`allow_java_execstack',`
  auth_use_nsswitch(java_t)
  
@@ -1233,10 +1252,10 @@ Index: refpolicy-2.20240821/policy/modules/apps/java.te
  userdom_read_user_tmp_files(java_t)
  userdom_use_user_terminals(java_t)
  
-Index: refpolicy-2.20240821/policy/modules/kernel/storage.if
+Index: refpolicy-2.20250206/policy/modules/kernel/storage.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/kernel/storage.if
-+++ refpolicy-2.20240821/policy/modules/kernel/storage.if
+--- refpolicy-2.20250206.orig/policy/modules/kernel/storage.if
++++ refpolicy-2.20250206/policy/modules/kernel/storage.if
 @@ -317,6 +317,30 @@ interface(`storage_dev_filetrans_fixed_d
  
  ########################################
@@ -1268,10 +1287,10 @@ Index: refpolicy-2.20240821/policy/modules/kernel/storage.if
  ##	Create block devices in on a tmpfs filesystem with the
  ##	fixed disk type via an automatic type transition.
  ## </summary>
-Index: refpolicy-2.20240821/policy/modules/admin/bootloader.fc
+Index: refpolicy-2.20250206/policy/modules/admin/bootloader.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/admin/bootloader.fc
-+++ refpolicy-2.20240821/policy/modules/admin/bootloader.fc
+--- refpolicy-2.20250206.orig/policy/modules/admin/bootloader.fc
++++ refpolicy-2.20250206/policy/modules/admin/bootloader.fc
 @@ -21,6 +21,7 @@
  /usr/sbin/grub2?-mkconfig	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
  /usr/sbin/grub2?-probe	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
@@ -1280,10 +1299,10 @@ Index: refpolicy-2.20240821/policy/modules/admin/bootloader.fc
  /usr/sbin/mkrlconf		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
  /usr/sbin/mvrefind		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
  /usr/sbin/refind-install	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
-Index: refpolicy-2.20240821/policy/modules/services/certbot.te
+Index: refpolicy-2.20250206/policy/modules/services/certbot.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/certbot.te
-+++ refpolicy-2.20240821/policy/modules/services/certbot.te
+--- refpolicy-2.20250206.orig/policy/modules/services/certbot.te
++++ refpolicy-2.20250206/policy/modules/services/certbot.te
 @@ -38,7 +38,8 @@ files_type(certbot_lib_t)
  #
  
@@ -1294,10 +1313,10 @@ Index: refpolicy-2.20240821/policy/modules/services/certbot.te
  allow certbot_t self:udp_socket all_udp_socket_perms;
  allow certbot_t self:tcp_socket all_tcp_socket_perms;
  allow certbot_t self:netlink_route_socket create_netlink_socket_perms;
-Index: refpolicy-2.20240821/policy/modules/system/logging.te
+Index: refpolicy-2.20250206/policy/modules/system/logging.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/logging.te
-+++ refpolicy-2.20240821/policy/modules/system/logging.te
+--- refpolicy-2.20250206.orig/policy/modules/system/logging.te
++++ refpolicy-2.20250206/policy/modules/system/logging.te
 @@ -172,7 +172,7 @@ allow auditd_t self:tcp_socket create_st
  
  allow auditd_t auditd_etc_t:dir list_dir_perms;
@@ -1307,10 +1326,10 @@ Index: refpolicy-2.20240821/policy/modules/system/logging.te
  
  manage_files_pattern(auditd_t, auditd_log_t, auditd_log_t)
  allow auditd_t auditd_log_t:dir setattr;
-Index: refpolicy-2.20240821/policy/modules/services/chronyd.te
+Index: refpolicy-2.20250206/policy/modules/services/chronyd.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/chronyd.te
-+++ refpolicy-2.20240821/policy/modules/services/chronyd.te
+--- refpolicy-2.20250206.orig/policy/modules/services/chronyd.te
++++ refpolicy-2.20250206/policy/modules/services/chronyd.te
 @@ -54,7 +54,7 @@ logging_log_file(chronyd_var_log_t)
  # chronyd local policy
  #
@@ -1340,11 +1359,11 @@ Index: refpolicy-2.20240821/policy/modules/services/chronyd.te
  allow chronyc_t self:process { signal };
  allow chronyc_t self:udp_socket create_socket_perms;
  allow chronyc_t self:netlink_route_socket create_netlink_socket_perms;
-Index: refpolicy-2.20240821/policy/modules/system/unconfined.if
+Index: refpolicy-2.20250206/policy/modules/system/unconfined.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/unconfined.if
-+++ refpolicy-2.20240821/policy/modules/system/unconfined.if
-@@ -652,3 +652,21 @@ interface(`unconfined_dbus_connect',`
+--- refpolicy-2.20250206.orig/policy/modules/system/unconfined.if
++++ refpolicy-2.20250206/policy/modules/system/unconfined.if
+@@ -655,3 +655,21 @@ interface(`unconfined_dbus_connect',`
  
  	allow $1 unconfined_t:dbus acquire_svc;
  ')
@@ -1366,10 +1385,10 @@ Index: refpolicy-2.20240821/policy/modules/system/unconfined.if
 +
 +	allow $1 unconfined_t:unix_dgram_socket sendto;
 +')
-Index: refpolicy-2.20240821/policy/modules/admin/apt.te
+Index: refpolicy-2.20250206/policy/modules/admin/apt.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/admin/apt.te
-+++ refpolicy-2.20240821/policy/modules/admin/apt.te
+--- refpolicy-2.20250206.orig/policy/modules/admin/apt.te
++++ refpolicy-2.20250206/policy/modules/admin/apt.te
 @@ -106,6 +106,8 @@ files_read_etc_runtime_files(apt_t)
  
  fs_getattr_all_fs(apt_t)
@@ -1387,10 +1406,10 @@ Index: refpolicy-2.20240821/policy/modules/admin/apt.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20240821/policy/modules/services/memlockd.te
+Index: refpolicy-2.20250206/policy/modules/services/memlockd.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/memlockd.te
-+++ refpolicy-2.20240821/policy/modules/services/memlockd.te
+--- refpolicy-2.20250206.orig/policy/modules/services/memlockd.te
++++ refpolicy-2.20250206/policy/modules/services/memlockd.te
 @@ -37,7 +37,9 @@ logging_send_syslog_msg(memlockd_t)
  miscfiles_read_localization(memlockd_t)
  
@@ -1401,10 +1420,10 @@ Index: refpolicy-2.20240821/policy/modules/services/memlockd.te
  	allow memlockd_t self:capability dac_read_search;
  ')
 +
-Index: refpolicy-2.20240821/policy/modules/admin/bootloader.te
+Index: refpolicy-2.20250206/policy/modules/admin/bootloader.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/admin/bootloader.te
-+++ refpolicy-2.20240821/policy/modules/admin/bootloader.te
+--- refpolicy-2.20250206.orig/policy/modules/admin/bootloader.te
++++ refpolicy-2.20250206/policy/modules/admin/bootloader.te
 @@ -80,6 +80,7 @@ storage_rw_fuse(bootloader_t)
  
  dev_getattr_all_chr_files(bootloader_t)
@@ -1413,7 +1432,7 @@ Index: refpolicy-2.20240821/policy/modules/admin/bootloader.te
  dev_dontaudit_rw_generic_dev_nodes(bootloader_t)
  dev_read_rand(bootloader_t)
  dev_read_urand(bootloader_t)
-@@ -232,6 +233,10 @@ ifdef(`init_systemd',`
+@@ -234,6 +235,10 @@ ifdef(`init_systemd',`
  ')
  
  optional_policy(`
@@ -1424,13 +1443,13 @@ Index: refpolicy-2.20240821/policy/modules/admin/bootloader.te
  	fstools_exec(bootloader_t)
  ')
  
-Index: refpolicy-2.20240821/policy/modules/services/container.te
+Index: refpolicy-2.20250206/policy/modules/services/container.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/container.te
-+++ refpolicy-2.20240821/policy/modules/services/container.te
-@@ -1008,6 +1008,10 @@ allow spc_t self:process { getcap setexe
+--- refpolicy-2.20250206.orig/policy/modules/services/container.te
++++ refpolicy-2.20250206/policy/modules/services/container.te
+@@ -1011,6 +1011,10 @@ allow spc_t self:process { getcap setexe
  dontaudit spc_t self:process setfscreate;
- allow spc_t self:capability { audit_write chown dac_override dac_read_search fowner fsetid ipc_lock kill mknod net_admin net_raw setgid setuid setpcap sys_admin sys_chroot sys_nice sys_ptrace sys_rawio sys_resource };
+ allow spc_t self:capability { audit_write chown dac_override dac_read_search fowner fsetid ipc_lock kill mknod net_admin net_raw setgid setpcap setuid sys_admin sys_chroot sys_nice sys_ptrace sys_rawio sys_resource };
  allow spc_t self:capability2 { bpf perfmon };
 +
 +# for qemu
@@ -1439,10 +1458,10 @@ Index: refpolicy-2.20240821/policy/modules/services/container.te
  allow spc_t self:bpf { map_create map_read map_write prog_load prog_run };
  allow spc_t self:key manage_key_perms;
  allow spc_t self:alg_socket create_stream_socket_perms;
-Index: refpolicy-2.20240821/policy/modules/services/sysstat.te
+Index: refpolicy-2.20250206/policy/modules/services/sysstat.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/sysstat.te
-+++ refpolicy-2.20240821/policy/modules/services/sysstat.te
+--- refpolicy-2.20250206.orig/policy/modules/services/sysstat.te
++++ refpolicy-2.20250206/policy/modules/services/sysstat.te
 @@ -31,6 +31,7 @@ logging_log_filetrans(sysstat_t, sysstat
  
  can_exec(sysstat_t, sysstat_exec_t)
@@ -1451,10 +1470,10 @@ Index: refpolicy-2.20240821/policy/modules/services/sysstat.te
  kernel_read_system_state(sysstat_t)
  kernel_read_network_state(sysstat_t)
  kernel_read_kernel_sysctls(sysstat_t)
-Index: refpolicy-2.20240821/policy/modules/services/consolesetup.te
+Index: refpolicy-2.20250206/policy/modules/services/consolesetup.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/consolesetup.te
-+++ refpolicy-2.20240821/policy/modules/services/consolesetup.te
+--- refpolicy-2.20250206.orig/policy/modules/services/consolesetup.te
++++ refpolicy-2.20250206/policy/modules/services/consolesetup.te
 @@ -39,6 +39,8 @@ files_tmp_filetrans(consolesetup_t, cons
  
  kernel_read_system_state(consolesetup_t)
@@ -1478,10 +1497,10 @@ Index: refpolicy-2.20240821/policy/modules/services/consolesetup.te
 +optional_policy(`
 +	xserver_read_xkb_libs(consolesetup_t)
 +')
-Index: refpolicy-2.20240821/policy/modules/services/bluetooth.if
+Index: refpolicy-2.20250206/policy/modules/services/bluetooth.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/bluetooth.if
-+++ refpolicy-2.20240821/policy/modules/services/bluetooth.if
+--- refpolicy-2.20250206.orig/policy/modules/services/bluetooth.if
++++ refpolicy-2.20250206/policy/modules/services/bluetooth.if
 @@ -254,3 +254,39 @@ interface(`bluetooth_admin',`
  	files_list_runtime($1)
  	admin_pattern($1, bluetooth_runtime_t)
@@ -1522,11 +1541,11 @@ Index: refpolicy-2.20240821/policy/modules/services/bluetooth.if
 +
 +	allow $1 bluetooth_unit_t:service start;
 +')
-Index: refpolicy-2.20240821/policy/modules/services/dbus.te
+Index: refpolicy-2.20250206/policy/modules/services/dbus.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/dbus.te
-+++ refpolicy-2.20240821/policy/modules/services/dbus.te
-@@ -224,6 +224,8 @@ ifdef(`init_systemd', `
+--- refpolicy-2.20250206.orig/policy/modules/services/dbus.te
++++ refpolicy-2.20250206/policy/modules/services/dbus.te
+@@ -226,6 +226,8 @@ ifdef(`init_systemd', `
  
  	tunable_policy(`dbus_broker_system_bus',`
  		init_get_system_status(system_dbusd_t)
@@ -1535,7 +1554,7 @@ Index: refpolicy-2.20240821/policy/modules/services/dbus.te
  	')
  ')
  
-@@ -255,6 +257,13 @@ optional_policy(`
+@@ -257,6 +259,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1549,7 +1568,7 @@ Index: refpolicy-2.20240821/policy/modules/services/dbus.te
  	systemd_connect_machined(system_dbusd_t)
  
  	# for /run/systemd/users/*
-@@ -268,11 +277,19 @@ optional_policy(`
+@@ -270,11 +279,19 @@ optional_policy(`
  
  	# allow populating of /var/lib/dbus by systemd-tmpfilesd
  	systemd_tmpfilesd_managed(system_dbusd_var_lib_t)
@@ -1569,7 +1588,7 @@ Index: refpolicy-2.20240821/policy/modules/services/dbus.te
  ')
  
  optional_policy(`
-@@ -289,6 +306,8 @@ optional_policy(`
+@@ -291,6 +308,8 @@ optional_policy(`
  
  optional_policy(`
  	unconfined_dbus_send(system_dbusd_t)
@@ -1578,10 +1597,10 @@ Index: refpolicy-2.20240821/policy/modules/services/dbus.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20240821/policy/modules/services/rtkit.if
+Index: refpolicy-2.20250206/policy/modules/services/rtkit.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/rtkit.if
-+++ refpolicy-2.20240821/policy/modules/services/rtkit.if
+--- refpolicy-2.20250206.orig/policy/modules/services/rtkit.if
++++ refpolicy-2.20250206/policy/modules/services/rtkit.if
 @@ -92,3 +92,39 @@ interface(`rtkit_admin',`
  
  	init_startstop_service($1, $2, rtkit_daemon_t, rtkit_daemon_initrc_exec_t)
@@ -1622,10 +1641,10 @@ Index: refpolicy-2.20240821/policy/modules/services/rtkit.if
 +
 +	allow $1 rtkit_daemon_unit_t:service start;
 +')
-Index: refpolicy-2.20240821/policy/modules/services/plymouthd.te
+Index: refpolicy-2.20250206/policy/modules/services/plymouthd.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/plymouthd.te
-+++ refpolicy-2.20240821/policy/modules/services/plymouthd.te
+--- refpolicy-2.20250206.orig/policy/modules/services/plymouthd.te
++++ refpolicy-2.20250206/policy/modules/services/plymouthd.te
 @@ -34,11 +34,12 @@ logging_log_file(plymouthd_var_log_t)
  #
  
@@ -1688,11 +1707,11 @@ Index: refpolicy-2.20240821/policy/modules/services/plymouthd.te
  init_use_fds(plymouth_t)
  
  miscfiles_read_localization(plymouth_t)
-Index: refpolicy-2.20240821/policy/modules/services/avahi.te
+Index: refpolicy-2.20250206/policy/modules/services/avahi.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/avahi.te
-+++ refpolicy-2.20240821/policy/modules/services/avahi.te
-@@ -115,3 +115,7 @@ optional_policy(`
+--- refpolicy-2.20250206.orig/policy/modules/services/avahi.te
++++ refpolicy-2.20250206/policy/modules/services/avahi.te
+@@ -119,3 +119,7 @@ optional_policy(`
  	unconfined_dbus_send(avahi_t)
  ')
  
@@ -1700,10 +1719,10 @@ Index: refpolicy-2.20240821/policy/modules/services/avahi.te
 +	unconfined_dbus_send(avahi_t)
 +')
 +
-Index: refpolicy-2.20240821/policy/modules/system/udev.te
+Index: refpolicy-2.20250206/policy/modules/system/udev.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/udev.te
-+++ refpolicy-2.20240821/policy/modules/system/udev.te
+--- refpolicy-2.20250206.orig/policy/modules/system/udev.te
++++ refpolicy-2.20250206/policy/modules/system/udev.te
 @@ -110,6 +110,7 @@ kernel_read_fs_sysctls(udev_t)
  #https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235182
  kernel_rw_net_sysctls(udev_t)
@@ -1712,10 +1731,10 @@ Index: refpolicy-2.20240821/policy/modules/system/udev.te
  kernel_read_software_raid_state(udev_t)
  kernel_dontaudit_search_unlabeled(udev_t)
  
-Index: refpolicy-2.20240821/policy/modules/services/xserver.if
+Index: refpolicy-2.20250206/policy/modules/services/xserver.if
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/xserver.if
-+++ refpolicy-2.20240821/policy/modules/services/xserver.if
+--- refpolicy-2.20250206.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20250206/policy/modules/services/xserver.if
 @@ -1089,6 +1089,24 @@ interface(`xserver_read_xdm_lib_files',`
  
  ########################################
@@ -1741,10 +1760,10 @@ Index: refpolicy-2.20240821/policy/modules/services/xserver.if
  ##	Make an X session script an entrypoint for the specified domain.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20240821/policy/modules/services/geoclue.te
+Index: refpolicy-2.20250206/policy/modules/services/geoclue.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/geoclue.te
-+++ refpolicy-2.20240821/policy/modules/services/geoclue.te
+--- refpolicy-2.20250206.orig/policy/modules/services/geoclue.te
++++ refpolicy-2.20250206/policy/modules/services/geoclue.te
 @@ -20,9 +20,16 @@ files_type(geoclue_var_lib_t)
  # Local policy
  #
@@ -1786,25 +1805,10 @@ Index: refpolicy-2.20240821/policy/modules/services/geoclue.te
 +	xserver_dbus_chat_xdm(geoclue_t)
 +	xserver_read_xdm_state(geoclue_t)
 +')
-Index: refpolicy-2.20240821/policy/modules/system/fwupd.te
+Index: refpolicy-2.20250206/policy/modules/services/eg25manager.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/system/fwupd.te
-+++ refpolicy-2.20240821/policy/modules/system/fwupd.te
-@@ -147,6 +147,10 @@ optional_policy(`
- ')
- 
- optional_policy(`
-+	low_mem_mon_dbus_chat(fwupd_t)
-+')
-+
-+optional_policy(`
- 	modemmanager_dbus_chat(fwupd_t)
- ')
- 
-Index: refpolicy-2.20240821/policy/modules/services/eg25manager.te
-===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/eg25manager.te
-+++ refpolicy-2.20240821/policy/modules/services/eg25manager.te
+--- refpolicy-2.20250206.orig/policy/modules/services/eg25manager.te
++++ refpolicy-2.20250206/policy/modules/services/eg25manager.te
 @@ -34,6 +34,7 @@ allow eg25manager_t self:process { getsc
  allow eg25manager_t self:tcp_socket { connect create getattr getopt read setopt write };
  allow eg25manager_t self:udp_socket { connect create getattr read setopt write };
@@ -1813,10 +1817,10 @@ Index: refpolicy-2.20240821/policy/modules/services/eg25manager.te
  
  files_tmp_filetrans(eg25manager_t, eg25manager_tmp_t, { file })
  allow eg25manager_t eg25manager_tmp_t:file manage_file_perms;
-Index: refpolicy-2.20240821/policy/modules/services/fprintd.te
+Index: refpolicy-2.20250206/policy/modules/services/fprintd.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/fprintd.te
-+++ refpolicy-2.20240821/policy/modules/services/fprintd.te
+--- refpolicy-2.20250206.orig/policy/modules/services/fprintd.te
++++ refpolicy-2.20250206/policy/modules/services/fprintd.te
 @@ -17,9 +17,12 @@ files_type(fprintd_var_lib_t)
  # Local policy
  #
@@ -1851,12 +1855,12 @@ Index: refpolicy-2.20240821/policy/modules/services/fprintd.te
 +optional_policy(`
 +	udev_read_runtime_files(fprintd_t)
 +')
-Index: refpolicy-2.20240821/policy/modules/services/networkmanager.fc
+Index: refpolicy-2.20250206/policy/modules/services/networkmanager.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/networkmanager.fc
-+++ refpolicy-2.20240821/policy/modules/services/networkmanager.fc
-@@ -17,7 +17,7 @@
- 
+--- refpolicy-2.20250206.orig/policy/modules/services/networkmanager.fc
++++ refpolicy-2.20250206/policy/modules/services/networkmanager.fc
+@@ -18,7 +18,7 @@
+ /usr/lib/NetworkManager/dispatcher\.d(/.*)?	--	gen_context(system_u:object_r:NetworkManager_initrc_exec_t,s0)
  /usr/lib/NetworkManager/nm-dispatcher.*	--	gen_context(system_u:object_r:NetworkManager_initrc_exec_t,s0)
  /usr/lib/networkmanager/nm-dispatcher.*	--	gen_context(system_u:object_r:NetworkManager_initrc_exec_t,s0)
 -/usr/libexec/nm-dispatcher.*	--	gen_context(system_u:object_r:NetworkManager_initrc_exec_t,s0)
@@ -1864,23 +1868,11 @@ Index: refpolicy-2.20240821/policy/modules/services/networkmanager.fc
  /usr/libexec/iwd			--	gen_context(system_u:object_r:NetworkManager_exec_t,s0)
  
  # Systemd unit files
-Index: refpolicy-2.20240821/policy/modules/services/ssh.fc
+Index: refpolicy-2.20250206/policy/modules/services/bind.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/ssh.fc
-+++ refpolicy-2.20240821/policy/modules/services/ssh.fc
-@@ -10,6 +10,7 @@ HOME_DIR/\.ssh(/.*)?			gen_context(syste
- 
- /usr/lib/misc/sshd-session	--	gen_context(system_u:object_r:sshd_exec_t,s0)
- /usr/lib/openssh/ssh-keysign	--	gen_context(system_u:object_r:ssh_keysign_exec_t,s0)
-+/usr/lib/openssh/sshd-session	--	gen_context(system_u:object_r:sshd_exec_t,s0)
- /usr/lib/ssh/ssh-keysign	--	gen_context(system_u:object_r:ssh_keysign_exec_t,s0)
- 
- /usr/lib/systemd/system/ssh.*		--	gen_context(system_u:object_r:sshd_unit_t,s0)
-Index: refpolicy-2.20240821/policy/modules/services/bind.te
-===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/bind.te
-+++ refpolicy-2.20240821/policy/modules/services/bind.te
-@@ -220,6 +220,8 @@ allow ndc_t self:capability2 block_suspe
+--- refpolicy-2.20250206.orig/policy/modules/services/bind.te
++++ refpolicy-2.20250206/policy/modules/services/bind.te
+@@ -224,6 +224,8 @@ allow ndc_t self:capability2 block_suspe
  allow ndc_t self:process { getsched setsched signal_perms };
  allow ndc_t self:fifo_file rw_fifo_file_perms;
  allow ndc_t self:unix_stream_socket { accept listen };
@@ -1889,10 +1881,10 @@ Index: refpolicy-2.20240821/policy/modules/services/bind.te
  
  allow ndc_t dnssec_t:file read_file_perms;
  allow ndc_t dnssec_t:lnk_file read_lnk_file_perms;
-Index: refpolicy-2.20240821/policy/modules/services/rasdaemon.te
+Index: refpolicy-2.20250206/policy/modules/services/rasdaemon.te
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/rasdaemon.te
-+++ refpolicy-2.20240821/policy/modules/services/rasdaemon.te
+--- refpolicy-2.20250206.orig/policy/modules/services/rasdaemon.te
++++ refpolicy-2.20250206/policy/modules/services/rasdaemon.te
 @@ -29,6 +29,7 @@ kernel_read_vm_overcommit_sysctl(rasdaem
  kernel_search_fs_sysctls(rasdaemon_t)
  
@@ -1901,11 +1893,11 @@ Index: refpolicy-2.20240821/policy/modules/services/rasdaemon.te
  dev_read_urand(rasdaemon_t)
  dev_rw_cpu_microcode(rasdaemon_t)
  
-Index: refpolicy-2.20240821/policy/modules/services/rpc.fc
+Index: refpolicy-2.20250206/policy/modules/services/rpc.fc
 ===================================================================
---- refpolicy-2.20240821.orig/policy/modules/services/rpc.fc
-+++ refpolicy-2.20240821/policy/modules/services/rpc.fc
-@@ -19,6 +19,7 @@
+--- refpolicy-2.20250206.orig/policy/modules/services/rpc.fc
++++ refpolicy-2.20250206/policy/modules/services/rpc.fc
+@@ -20,6 +20,7 @@
  /usr/lib/systemd/system/rpc.*\.service --   gen_context(system_u:object_r:rpcd_unit_t,s0)
  
  /usr/sbin/blkmapd	--	gen_context(system_u:object_r:blkmapd_exec_t,s0)
@@ -1913,3 +1905,28 @@ Index: refpolicy-2.20240821/policy/modules/services/rpc.fc
  /usr/sbin/nfsdcld	--	gen_context(system_u:object_r:rpcd_exec_t,s0)
  /usr/sbin/rpc\..*	--	gen_context(system_u:object_r:rpcd_exec_t,s0)
  /usr/sbin/rpc\.idmapd	--	gen_context(system_u:object_r:rpcd_exec_t,s0)
+Index: refpolicy-2.20250206/policy/modules/services/gpsd.te
+===================================================================
+--- refpolicy-2.20250206.orig/policy/modules/services/gpsd.te
++++ refpolicy-2.20250206/policy/modules/services/gpsd.te
+@@ -29,7 +29,7 @@ files_tmpfs_file(gpsd_tmpfs_t)
+ 
+ allow gpsd_t self:capability { fowner fsetid setgid setuid sys_nice sys_time sys_tty_config };
+ dontaudit gpsd_t self:capability { dac_override dac_read_search };
+-allow gpsd_t self:process { setsched signal_perms };
++allow gpsd_t self:process { getsession setsched signal_perms };
+ allow gpsd_t self:shm create_shm_perms;
+ allow gpsd_t self:unix_dgram_socket sendto;
+ allow gpsd_t self:tcp_socket { accept listen };
+Index: refpolicy-2.20250206/policy/modules/kernel/files.fc
+===================================================================
+--- refpolicy-2.20250206.orig/policy/modules/kernel/files.fc
++++ refpolicy-2.20250206/policy/modules/kernel/files.fc
+@@ -261,7 +261,6 @@ ifndef(`distro_redhat',`
+ /var/run		-l	gen_context(system_u:object_r:var_run_t,s0)
+ 
+ /var/spool(/.*)?		gen_context(system_u:object_r:var_spool_t,s0)
+-/var/spool/postfix/etc(/.*)?	gen_context(system_u:object_r:etc_t,s0)
+ /var/spool/postfix/pid	-d	gen_context(system_u:object_r:var_run_t,s0)
+ 
+ /var/tmp		-d	gen_context(system_u:object_r:tmp_t,s0-mls_systemhigh)

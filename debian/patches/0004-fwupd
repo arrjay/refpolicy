@@ -1,17 +1,17 @@
-Index: refpolicy-2.20240817/policy/modules/system/fwupd.fc
+Index: refpolicy-2.20250122/policy/modules/system/fwupd.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20240817/policy/modules/system/fwupd.fc
++++ refpolicy-2.20250122/policy/modules/system/fwupd.fc
 @@ -0,0 +1,5 @@
 +/usr/bin/fwupdmgr	--	gen_context(system_u:object_r:fwupdmgr_exec_t,s0)
 +/usr/libexec/fwupd/fwupd --	gen_context(system_u:object_r:fwupd_exec_t,s0)
 +/var/lib/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_var_lib_t,s0)
 +/var/cache/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_cache_t,s0)
 +/etc/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_conf_t,s0)
-Index: refpolicy-2.20240817/policy/modules/system/fwupd.if
+Index: refpolicy-2.20250122/policy/modules/system/fwupd.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20240817/policy/modules/system/fwupd.if
++++ refpolicy-2.20250122/policy/modules/system/fwupd.if
 @@ -0,0 +1,36 @@
 +## <summary>Policy for firmwate update daemon and utility.</summary>
 +##
@@ -49,11 +49,11 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.if
 +	domtrans_pattern($1, fwupdmgr_exec_t, fwupdmgr_t)
 +	roleattribute $2 fwupdmgr_roles;
 +')
-Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
+Index: refpolicy-2.20250122/policy/modules/system/fwupd.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20240817/policy/modules/system/fwupd.te
-@@ -0,0 +1,236 @@
++++ refpolicy-2.20250122/policy/modules/system/fwupd.te
+@@ -0,0 +1,254 @@
 +policy_module(fwupd)
 +
 +########################################
@@ -103,7 +103,9 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +allow fwupd_t self:capability { dac_override dac_read_search linux_immutable sys_admin };
 +allow fwupd_t self:fifo_file rw_file_perms;
 +allow fwupd_t self:process getsched;
-+allow fwupd_t self:udp_socket create;
++allow fwupd_t self:udp_socket { create connect };
++allow fwupd_t self:tcp_socket create;
++allow fwupd_t self:netlink_route_socket create;
 +
 +allow fwupd_t self:netlink_kobject_uevent_socket create_socket_perms;
 +
@@ -119,23 +121,29 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +auth_use_pam_motd_dynamic(fwupd_t)
 +
 +allow fwupd_t fwupd_runtime_t:file manage_file_perms;
++allow fwupd_t fwupdmgr_tmpfs_t:file rw_inherited_file_perms;
 +
 +kernel_read_kernel_sysctls(fwupd_t)
 +# for /proc/filesystems etc
 +kernel_read_system_state(fwupd_t)
 +kernel_read_vm_overcommit_sysctl(fwupd_t)
++kernel_watch_kernel_sysctl(fwupd_t)
++kernel_watch_proc(fwupd_t)
 +
 +dev_getattr_sysfs(fwupd_t)
++dev_map_sysfs_files(fwupd_t)
 +dev_read_gpiochip_device(fwupd_t)
 +dev_read_urand(fwupd_t)
 +dev_read_sysfs(fwupd_t)
 +dev_rw_acpi_bios(fwupd_t)
 +dev_rw_cpu_microcode(fwupd_t)
++dev_rw_dri(fwupd_t)
 +dev_rw_generic_usb_dev(fwupd_t)
 +dev_rw_mei_device(fwupd_t)
 +dev_rw_tpm(fwupd_t)
 +dev_rw_xserver_misc(fwupd_t)
 +dev_rx_raw_memory(fwupd_t)
++dev_watch_sysfs_dirs(fwupd_t)
 +
 +corecmd_exec_bin(fwupd_t)
 +corecmd_list_bin(fwupd_t)
@@ -144,6 +152,7 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +dbus_read_lib_files(fwupd_t)
 +dbus_system_bus_client(fwupd_t)
 +dbus_connect_system_bus(fwupd_t)
++dbus_use_system_bus_fds(fwupd_t)
 +
 +files_map_usr_files(fwupd_t)
 +files_read_etc_files(fwupd_t)
@@ -177,11 +186,14 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +selinux_get_enforce_mode(fwupd_t)
 +selinux_get_fs_mount(fwupd_t)
 +seutil_search_default_contexts(fwupd_t)
++selinux_watch_status_page(fwupd_t)
 +
 +storage_raw_read_fixed_disk(fwupd_t)
 +storage_raw_write_fixed_disk(fwupd_t)
 +
 +sysnet_read_config(fwupd_t)
++
++userdom_map_user_runtime_files(fwupd_t)
 +
 +udev_read_runtime_files(fwupd_t)
 +
@@ -203,6 +215,10 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +')
 +
 +optional_policy(`
++	low_mem_mon_dbus_chat(fwupd_t)
++')
++
++optional_policy(`
 +	modemmanager_dbus_chat(fwupd_t)
 +')
 +
@@ -217,6 +233,7 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +optional_policy(`
 +	systemd_dbus_chat_logind(fwupd_t)
 +	systemd_use_logind_fds(fwupd_t)
++	systemd_write_inherited_logind_inhibit_pipes(fwupd_t)
 +')
 +
 +########################################
@@ -232,8 +249,10 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +
 +allow fwupdmgr_t fwupd_t:dbus send_msg;
 +allow fwupd_t fwupdmgr_t:dbus send_msg;
++allow fwupd_t fwupdmgr_t:fd use;
 +
 +kernel_read_system_state(fwupdmgr_t)
++kernel_read_vm_overcommit_sysctl(fwupdmgr_t)
 +
 +corecmd_exec_bin(fwupdmgr_t)
 +domain_use_interactive_fds(fwupdmgr_t)
@@ -258,13 +277,16 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +# for dconf
 +userdom_map_user_tmp_files(fwupdmgr_t)
 +userdom_rw_user_tmp_files(fwupdmgr_t)
-+userdom_search_user_runtime_root(fwupdmgr_t)
-+userdom_search_user_runtime(fwupdmgr_t)
++userdom_manage_user_runtime_dirs(fwupdmgr_t)
++userdom_manage_user_runtime_files(fwupdmgr_t)
++userdom_map_user_runtime_files(fwupdmgr_t)
++xdg_search_config_dirs(fwupdmgr_t)
 +
 +optional_policy(`
 +	dbus_list_system_bus_runtime(fwupdmgr_t)
 +	dbus_write_session_runtime_socket(fwupdmgr_t)
 +	dbus_system_bus_client(fwupdmgr_t)
++	dbus_system_bus_receive_file_handle(fwupdmgr_t, fwupdmgr_tmpfs_t)
 +')
 +
 +optional_policy(`
@@ -283,17 +305,13 @@ Index: refpolicy-2.20240817/policy/modules/system/fwupd.te
 +')
 +
 +optional_policy(`
-+	userdom_manage_user_runtime_dirs(fwupdmgr_t)
-+')
-+
-+optional_policy(`
 +	unconfined_dbus_send(fwupdmgr_t)
 +	unconfined_stream_connect(fwupdmgr_t)
 +')
-Index: refpolicy-2.20240817/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250122/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20240817/policy/modules/roles/sysadm.te
+--- refpolicy-2.20250122.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250122/policy/modules/roles/sysadm.te
 @@ -455,6 +455,10 @@ optional_policy(`
  ')
  
@@ -305,11 +323,11 @@ Index: refpolicy-2.20240817/policy/modules/roles/sysadm.te
  	gatekeeper_admin(sysadm_t, sysadm_r)
  ')
  
-Index: refpolicy-2.20240817/policy/modules/system/unconfined.te
+Index: refpolicy-2.20250122/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20240817/policy/modules/system/unconfined.te
-@@ -116,6 +116,10 @@ optional_policy(`
+--- refpolicy-2.20250122.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20250122/policy/modules/system/unconfined.te
+@@ -119,6 +119,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -320,11 +338,11 @@ Index: refpolicy-2.20240817/policy/modules/system/unconfined.te
  	hadoop_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
  ')
  
-Index: refpolicy-2.20240817/policy/modules/kernel/devices.if
+Index: refpolicy-2.20250122/policy/modules/kernel/devices.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/kernel/devices.if
-+++ refpolicy-2.20240817/policy/modules/kernel/devices.if
-@@ -2443,6 +2443,24 @@ interface(`dev_rw_framebuffer',`
+--- refpolicy-2.20250122.orig/policy/modules/kernel/devices.if
++++ refpolicy-2.20250122/policy/modules/kernel/devices.if
+@@ -2461,6 +2461,24 @@ interface(`dev_rw_framebuffer',`
  
  ########################################
  ## <summary>
@@ -349,11 +367,10 @@ Index: refpolicy-2.20240817/policy/modules/kernel/devices.if
  ##	Allow read/write the hypervkvp device
  ## </summary>
  ## <param name="domain">
-@@ -2935,6 +2953,24 @@ interface(`dev_dontaudit_rw_mei',`
- ')
+@@ -2954,6 +2972,24 @@ interface(`dev_dontaudit_rw_mei',`
  
  ########################################
-+## <summary>
+ ## <summary>
 +##	Read and write the Intel mei control device.
 +## </summary>
 +## <param name="domain">
@@ -371,6 +388,218 @@ Index: refpolicy-2.20240817/policy/modules/kernel/devices.if
 +')
 +
 +########################################
- ## <summary>
++## <summary>
  ##	dontaudit getattr raw memory devices (e.g. /dev/mem).
  ## </summary>
+ ## <param name="domain">
+@@ -4830,6 +4866,42 @@ interface(`dev_relabel_sysfs_dirs',`
+ ')
+ 
+ ########################################
++## <summary>
++##     Allow watching sysfs dirs
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_watch_sysfs_dirs',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	allow $1 sysfs_t:dir watch;
++')
++
++########################################
++## <summary>
++##     Allow mapping sysfs files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_map_sysfs_files',`
++	gen_require(`
++		type sysfs_t;
++	')
++
++	allow $1 sysfs_t:file map;
++')
++
++########################################
+ ## <summary>
+ ##	Relabel from/to all sysfs types.
+ ## </summary>
+Index: refpolicy-2.20250122/policy/modules/services/dbus.if
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20250122/policy/modules/services/dbus.if
+@@ -664,6 +664,30 @@ interface(`dbus_use_system_bus_pidfds',`
+ 
+ ########################################
+ ## <summary>
++##	Allow DBUS system bus to receive file handles
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to receive fds from
++##	</summary>
++## </param>
++## <param name="file type">
++##	<summary>
++##	Type of file to receive
++##	</summary>
++## </param>
++#
++interface(`dbus_system_bus_receive_file_handle',`
++	gen_require(`
++		type system_dbusd_t;
++	')
++
++	allow system_dbusd_t $1:fd use;
++	allow system_dbusd_t $2:file { read write };
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to read and
+ ##	write DBUS system bus TCP sockets.
+ ## </summary>
+Index: refpolicy-2.20250122/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250122/policy/modules/system/userdomain.if
+@@ -3736,6 +3736,44 @@ interface(`userdom_watch_user_runtime_di
+ 
+ ########################################
+ ## <summary>
++##	Manage user runtime files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_manage_user_runtime_files',`
++	gen_require(`
++		type user_runtime_t;
++	')
++
++	allow $1 user_runtime_t:dir rw_file_perms;
++	allow $1 user_runtime_t:file manage_file_perms;
++	userdom_search_user_runtime_root($1)
++')
++
++########################################
++## <summary>
++##	Map user runtime files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`userdom_map_user_runtime_files',`
++	gen_require(`
++		type user_runtime_t;
++	')
++
++	allow $1 user_runtime_t:file map;
++')
++
++########################################
++## <summary>
+ ##	Mount a filesystem on user runtime dir
+ ##	directories.
+ ## </summary>
+Index: refpolicy-2.20250122/policy/modules/kernel/kernel.if
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/kernel/kernel.if
++++ refpolicy-2.20250122/policy/modules/kernel/kernel.if
+@@ -967,6 +967,24 @@ interface(`kernel_dontaudit_getattr_proc
+ 
+ ########################################
+ ## <summary>
++##	Watch proc dirs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`kernel_watch_proc',`
++	gen_require(`
++		type proc_t;
++	')
++
++	allow $1 proc_t:dir watch;
++')
++
++########################################
++## <summary>
+ ##	Mount on proc directories.  (Deprecated)
+ ## </summary>
+ ## <param name="domain">
+@@ -2182,6 +2200,24 @@ interface(`kernel_dontaudit_search_kerne
+ 	dontaudit $1 sysctl_kernel_t:dir search;
+ ')
+ 
++########################################
++## <summary>
++##	Allow watching sysctl kernel dirs
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to allow watching.
++##	</summary>
++## </param>
++#
++interface(`kernel_watch_kernel_sysctl',`
++	gen_require(`
++		type sysctl_kernel_t;
++	')
++
++	allow $1 sysctl_kernel_t:dir watch;
++')
++
+ #######################################
+ ## <summary>
+ ##	Do not audit attempted reading of kernel sysctls
+Index: refpolicy-2.20250122/policy/modules/kernel/selinux.if
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/kernel/selinux.if
++++ refpolicy-2.20250122/policy/modules/kernel/selinux.if
+@@ -754,6 +754,25 @@ interface(`selinux_use_status_page',`
+ 
+ ########################################
+ ## <summary>
++##	Allows the caller to watch SE Linux status dir
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++## <rolecap/>
++#
++interface(`selinux_watch_status_page',`
++	gen_require(`
++		type security_t;
++	')
++
++	allow $1 security_t:dir watch;
++')
++
++########################################
++## <summary>
+ ##	Unconfined access to the SELinux kernel security server.
+ ## </summary>
+ ## <param name="domain">

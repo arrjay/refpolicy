@@ -1,3 +1,80 @@
+refpolicy (2:2.20250213-1) UNRELEASED; urgency=medium
+
+  * 20250213 new upstream release.
+  * Build-depend on sepol-utils for chkcon
+  * Allow mon_local_test_t to get devicekit power information from dbus
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 14 Feb 2025 18:51:19 +1100
+
+refpolicy (2:2.20250115-1) unstable; urgency=medium
+
+  * Latest git policy
+  * Allow needrestart to reload init
+  * Label /etc/xdg/Xwayland-session.d/* as xsession_exec_t
+  * Remove the etc_t label for /var/spool/postfix/etc as postfix_master_t
+    needs to write to it and we don't want to grant write access to etc_t
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 15 Jan 2025 19:22:34 +1100
+
+refpolicy (2:2.20241211-2) unstable; urgency=medium
+
+  * More systemd patches
+  * Allow plymouthd to signal init
+  * Add policy for needrestart
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 31 Dec 2024 19:14:26 +1100
+
+refpolicy (2:2.20241211-1) unstable; urgency=medium
+
+  * Latest git policy
+  * Allow gpsd_t to getsession
+  * Run gdm-runtime-config as xdm_t
+  * Allow fwupd_t to watch sysctl etc and fwupdmgr_t to manage dconf dirs
+  * Add filetrans pattern for systemd_passwd_agent_t creating
+    systemd_passwd_runtime_t dirs under systemd_user_runtime_t dirs
+  * Label /usr/libexec/gnome-remote-desktop-daemon as xdm_exec_t
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 21 Dec 2024 16:51:08 +1100
+
+refpolicy (2:2.20241119-1) unstable; urgency=medium
+
+  * Latest git policy
+  * Allow systemd_binfmt_t to read usr files
+  * Allow boinc_t to read vm sysctls
+  * label the new qt6 sddm greeter
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 04 Dec 2024 23:21:34 +1100
+
+refpolicy (2:2.20241013-1) unstable; urgency=medium
+
+  * Latest git policy
+  * Build-depend on python3-setools >= 4.5.1 due to upstream changes in git
+    refpolicy
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 13 Oct 2024 19:00:53 +1100
+
+refpolicy (2:2.20241008-1) unstable; urgency=medium
+
+  * Latest git policy, types for /dev/dma_heap/* /dev/udmabuf /dev/userfaultfd
+  * Allow ntpd_t to start and stop generic units for timedatectl set-ntp
+  * Label /opt/microsoft/msedge/microsoft-edge
+  * Remove sys_admin from cups
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 08 Oct 2024 18:44:35 +1100
+
+refpolicy (2:2.20240919-1) unstable; urgency=medium
+
+  * Latest git policy, systemd changes mostly for namespace resourced
+  * Allow bubblewrap to use user ttys
+  * Allow systemd_machine_id_setup_t to write to kmsg and have dac_override
+    capability for setting systemd.machine_id on the kernel command line.
+    Without this you get system hangs on boot with systemd-boot.
+  * Allow user_wm_t etc to send syslog messages,
+  * Allow lvm_t access to class alg_socket for cryptsetup benchmark
+  * Allow daemon domains to read-write initrc_t unix stream sockets
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 22 Sep 2024 16:53:50 +1000
+
 refpolicy (2:2.20240830-1) unstable; urgency=medium
 
   * Latest git policy, mostly container related changes

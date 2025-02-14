@@ -2,10 +2,10 @@ Description: cron patches
 Author: Russell Coker <russell@coker.com.au>
 Last-Update: 2017-02-21
 
-Index: refpolicy-2.20240629/policy/modules/services/cron.if
+Index: refpolicy-2.20250115/policy/modules/services/cron.if
 ===================================================================
---- refpolicy-2.20240629.orig/policy/modules/services/cron.if
-+++ refpolicy-2.20240629/policy/modules/services/cron.if
+--- refpolicy-2.20250115.orig/policy/modules/services/cron.if
++++ refpolicy-2.20250115/policy/modules/services/cron.if
 @@ -21,23 +21,32 @@ template(`cron_common_crontab_template',
  	# Declarations
  	#
@@ -333,10 +333,10 @@ Index: refpolicy-2.20240629/policy/modules/services/cron.if
  
  	files_search_spool($1)
  	admin_pattern($1, cron_spool_type)
-Index: refpolicy-2.20240629/policy/modules/services/cron.te
+Index: refpolicy-2.20250115/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20240629.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20240629/policy/modules/services/cron.te
+--- refpolicy-2.20250115.orig/policy/modules/services/cron.te
++++ refpolicy-2.20250115/policy/modules/services/cron.te
 @@ -25,15 +25,6 @@ gen_tunable(cron_can_relabel, false)
  ##	the generic cronjob domain.
  ##	</p>
@@ -618,10 +618,10 @@ Index: refpolicy-2.20240629/policy/modules/services/cron.te
 -optional_policy(`
 -	unconfined_domain(unconfined_cronjob_t)
 -')
-Index: refpolicy-2.20240629/policy/modules/services/cron.fc
+Index: refpolicy-2.20250115/policy/modules/services/cron.fc
 ===================================================================
---- refpolicy-2.20240629.orig/policy/modules/services/cron.fc
-+++ refpolicy-2.20240629/policy/modules/services/cron.fc
+--- refpolicy-2.20250115.orig/policy/modules/services/cron.fc
++++ refpolicy-2.20250115/policy/modules/services/cron.fc
 @@ -7,21 +7,14 @@
  /usr/bin/at	--	gen_context(system_u:object_r:crontab_exec_t,s0)
  /usr/bin/atd	--	gen_context(system_u:object_r:crond_exec_t,s0)
@@ -645,13 +645,12 @@ Index: refpolicy-2.20240629/policy/modules/services/cron.fc
  
  /var/lib/glpi/files(/.*)?	gen_context(system_u:object_r:cron_var_lib_t,s0)
  
-@@ -33,13 +26,10 @@
+@@ -33,12 +26,9 @@
  /run/atd\.pid	--	gen_context(system_u:object_r:crond_runtime_t,s0)
  /run/cron(d)?\.pid	--	gen_context(system_u:object_r:crond_runtime_t,s0)
  /run/cron(d)?\.reboot	--	gen_context(system_u:object_r:crond_runtime_t,s0)
 -/run/fcron\.fifo	-s	gen_context(system_u:object_r:crond_runtime_t,s0)
 -/run/fcron\.pid	--	gen_context(system_u:object_r:crond_runtime_t,s0)
- /run/.*cron.*	--	gen_context(system_u:object_r:crond_runtime_t,s0)
  
  /var/spool/anacron(/.*)?	gen_context(system_u:object_r:system_cron_spool_t,s0)
 -/var/spool/at(/.*)?	gen_context(system_u:object_r:user_cron_spool_t,s0)
@@ -660,7 +659,7 @@ Index: refpolicy-2.20240629/policy/modules/services/cron.fc
  
  /var/spool/cron	-d	gen_context(system_u:object_r:cron_spool_t,s0)
  #/var/spool/cron/root	--	gen_context(system_u:object_r:sysadm_cron_spool_t,s0)
-@@ -49,14 +39,6 @@
+@@ -48,14 +38,6 @@
  /var/spool/cron/crontabs/.*	--	<<none>>
  #/var/spool/cron/crontabs/root	--	gen_context(system_u:object_r:sysadm_cron_spool_t,s0)
  
@@ -675,11 +674,11 @@ Index: refpolicy-2.20240629/policy/modules/services/cron.fc
  ifdef(`distro_debian',`
  /var/spool/cron/atjobs	-d	gen_context(system_u:object_r:cron_spool_t,s0)
  /var/spool/cron/atjobs/[^/]*	--	<<none>>
-Index: refpolicy-2.20240629/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250115/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20240629.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20240629/policy/modules/roles/sysadm.te
-@@ -1290,7 +1290,7 @@ ifndef(`distro_redhat',`
+--- refpolicy-2.20250115.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250115/policy/modules/roles/sysadm.te
+@@ -1298,7 +1298,7 @@ ifndef(`distro_redhat',`
  	')
  
  	optional_policy(`
@@ -688,11 +687,11 @@ Index: refpolicy-2.20240629/policy/modules/roles/sysadm.te
  	')
  
  	optional_policy(`
-Index: refpolicy-2.20240629/policy/modules/system/unconfined.te
+Index: refpolicy-2.20250115/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20240629.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20240629/policy/modules/system/unconfined.te
-@@ -103,7 +103,7 @@ optional_policy(`
+--- refpolicy-2.20250115.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20250115/policy/modules/system/unconfined.te
+@@ -106,7 +106,7 @@ optional_policy(`
  ')
  
  optional_policy(`

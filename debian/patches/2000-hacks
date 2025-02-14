@@ -1,24 +1,7 @@
-Index: refpolicy-2.20240817/policy/modules/system/init.if
+Index: refpolicy-2.20250206/policy/modules/system/fstools.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/init.if
-+++ refpolicy-2.20240817/policy/modules/system/init.if
-@@ -178,7 +178,11 @@ interface(`init_domain',`
- 
- 	role system_r types $1;
- 
--	domtrans_pattern(init_t, $2, $1)
-+	ifdef(`init_systemd', `
-+		domtrans_pattern(init_t, $2, $1)
-+		allow init_t $1:unix_stream_socket create_stream_socket_perms;
-+		allow $1 init_t:unix_dgram_socket sendto;
-+	')
- 
- 	allow init_t $1:process rlimitinh;
- 
-Index: refpolicy-2.20240817/policy/modules/system/fstools.te
-===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/fstools.te
-+++ refpolicy-2.20240817/policy/modules/system/fstools.te
+--- refpolicy-2.20250206.orig/policy/modules/system/fstools.te
++++ refpolicy-2.20250206/policy/modules/system/fstools.te
 @@ -170,6 +170,11 @@ init_dontaudit_getattr_initctl(fsadm_t)
  init_read_state(fsadm_t)
  init_rw_script_stream_sockets(fsadm_t)
@@ -31,10 +14,10 @@ Index: refpolicy-2.20240817/policy/modules/system/fstools.te
  logging_send_syslog_msg(fsadm_t)
  
  miscfiles_read_localization(fsadm_t)
-Index: refpolicy-2.20240817/policy/modules/system/sysnetwork.te
+Index: refpolicy-2.20250206/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20240817/policy/modules/system/sysnetwork.te
+--- refpolicy-2.20250206.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20250206/policy/modules/system/sysnetwork.te
 @@ -365,6 +365,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
@@ -47,10 +30,10 @@ Index: refpolicy-2.20240817/policy/modules/system/sysnetwork.te
  logging_send_syslog_msg(ifconfig_t)
  
  miscfiles_read_localization(ifconfig_t)
-Index: refpolicy-2.20240817/config/appconfig-mcs/default_contexts
+Index: refpolicy-2.20250206/config/appconfig-mcs/default_contexts
 ===================================================================
---- refpolicy-2.20240817.orig/config/appconfig-mcs/default_contexts
-+++ refpolicy-2.20240817/config/appconfig-mcs/default_contexts
+--- refpolicy-2.20250206.orig/config/appconfig-mcs/default_contexts
++++ refpolicy-2.20250206/config/appconfig-mcs/default_contexts
 @@ -2,7 +2,7 @@ system_r:crond_t:s0		user_r:user_t:s0 st
  system_r:init_t:s0		user_r:user_systemd_t:s0 staff_r:staff_systemd_t:s0 sysadm_r:sysadm_systemd_t:s0 unconfined_r:unconfined_t:s0
  system_r:local_login_t:s0	user_r:user_t:s0 staff_r:staff_t:s0 sysadm_r:sysadm_t:s0 unconfined_r:unconfined_t:s0
@@ -60,11 +43,11 @@ Index: refpolicy-2.20240817/config/appconfig-mcs/default_contexts
  system_r:sulogin_t:s0		sysadm_r:sysadm_t:s0
  system_r:xdm_t:s0		user_r:user_t:s0 staff_r:staff_t:s0 sysadm_r:sysadm_t:s0 unconfined_r:unconfined_t:s0
  
-Index: refpolicy-2.20240817/Makefile
+Index: refpolicy-2.20250206/Makefile
 ===================================================================
---- refpolicy-2.20240817.orig/Makefile
-+++ refpolicy-2.20240817/Makefile
-@@ -256,6 +256,7 @@ M4PARAM += -D mls_num_sens=$(MLS_SENS) -
+--- refpolicy-2.20250206.orig/Makefile
++++ refpolicy-2.20250206/Makefile
+@@ -262,6 +262,7 @@ M4PARAM += -D mls_num_sens=$(MLS_SENS) -
  # differently on different distros
  ifeq ($(DISTRO),debian)
  	CTAGS := ctags-exuberant
@@ -72,11 +55,11 @@ Index: refpolicy-2.20240817/Makefile
  endif
  
  ifeq ($(DISTRO),gentoo)
-Index: refpolicy-2.20240817/policy/modules/system/systemd.te
+Index: refpolicy-2.20250206/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20240817/policy/modules/system/systemd.te
-@@ -2410,3 +2410,7 @@ optional_policy(`
+--- refpolicy-2.20250206.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250206/policy/modules/system/systemd.te
+@@ -2533,3 +2533,7 @@ optional_policy(`
  optional_policy(`
  	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
  ')
@@ -84,11 +67,11 @@ Index: refpolicy-2.20240817/policy/modules/system/systemd.te
 +optional_policy(`
 +	userdom_unlink_user_tmp_devices(systemd_user_runtime_dir_t)
 +')
-Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
+Index: refpolicy-2.20250206/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20240817/policy/modules/system/userdomain.if
-@@ -4877,6 +4877,25 @@ interface(`userdom_dontaudit_write_user_
+--- refpolicy-2.20250206.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250206/policy/modules/system/userdomain.if
+@@ -4978,6 +4978,25 @@ interface(`userdom_dontaudit_write_user_
  
  ########################################
  ## <summary>
@@ -114,10 +97,10 @@ Index: refpolicy-2.20240817/policy/modules/system/userdomain.if
  ##	Do not audit attempts to use user ttys.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20240817/policy/modules/services/mta.if
+Index: refpolicy-2.20250206/policy/modules/services/mta.if
 ===================================================================
---- refpolicy-2.20240817.orig/policy/modules/services/mta.if
-+++ refpolicy-2.20240817/policy/modules/services/mta.if
+--- refpolicy-2.20250206.orig/policy/modules/services/mta.if
++++ refpolicy-2.20250206/policy/modules/services/mta.if
 @@ -1237,3 +1237,22 @@ interface(`mta_rw_user_mail_stream_socke
  
  	allow $1 user_mail_domain:unix_stream_socket rw_socket_perms;
