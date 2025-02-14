@@ -580,6 +580,13 @@ cpucontrol = module
 cpufreqselector = module
 
 # Layer: contrib
+# Module: crio
+#
+# Container runtime
+# 
+crio = module
+
+# Layer: contrib
 # Module: cron
 #
 # Periodic execution of scheduled commands.
@@ -1124,6 +1131,13 @@ kismet = module
 # Kernel Samepage Merging Tuning Daemon.
 # 
 ksmtuned = module
+
+# Layer: contrib
+# Module: kubernetes
+#
+# Kubernetes container system
+# 
+kubernetes = module
 
 # Layer: contrib
 # Module: l2tp
