@@ -126,8 +126,15 @@ domain_type(systemd_homework_t)
 domain_entry_file(systemd_homework_t, systemd_homework_exec_t)
 role system_r types systemd_homework_t;
 
+type systemd_homed_record_t;
+files_auth_file(systemd_homed_record_t)
+
 type systemd_homed_runtime_t;
 files_runtime_file(systemd_homed_runtime_t)
+
+type systemd_homed_runtime_work_dir_t;
+files_runtime_file(systemd_homed_runtime_work_dir_t)
+files_mountpoint(systemd_homed_runtime_work_dir_t)
 
 type systemd_homed_storage_t;
 files_type(systemd_homed_storage_t)
@@ -212,6 +219,9 @@ init_mountpoint(systemd_networkd_runtime_t)
 type systemd_networkd_unit_t;
 init_unit_file(systemd_networkd_unit_t)
 
+type systemd_networkd_var_lib_t;
+files_type(systemd_networkd_var_lib_t)
+
 type systemd_notify_t;
 type systemd_notify_exec_t;
 init_daemon_domain(systemd_notify_t, systemd_notify_exec_t)
@@ -225,6 +235,13 @@ files_runtime_file(systemd_nspawn_runtime_t)
 
 type systemd_nspawn_tmp_t;
 files_tmp_file(systemd_nspawn_tmp_t)
+
+type systemd_nsresourced_t;
+type systemd_nsresourced_exec_t;
+init_daemon_domain(systemd_nsresourced_t, systemd_nsresourced_exec_t)
+
+type systemd_nsresourced_runtime_t;
+files_runtime_file(systemd_nsresourced_runtime_t)
 
 type systemd_pcrphase_t;
 type systemd_pcrphase_exec_t;
@@ -292,6 +309,8 @@ init_daemon_domain(systemd_sysctl_t, systemd_sysctl_exec_t)
 type systemd_sysusers_t;
 type systemd_sysusers_exec_t;
 init_system_domain(systemd_sysusers_t, systemd_sysusers_exec_t)
+# create /etc/group
+domain_obj_id_change_exemption(systemd_sysusers_t)
 role systemd_sysusers_roles types systemd_sysusers_t;
 
 type systemd_tmpfiles_t;
@@ -440,6 +459,7 @@ fs_check_write_binfmt_misc_dirs(systemd_binfmt_t)
 
 fs_getattr_cgroup(systemd_binfmt_t)
 fs_search_cgroup_dirs(systemd_binfmt_t)
+fs_getattr_nsfs_files(systemd_binfmt_t)
 
 ######################################
 #
@@ -528,6 +548,8 @@ seutil_search_default_contexts(systemd_coredump_t)
 allow systemd_generator_t self:fifo_file rw_fifo_file_perms;
 allow systemd_generator_t self:capability { dac_override sys_admin sys_resource };
 allow systemd_generator_t self:process { getcap getsched setfscreate signal };
+# for systemd-ssh-generator
+allow systemd_generator_t self:vsock_socket create;
 
 corecmd_exec_shell(systemd_generator_t)
 corecmd_exec_bin(systemd_generator_t)
@@ -538,6 +560,8 @@ dev_write_sysfs_dirs(systemd_generator_t)
 dev_read_urand(systemd_generator_t)
 dev_create_sysfs_files(systemd_generator_t)
 dev_write_sysfs(systemd_generator_t)
+# for systemd-ssh-generator
+dev_read_vsock(systemd_generator_t)
 
 files_read_etc_files(systemd_generator_t)
 files_read_etc_runtime_files(systemd_generator_t)
@@ -551,6 +575,7 @@ files_dontaudit_read_etc_runtime_files(systemd_generator_t)
 
 fs_list_efivars(systemd_generator_t)
 fs_getattr_all_fs(systemd_generator_t)
+fs_getattr_nsfs_files(systemd_generator_t)
 
 init_create_runtime_files(systemd_generator_t)
 init_manage_runtime_dirs(systemd_generator_t)
@@ -571,8 +596,10 @@ kernel_use_fds(systemd_generator_t)
 kernel_read_system_state(systemd_generator_t)
 kernel_read_kernel_sysctls(systemd_generator_t)
 kernel_dontaudit_getattr_proc(systemd_generator_t)
-# Where an unlabeled mountpoint is encounted:
+# Where an unlabeled mountpoint is encountered:
 kernel_dontaudit_search_unlabeled(systemd_generator_t)
+# vmware_vsock
+kernel_request_load_module(systemd_generator_t)
 
 modutils_domtrans(systemd_generator_t)
 
@@ -626,6 +653,11 @@ optional_policy(`
 ')
 
 optional_policy(`
+	# needed by systemd-ssh-generator
+	ssh_exec_sshd(systemd_generator_t)
+')
+
+optional_policy(`
 	# needed by zfs-mount-generator
 	zfs_read_config(systemd_generator_t)
 ')
@@ -653,6 +685,9 @@ allow systemd_homed_t systemd_homed_storage_t:file read_file_perms;
 allow systemd_homed_t systemd_homed_var_lib_t:dir manage_dir_perms;
 allow systemd_homed_t systemd_homed_var_lib_t:file manage_file_perms;
 init_var_lib_filetrans(systemd_homed_t, systemd_homed_var_lib_t, dir)
+
+# read /etc/machine-id
+files_read_etc_runtime_files(systemd_homed_t)
 
 # Entries such as /sys/devices/virtual/block/loop1/uevent:
 dev_read_sysfs(systemd_homed_t)
@@ -704,8 +739,15 @@ allow systemd_homework_t systemd_homed_runtime_t:dir manage_dir_perms;
 files_runtime_filetrans(systemd_homework_t, systemd_homed_runtime_t, file)
 init_runtime_filetrans(systemd_homework_t, systemd_homed_runtime_t, dir)
 
+read_files_pattern(systemd_homework_t, systemd_homed_runtime_work_dir_t, systemd_homed_record_t)
+create_files_pattern(systemd_homework_t, systemd_homed_runtime_work_dir_t, systemd_homed_record_t)
+delete_files_pattern(systemd_homework_t, systemd_homed_runtime_work_dir_t, systemd_homed_record_t)
+
+# read /etc/machine-id
+files_read_etc_runtime_files(systemd_homework_t)
+
 # mount on /run/systemd/user-home-mount
-allow systemd_homework_t systemd_homed_runtime_t:dir mounton;
+allow systemd_homework_t systemd_homed_runtime_work_dir_t:dir mounton;
 
 allow systemd_homework_t systemd_homed_storage_t:file manage_file_perms;
 files_home_filetrans(systemd_homework_t, systemd_homed_storage_t, file)
@@ -748,6 +790,12 @@ systemd_log_parse_environment(systemd_homework_t)
 
 udev_read_runtime_files(systemd_homework_t)
 
+# setup luks backed home directories in /run/cryptsetup
+optional_policy(`
+	lvm_manage_runtime_files(systemd_homework_t)
+	lvm_manage_runtime_dirs(systemd_homework_t)
+')
+
 #######################################
 #
 # Hostnamed policy
@@ -763,6 +811,7 @@ kernel_read_kernel_sysctls(systemd_hostnamed_t)
 kernel_dontaudit_getattr_proc(systemd_hostnamed_t)
 
 dev_read_sysfs(systemd_hostnamed_t)
+dev_read_vsock(systemd_hostnamed_t)
 
 files_read_etc_files(systemd_hostnamed_t)
 files_read_etc_runtime_files(systemd_hostnamed_t)
@@ -840,6 +889,7 @@ manage_files_pattern(systemd_journal_init_t, systemd_journal_t, systemd_journal_
 
 fs_getattr_all_fs(systemd_journal_init_t)
 fs_search_cgroup_dirs(systemd_journal_init_t)
+fs_getattr_nsfs_files(systemd_journal_init_t)
 
 kernel_getattr_proc(systemd_journal_init_t)
 kernel_read_kernel_sysctls(systemd_journal_init_t)
@@ -862,11 +912,15 @@ miscfiles_read_localization(systemd_journal_init_t)
 kernel_read_kernel_sysctls(systemd_locale_t)
 
 files_read_etc_files(systemd_locale_t)
+files_read_usr_files(systemd_locale_t)
 
 fs_getattr_all_fs(systemd_locale_t)
 fs_search_cgroup_dirs(systemd_locale_t)
+fs_getattr_nsfs_files(systemd_locale_t)
 
 init_stream_connect(systemd_locale_t)
+
+miscfiles_read_localization(systemd_locale_t)
 
 selinux_use_status_page(systemd_locale_t)
 
@@ -974,6 +1028,7 @@ fs_relabelfrom_tmpfs_dirs(systemd_logind_t)
 fs_unmount_tmpfs(systemd_logind_t)
 fs_getattr_xattr_fs(systemd_logind_t)
 fs_watch_memory_pressure(systemd_logind_t)
+fs_getattr_nsfs_files(systemd_logind_t)
 
 selinux_use_status_page(systemd_logind_t)
 
@@ -1056,6 +1111,9 @@ tunable_policy(`systemd_logind_get_bootloader',`
 	fs_getattr_dos_fs(systemd_logind_t)
 	fs_list_dos(systemd_logind_t)
 	fs_read_dos_files(systemd_logind_t)
+
+	# automounted bootloader partitions have dosfs_t for contents inside them, so we only need to allow getattr
+	fs_getattr_autofs(systemd_logind_t)
 
 	files_search_boot(systemd_logind_t)
 ')
@@ -1201,6 +1259,7 @@ init_read_state(systemd_machine_id_setup_t)
 
 fs_getattr_cgroup(systemd_modules_load_t)
 fs_getattr_xattr_fs(systemd_modules_load_t)
+fs_getattr_nsfs_files(systemd_modules_load_t)
 
 kernel_load_module(systemd_modules_load_t)
 kernel_read_kernel_sysctls(systemd_modules_load_t)
@@ -1240,6 +1299,11 @@ allow systemd_networkd_t self:unix_dgram_socket create_socket_perms;
 manage_dirs_pattern(systemd_networkd_t, systemd_networkd_runtime_t, systemd_networkd_runtime_t)
 manage_files_pattern(systemd_networkd_t, systemd_networkd_runtime_t, systemd_networkd_runtime_t)
 manage_lnk_files_pattern(systemd_networkd_t, systemd_networkd_runtime_t, systemd_networkd_runtime_t)
+manage_sock_files_pattern(systemd_networkd_t, systemd_networkd_runtime_t, systemd_networkd_runtime_t)
+
+init_var_lib_filetrans(systemd_networkd_t, systemd_networkd_var_lib_t, dir)
+manage_dirs_pattern(systemd_networkd_t, systemd_networkd_var_lib_t, systemd_networkd_var_lib_t)
+manage_files_pattern(systemd_networkd_t, systemd_networkd_var_lib_t, systemd_networkd_var_lib_t)
 
 kernel_read_system_state(systemd_networkd_t)
 kernel_read_kernel_sysctls(systemd_networkd_t)
@@ -1479,6 +1543,32 @@ optional_policy(`
 	virt_manage_virt_content(systemd_nspawn_t)
 ')
 
+#########################################
+#
+# nsresourced local policy
+#
+
+allow systemd_nsresourced_t self:capability { sys_resource };
+allow systemd_nsresourced_t self:process { getcap signal };
+allow systemd_nsresourced_t systemd_nsresourced_exec_t:file execute_no_trans;
+
+manage_dirs_pattern(systemd_nsresourced_t, systemd_nsresourced_runtime_t, systemd_nsresourced_runtime_t)
+manage_files_pattern(systemd_nsresourced_t, systemd_nsresourced_runtime_t, systemd_nsresourced_runtime_t)
+manage_sock_files_pattern(systemd_nsresourced_t, systemd_nsresourced_runtime_t, systemd_nsresourced_runtime_t)
+init_runtime_filetrans(systemd_nsresourced_t, systemd_nsresourced_runtime_t, dir)
+
+fs_getattr_cgroup(systemd_nsresourced_t)
+fs_getattr_nsfs_files(systemd_nsresourced_t)
+
+# for /proc/1/environ
+init_read_state(systemd_nsresourced_t)
+
+kernel_read_kernel_sysctls(systemd_nsresourced_t)
+# for /proc/cmdline
+kernel_read_system_state(systemd_nsresourced_t)
+
+systemd_log_parse_environment(systemd_nsresourced_t)
+
 #######################################
 #
 # systemd_passwd_agent_t local policy
@@ -1670,12 +1760,14 @@ files_watch_runtime_dirs(systemd_resolved_t)
 files_list_runtime(systemd_resolved_t)
 
 fs_getattr_all_fs(systemd_resolved_t)
+fs_getattr_nsfs_files(systemd_resolved_t)
 fs_search_cgroup_dirs(systemd_resolved_t)
 fs_search_tmpfs(systemd_resolved_t)
 fs_search_ramfs(systemd_resolved_t)
 fs_watch_memory_pressure(systemd_resolved_t)
 
 init_dgram_send(systemd_resolved_t)
+init_watch_runtime_dirs(systemd_resolved_t)
 
 miscfiles_read_generic_certs(systemd_resolved_t)
 
@@ -1732,6 +1824,7 @@ fs_getattr_all_fs(systemd_sessions_t)
 fs_search_cgroup_dirs(systemd_sessions_t)
 fs_search_tmpfs(systemd_sessions_t)
 fs_search_ramfs(systemd_sessions_t)
+fs_getattr_nsfs_files(systemd_sessions_t)
 
 kernel_read_kernel_sysctls(systemd_sessions_t)
 kernel_dontaudit_getattr_proc(systemd_sessions_t)
@@ -1766,6 +1859,7 @@ fs_getattr_all_fs(systemd_sysctl_t)
 fs_search_cgroup_dirs(systemd_sysctl_t)
 fs_search_ramfs(systemd_sysctl_t)
 fs_search_tmpfs(systemd_sysctl_t)
+fs_getattr_nsfs_files(systemd_sysctl_t)
 
 systemd_log_parse_environment(systemd_sysctl_t)
 
@@ -1781,6 +1875,7 @@ allow systemd_sysusers_t self:unix_dgram_socket sendto;
 files_manage_etc_files(systemd_sysusers_t)
 
 fs_getattr_all_fs(systemd_sysusers_t)
+fs_getattr_nsfs_files(systemd_sysusers_t)
 fs_search_all(systemd_sysusers_t)
 
 kernel_read_kernel_sysctls(systemd_sysusers_t)
@@ -1795,6 +1890,12 @@ seutil_libselinux_linked(systemd_sysusers_t)
 seutil_read_file_contexts(systemd_sysusers_t)
 
 systemd_log_parse_environment(systemd_sysusers_t)
+
+systemd_stream_connect_nsresourced(systemd_sysusers_t)
+
+# package upgrade
+userdom_use_all_users_fds(systemd_sysusers_t)
+userdom_use_inherited_user_terminals(systemd_sysusers_t)
 
 #########################################
 #
@@ -1874,6 +1975,7 @@ fs_list_tmpfs(systemd_tmpfiles_t)
 fs_relabelfrom_tmpfs_dirs(systemd_tmpfiles_t)
 fs_getattr_all_fs(systemd_tmpfiles_t)
 fs_search_cgroup_dirs(systemd_tmpfiles_t)
+fs_getattr_nsfs_files(systemd_tmpfiles_t)
 
 selinux_get_fs_mount(systemd_tmpfiles_t)
 selinux_use_status_page(systemd_tmpfiles_t)
@@ -1966,6 +2068,7 @@ files_etc_filetrans(systemd_update_done_t, systemd_update_run_t, file)
 files_var_filetrans(systemd_update_done_t, systemd_update_run_t, file)
 
 fs_getattr_all_fs(systemd_update_done_t)
+fs_getattr_nsfs_files(systemd_update_done_t)
 fs_search_cgroup_dirs(systemd_update_done_t)
 
 kernel_read_kernel_sysctls(systemd_update_done_t)
@@ -2082,6 +2185,7 @@ files_read_etc_runtime_files(systemd_userdbd_t)
 files_read_usr_files(systemd_userdbd_t)
 
 fs_getattr_all_fs(systemd_userdbd_t)
+fs_getattr_nsfs_files(systemd_userdbd_t)
 fs_search_cgroup_dirs(systemd_userdbd_t)
 fs_read_efivarfs_files(systemd_userdbd_t)
 fs_watch_memory_pressure(systemd_userdbd_t)
@@ -2097,6 +2201,8 @@ kernel_read_kernel_sysctls(systemd_userdbd_t)
 seutil_search_default_contexts(systemd_userdbd_t)
 
 systemd_log_parse_environment(systemd_userdbd_t)
+
+systemd_stream_connect_nsresourced(systemd_userdbd_t)
 
 #########################################
 #
@@ -2122,6 +2228,7 @@ fs_read_cgroup_files(systemd_user_runtime_dir_t)
 fs_getattr_cgroup(systemd_user_runtime_dir_t)
 fs_search_cgroup_dirs(systemd_user_runtime_dir_t)
 fs_getattr_xattr_fs(systemd_user_runtime_dir_t)
+fs_getattr_nsfs_files(systemd_user_runtime_dir_t)
 
 kernel_read_kernel_sysctls(systemd_user_runtime_dir_t)
 kernel_dontaudit_getattr_proc(systemd_user_runtime_dir_t)

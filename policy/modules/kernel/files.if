@@ -738,6 +738,30 @@ interface(`files_read_all_files',`
 
 ########################################
 ## <summary>
+##	Read and memory map all files.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_mmap_read_all_files',`
+	gen_require(`
+		attribute file_type;
+	')
+
+	allow $1 file_type:dir list_dir_perms;
+	mmap_read_files_pattern($1, file_type, file_type)
+
+	optional_policy(`
+		auth_read_shadow($1)
+		auth_map_shadow($1)
+	')
+')
+
+########################################
+## <summary>
 ##	Allow shared library text relocations in all files.
 ## </summary>
 ## <desc>
@@ -1948,6 +1972,24 @@ interface(`files_watch_all_mount_perm',`
 	')
 
 	allow $1 mountpoint:dir watch_with_perm;
+')
+
+########################################
+## <summary>
+##	Watch all mount superblock changes
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`files_watch_all_mount_sb',`
+	gen_require(`
+		attribute mountpoint;
+	')
+
+	allow $1 mountpoint:dir watch_sb;
 ')
 
 ########################################
@@ -3796,7 +3838,27 @@ interface(`files_dontaudit_read_etc_runtime_files',`
 
 ########################################
 ## <summary>
-##	Do not audit attempts to execuite files
+##	Do not audit attempts to execute files
+##	in /etc that are dynamically
+##	created on boot, such as mtab.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain to not audit.
+##	</summary>
+## </param>
+#
+interface(`files_dontaudit_exec_etc_runtime_files',`
+	gen_require(`
+		type etc_runtime_t;
+	')
+
+	dontaudit $1 etc_runtime_t:file execute;
+')
+
+########################################
+## <summary>
+##	Do not audit attempts to execute files
 ##	in /etc that are dynamically
 ##	created on boot, such as mtab.
 ## </summary>
@@ -3807,11 +3869,8 @@ interface(`files_dontaudit_read_etc_runtime_files',`
 ## </param>
 #
 interface(`files_dontaudit_execuite_etc_runtime_files',`
-	gen_require(`
-		type etc_runtime_t;
-	')
-
-	dontaudit $1 etc_runtime_t:file execute;
+	refpolicywarn(`$0($*) has been deprecated, please use files_dontaudit_exec_etc_runtime_files() instead.')
+	files_dontaudit_exec_etc_runtime_files($1)
 ')
 
 ########################################
