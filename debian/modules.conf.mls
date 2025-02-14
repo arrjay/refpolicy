@@ -1525,6 +1525,13 @@ oddjob = module
 oident = module
 
 # Layer: contrib
+# Module: openarc
+#
+# OpenARC Authenticated Received Chain RFC 8617 service
+# 
+openarc = module
+
+# Layer: contrib
 # Module: openca
 #
 # Open Certificate Authority.
