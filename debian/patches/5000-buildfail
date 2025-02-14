@@ -1,0 +1,52 @@
+Index: refpolicy-2.20241211/policy/modules/system/unconfined.te
+===================================================================
+--- refpolicy-2.20241211.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20241211/policy/modules/system/unconfined.te
+@@ -278,8 +278,9 @@ optional_policy(`
+ # Unconfined seuser
+ #
+ 
+-ifdef(`direct_sysadm_daemon',`
+-        gen_user(unconfined_u, unconfined, unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
+-',`
+-        gen_user(unconfined_u, unconfined, unconfined_r, s0, s0 - mls_systemhigh, mcs_allcats)
+-')
++# move this to policy/users until the build issue is fixed
++#ifdef(`direct_sysadm_daemon',`
++#        gen_user(unconfined_u, unconfined, unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
++#',`
++#        gen_user(unconfined_u, unconfined, unconfined_r, s0, s0 - mls_systemhigh, mcs_allcats)
++#')
+Index: refpolicy-2.20241211/policy/users
+===================================================================
+--- refpolicy-2.20241211.orig/policy/users
++++ refpolicy-2.20241211/policy/users
+@@ -28,6 +28,14 @@ gen_user(user_u, user, user_r, s0, s0)
+ gen_user(staff_u, staff, staff_r sysadm_r ifdef(`enable_mls',`secadm_r auditadm_r'), s0, s0 - mls_systemhigh, mcs_allcats)
+ gen_user(sysadm_u, sysadm, sysadm_r, s0, s0 - mls_systemhigh, mcs_allcats)
+ 
++# Until order dependence is fixed for users:
++# Add this back until it builds without it
++ifdef(`direct_sysadm_daemon',`
++	gen_user(unconfined_u, unconfined, unconfined_r system_r, s0, s0 - mls_systemhigh, mcs_allcats)
++',`
++	gen_user(unconfined_u, unconfined, unconfined_r, s0, s0 - mls_systemhigh, mcs_allcats)
++')
++
+ #
+ # The following users correspond to Unix identities.
+ # These identities are typically assigned as the user attribute
+Index: refpolicy-2.20241211/policy/modules/kernel/kernel.te
+===================================================================
+--- refpolicy-2.20241211.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20241211/policy/modules/kernel/kernel.te
+@@ -33,6 +33,9 @@ role sysadm_r;
+ role staff_r;
+ role user_r;
+ 
++# until build issue is fixed
++role unconfined_r;
++
+ ifdef(`enable_mls',`
+ 	role secadm_r;
+ 	role auditadm_r;
