@@ -1,8 +1,14 @@
-refpolicy (2:2.20250213-1) UNRELEASED; urgency=medium
+refpolicy (2:2.20250213-1) unstable; urgency=medium
 
   * 20250213 new upstream release.
   * Build-depend on sepol-utils for chkcon
+  * Changed all depends and build-depends to 3.8 of all the SE Linux packages
+    Biggest problem is that libselinux1 3.8 and libsemanage2 3.7 breaks
+    install with "Re-declaration of role unconfined_r" .. "Failed to build AST"
   * Allow mon_local_test_t to get devicekit power information from dbus
+  * As a temporary measure comment out the validateappconfig in the Makefile
+    to work around a SEGV so we can build this without bugs in other packages
+    getting in the way.
 
  -- Russell Coker <russell@coker.com.au>  Fri, 14 Feb 2025 18:51:19 +1100
 
