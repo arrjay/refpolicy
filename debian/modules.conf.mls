@@ -1630,6 +1630,13 @@ pkcs = module
 plymouthd = module
 
 # Layer: contrib
+# Module: podman
+#
+# podman container management service
+# 
+podman = module
+
+# Layer: contrib
 # Module: policykit
 #
 # Policy framework for controlling privileges for system-wide services.
