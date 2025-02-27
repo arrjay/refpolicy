@@ -1,3 +1,10 @@
+refpolicy (2:2.20250213-2) UNRELEASED; urgency=medium
+
+  * add crio kubernetes openarc podman to the module exclusion list for
+    handsets
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 27 Feb 2025 18:40:34 +1100
+
 refpolicy (2:2.20250213-1) unstable; urgency=medium
 
   * 20250213 new upstream release.
