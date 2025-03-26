@@ -1,7 +1,7 @@
-Index: refpolicy-2.20250206/policy/modules/system/systemd.if
+Index: refpolicy-2.20250213/policy/modules/system/systemd.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/systemd.if
-+++ refpolicy-2.20250206/policy/modules/system/systemd.if
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20250213/policy/modules/system/systemd.if
 @@ -67,6 +67,8 @@ template(`systemd_role_template',`
  	allow $1_systemd_t $3:process { rlimitinh setsched signal_perms };
  	corecmd_shell_domtrans($1_systemd_t, $3)
@@ -57,7 +57,7 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  	miscfiles_watch_localization($1_systemd_t)
  
  	mount_read_runtime_files($1_systemd_t)
-@@ -138,6 +153,10 @@ template(`systemd_role_template',`
+@@ -138,12 +153,17 @@ template(`systemd_role_template',`
  	seutil_search_default_contexts($1_systemd_t)
  	seutil_read_file_contexts($1_systemd_t)
  
@@ -68,7 +68,14 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  	systemd_manage_conf_home_content($1_systemd_t)
  	systemd_manage_data_home_content($1_systemd_t)
  
-@@ -231,6 +250,10 @@ template(`systemd_role_template',`
+ 	systemd_search_user_runtime_unit_dirs($1_systemd_t)
+ 	systemd_search_user_transient_unit_dirs($1_systemd_t)
+ 	systemd_read_user_units_files($1_systemd_t)
++	systemd_read_logind_state($1_systemd_t)
+ 	systemd_write_notify_socket($1_systemd_t)
+ 
+ 	dbus_system_bus_client($1_systemd_t)
+@@ -231,6 +251,10 @@ template(`systemd_role_template',`
  	systemd_watch_passwd_runtime_dirs($3)
  
  	optional_policy(`
@@ -79,7 +86,7 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  		gpg_stream_connect_agent($1_systemd_t)
  	')
  
-@@ -250,6 +273,10 @@ template(`systemd_role_template',`
+@@ -250,6 +274,10 @@ template(`systemd_role_template',`
  		xdg_read_config_files($1_systemd_t)
  		xdg_read_data_files($1_systemd_t)
  	')
@@ -90,7 +97,7 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  ')
  
  ######################################
-@@ -373,6 +400,25 @@ interface(`systemd_write_notify_socket',
+@@ -373,6 +401,25 @@ interface(`systemd_write_notify_socket',
  	allow $1 systemd_runtime_notify_t:sock_file write_sock_file_perms;
  ')
  
@@ -116,7 +123,7 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  ######################################
  ## <summary>
  ##	Allow the target domain the permissions necessary
-@@ -442,6 +488,35 @@ template(`systemd_user_app_status',`
+@@ -442,6 +489,35 @@ template(`systemd_user_app_status',`
  	allow $2 $1_systemd_t:process sigchld;
  ')
  
@@ -152,7 +159,7 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  ########################################
  ## <summary>
  ##	Read the process state (/proc/pid) of
-@@ -2757,6 +2832,25 @@ interface(`systemd_read_resolved_runtime
+@@ -2757,6 +2833,25 @@ interface(`systemd_read_resolved_runtime
  	read_files_pattern($1, systemd_resolved_runtime_t, systemd_resolved_runtime_t)
  ')
  
@@ -178,7 +185,7 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
  ########################################
  ## <summary>
  ##	Execute the systemctl program.
-@@ -2926,3 +3020,45 @@ interface(`systemd_use_inherited_machine
+@@ -2926,3 +3021,45 @@ interface(`systemd_use_inherited_machine
  	allow $1 systemd_machined_t:fd use;
  	allow $1 systemd_machined_devpts_t:chr_file rw_inherited_term_perms;
  ')
@@ -224,10 +231,10 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.if
 +
 +	dgram_send_pattern($1, systemd_nspawn_var_run_t, systemd_nspawn_var_run_t, systemd_nspawn_t)
 +')
-Index: refpolicy-2.20250206/policy/modules/system/systemd.te
+Index: refpolicy-2.20250213/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20250206/policy/modules/system/systemd.te
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250213/policy/modules/system/systemd.te
 @@ -175,6 +175,7 @@ type systemd_logind_t;
  type systemd_logind_exec_t;
  init_daemon_domain(systemd_logind_t, systemd_logind_exec_t)
@@ -1035,10 +1042,10 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.te
 +optional_policy(`
 +	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
 +')
-Index: refpolicy-2.20250206/policy/modules/admin/dpkg.if
+Index: refpolicy-2.20250213/policy/modules/admin/dpkg.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/dpkg.if
-+++ refpolicy-2.20250206/policy/modules/admin/dpkg.if
+--- refpolicy-2.20250213.orig/policy/modules/admin/dpkg.if
++++ refpolicy-2.20250213/policy/modules/admin/dpkg.if
 @@ -356,3 +356,40 @@ interface(`dpkg_read_script_tmp_symlinks
  
  	allow $1 dpkg_script_tmp_t:lnk_file read_lnk_file_perms;
@@ -1080,10 +1087,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/dpkg.if
 +	allow $1 dpkg_t:dir search;
 +	allow $1 dpkg_t:file read_file_perms;
 +')
-Index: refpolicy-2.20250206/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250213/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20250206/policy/modules/roles/sysadm.te
+--- refpolicy-2.20250213.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250213/policy/modules/roles/sysadm.te
 @@ -117,6 +117,10 @@ ifdef(`init_systemd',`
  	systemd_dbus_chat_networkd(sysadm_t)
  	fs_read_nsfs_files(sysadm_t)
@@ -1095,10 +1102,10 @@ Index: refpolicy-2.20250206/policy/modules/roles/sysadm.te
  	# Allow sysadm to follow logs in the journal, i.e. with podman logs -f
  	systemd_watch_journal_dirs(sysadm_t)
  ')
-Index: refpolicy-2.20250206/policy/modules/services/networkmanager.te
+Index: refpolicy-2.20250213/policy/modules/services/networkmanager.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/networkmanager.te
-+++ refpolicy-2.20250206/policy/modules/services/networkmanager.te
+--- refpolicy-2.20250213.orig/policy/modules/services/networkmanager.te
++++ refpolicy-2.20250213/policy/modules/services/networkmanager.te
 @@ -344,6 +344,9 @@ optional_policy(`
  optional_policy(`
  	systemd_read_logind_runtime_files(NetworkManager_t)
@@ -1109,10 +1116,10 @@ Index: refpolicy-2.20250206/policy/modules/services/networkmanager.te
  	systemd_write_inherited_logind_inhibit_pipes(NetworkManager_t)
  ')
  
-Index: refpolicy-2.20250206/policy/modules/services/devicekit.te
+Index: refpolicy-2.20250213/policy/modules/services/devicekit.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/devicekit.te
-+++ refpolicy-2.20250206/policy/modules/services/devicekit.te
+--- refpolicy-2.20250213.orig/policy/modules/services/devicekit.te
++++ refpolicy-2.20250213/policy/modules/services/devicekit.te
 @@ -189,6 +189,12 @@ optional_policy(`
  ')
  
@@ -1126,10 +1133,10 @@ Index: refpolicy-2.20250206/policy/modules/services/devicekit.te
  	udev_domtrans_udevadm(devicekit_disk_t)
  	udev_read_runtime_files(devicekit_disk_t)
  ')
-Index: refpolicy-2.20250206/policy/modules/services/ssh.te
+Index: refpolicy-2.20250213/policy/modules/services/ssh.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/ssh.te
-+++ refpolicy-2.20250206/policy/modules/services/ssh.te
+--- refpolicy-2.20250213.orig/policy/modules/services/ssh.te
++++ refpolicy-2.20250213/policy/modules/services/ssh.te
 @@ -269,6 +269,7 @@ ifdef(`init_systemd',`
  	auth_use_pam_systemd(sshd_t)
  	init_dbus_chat(sshd_t)
@@ -1138,10 +1145,10 @@ Index: refpolicy-2.20250206/policy/modules/services/ssh.te
  	systemd_write_inherited_logind_sessions_pipes(sshd_t)
  ')
  
-Index: refpolicy-2.20250206/policy/modules/apps/gpg.if
+Index: refpolicy-2.20250213/policy/modules/apps/gpg.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/gpg.if
-+++ refpolicy-2.20250206/policy/modules/apps/gpg.if
+--- refpolicy-2.20250213.orig/policy/modules/apps/gpg.if
++++ refpolicy-2.20250213/policy/modules/apps/gpg.if
 @@ -64,6 +64,7 @@ template(`gpg_role',`
  	optional_policy(`
  		systemd_user_app_status($1, gpg_t)
@@ -1175,10 +1182,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/gpg.if
  ## <summary>
  ##	filetrans in gpg_runtime_t dirs
  ## </summary>
-Index: refpolicy-2.20250206/policy/modules/services/dirmngr.if
+Index: refpolicy-2.20250213/policy/modules/services/dirmngr.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/dirmngr.if
-+++ refpolicy-2.20250206/policy/modules/services/dirmngr.if
+--- refpolicy-2.20250213.orig/policy/modules/services/dirmngr.if
++++ refpolicy-2.20250213/policy/modules/services/dirmngr.if
 @@ -46,9 +46,28 @@ template(`dirmngr_role',`
  
  	optional_policy(`
@@ -1233,10 +1240,10 @@ Index: refpolicy-2.20250206/policy/modules/services/dirmngr.if
  ## <summary>
  ##	All of the rules required to
  ##	administrate an dirmngr environment.
-Index: refpolicy-2.20250206/policy/modules/system/logging.te
+Index: refpolicy-2.20250213/policy/modules/system/logging.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/logging.te
-+++ refpolicy-2.20250206/policy/modules/system/logging.te
+--- refpolicy-2.20250213.orig/policy/modules/system/logging.te
++++ refpolicy-2.20250213/policy/modules/system/logging.te
 @@ -395,7 +395,7 @@ optional_policy(`
  # sys_admin for the integrated klog of syslog-ng and metalog
  # sys_nice for rsyslog
@@ -1254,10 +1261,10 @@ Index: refpolicy-2.20250206/policy/modules/system/logging.te
  	systemd_watch_journal_dirs(syslogd_t)
  	systemd_relabelfrom_journal_files(syslogd_t)
  	systemd_relabelto_journal_files(syslogd_t)
-Index: refpolicy-2.20250206/policy/modules/services/colord.if
+Index: refpolicy-2.20250213/policy/modules/services/colord.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/colord.if
-+++ refpolicy-2.20250206/policy/modules/services/colord.if
+--- refpolicy-2.20250213.orig/policy/modules/services/colord.if
++++ refpolicy-2.20250213/policy/modules/services/colord.if
 @@ -58,3 +58,22 @@ interface(`colord_read_lib_files',`
  	files_search_var_lib($1)
  	read_files_pattern($1, colord_var_lib_t, colord_var_lib_t)
@@ -1281,10 +1288,10 @@ Index: refpolicy-2.20250206/policy/modules/services/colord.if
 +	allow $1 colord_var_lib_t:dir { list_dir_perms relabelfrom relabelto };
 +	allow $1 colord_var_lib_t:file { relabelfrom relabelto };
 +')
-Index: refpolicy-2.20250206/policy/modules/system/udev.if
+Index: refpolicy-2.20250213/policy/modules/system/udev.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/udev.if
-+++ refpolicy-2.20250206/policy/modules/system/udev.if
+--- refpolicy-2.20250213.orig/policy/modules/system/udev.if
++++ refpolicy-2.20250213/policy/modules/system/udev.if
 @@ -322,6 +322,25 @@ interface(`udev_read_runtime_files',`
  
  ########################################
@@ -1311,10 +1318,10 @@ Index: refpolicy-2.20250206/policy/modules/system/udev.if
  ##	dontaudit attempts to read/write udev runtime files.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20250206/policy/modules/kernel/terminal.if
+Index: refpolicy-2.20250213/policy/modules/kernel/terminal.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/kernel/terminal.if
-+++ refpolicy-2.20250206/policy/modules/kernel/terminal.if
+--- refpolicy-2.20250213.orig/policy/modules/kernel/terminal.if
++++ refpolicy-2.20250213/policy/modules/kernel/terminal.if
 @@ -264,6 +264,24 @@ interface(`term_write_console',`
  
  ########################################
@@ -1340,10 +1347,10 @@ Index: refpolicy-2.20250206/policy/modules/kernel/terminal.if
  ##	Read from the console.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20250206/policy/modules/system/init.te
+Index: refpolicy-2.20250213/policy/modules/system/init.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/init.te
-+++ refpolicy-2.20250206/policy/modules/system/init.te
+--- refpolicy-2.20250213.orig/policy/modules/system/init.te
++++ refpolicy-2.20250213/policy/modules/system/init.te
 @@ -557,6 +557,7 @@ ifdef(`init_systemd',`
  	term_setattr_unallocated_ttys(init_t)
  	term_watch_unallocated_ttys(init_t)
@@ -1361,19 +1368,19 @@ Index: refpolicy-2.20250206/policy/modules/system/init.te
  	fs_search_cgroup_dirs(init_domain_type)
  
  	# for /run/systemd/private
-Index: refpolicy-2.20250206/policy/modules/system/fstools.fc
+Index: refpolicy-2.20250213/policy/modules/system/fstools.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/fstools.fc
-+++ refpolicy-2.20250206/policy/modules/system/fstools.fc
+--- refpolicy-2.20250213.orig/policy/modules/system/fstools.fc
++++ refpolicy-2.20250213/policy/modules/system/fstools.fc
 @@ -1,3 +1,4 @@
 +/usr/lib/systemd/systemd-fsckd	--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/bin/addpart		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/bin/badblocks		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
  /usr/bin/blkid			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
-Index: refpolicy-2.20250206/policy/modules/services/dbus.te
+Index: refpolicy-2.20250213/policy/modules/services/dbus.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/dbus.te
-+++ refpolicy-2.20250206/policy/modules/services/dbus.te
+--- refpolicy-2.20250213.orig/policy/modules/services/dbus.te
++++ refpolicy-2.20250213/policy/modules/services/dbus.te
 @@ -92,6 +92,10 @@ ifdef(`enable_mls',`
  	init_ranged_system_domain(system_dbusd_t, dbusd_exec_t, s0 - mls_systemhigh)
  ')
@@ -1410,10 +1417,10 @@ Index: refpolicy-2.20250206/policy/modules/services/dbus.te
  
  auth_read_pam_console_data(session_bus_type)
  
-Index: refpolicy-2.20250206/policy/modules/apps/wm.if
+Index: refpolicy-2.20250213/policy/modules/apps/wm.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/wm.if
-+++ refpolicy-2.20250206/policy/modules/apps/wm.if
+--- refpolicy-2.20250213.orig/policy/modules/apps/wm.if
++++ refpolicy-2.20250213/policy/modules/apps/wm.if
 @@ -86,6 +86,8 @@ template(`wm_role_template',`
  	userdom_rw_user_tmpfs_files($1_wm_t)
  	userdom_map_user_tmpfs_files($1_wm_t)
@@ -1431,10 +1438,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/wm.if
  		systemd_user_app_status($1, $1_wm_t)
  		systemd_write_inherited_logind_inhibit_pipes($1_wm_t)
  	')
-Index: refpolicy-2.20250206/policy/modules/services/xserver.if
+Index: refpolicy-2.20250213/policy/modules/services/xserver.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/xserver.if
-+++ refpolicy-2.20250206/policy/modules/services/xserver.if
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20250213/policy/modules/services/xserver.if
 @@ -114,6 +114,9 @@ template(`xserver_restricted_role',`
  	xserver_read_xdm_runtime_files($2)
  	# gnome-session creates socket under /tmp/.ICE-unix/
@@ -1445,10 +1452,10 @@ Index: refpolicy-2.20250206/policy/modules/services/xserver.if
  	# Needed for escd, remove if we get escd policy
  	xserver_manage_xdm_tmp_files($2)
  
-Index: refpolicy-2.20250206/policy/modules/services/xserver.te
+Index: refpolicy-2.20250213/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20250206/policy/modules/services/xserver.te
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250213/policy/modules/services/xserver.te
 @@ -635,6 +635,10 @@ optional_policy(`
  ')
  
@@ -1460,10 +1467,10 @@ Index: refpolicy-2.20250206/policy/modules/services/xserver.te
  	unconfined_domain(xdm_t)
  	unconfined_domtrans(xdm_t)
  ')
-Index: refpolicy-2.20250206/policy/modules/system/userdomain.if
+Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20250206/policy/modules/system/userdomain.if
+--- refpolicy-2.20250213.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250213/policy/modules/system/userdomain.if
 @@ -638,6 +638,7 @@ template(`userdom_change_password_templa
  template(`userdom_common_user_template',`
  	gen_require(`
@@ -1488,10 +1495,10 @@ Index: refpolicy-2.20250206/policy/modules/system/userdomain.if
  		systemd_stream_connect_userdb($1_t)
  	')
  
-Index: refpolicy-2.20250206/policy/modules/system/unconfined.if
+Index: refpolicy-2.20250213/policy/modules/system/unconfined.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/unconfined.if
-+++ refpolicy-2.20250206/policy/modules/system/unconfined.if
+--- refpolicy-2.20250213.orig/policy/modules/system/unconfined.if
++++ refpolicy-2.20250213/policy/modules/system/unconfined.if
 @@ -129,6 +129,10 @@ interface(`unconfined_domain_noaudit',`
  	')
  
@@ -1503,10 +1510,10 @@ Index: refpolicy-2.20250206/policy/modules/system/unconfined.if
  		xserver_unconfined($1)
  	')
  ')
-Index: refpolicy-2.20250206/policy/modules/services/docker.te
+Index: refpolicy-2.20250213/policy/modules/services/docker.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/docker.te
-+++ refpolicy-2.20250206/policy/modules/services/docker.te
+--- refpolicy-2.20250213.orig/policy/modules/services/docker.te
++++ refpolicy-2.20250213/policy/modules/services/docker.te
 @@ -75,6 +75,7 @@ ifdef(`init_systemd',`
  	init_stop_system(dockerd_t)
  	init_get_system_status(dockerd_t)
@@ -1515,10 +1522,10 @@ Index: refpolicy-2.20250206/policy/modules/services/docker.te
  ')
  
  ########################################
-Index: refpolicy-2.20250206/policy/modules/services/mysql.te
+Index: refpolicy-2.20250213/policy/modules/services/mysql.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/mysql.te
-+++ refpolicy-2.20250206/policy/modules/services/mysql.te
+--- refpolicy-2.20250213.orig/policy/modules/services/mysql.te
++++ refpolicy-2.20250213/policy/modules/services/mysql.te
 @@ -127,6 +127,7 @@ fs_getattr_all_fs(mysqld_t)
  fs_search_auto_mountpoints(mysqld_t)
  fs_search_tmpfs(mysqld_t)
@@ -1538,10 +1545,10 @@ Index: refpolicy-2.20250206/policy/modules/services/mysql.te
  tunable_policy(`mysql_connect_any',`
  	corenet_sendrecv_all_client_packets(mysqld_t)
  	corenet_tcp_connect_all_ports(mysqld_t)
-Index: refpolicy-2.20250206/policy/modules/system/unconfined.te
+Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20250206/policy/modules/system/unconfined.te
+--- refpolicy-2.20250213.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20250213/policy/modules/system/unconfined.te
 @@ -70,6 +70,8 @@ ifdef(`init_systemd',`
  	init_pgm_spec_user_daemon_domain(unconfined_t)
  	allow unconfined_t self:system { reload start status stop };
@@ -1551,10 +1558,10 @@ Index: refpolicy-2.20250206/policy/modules/system/unconfined.te
  	optional_policy(`
  		systemd_dbus_chat_resolved(unconfined_t)
  		systemd_filetrans_passwd_runtime_dirs(unconfined_t)
-Index: refpolicy-2.20250206/policy/modules/kernel/filesystem.if
+Index: refpolicy-2.20250213/policy/modules/kernel/filesystem.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/kernel/filesystem.if
-+++ refpolicy-2.20250206/policy/modules/kernel/filesystem.if
+--- refpolicy-2.20250213.orig/policy/modules/kernel/filesystem.if
++++ refpolicy-2.20250213/policy/modules/kernel/filesystem.if
 @@ -637,7 +637,24 @@ interface(`fs_getattr_binfmt_misc_dirs',
  	')
  
@@ -1606,10 +1613,10 @@ Index: refpolicy-2.20250206/policy/modules/kernel/filesystem.if
  ## <summary>
  ##	Search cgroup directories.
  ## </summary>
-Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
+Index: refpolicy-2.20250213/policy/modules/apps/chromium.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/chromium.te
-+++ refpolicy-2.20250206/policy/modules/apps/chromium.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20250213/policy/modules/apps/chromium.te
 @@ -183,6 +183,8 @@ files_read_usr_files(chromium_t)
  files_map_usr_files(chromium_t)
  files_read_etc_files(chromium_t)
@@ -1644,10 +1651,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
  		systemd_dbus_chat_hostnamed(chromium_t)
  	')
  ')
-Index: refpolicy-2.20250206/policy/modules/apps/pulseaudio.if
+Index: refpolicy-2.20250213/policy/modules/apps/pulseaudio.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/pulseaudio.if
-+++ refpolicy-2.20250206/policy/modules/apps/pulseaudio.if
+--- refpolicy-2.20250213.orig/policy/modules/apps/pulseaudio.if
++++ refpolicy-2.20250213/policy/modules/apps/pulseaudio.if
 @@ -56,6 +56,7 @@ template(`pulseaudio_role',`
  
  	optional_policy(`
@@ -1656,10 +1663,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/pulseaudio.if
  	')
  ')
  
-Index: refpolicy-2.20250206/policy/modules/services/ssh.if
+Index: refpolicy-2.20250213/policy/modules/services/ssh.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/ssh.if
-+++ refpolicy-2.20250206/policy/modules/services/ssh.if
+--- refpolicy-2.20250213.orig/policy/modules/services/ssh.if
++++ refpolicy-2.20250213/policy/modules/services/ssh.if
 @@ -287,6 +287,7 @@ template(`ssh_server_template', `
  	')
  
@@ -1668,10 +1675,10 @@ Index: refpolicy-2.20250206/policy/modules/services/ssh.if
  		systemd_read_logind_sessions_files($1_t)
  		systemd_stream_connect_userdb($1_t)
  	')
-Index: refpolicy-2.20250206/policy/modules/system/systemd.fc
+Index: refpolicy-2.20250213/policy/modules/system/systemd.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/systemd.fc
-+++ refpolicy-2.20250206/policy/modules/system/systemd.fc
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.fc
++++ refpolicy-2.20250213/policy/modules/system/systemd.fc
 @@ -25,6 +25,7 @@
  /usr/lib/systemd/user-generators/.*								--	gen_context(system_u:object_r:systemd_generator_exec_t,s0)
  /usr/libexec/podman/quadlet										--	gen_context(system_u:object_r:systemd_generator_exec_t,s0)
@@ -1680,10 +1687,10 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.fc
  /usr/lib/systemd/systemd-activate	--	gen_context(system_u:object_r:systemd_activate_exec_t,s0)
  /usr/lib/systemd/systemd-backlight	--	gen_context(system_u:object_r:systemd_backlight_exec_t,s0)
  /usr/lib/systemd/systemd-binfmt		--	gen_context(system_u:object_r:systemd_binfmt_exec_t,s0)
-Index: refpolicy-2.20250206/policy/modules/services/ntp.te
+Index: refpolicy-2.20250213/policy/modules/services/ntp.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/ntp.te
-+++ refpolicy-2.20250206/policy/modules/services/ntp.te
+--- refpolicy-2.20250213.orig/policy/modules/services/ntp.te
++++ refpolicy-2.20250213/policy/modules/services/ntp.te
 @@ -158,6 +158,8 @@ ifdef(`init_systemd',`
  	allow ntpd_t self:capability { fowner setpcap };
  	init_read_state(ntpd_t)

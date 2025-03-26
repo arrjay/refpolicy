@@ -1,3 +1,15 @@
+refpolicy (2:2.20250213-3) UNRELEASED; urgency=medium
+
+  * allow user_systemd_t to read logind state
+  * allow ntpd to read the vm_overcommit sysctl
+  * allow system_dbusd_t the kill capability and init read runtime files so
+    the latest version of dbus-broker will work
+  * Allow mon local tests to stat dos filesystems
+    Allow mon_t to manage mon_var_lib_t dirs
+  * Allow fail2ban client to read kernel overcommit sysctl
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 26 Mar 2025 20:31:00 +1100
+
 refpolicy (2:2.20250213-2) unstable; urgency=medium
 
   * add crio kubernetes openarc podman to the module exclusion list for
