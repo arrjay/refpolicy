@@ -1,17 +1,17 @@
-Index: refpolicy-2.20250122/policy/modules/system/fwupd.fc
+Index: refpolicy-2.20250213/policy/modules/system/fwupd.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20250122/policy/modules/system/fwupd.fc
++++ refpolicy-2.20250213/policy/modules/system/fwupd.fc
 @@ -0,0 +1,5 @@
 +/usr/bin/fwupdmgr	--	gen_context(system_u:object_r:fwupdmgr_exec_t,s0)
 +/usr/libexec/fwupd/fwupd --	gen_context(system_u:object_r:fwupd_exec_t,s0)
 +/var/lib/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_var_lib_t,s0)
 +/var/cache/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_cache_t,s0)
 +/etc/fwupd(/.*)?		gen_context(system_u:object_r:fwupd_conf_t,s0)
-Index: refpolicy-2.20250122/policy/modules/system/fwupd.if
+Index: refpolicy-2.20250213/policy/modules/system/fwupd.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20250122/policy/modules/system/fwupd.if
++++ refpolicy-2.20250213/policy/modules/system/fwupd.if
 @@ -0,0 +1,36 @@
 +## <summary>Policy for firmwate update daemon and utility.</summary>
 +##
@@ -49,10 +49,10 @@ Index: refpolicy-2.20250122/policy/modules/system/fwupd.if
 +	domtrans_pattern($1, fwupdmgr_exec_t, fwupdmgr_t)
 +	roleattribute $2 fwupdmgr_roles;
 +')
-Index: refpolicy-2.20250122/policy/modules/system/fwupd.te
+Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20250122/policy/modules/system/fwupd.te
++++ refpolicy-2.20250213/policy/modules/system/fwupd.te
 @@ -0,0 +1,254 @@
 +policy_module(fwupd)
 +
@@ -103,9 +103,9 @@ Index: refpolicy-2.20250122/policy/modules/system/fwupd.te
 +allow fwupd_t self:capability { dac_override dac_read_search linux_immutable sys_admin };
 +allow fwupd_t self:fifo_file rw_file_perms;
 +allow fwupd_t self:process getsched;
-+allow fwupd_t self:udp_socket { create connect };
-+allow fwupd_t self:tcp_socket create;
-+allow fwupd_t self:netlink_route_socket create;
++allow fwupd_t self:udp_socket { create connect getattr };
++allow fwupd_t self:tcp_socket { create connect };
++allow fwupd_t self:netlink_route_socket { create bind getattr };
 +
 +allow fwupd_t self:netlink_kobject_uevent_socket create_socket_perms;
 +
@@ -308,10 +308,10 @@ Index: refpolicy-2.20250122/policy/modules/system/fwupd.te
 +	unconfined_dbus_send(fwupdmgr_t)
 +	unconfined_stream_connect(fwupdmgr_t)
 +')
-Index: refpolicy-2.20250122/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250213/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20250122/policy/modules/roles/sysadm.te
+--- refpolicy-2.20250213.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250213/policy/modules/roles/sysadm.te
 @@ -455,6 +455,10 @@ optional_policy(`
  ')
  
@@ -323,10 +323,10 @@ Index: refpolicy-2.20250122/policy/modules/roles/sysadm.te
  	gatekeeper_admin(sysadm_t, sysadm_r)
  ')
  
-Index: refpolicy-2.20250122/policy/modules/system/unconfined.te
+Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20250122/policy/modules/system/unconfined.te
+--- refpolicy-2.20250213.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20250213/policy/modules/system/unconfined.te
 @@ -119,6 +119,10 @@ optional_policy(`
  ')
  
@@ -338,10 +338,10 @@ Index: refpolicy-2.20250122/policy/modules/system/unconfined.te
  	hadoop_role(unconfined, unconfined_t, unconfined_application_exec_domain, unconfined_r)
  ')
  
-Index: refpolicy-2.20250122/policy/modules/kernel/devices.if
+Index: refpolicy-2.20250213/policy/modules/kernel/devices.if
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/kernel/devices.if
-+++ refpolicy-2.20250122/policy/modules/kernel/devices.if
+--- refpolicy-2.20250213.orig/policy/modules/kernel/devices.if
++++ refpolicy-2.20250213/policy/modules/kernel/devices.if
 @@ -2461,6 +2461,24 @@ interface(`dev_rw_framebuffer',`
  
  ########################################
@@ -435,10 +435,10 @@ Index: refpolicy-2.20250122/policy/modules/kernel/devices.if
  ## <summary>
  ##	Relabel from/to all sysfs types.
  ## </summary>
-Index: refpolicy-2.20250122/policy/modules/services/dbus.if
+Index: refpolicy-2.20250213/policy/modules/services/dbus.if
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/services/dbus.if
-+++ refpolicy-2.20250122/policy/modules/services/dbus.if
+--- refpolicy-2.20250213.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20250213/policy/modules/services/dbus.if
 @@ -664,6 +664,30 @@ interface(`dbus_use_system_bus_pidfds',`
  
  ########################################
@@ -470,10 +470,10 @@ Index: refpolicy-2.20250122/policy/modules/services/dbus.if
  ##	Do not audit attempts to read and
  ##	write DBUS system bus TCP sockets.
  ## </summary>
-Index: refpolicy-2.20250122/policy/modules/system/userdomain.if
+Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20250122/policy/modules/system/userdomain.if
+--- refpolicy-2.20250213.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250213/policy/modules/system/userdomain.if
 @@ -3736,6 +3736,44 @@ interface(`userdom_watch_user_runtime_di
  
  ########################################
@@ -519,10 +519,10 @@ Index: refpolicy-2.20250122/policy/modules/system/userdomain.if
  ##	Mount a filesystem on user runtime dir
  ##	directories.
  ## </summary>
-Index: refpolicy-2.20250122/policy/modules/kernel/kernel.if
+Index: refpolicy-2.20250213/policy/modules/kernel/kernel.if
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/kernel/kernel.if
-+++ refpolicy-2.20250122/policy/modules/kernel/kernel.if
+--- refpolicy-2.20250213.orig/policy/modules/kernel/kernel.if
++++ refpolicy-2.20250213/policy/modules/kernel/kernel.if
 @@ -967,6 +967,24 @@ interface(`kernel_dontaudit_getattr_proc
  
  ########################################
@@ -573,10 +573,10 @@ Index: refpolicy-2.20250122/policy/modules/kernel/kernel.if
  #######################################
  ## <summary>
  ##	Do not audit attempted reading of kernel sysctls
-Index: refpolicy-2.20250122/policy/modules/kernel/selinux.if
+Index: refpolicy-2.20250213/policy/modules/kernel/selinux.if
 ===================================================================
---- refpolicy-2.20250122.orig/policy/modules/kernel/selinux.if
-+++ refpolicy-2.20250122/policy/modules/kernel/selinux.if
+--- refpolicy-2.20250213.orig/policy/modules/kernel/selinux.if
++++ refpolicy-2.20250213/policy/modules/kernel/selinux.if
 @@ -754,6 +754,25 @@ interface(`selinux_use_status_page',`
  
  ########################################

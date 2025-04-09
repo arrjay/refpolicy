@@ -1,0 +1,63 @@
+Index: refpolicy-2.20250213/policy/modules/services/dhcp.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dhcp.fc
++++ refpolicy-2.20250213/policy/modules/services/dhcp.fc
+@@ -3,11 +3,13 @@
+ /usr/lib/systemd/system/dhcpcd.*\.service   --      gen_context(system_u:object_r:dhcpd_unit_t,s0)
+ 
+ /usr/bin/dhcpd.*	--	gen_context(system_u:object_r:dhcpd_exec_t,s0)
+-
+ /usr/sbin/dhcpd.*	--	gen_context(system_u:object_r:dhcpd_exec_t,s0)
++/usr/sbin/kea-.*	--	gen_context(system_u:object_r:dhcpd_exec_t,s0)
+ 
+ /var/lib/dhcpd(/.*)?	gen_context(system_u:object_r:dhcpd_state_t,s0)
+ /var/lib/dhcp(3)?/dhcpd\.leases.*	--	gen_context(system_u:object_r:dhcpd_state_t,s0)
+ /var/lib/dhcp/dhcpd6\.leases.*	--	gen_context(system_u:object_r:dhcpd_state_t,s0)
++/var/lib/kea(/.*)?	gen_context(system_u:object_r:dhcpd_state_t,s0)
+ 
+ /run/dhcpd(6)?\.pid	--	gen_context(system_u:object_r:dhcpd_runtime_t,s0)
++/run/kea(/.*)?			gen_context(system_u:object_r:dhcpd_runtime_t,s0)
+Index: refpolicy-2.20250213/policy/modules/services/dhcp.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dhcp.te
++++ refpolicy-2.20250213/policy/modules/services/dhcp.te
+@@ -55,6 +55,10 @@ files_tmp_filetrans(dhcpd_t, dhcpd_tmp_t
+ manage_files_pattern(dhcpd_t, dhcpd_runtime_t, dhcpd_runtime_t)
+ files_runtime_filetrans(dhcpd_t, dhcpd_runtime_t, file)
+ 
++allow dhcpd_t dhcpd_runtime_t:sock_file manage_sock_file_perms;
++# for /run/lock/kea
++files_search_locks(dhcpd_t)
++
+ can_exec(dhcpd_t, dhcpd_exec_t)
+ 
+ kernel_read_system_state(dhcpd_t)
+@@ -76,6 +80,9 @@ corenet_sendrecv_icmp_packets(dhcpd_t)
+ corenet_tcp_bind_dhcpd_port(dhcpd_t)
+ corenet_udp_bind_dhcpd_port(dhcpd_t)
+ 
++# for kea which needs port 8000 (common alternative web server port)
++corenet_tcp_bind_soundd_port(dhcpd_t)
++
+ corenet_sendrecv_pxe_server_packets(dhcpd_t)
+ corenet_udp_bind_pxe_port(dhcpd_t)
+ 
+Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/sysnetwork.fc
++++ refpolicy-2.20250213/policy/modules/system/sysnetwork.fc
+@@ -13,12 +13,13 @@ ifdef(`distro_debian',`
+ /etc/dhclient-script	--	gen_context(system_u:object_r:dhcp_etc_t,s0)
+ /etc/dhcpc.*			gen_context(system_u:object_r:dhcp_etc_t,s0)
+ /etc/dhcpd\.conf	--	gen_context(system_u:object_r:dhcp_etc_t,s0)
+-/etc/dhcp/dhcpd\.conf	--	gen_context(system_u:object_r:dhcp_etc_t,s0)
++/etc/dhcp/dhcpd6?\.conf	--	gen_context(system_u:object_r:dhcp_etc_t,s0)
+ /etc/ethers		--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/hosts		--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/hosts\.allow.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/hosts\.deny.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/hostname		--	gen_context(system_u:object_r:net_conf_t,s0)
++/etc/kea(/.*)?			gen_context(system_u:object_r:dhcp_etc_t,s0)
+ /etc/denyhosts.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/machine-info	--	gen_context(system_u:object_r:net_conf_t,s0)
+ /etc/resolv\.conf.*	--	gen_context(system_u:object_r:net_conf_t,s0)

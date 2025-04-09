@@ -7,6 +7,12 @@ refpolicy (2:2.20250213-3) UNRELEASED; urgency=medium
   * Allow mon local tests to stat dos filesystems
     Allow mon_t to manage mon_var_lib_t dirs
   * Allow fail2ban client to read kernel overcommit sysctl
+  * Added type labels for kea dhcp server
+  * Allow modemmanager to setopt on netlink_route_socket
+  * Allow dhcpc_t to get system status and read networkd runtime
+  * Allow fwupd_t to bind and stat netlink route sockets, connect to it's own
+    tcp sockets, and stat it's own udp sockets.
+  * Lots of minor changes to dhcpd policy to support the new kea server
 
  -- Russell Coker <russell@coker.com.au>  Wed, 26 Mar 2025 20:31:00 +1100
 
