@@ -1,0 +1,50 @@
+diff --git a/policy/modules/services/consolesetup.te b/policy/modules/services/consolesetup.te
+index 4d3e403a8..821ae7189 100644
+--- a/policy/modules/services/consolesetup.te
++++ b/policy/modules/services/consolesetup.te
+@@ -23,9 +23,11 @@ files_tmp_file(consolesetup_tmp_t)
+ # Local policy
+ #
+ 
+-allow consolesetup_t self:capability sys_tty_config;
++allow consolesetup_t self:capability { sys_tty_config net_admin };
+ allow consolesetup_t self:fifo_file rw_inherited_fifo_file_perms;
+ 
++allow consolesetup_t self:unix_dgram_socket create_socket_perms;
++
+ can_exec(consolesetup_t, consolesetup_conf_t)
+ 
+ manage_files_pattern(consolesetup_t, consolesetup_conf_t, consolesetup_conf_t)
+@@ -41,6 +43,8 @@ kernel_read_system_state(consolesetup_t)
+ 
+ kernel_read_system_state(consolesetup_t)
+ 
++dbus_list_system_bus_runtime(consolesetup_t)
++
+ corecmd_exec_bin(consolesetup_t)
+ corecmd_exec_shell(consolesetup_t)
+ 
+@@ -53,6 +57,12 @@ term_use_unallocated_ttys(consolesetup_t)
+ 
+ miscfiles_read_localization(consolesetup_t)
+ 
++init_read_state(consolesetup_t)
++init_unix_stream_socket_connectto(consolesetup_t)
++logging_send_syslog_msg(consolesetup_t)
++kernel_dgram_send(consolesetup_t)
++dev_write_kmsg(consolesetup_t)
++
+ optional_policy(`
+ 	loadkeys_domtrans(consolesetup_t)
+ ')
+@@ -60,3 +70,10 @@ optional_policy(`
+ optional_policy(`
+ 	xserver_read_xkb_libs(consolesetup_t)
+ ')
++
++optional_policy(`
++	gen_require(`
++		type plymouthd_unit_t;
++	')
++	allow consolesetup_t plymouthd_unit_t:service status;
++')
