@@ -1,0 +1,17 @@
+diff --git a/policy/modules/services/chronyd.te b/policy/modules/services/chronyd.te
+index 897655872..fe1d9f1e2 100644
+--- a/policy/modules/services/chronyd.te
++++ b/policy/modules/services/chronyd.te
+@@ -93,10 +93,12 @@ corenet_sendrecv_ntp_client_packets(chronyd_t)
+ corenet_sendrecv_ntp_server_packets(chronyd_t)
+ corenet_udp_bind_ntp_port(chronyd_t)
+ 
++corenet_tcp_bind_generic_node(chronyd_t)
+ corenet_sendrecv_ntske_client_packets(chronyd_t)
+ corenet_sendrecv_ntske_server_packets(chronyd_t)
+ corenet_tcp_bind_ntske_port(chronyd_t)
+ corenet_tcp_connect_ntske_port(chronyd_t)
++allow chronyd_t self:tcp_socket { accept listen };
+ 
+ corenet_sendrecv_chronyd_server_packets(chronyd_t)
+ corenet_udp_bind_chronyd_port(chronyd_t)
