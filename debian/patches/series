@@ -25,4 +25,5 @@ thunderbolt
 8006-systemd-binfmt
 8007-consolesetup
 8008-chrony
+8009-libvirt
 8600-ucarp
