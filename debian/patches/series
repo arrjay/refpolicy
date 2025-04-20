@@ -26,4 +26,5 @@ thunderbolt
 8007-consolesetup
 8008-chrony
 8009-libvirt
+8010-bird
 8600-ucarp

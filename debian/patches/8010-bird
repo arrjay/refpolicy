@@ -1,0 +1,18 @@
+diff --git a/policy/modules/services/bird.te b/policy/modules/services/bird.te
+index 5edb015fa..85f0be8ac 100644
+--- a/policy/modules/services/bird.te
++++ b/policy/modules/services/bird.te
+@@ -26,11 +26,12 @@ files_runtime_file(bird_runtime_t)
+ # Local policy
+ #
+ 
+-allow bird_t self:capability { net_admin net_raw };
++allow bird_t self:capability { chown dac_override dac_read_search fowner fsetid net_admin net_raw setgid setuid };
+ allow bird_t self:netlink_route_socket create_netlink_socket_perms;
+ allow bird_t self:tcp_socket create_stream_socket_perms;
+ allow bird_t self:unix_stream_socket create_stream_socket_perms;
+ allow bird_t self:rawip_socket { create read setopt write };
++allow bird_t self:process setcap;
+ 
+ allow bird_t bird_etc_t:file read_file_perms;
+ allow bird_t bird_etc_t:dir list_dir_perms;
