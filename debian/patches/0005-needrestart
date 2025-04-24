@@ -1,7 +1,7 @@
-Index: refpolicy-2.20250107/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250213/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20250107.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20250107/policy/modules/roles/sysadm.te
+--- refpolicy-2.20250213.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250213/policy/modules/roles/sysadm.te
 @@ -713,6 +713,10 @@ optional_policy(`
  ')
  
@@ -13,16 +13,16 @@ Index: refpolicy-2.20250107/policy/modules/roles/sysadm.te
  	nessus_admin(sysadm_t, sysadm_r)
  ')
  
-Index: refpolicy-2.20250107/policy/modules/system/needrestart.fc
+Index: refpolicy-2.20250213/policy/modules/system/needrestart.fc
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20250107/policy/modules/system/needrestart.fc
++++ refpolicy-2.20250213/policy/modules/system/needrestart.fc
 @@ -0,0 +1 @@
 +/usr/sbin/needrestart	--	gen_context(system_u:object_r:needrestart_exec_t,s0)
-Index: refpolicy-2.20250107/policy/modules/system/needrestart.if
+Index: refpolicy-2.20250213/policy/modules/system/needrestart.if
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20250107/policy/modules/system/needrestart.if
++++ refpolicy-2.20250213/policy/modules/system/needrestart.if
 @@ -0,0 +1,52 @@
 +## <summary>Policy for needrestart utility.</summary>
 +##
@@ -76,11 +76,11 @@ Index: refpolicy-2.20250107/policy/modules/system/needrestart.if
 +	domtrans_pattern($1, needrestart_exec_t, needrestart_t)
 +')
 +
-Index: refpolicy-2.20250107/policy/modules/system/needrestart.te
+Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 ===================================================================
 --- /dev/null
-+++ refpolicy-2.20250107/policy/modules/system/needrestart.te
-@@ -0,0 +1,100 @@
++++ refpolicy-2.20250213/policy/modules/system/needrestart.te
+@@ -0,0 +1,104 @@
 +policy_module(needrestart)
 +
 +########################################
@@ -105,7 +105,7 @@ Index: refpolicy-2.20250107/policy/modules/system/needrestart.te
 +dontaudit needrestart_t self:capability { net_admin };
 +# sys_ptrace is for getting stats of processes
 +# sys_resource is for sd-askpwagent
-+allow needrestart_t self:capability { dac_read_search sys_ptrace sys_resource };
++allow needrestart_t self:capability { dac_read_search kill sys_ptrace sys_resource };
 +allow needrestart_t self:capability2 checkpoint_restore;
 +allow needrestart_t self:process { getcap signal setrlimit };
 +allow needrestart_t self:fifo_file rw_file_perms;
@@ -181,10 +181,14 @@ Index: refpolicy-2.20250107/policy/modules/system/needrestart.te
 +optional_policy(`
 +	systemd_exec_systemctl(needrestart_t)
 +')
-Index: refpolicy-2.20250107/policy/modules/system/unconfined.te
++
++optional_policy(`
++	unconfined_signal(needrestart_t)
++')
+Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20250107.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20250107/policy/modules/system/unconfined.te
+--- refpolicy-2.20250213.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20250213/policy/modules/system/unconfined.te
 @@ -163,6 +163,10 @@ optional_policy(`
  ')
  
@@ -196,10 +200,10 @@ Index: refpolicy-2.20250107/policy/modules/system/unconfined.te
  	oddjob_domtrans_mkhomedir(unconfined_t)
  ')
  
-Index: refpolicy-2.20250107/policy/modules/admin/apt.te
+Index: refpolicy-2.20250213/policy/modules/admin/apt.te
 ===================================================================
---- refpolicy-2.20250107.orig/policy/modules/admin/apt.te
-+++ refpolicy-2.20250107/policy/modules/admin/apt.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/apt.te
++++ refpolicy-2.20250213/policy/modules/admin/apt.te
 @@ -159,6 +159,10 @@ optional_policy(`
  ')
  

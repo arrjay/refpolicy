@@ -1,4 +1,22 @@
-refpolicy (2:2.20250213-3) UNRELEASED; urgency=medium
+refpolicy (2:2.20250213-4) unstable; urgency=medium
+
+  * Allow chromium_t to start and get status of user_systemd_t
+  * Allow user_dbusd_t to receive chromium_t file handles and write to them
+  * Allow user_t to write chromium_t fifos
+  * Allow accountsd_t to search init units
+  * Allow cupsd_config_t to connect to cups via stream sockets and to send dbus
+    messages to unconfined_t
+  * Allow power_profilesd_t to dbus message devicekit power
+  * Allow unconfined_t to inherit file handles from systmd_logind_t
+  * Allow gpg_agent_t to read gpg_t files (process status)
+  * Allow acpid to read logind sessions files
+  * Give capability kill to needrestart
+  * Label /var/lib/wtmpdb as faillog_t and allow pam_domain to manage faillog
+  * Allow policykit_t to get status of transient units
+
+ -- Russell Coker <russell@coker.com.au>  Thu, 24 Apr 2025 17:07:06 +1000
+
+refpolicy (2:2.20250213-3) unstable; urgency=medium
 
   * allow user_systemd_t to read logind state
   * allow ntpd to read the vm_overcommit sysctl
@@ -13,8 +31,11 @@ refpolicy (2:2.20250213-3) UNRELEASED; urgency=medium
   * Allow fwupd_t to bind and stat netlink route sockets, connect to it's own
     tcp sockets, and stat it's own udp sockets.
   * Lots of minor changes to dhcpd policy to support the new kea server
+  * Added label for /run/lock/ntpsec-ntpdate and transition for initrc creation
+  * Allow certbot to read vm overcommit sysctl
+  * Label /usr/lib/openssh/sshd-auth needed by openssh-server 10.0p1-1
 
- -- Russell Coker <russell@coker.com.au>  Wed, 26 Mar 2025 20:31:00 +1100
+ -- Russell Coker <russell@coker.com.au>  Sat, 12 Apr 2025 17:12:29 +1000
 
 refpolicy (2:2.20250213-2) unstable; urgency=medium
 

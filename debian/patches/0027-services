@@ -13,7 +13,16 @@ Index: refpolicy-2.20250213/policy/modules/services/accountsd.te
  allow accountsd_t self:fifo_file rw_fifo_file_perms;
  allow accountsd_t self:passwd { chfn chsh passwd rootok };
  
-@@ -67,5 +67,9 @@ optional_policy(`
+@@ -49,6 +49,8 @@ auth_use_nsswitch(accountsd_t)
+ auth_read_login_records(accountsd_t)
+ auth_read_shadow(accountsd_t)
+ 
++init_search_units(accountsd_t)
++
+ miscfiles_read_localization(accountsd_t)
+ 
+ logging_list_logs(accountsd_t)
+@@ -67,5 +69,9 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -55,11 +64,12 @@ Index: refpolicy-2.20250213/policy/modules/services/acpi.te
  init_telinit(acpid_t)
  
  libs_exec_ld_so(acpid_t)
-@@ -218,6 +223,7 @@ optional_policy(`
+@@ -218,6 +223,8 @@ optional_policy(`
  
  optional_policy(`
  	init_list_unit_dirs(acpid_t)
 +	systemd_dbus_chat_logind(acpid_t)
++	systemd_read_logind_sessions_files(acpid_t)
  	systemd_start_power_units(acpid_t)
  	systemd_status_power_units(acpid_t)
  ')
@@ -372,7 +382,24 @@ Index: refpolicy-2.20250213/policy/modules/services/cups.te
  files_list_world_readable(cupsd_t)
  files_read_world_readable_files(cupsd_t)
  files_read_world_readable_symlinks(cupsd_t)
-@@ -548,6 +558,10 @@ userdom_manage_user_home_content_dirs(cu
+@@ -386,6 +396,8 @@ dev_read_urand(cupsd_config_t)
+ dev_read_rand(cupsd_config_t)
+ dev_rw_generic_usb_dev(cupsd_config_t)
+ 
++cups_stream_connect(cupsd_config_t)
++
+ files_read_etc_runtime_files(cupsd_config_t)
+ files_read_usr_files(cupsd_config_t)
+ files_read_var_symlinks(cupsd_config_t)
+@@ -449,6 +461,7 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	unconfined_dbus_send(cupsd_config_t)
+ 	unconfined_stream_connect(cupsd_config_t)
+ ')
+ 
+@@ -548,6 +561,10 @@ userdom_manage_user_home_content_dirs(cu
  userdom_manage_user_home_content_files(cups_pdf_t)
  userdom_home_filetrans_user_home_dir(cups_pdf_t)
  
@@ -638,7 +665,7 @@ Index: refpolicy-2.20250213/policy/modules/services/policykit.te
  
  manage_dirs_pattern(policykit_t, policykit_runtime_t, policykit_runtime_t)
  manage_files_pattern(policykit_t, policykit_runtime_t, policykit_runtime_t)
-@@ -133,10 +134,13 @@ optional_policy(`
+@@ -134,10 +135,13 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1336,6 +1363,14 @@ Index: refpolicy-2.20250213/policy/modules/services/certbot.te
  allow certbot_t self:udp_socket all_udp_socket_perms;
  allow certbot_t self:tcp_socket all_tcp_socket_perms;
  allow certbot_t self:netlink_route_socket create_netlink_socket_perms;
+@@ -67,6 +68,7 @@ files_runtime_filetrans(certbot_t, certb
+ 
+ kernel_dontaudit_read_system_state(certbot_t)
+ kernel_search_fs_sysctls(certbot_t)
++kernel_read_vm_overcommit_sysctl(certbot_t)
+ 
+ corecmd_list_bin(certbot_t)
+ corecmd_mmap_bin_files(certbot_t)
 Index: refpolicy-2.20250213/policy/modules/system/logging.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/logging.te
@@ -1982,6 +2017,14 @@ Index: refpolicy-2.20250213/policy/modules/services/ntp.te
  kernel_request_load_module(ntpd_t)
  
  corenet_all_recvfrom_netlabel(ntpd_t)
+@@ -131,6 +132,7 @@ term_use_ptmx(ntpd_t)
+ 
+ auth_use_nsswitch(ntpd_t)
+ 
++init_daemon_lock_file(ntpd_lock_t, file, "ntpsec-ntpdate")
+ init_exec_script_files(ntpd_t)
+ init_get_generic_units_status(ntpd_t)
+ 
 Index: refpolicy-2.20250213/policy/modules/services/modemmanager.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/modemmanager.te
@@ -1995,3 +2038,87 @@ Index: refpolicy-2.20250213/policy/modules/services/modemmanager.te
  allow modemmanager_t self:qipcrtr_socket { create getattr getopt read write };
  
  # ModemManager  calls mmap(PROT_READ|PROT_WRITE|PROT_EXEC)
+Index: refpolicy-2.20250213/policy/modules/services/ntp.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/ntp.fc
++++ refpolicy-2.20250213/policy/modules/services/ntp.fc
+@@ -13,6 +13,7 @@
+ /etc/rc\.d/init\.d/ntpd? 		--	gen_context(system_u:object_r:ntpd_initrc_exec_t,s0)
+ 
+ /run/ntpd\.pid				--	gen_context(system_u:object_r:ntpd_pid_t,s0)
++/run/lock/ntpsec-ntpdate		--	gen_context(system_u:object_r:ntpd_lock_t,s0)
+ /run/systemd/timesync(/.*)?			gen_context(system_u:object_r:ntpd_pid_t,s0)
+ 
+ /usr/bin/ntpd				--	gen_context(system_u:object_r:ntpd_exec_t,s0)
+Index: refpolicy-2.20250213/policy/modules/services/ssh.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/ssh.fc
++++ refpolicy-2.20250213/policy/modules/services/ssh.fc
+@@ -10,6 +10,7 @@ HOME_DIR/\.ssh(/.*)?			gen_context(syste
+ 
+ /usr/lib/misc/sshd-session	--	gen_context(system_u:object_r:sshd_exec_t,s0)
+ /usr/lib/openssh/ssh-keysign	--	gen_context(system_u:object_r:ssh_keysign_exec_t,s0)
++/usr/lib/openssh/sshd-auth	--	gen_context(system_u:object_r:sshd_exec_t,s0)
+ /usr/lib/openssh/sshd-session	--	gen_context(system_u:object_r:sshd_exec_t,s0)
+ /usr/lib/ssh/ssh-keysign	--	gen_context(system_u:object_r:ssh_keysign_exec_t,s0)
+ 
+Index: refpolicy-2.20250213/policy/modules/services/powerprofiles.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/powerprofiles.te
++++ refpolicy-2.20250213/policy/modules/services/powerprofiles.te
+@@ -48,6 +48,10 @@ ifdef(`init_systemd',`
+ ')
+ 
+ optional_policy(`
++	devicekit_dbus_chat_power(power_profilesd_t)
++')
++
++optional_policy(`
+ 	unconfined_dbus_send(power_profilesd_t)
+ ')
+ 
+Index: refpolicy-2.20250213/policy/modules/system/authlogin.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/authlogin.te
++++ refpolicy-2.20250213/policy/modules/system/authlogin.te
+@@ -244,7 +244,7 @@ dev_read_urand(pam_domain)
+ # for encrypted homedir
+ dev_read_sysfs(pam_domain)
+ 
+-auth_create_faillog_files(pam_domain)
++auth_manage_faillog(pam_domain)
+ auth_domtrans_upd_passwd(pam_domain)
+ auth_rw_lastlog(pam_domain)
+ auth_rw_faillog(pam_domain)
+Index: refpolicy-2.20250213/policy/modules/system/authlogin.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/authlogin.fc
++++ refpolicy-2.20250213/policy/modules/system/authlogin.fc
+@@ -51,6 +51,7 @@ ifdef(`distro_gentoo',`
+ 
+ /var/lib/abl(/.*)?		gen_context(system_u:object_r:var_auth_t,s0)
+ /var/lib/pam_ssh(/.*)?		gen_context(system_u:object_r:var_auth_t,s0)
++/var/lib/wtmpdb(/.*)?		gen_context(system_u:object_r:faillog_t,s0)
+ 
+ /var/log/btmp.*		--	gen_context(system_u:object_r:faillog_t,s0)
+ /var/log/faillog	--	gen_context(system_u:object_r:faillog_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20250213/policy/modules/system/authlogin.if
+@@ -936,6 +936,7 @@ interface(`auth_rw_faillog',`
+ 	')
+ 
+ 	logging_search_logs($1)
++	allow $1 faillog_t:dir list_dir_perms;
+ 	allow $1 faillog_t:file rw_file_perms;
+ ')
+ 
+@@ -954,6 +955,7 @@ interface(`auth_manage_faillog',`
+ 		type faillog_t;
+ 	')
+ 
++	allow $1 faillog_t:dir manage_dir_perms;
+ 	allow $1 faillog_t:file manage_file_perms;
+ 	logging_rw_generic_log_dirs($1)
+ ')

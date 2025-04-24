@@ -1,7 +1,7 @@
-Index: refpolicy-2.20250206/policy/modules/admin/acct.te
+Index: refpolicy-2.20250213/policy/modules/admin/acct.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/acct.te
-+++ refpolicy-2.20250206/policy/modules/admin/acct.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/acct.te
++++ refpolicy-2.20250213/policy/modules/admin/acct.te
 @@ -57,6 +57,7 @@ init_use_fds(acct_t)
  init_use_script_ptys(acct_t)
  init_exec_script_files(acct_t)
@@ -10,10 +10,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/acct.te
  logging_send_syslog_msg(acct_t)
  
  miscfiles_read_localization(acct_t)
-Index: refpolicy-2.20250206/policy/modules/admin/bootloader.te
+Index: refpolicy-2.20250213/policy/modules/admin/bootloader.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/bootloader.te
-+++ refpolicy-2.20250206/policy/modules/admin/bootloader.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/bootloader.te
++++ refpolicy-2.20250213/policy/modules/admin/bootloader.te
 @@ -41,10 +41,11 @@ dev_node(bootloader_tmp_t)
  # bootloader local policy
  #
@@ -129,19 +129,19 @@ Index: refpolicy-2.20250206/policy/modules/admin/bootloader.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20250206/policy/modules/apps/cdrecord.fc
+Index: refpolicy-2.20250213/policy/modules/apps/cdrecord.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/cdrecord.fc
-+++ refpolicy-2.20250206/policy/modules/apps/cdrecord.fc
+--- refpolicy-2.20250213.orig/policy/modules/apps/cdrecord.fc
++++ refpolicy-2.20250213/policy/modules/apps/cdrecord.fc
 @@ -1,3 +1,4 @@
  /usr/bin/cdrecord	--	gen_context(system_u:object_r:cdrecord_exec_t,s0)
 +/usr/bin/cdrskin	--	gen_context(system_u:object_r:cdrecord_exec_t,s0)
  /usr/bin/growisofs	--	gen_context(system_u:object_r:cdrecord_exec_t,s0)
  /usr/bin/wodim	--	gen_context(system_u:object_r:cdrecord_exec_t,s0)
-Index: refpolicy-2.20250206/policy/modules/apps/games.te
+Index: refpolicy-2.20250213/policy/modules/apps/games.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/games.te
-+++ refpolicy-2.20250206/policy/modules/apps/games.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/games.te
++++ refpolicy-2.20250213/policy/modules/apps/games.te
 @@ -92,7 +92,9 @@ optional_policy(`
  allow games_t self:fifo_file rw_fifo_file_perms;
  allow games_t self:sem create_sem_perms;
@@ -203,10 +203,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/games.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20250206/policy/modules/apps/gpg.te
+Index: refpolicy-2.20250213/policy/modules/apps/gpg.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/gpg.te
-+++ refpolicy-2.20250206/policy/modules/apps/gpg.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/gpg.te
++++ refpolicy-2.20250213/policy/modules/apps/gpg.te
 @@ -139,6 +139,7 @@ miscfiles_read_localization(gpg_t)
  miscfiles_read_generic_certs(gpg_t)
  
@@ -215,10 +215,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/gpg.te
  
  userdom_manage_user_tmp_dirs(gpg_t)
  userdom_manage_user_tmp_files(gpg_t)
-Index: refpolicy-2.20250206/policy/modules/roles/sysadm.te
+Index: refpolicy-2.20250213/policy/modules/roles/sysadm.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/roles/sysadm.te
-+++ refpolicy-2.20250206/policy/modules/roles/sysadm.te
+--- refpolicy-2.20250213.orig/policy/modules/roles/sysadm.te
++++ refpolicy-2.20250213/policy/modules/roles/sysadm.te
 @@ -44,6 +44,8 @@ allow sysadm_t self:netlink_tcpdiag_sock
  allow sysadm_t self:capability audit_write;
  allow sysadm_t self:system status;
@@ -236,10 +236,10 @@ Index: refpolicy-2.20250206/policy/modules/roles/sysadm.te
  
  # Add/remove user home directories
  userdom_manage_user_home_dirs(sysadm_t)
-Index: refpolicy-2.20250206/policy/modules/system/authlogin.te
+Index: refpolicy-2.20250213/policy/modules/system/authlogin.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/authlogin.te
-+++ refpolicy-2.20250206/policy/modules/system/authlogin.te
+--- refpolicy-2.20250213.orig/policy/modules/system/authlogin.te
++++ refpolicy-2.20250213/policy/modules/system/authlogin.te
 @@ -121,6 +121,7 @@ kernel_read_kernel_sysctls(chkpwd_t)
  kernel_dontaudit_search_kernel_sysctl(chkpwd_t)
  kernel_dontaudit_read_kernel_sysctl(chkpwd_t)
@@ -257,10 +257,10 @@ Index: refpolicy-2.20250206/policy/modules/system/authlogin.te
  userdom_use_user_terminals(utempter_t)
  # Allow utemper to write to /tmp/.xses-*
  userdom_write_user_tmp_files(utempter_t)
-Index: refpolicy-2.20250206/policy/modules/system/init.if
+Index: refpolicy-2.20250213/policy/modules/system/init.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/init.if
-+++ refpolicy-2.20250206/policy/modules/system/init.if
+--- refpolicy-2.20250213.orig/policy/modules/system/init.if
++++ refpolicy-2.20250213/policy/modules/system/init.if
 @@ -3689,6 +3689,24 @@ interface(`init_reload_all_units',`
  	allow $1 { init_script_file_type systemdunit }:service reload;
  ')
@@ -286,10 +286,10 @@ Index: refpolicy-2.20250206/policy/modules/system/init.if
  ########################################
  ## <summary>
  ##	List systemd unit dirs and the files in them
-Index: refpolicy-2.20250206/policy/modules/system/init.te
+Index: refpolicy-2.20250213/policy/modules/system/init.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/init.te
-+++ refpolicy-2.20250206/policy/modules/system/init.te
+--- refpolicy-2.20250213.orig/policy/modules/system/init.te
++++ refpolicy-2.20250213/policy/modules/system/init.te
 @@ -283,7 +283,6 @@ ifdef(`init_systemd',`
  	allow init_t self:udp_socket create_socket_perms;
  	allow init_t self:netlink_route_socket create_netlink_socket_perms;
@@ -298,10 +298,10 @@ Index: refpolicy-2.20250206/policy/modules/system/init.te
  	allow init_t self:key { search setattr write };
  	allow init_t self:bpf { map_create map_read map_write prog_load prog_run };
  	allow init_t self:user_namespace create;
-Index: refpolicy-2.20250206/policy/modules/system/logging.te
+Index: refpolicy-2.20250213/policy/modules/system/logging.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/logging.te
-+++ refpolicy-2.20250206/policy/modules/system/logging.te
+--- refpolicy-2.20250213.orig/policy/modules/system/logging.te
++++ refpolicy-2.20250213/policy/modules/system/logging.te
 @@ -504,6 +504,7 @@ seutil_read_config(syslogd_t)
  
  userdom_dontaudit_use_unpriv_user_fds(syslogd_t)
@@ -319,10 +319,10 @@ Index: refpolicy-2.20250206/policy/modules/system/logging.te
  
  	# journald traverses /run/user/UID (which is mode 0700) to read symlinks in /run/user/UID/systemd/units/
  	allow syslogd_t self:capability dac_read_search;
-Index: refpolicy-2.20250206/policy/modules/system/lvm.te
+Index: refpolicy-2.20250213/policy/modules/system/lvm.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/lvm.te
-+++ refpolicy-2.20250206/policy/modules/system/lvm.te
+--- refpolicy-2.20250213.orig/policy/modules/system/lvm.te
++++ refpolicy-2.20250213/policy/modules/system/lvm.te
 @@ -111,6 +111,7 @@ filetrans_pattern(lvm_t, lvm_etc_t, lvm_
  files_etc_filetrans(lvm_t, lvm_metadata_t, file)
  files_search_mnt(lvm_t)
@@ -361,10 +361,10 @@ Index: refpolicy-2.20250206/policy/modules/system/lvm.te
  miscfiles_read_localization(lvm_t)
  
  seutil_read_config(lvm_t)
-Index: refpolicy-2.20250206/policy/modules/system/modutils.te
+Index: refpolicy-2.20250213/policy/modules/system/modutils.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/modutils.te
-+++ refpolicy-2.20250206/policy/modules/system/modutils.te
+--- refpolicy-2.20250213.orig/policy/modules/system/modutils.te
++++ refpolicy-2.20250213/policy/modules/system/modutils.te
 @@ -45,6 +45,8 @@ allow kmod_t self:key write;
  # Read module config and dependency information
  list_dirs_pattern(kmod_t, modules_conf_t, modules_conf_t)
@@ -395,10 +395,10 @@ Index: refpolicy-2.20250206/policy/modules/system/modutils.te
  	# for postinst of a new kernel package
  	dpkg_manage_script_tmp_files(kmod_t)
  	dpkg_map_script_tmp_files(kmod_t)
-Index: refpolicy-2.20250206/policy/modules/system/raid.te
+Index: refpolicy-2.20250213/policy/modules/system/raid.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/raid.te
-+++ refpolicy-2.20250206/policy/modules/system/raid.te
+--- refpolicy-2.20250213.orig/policy/modules/system/raid.te
++++ refpolicy-2.20250213/policy/modules/system/raid.te
 @@ -64,6 +64,7 @@ domain_use_interactive_fds(mdadm_t)
  files_read_etc_files(mdadm_t)
  files_read_etc_runtime_files(mdadm_t)
@@ -407,10 +407,10 @@ Index: refpolicy-2.20250206/policy/modules/system/raid.te
  
  fs_getattr_all_fs(mdadm_t)
  fs_list_auto_mountpoints(mdadm_t)
-Index: refpolicy-2.20250206/policy/modules/system/selinuxutil.te
+Index: refpolicy-2.20250213/policy/modules/system/selinuxutil.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/selinuxutil.te
-+++ refpolicy-2.20250206/policy/modules/system/selinuxutil.te
+--- refpolicy-2.20250213.orig/policy/modules/system/selinuxutil.te
++++ refpolicy-2.20250213/policy/modules/system/selinuxutil.te
 @@ -358,6 +358,8 @@ allow restorecond_t self:fifo_file rw_fi
  allow restorecond_t restorecond_run_t:file manage_file_perms;
  files_runtime_filetrans(restorecond_t, restorecond_run_t, file)
@@ -465,11 +465,11 @@ Index: refpolicy-2.20250206/policy/modules/system/selinuxutil.te
  domain_use_interactive_fds(setfiles_t)
  domain_dontaudit_search_all_domains_state(setfiles_t)
  
-Index: refpolicy-2.20250206/policy/modules/system/sysnetwork.te
+Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/sysnetwork.te
-+++ refpolicy-2.20250206/policy/modules/system/sysnetwork.te
-@@ -358,6 +358,7 @@ term_dontaudit_use_all_ttys(ifconfig_t)
+--- refpolicy-2.20250213.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20250213/policy/modules/system/sysnetwork.te
+@@ -360,6 +360,7 @@ term_dontaudit_use_all_ttys(ifconfig_t)
  term_dontaudit_use_all_ptys(ifconfig_t)
  term_dontaudit_use_ptmx(ifconfig_t)
  term_dontaudit_use_generic_ptys(ifconfig_t)
@@ -477,10 +477,10 @@ Index: refpolicy-2.20250206/policy/modules/system/sysnetwork.te
  
  files_dontaudit_read_root_files(ifconfig_t)
  
-Index: refpolicy-2.20250206/policy/modules/system/udev.te
+Index: refpolicy-2.20250213/policy/modules/system/udev.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/udev.te
-+++ refpolicy-2.20250206/policy/modules/system/udev.te
+--- refpolicy-2.20250213.orig/policy/modules/system/udev.te
++++ refpolicy-2.20250213/policy/modules/system/udev.te
 @@ -82,6 +82,7 @@ manage_lnk_files_pattern(udev_t, udev_ru
  allow udev_t udev_rules_t:dir watch;
  
@@ -532,10 +532,10 @@ Index: refpolicy-2.20250206/policy/modules/system/udev.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20250206/policy/modules/system/unconfined.te
+Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/unconfined.te
-+++ refpolicy-2.20250206/policy/modules/system/unconfined.te
+--- refpolicy-2.20250213.orig/policy/modules/system/unconfined.te
++++ refpolicy-2.20250213/policy/modules/system/unconfined.te
 @@ -39,6 +39,7 @@ logging_send_syslog_msg(unconfined_t)
  logging_run_auditctl(unconfined_t, unconfined_r)
  
@@ -544,10 +544,10 @@ Index: refpolicy-2.20250206/policy/modules/system/unconfined.te
  
  seutil_run_setfiles(unconfined_t, unconfined_r)
  seutil_run_semanage(unconfined_t, unconfined_r)
-Index: refpolicy-2.20250206/policy/modules/admin/apt.fc
+Index: refpolicy-2.20250213/policy/modules/admin/apt.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/apt.fc
-+++ refpolicy-2.20250206/policy/modules/admin/apt.fc
+--- refpolicy-2.20250213.orig/policy/modules/admin/apt.fc
++++ refpolicy-2.20250213/policy/modules/admin/apt.fc
 @@ -3,6 +3,7 @@
  /usr/bin/apt		--	gen_context(system_u:object_r:apt_exec_t,s0)
  /usr/bin/apt-get	--	gen_context(system_u:object_r:apt_exec_t,s0)
@@ -579,10 +579,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/apt.fc
  
  /var/lock/aptitude	gen_context(system_u:object_r:apt_lock_t,s0)
  
-Index: refpolicy-2.20250206/policy/modules/kernel/kernel.te
+Index: refpolicy-2.20250213/policy/modules/kernel/kernel.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/kernel/kernel.te
-+++ refpolicy-2.20250206/policy/modules/kernel/kernel.te
+--- refpolicy-2.20250213.orig/policy/modules/kernel/kernel.te
++++ refpolicy-2.20250213/policy/modules/kernel/kernel.te
 @@ -248,6 +248,7 @@ allow kernel_t self:unix_stream_socket c
  allow kernel_t self:fifo_file rw_fifo_file_perms;
  allow kernel_t self:sock_file read_sock_file_perms;
@@ -591,22 +591,24 @@ Index: refpolicy-2.20250206/policy/modules/kernel/kernel.te
  
  allow kernel_t debugfs_t:dir search_dir_perms;
  
-Index: refpolicy-2.20250206/policy/modules/apps/chromium.if
+Index: refpolicy-2.20250213/policy/modules/apps/chromium.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/chromium.if
-+++ refpolicy-2.20250206/policy/modules/apps/chromium.if
-@@ -52,6 +52,7 @@ template(`chromium_role',`
+--- refpolicy-2.20250213.orig/policy/modules/apps/chromium.if
++++ refpolicy-2.20250213/policy/modules/apps/chromium.if
+@@ -52,6 +52,9 @@ template(`chromium_role',`
  	allow $3 chromium_sandbox_t:process signal_perms;
  	allow $3 chromium_naclhelper_t:process signal_perms;
  	allow chromium_t $3:process { signal signull };
 +	allow chromium_t $3:unix_stream_socket { read write };
++
++	allow $2 chromium_t:fifo_file write;
  
  	allow $3 chromium_t:unix_stream_socket connectto;
  
-Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
+Index: refpolicy-2.20250213/policy/modules/apps/chromium.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/chromium.te
-+++ refpolicy-2.20250206/policy/modules/apps/chromium.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/chromium.te
++++ refpolicy-2.20250213/policy/modules/apps/chromium.te
 @@ -90,7 +90,7 @@ xdg_cache_content(chromium_xdg_cache_t)
  #
  
@@ -645,7 +647,7 @@ Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
  files_watch_runtime_dirs(chromium_t)
  
  # During find for /etc/whatever-release we get lots of output otherwise
-@@ -258,6 +263,10 @@ tunable_policy(`chromium_read_system_inf
+@@ -258,14 +263,20 @@ tunable_policy(`chromium_read_system_inf
  ')
  
  optional_policy(`
@@ -656,23 +658,27 @@ Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
  	cups_read_config(chromium_t)
  	cups_stream_connect(chromium_t)
  ')
-@@ -266,6 +275,7 @@ optional_policy(`
+ 
+ optional_policy(`
  	dbus_all_session_bus_client(chromium_t)
++	dbus_send_fifo_file_all_session_bus(chromium_t)
  	dbus_system_bus_client(chromium_t)
  	dbus_getattr_session_runtime_socket(chromium_t)
 +	dbus_write_session_runtime_socket(chromium_t)
  
  	optional_policy(`
  		unconfined_dbus_chat(chromium_t)
-@@ -283,6 +293,7 @@ optional_policy(`
+@@ -283,6 +294,9 @@ optional_policy(`
  	optional_policy(`
  		systemd_list_resolved_runtime_dir(chromium_t)
  		systemd_dbus_chat_hostnamed(chromium_t)
 +		systemd_dbus_chat_logind(chromium_t)
++		systemd_start_all_user_sessions(chromium_t)
++		systemd_status_all_user_sessions(chromium_t)
  	')
  ')
  
-@@ -295,6 +306,7 @@ optional_policy(`
+@@ -295,6 +309,7 @@ optional_policy(`
  
  optional_policy(`
  	networkmanager_dbus_chat(chromium_t)
@@ -680,7 +686,7 @@ Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
  ')
  
  optional_policy(`
-@@ -389,6 +401,9 @@ allow chromium_naclhelper_t self:user_na
+@@ -389,6 +404,9 @@ allow chromium_naclhelper_t self:user_na
  allow chromium_naclhelper_t chromium_t:unix_stream_socket { getattr read write };
  allow chromium_naclhelper_t chromium_sandbox_t:unix_stream_socket { getattr read write };
  
@@ -690,10 +696,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/chromium.te
  dev_read_sysfs(chromium_naclhelper_t)
  dev_read_urand(chromium_naclhelper_t)
  
-Index: refpolicy-2.20250206/policy/modules/services/networkmanager.if
+Index: refpolicy-2.20250213/policy/modules/services/networkmanager.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/networkmanager.if
-+++ refpolicy-2.20250206/policy/modules/services/networkmanager.if
+--- refpolicy-2.20250213.orig/policy/modules/services/networkmanager.if
++++ refpolicy-2.20250213/policy/modules/services/networkmanager.if
 @@ -290,6 +290,24 @@ interface(`networkmanager_read_runtime_f
  	read_files_pattern($1, NetworkManager_runtime_t, NetworkManager_runtime_t)
  ')
@@ -719,10 +725,10 @@ Index: refpolicy-2.20250206/policy/modules/services/networkmanager.if
  ####################################
  ## <summary>
  ##  Connect to networkmanager over
-Index: refpolicy-2.20250206/policy/modules/admin/usermanage.te
+Index: refpolicy-2.20250213/policy/modules/admin/usermanage.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/usermanage.te
-+++ refpolicy-2.20250206/policy/modules/admin/usermanage.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/usermanage.te
++++ refpolicy-2.20250213/policy/modules/admin/usermanage.te
 @@ -420,6 +420,7 @@ files_tmp_filetrans(sysadm_passwd_t, sys
  files_search_var(sysadm_passwd_t)
  files_dontaudit_search_home(sysadm_passwd_t)
@@ -741,10 +747,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/usermanage.te
  # /usr/bin/passwd asks for w access to utmp, but it will operate
  # correctly without it.  Do not audit write denials to utmp.
  init_dontaudit_rw_utmp(sysadm_passwd_t)
-Index: refpolicy-2.20250206/policy/modules/kernel/files.if
+Index: refpolicy-2.20250213/policy/modules/kernel/files.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/kernel/files.if
-+++ refpolicy-2.20250206/policy/modules/kernel/files.if
+--- refpolicy-2.20250213.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20250213/policy/modules/kernel/files.if
 @@ -3685,6 +3685,35 @@ interface(`files_etc_filetrans',`
  
  ########################################
@@ -781,10 +787,10 @@ Index: refpolicy-2.20250206/policy/modules/kernel/files.if
  ##	Create a boot flag.
  ## </summary>
  ## <desc>
-Index: refpolicy-2.20250206/policy/modules/system/unconfined.if
+Index: refpolicy-2.20250213/policy/modules/system/unconfined.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/unconfined.if
-+++ refpolicy-2.20250206/policy/modules/system/unconfined.if
+--- refpolicy-2.20250213.orig/policy/modules/system/unconfined.if
++++ refpolicy-2.20250213/policy/modules/system/unconfined.if
 @@ -37,7 +37,7 @@ interface(`unconfined_domain_noaudit',`
  
  	# Use most Linux capabilities
@@ -803,10 +809,10 @@ Index: refpolicy-2.20250206/policy/modules/system/unconfined.if
  	# Write access is for setting attributes under /proc/self/attr.
  	allow $1 self:file rw_file_perms;
  
-Index: refpolicy-2.20250206/policy/modules/admin/netutils.te
+Index: refpolicy-2.20250213/policy/modules/admin/netutils.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/netutils.te
-+++ refpolicy-2.20250206/policy/modules/admin/netutils.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/netutils.te
++++ refpolicy-2.20250213/policy/modules/admin/netutils.te
 @@ -41,6 +41,7 @@ allow netutils_t self:netlink_generic_so
  allow netutils_t self:netlink_route_socket create_netlink_socket_perms;
  allow netutils_t self:netlink_socket create_socket_perms;
@@ -815,10 +821,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/netutils.te
  allow netutils_t self:netlink_netfilter_socket create_socket_perms;
  allow netutils_t self:packet_socket { create_socket_perms map };
  allow netutils_t self:udp_socket create_socket_perms;
-Index: refpolicy-2.20250206/policy/modules/apps/wm.if
+Index: refpolicy-2.20250213/policy/modules/apps/wm.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/wm.if
-+++ refpolicy-2.20250206/policy/modules/apps/wm.if
+--- refpolicy-2.20250213.orig/policy/modules/apps/wm.if
++++ refpolicy-2.20250213/policy/modules/apps/wm.if
 @@ -81,6 +81,8 @@ template(`wm_role_template',`
  	auth_domtrans_chk_passwd($1_wm_t)
  	auth_use_nsswitch($1_wm_t)
@@ -848,10 +854,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/wm.if
  ')
  
  ########################################
-Index: refpolicy-2.20250206/policy/modules/apps/wm.te
+Index: refpolicy-2.20250213/policy/modules/apps/wm.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/wm.te
-+++ refpolicy-2.20250206/policy/modules/apps/wm.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/wm.te
++++ refpolicy-2.20250213/policy/modules/apps/wm.te
 @@ -39,6 +39,7 @@ files_tmp_filetrans(wm_domain, wm_tmp_t,
  manage_dirs_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
  manage_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
@@ -860,10 +866,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/wm.te
  manage_lnk_files_pattern(wm_domain, wm_tmpfs_t, wm_tmpfs_t)
  fs_tmpfs_filetrans(wm_domain, wm_tmpfs_t, { dir file lnk_file })
  
-Index: refpolicy-2.20250206/policy/modules/system/xdg.if
+Index: refpolicy-2.20250213/policy/modules/system/xdg.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/xdg.if
-+++ refpolicy-2.20250206/policy/modules/system/xdg.if
+--- refpolicy-2.20250213.orig/policy/modules/system/xdg.if
++++ refpolicy-2.20250213/policy/modules/system/xdg.if
 @@ -408,6 +408,24 @@ interface(`xdg_watch_config_dirs',`
  
  ########################################
@@ -889,10 +895,10 @@ Index: refpolicy-2.20250206/policy/modules/system/xdg.if
  ##	Watch all the xdg config home directories
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20250206/policy/modules/apps/pulseaudio.if
+Index: refpolicy-2.20250213/policy/modules/apps/pulseaudio.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/pulseaudio.if
-+++ refpolicy-2.20250206/policy/modules/apps/pulseaudio.if
+--- refpolicy-2.20250213.orig/policy/modules/apps/pulseaudio.if
++++ refpolicy-2.20250213/policy/modules/apps/pulseaudio.if
 @@ -239,6 +239,24 @@ interface(`pulseaudio_stream_connect',`
  	stream_connect_pattern($1, { pulseaudio_tmp_t pulseaudio_runtime_t }, { pulseaudio_tmp_t pulseaudio_runtime_t }, pulseaudio_t)
  ')
@@ -918,10 +924,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/pulseaudio.if
  ########################################
  ## <summary>
  ##	Send and receive messages from
-Index: refpolicy-2.20250206/policy/modules/system/systemd.te
+Index: refpolicy-2.20250213/policy/modules/system/systemd.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/systemd.te
-+++ refpolicy-2.20250206/policy/modules/system/systemd.te
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250213/policy/modules/system/systemd.te
 @@ -632,6 +632,7 @@ dev_write_sysfs(systemd_generator_t)
  dev_read_vsock(systemd_generator_t)
  
@@ -940,10 +946,10 @@ Index: refpolicy-2.20250206/policy/modules/system/systemd.te
 +optional_policy(`
  	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
  ')
-Index: refpolicy-2.20250206/policy/modules/apps/wireshark.te
+Index: refpolicy-2.20250213/policy/modules/apps/wireshark.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/wireshark.te
-+++ refpolicy-2.20250206/policy/modules/apps/wireshark.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/wireshark.te
++++ refpolicy-2.20250213/policy/modules/apps/wireshark.te
 @@ -31,10 +31,11 @@ optional_policy(`
  #
  
@@ -999,10 +1005,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/wireshark.te
  	xserver_create_xdm_tmp_sockets(wireshark_t)
 +	xserver_rw_mesa_shader_cache(wireshark_t)
  ')
-Index: refpolicy-2.20250206/policy/modules/apps/chromium.fc
+Index: refpolicy-2.20250213/policy/modules/apps/chromium.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/chromium.fc
-+++ refpolicy-2.20250206/policy/modules/apps/chromium.fc
+--- refpolicy-2.20250213.orig/policy/modules/apps/chromium.fc
++++ refpolicy-2.20250213/policy/modules/apps/chromium.fc
 @@ -3,6 +3,8 @@
  /opt/google/chrome/chrome-sandbox			--	gen_context(system_u:object_r:chromium_sandbox_exec_t,s0)
  /opt/google/chrome/google-chrome			--	gen_context(system_u:object_r:chromium_exec_t,s0)
@@ -1035,10 +1041,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/chromium.fc
  HOME_DIR/\.config/chromium(/.*)?				gen_context(system_u:object_r:chromium_xdg_config_t,s0)
  HOME_DIR/\.config/google-chrome(/.*)?				gen_context(system_u:object_r:chromium_xdg_config_t,s0)
 +HOME_DIR/\.config/microsoft-edge(/.*)?				gen_context(system_u:object_r:chromium_xdg_config_t,s0)
-Index: refpolicy-2.20250206/policy/modules/admin/bootloader.if
+Index: refpolicy-2.20250213/policy/modules/admin/bootloader.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/bootloader.if
-+++ refpolicy-2.20250206/policy/modules/admin/bootloader.if
+--- refpolicy-2.20250213.orig/policy/modules/admin/bootloader.if
++++ refpolicy-2.20250213/policy/modules/admin/bootloader.if
 @@ -124,6 +124,62 @@ interface(`bootloader_rw_tmp_files',`
  
  ########################################
@@ -1102,10 +1108,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/bootloader.if
  ##	Create, read and write the bootloader
  ##	runtime data.
  ## </summary>
-Index: refpolicy-2.20250206/policy/modules/system/lvm.if
+Index: refpolicy-2.20250213/policy/modules/system/lvm.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/lvm.if
-+++ refpolicy-2.20250206/policy/modules/system/lvm.if
+--- refpolicy-2.20250213.orig/policy/modules/system/lvm.if
++++ refpolicy-2.20250213/policy/modules/system/lvm.if
 @@ -269,3 +269,22 @@ interface(`lvm_admin',`
  	files_search_tmp($1)
  	admin_pattern($1, lvm_tmp_t)
@@ -1129,10 +1135,10 @@ Index: refpolicy-2.20250206/policy/modules/system/lvm.if
 +	allow $1 lvm_metadata_t:dir manage_dir_perms;
 +	allow $1 lvm_metadata_t:file manage_file_perms;
 +')
-Index: refpolicy-2.20250206/policy/modules/system/udev.if
+Index: refpolicy-2.20250213/policy/modules/system/udev.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/udev.if
-+++ refpolicy-2.20250206/policy/modules/system/udev.if
+--- refpolicy-2.20250213.orig/policy/modules/system/udev.if
++++ refpolicy-2.20250213/policy/modules/system/udev.if
 @@ -244,6 +244,26 @@ interface(`udev_relabel_rules_files',`
  
  ########################################
@@ -1160,10 +1166,10 @@ Index: refpolicy-2.20250206/policy/modules/system/udev.if
  ##	Search through udev runtime dirs.
  ## </summary>
  ## <param name="domain">
-Index: refpolicy-2.20250206/policy/modules/services/sssd.fc
+Index: refpolicy-2.20250213/policy/modules/services/sssd.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/sssd.fc
-+++ refpolicy-2.20250206/policy/modules/services/sssd.fc
+--- refpolicy-2.20250213.orig/policy/modules/services/sssd.fc
++++ refpolicy-2.20250213/policy/modules/services/sssd.fc
 @@ -6,6 +6,7 @@
  
  /usr/sbin/sssd	--	gen_context(system_u:object_r:sssd_exec_t,s0)
@@ -1172,10 +1178,10 @@ Index: refpolicy-2.20250206/policy/modules/services/sssd.fc
  /var/lib/sss(/.*)?	gen_context(system_u:object_r:sssd_var_lib_t,s0)
  
  /var/lib/sss/mc(/.*)?	gen_context(system_u:object_r:sssd_public_t,s0)
-Index: refpolicy-2.20250206/policy/modules/kernel/corecommands.fc
+Index: refpolicy-2.20250213/policy/modules/kernel/corecommands.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/kernel/corecommands.fc
-+++ refpolicy-2.20250206/policy/modules/kernel/corecommands.fc
+--- refpolicy-2.20250213.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20250213/policy/modules/kernel/corecommands.fc
 @@ -107,6 +107,7 @@ ifdef(`distro_redhat',`
  
  /etc/wide-dhcpv6/dhcp6c-ifupdown --	gen_context(system_u:object_r:bin_t,s0)
@@ -1201,10 +1207,10 @@ Index: refpolicy-2.20250206/policy/modules/kernel/corecommands.fc
  /usr/lib/NetworkManager/nm-.*	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/networkmanager/nm-.*	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/news/bin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
-Index: refpolicy-2.20250206/policy/modules/admin/apt.te
+Index: refpolicy-2.20250213/policy/modules/admin/apt.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/apt.te
-+++ refpolicy-2.20250206/policy/modules/admin/apt.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/apt.te
++++ refpolicy-2.20250213/policy/modules/admin/apt.te
 @@ -39,8 +39,9 @@ logging_log_file(apt_var_log_t)
  # Local policy
  #
@@ -1273,10 +1279,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/apt.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20250206/policy/modules/system/libraries.fc
+Index: refpolicy-2.20250213/policy/modules/system/libraries.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/libraries.fc
-+++ refpolicy-2.20250206/policy/modules/system/libraries.fc
+--- refpolicy-2.20250213.orig/policy/modules/system/libraries.fc
++++ refpolicy-2.20250213/policy/modules/system/libraries.fc
 @@ -43,9 +43,13 @@ ifdef(`distro_redhat',`
  /opt/(.*/)?jre.*/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:textrel_shlib_t,s0)
  /opt/(.*/)?jre/.+\.jar			--	gen_context(system_u:object_r:lib_t,s0)
@@ -1291,10 +1297,10 @@ Index: refpolicy-2.20250206/policy/modules/system/libraries.fc
  
  /opt/openoffice4/program/.+\.so(\.[^/]*)*	--	gen_context(system_u:object_r:lib_t,s0)
  
-Index: refpolicy-2.20250206/policy/modules/admin/alsa.te
+Index: refpolicy-2.20250213/policy/modules/admin/alsa.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/alsa.te
-+++ refpolicy-2.20250206/policy/modules/admin/alsa.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/alsa.te
++++ refpolicy-2.20250213/policy/modules/admin/alsa.te
 @@ -44,7 +44,7 @@ files_lock_file(alsa_var_lock_t)
  allow alsa_t self:capability { dac_override dac_read_search ipc_owner setgid setuid };
  # kill : kill pulseaudio
@@ -1312,19 +1318,19 @@ Index: refpolicy-2.20250206/policy/modules/admin/alsa.te
  
  term_dontaudit_use_console(alsa_t)
  term_dontaudit_use_generic_ptys(alsa_t)
-Index: refpolicy-2.20250206/policy/modules/apps/xscreensaver.fc
+Index: refpolicy-2.20250213/policy/modules/apps/xscreensaver.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/xscreensaver.fc
-+++ refpolicy-2.20250206/policy/modules/apps/xscreensaver.fc
+--- refpolicy-2.20250213.orig/policy/modules/apps/xscreensaver.fc
++++ refpolicy-2.20250213/policy/modules/apps/xscreensaver.fc
 @@ -6,3 +6,4 @@ HOME_DIR/XScreenSaver		--	gen_context(sy
  /usr/bin/xscreensaver-gl-helper	--	gen_context(system_u:object_r:xscreensaver_helper_exec_t,s0)
  
  /usr/libexec/xscreensaver(/.*)?	--	gen_context(system_u:object_r:xscreensaver_helper_exec_t,s0)
 +/usr/lib/aarch64-linux-gnu/libexec/kscreenlocker_greet	--	gen_context(system_u:object_r:xscreensaver_exec_t,s0)
-Index: refpolicy-2.20250206/policy/modules/apps/wm.fc
+Index: refpolicy-2.20250213/policy/modules/apps/wm.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/wm.fc
-+++ refpolicy-2.20250206/policy/modules/apps/wm.fc
+--- refpolicy-2.20250213.orig/policy/modules/apps/wm.fc
++++ refpolicy-2.20250213/policy/modules/apps/wm.fc
 @@ -1,6 +1,8 @@
  /usr/bin/gnome-shell	--	gen_context(system_u:object_r:wm_exec_t,s0)
  /usr/bin/openbox	--	gen_context(system_u:object_r:wm_exec_t,s0)
@@ -1334,10 +1340,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/wm.fc
  /usr/bin/mutter		--	gen_context(system_u:object_r:wm_exec_t,s0)
 +/usr/bin/phoc		--	gen_context(system_u:object_r:wm_exec_t,s0)
  /usr/bin/twm	--	gen_context(system_u:object_r:wm_exec_t,s0)
-Index: refpolicy-2.20250206/policy/modules/system/userdomain.if
+Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/userdomain.if
-+++ refpolicy-2.20250206/policy/modules/system/userdomain.if
+--- refpolicy-2.20250213.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250213/policy/modules/system/userdomain.if
 @@ -1034,6 +1034,8 @@ template(`userdom_login_user_template',
  	init_dontaudit_use_fds($1_t)
  	init_dontaudit_use_script_fds($1_t)
@@ -1347,10 +1353,10 @@ Index: refpolicy-2.20250206/policy/modules/system/userdomain.if
  	libs_watch_lib_dirs($1_t)
  	libs_exec_lib_files($1_t)
  
-Index: refpolicy-2.20250206/policy/modules/services/devicekit.te
+Index: refpolicy-2.20250213/policy/modules/services/devicekit.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/devicekit.te
-+++ refpolicy-2.20250206/policy/modules/services/devicekit.te
+--- refpolicy-2.20250213.orig/policy/modules/services/devicekit.te
++++ refpolicy-2.20250213/policy/modules/services/devicekit.te
 @@ -149,6 +149,7 @@ logging_send_syslog_msg(devicekit_disk_t
  
  mount_watch_runtime_dirs(devicekit_disk_t)
@@ -1359,10 +1365,10 @@ Index: refpolicy-2.20250206/policy/modules/services/devicekit.te
  
  userdom_read_all_users_state(devicekit_disk_t)
  userdom_search_user_home_dirs(devicekit_disk_t)
-Index: refpolicy-2.20250206/policy/modules/system/locallogin.te
+Index: refpolicy-2.20250213/policy/modules/system/locallogin.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/system/locallogin.te
-+++ refpolicy-2.20250206/policy/modules/system/locallogin.te
+--- refpolicy-2.20250213.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20250213/policy/modules/system/locallogin.te
 @@ -192,6 +192,11 @@ optional_policy(`
  ')
  
@@ -1383,10 +1389,10 @@ Index: refpolicy-2.20250206/policy/modules/system/locallogin.te
  	systemd_write_inherited_logind_sessions_pipes(local_login_t)
  ')
  
-Index: refpolicy-2.20250206/policy/modules/admin/dpkg.te
+Index: refpolicy-2.20250213/policy/modules/admin/dpkg.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/admin/dpkg.te
-+++ refpolicy-2.20250206/policy/modules/admin/dpkg.te
+--- refpolicy-2.20250213.orig/policy/modules/admin/dpkg.te
++++ refpolicy-2.20250213/policy/modules/admin/dpkg.te
 @@ -68,6 +68,8 @@ allow dpkg_t self:sem create_sem_perms;
  allow dpkg_t self:msgq create_msgq_perms;
  allow dpkg_t self:msg { receive send };
@@ -1489,10 +1495,10 @@ Index: refpolicy-2.20250206/policy/modules/admin/dpkg.te
  ')
  
  optional_policy(`
-Index: refpolicy-2.20250206/policy/modules/services/switcheroo.te
+Index: refpolicy-2.20250213/policy/modules/services/switcheroo.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/switcheroo.te
-+++ refpolicy-2.20250206/policy/modules/services/switcheroo.te
+--- refpolicy-2.20250213.orig/policy/modules/services/switcheroo.te
++++ refpolicy-2.20250213/policy/modules/services/switcheroo.te
 @@ -17,6 +17,7 @@ init_daemon_domain(switcheroo_t, switche
  #
  
@@ -1501,10 +1507,10 @@ Index: refpolicy-2.20250206/policy/modules/services/switcheroo.te
  
  kernel_read_system_state(switcheroo_t)
  
-Index: refpolicy-2.20250206/policy/modules/services/xserver.te
+Index: refpolicy-2.20250213/policy/modules/services/xserver.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/xserver.te
-+++ refpolicy-2.20250206/policy/modules/services/xserver.te
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250213/policy/modules/services/xserver.te
 @@ -674,6 +674,10 @@ optional_policy(`
  ')
  
@@ -1516,10 +1522,10 @@ Index: refpolicy-2.20250206/policy/modules/services/xserver.te
  	xfs_stream_connect(xdm_t)
  ')
  
-Index: refpolicy-2.20250206/policy/modules/services/xserver.fc
+Index: refpolicy-2.20250213/policy/modules/services/xserver.fc
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/xserver.fc
-+++ refpolicy-2.20250206/policy/modules/services/xserver.fc
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.fc
++++ refpolicy-2.20250213/policy/modules/services/xserver.fc
 @@ -88,6 +88,9 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
  /usr/lib/xorg-server/Xorg\.wrap	--	gen_context(system_u:object_r:xserver_exec_t,s0)
  /usr/lib/X11/xdm/Xsession	--	gen_context(system_u:object_r:xsession_exec_t,s0)
@@ -1530,10 +1536,10 @@ Index: refpolicy-2.20250206/policy/modules/services/xserver.fc
  /usr/sbin/[xkw]dm	--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/sbin/gdm(3)?	--	gen_context(system_u:object_r:xdm_exec_t,s0)
  /usr/sbin/gdm-binary	--	gen_context(system_u:object_r:xdm_exec_t,s0)
-Index: refpolicy-2.20250206/policy/modules/apps/pulseaudio.te
+Index: refpolicy-2.20250213/policy/modules/apps/pulseaudio.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/apps/pulseaudio.te
-+++ refpolicy-2.20250206/policy/modules/apps/pulseaudio.te
+--- refpolicy-2.20250213.orig/policy/modules/apps/pulseaudio.te
++++ refpolicy-2.20250213/policy/modules/apps/pulseaudio.te
 @@ -219,6 +219,7 @@ optional_policy(`
  	dbus_all_session_bus_client(pulseaudio_t)
  	dbus_connect_all_session_bus(pulseaudio_t)
@@ -1542,10 +1548,10 @@ Index: refpolicy-2.20250206/policy/modules/apps/pulseaudio.te
  
  	optional_policy(`
  		policykit_dbus_chat(pulseaudio_t)
-Index: refpolicy-2.20250206/policy/modules/services/plymouthd.te
+Index: refpolicy-2.20250213/policy/modules/services/plymouthd.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/plymouthd.te
-+++ refpolicy-2.20250206/policy/modules/services/plymouthd.te
+--- refpolicy-2.20250213.orig/policy/modules/services/plymouthd.te
++++ refpolicy-2.20250213/policy/modules/services/plymouthd.te
 @@ -84,6 +84,8 @@ term_getattr_pty_fs(plymouthd_t)
  term_use_all_terms(plymouthd_t)
  term_use_ptmx(plymouthd_t)
@@ -1555,10 +1561,10 @@ Index: refpolicy-2.20250206/policy/modules/services/plymouthd.te
  miscfiles_read_localization(plymouthd_t)
  miscfiles_read_fonts(plymouthd_t)
  miscfiles_manage_fonts_cache(plymouthd_t)
-Index: refpolicy-2.20250206/policy/modules/services/cron.te
+Index: refpolicy-2.20250213/policy/modules/services/cron.te
 ===================================================================
---- refpolicy-2.20250206.orig/policy/modules/services/cron.te
-+++ refpolicy-2.20250206/policy/modules/services/cron.te
+--- refpolicy-2.20250213.orig/policy/modules/services/cron.te
++++ refpolicy-2.20250213/policy/modules/services/cron.te
 @@ -347,6 +347,7 @@ optional_policy(`
  optional_policy(`
  	systemd_dbus_chat_logind(crond_t)
@@ -1567,3 +1573,80 @@ Index: refpolicy-2.20250206/policy/modules/services/cron.te
  ')
  
  optional_policy(`
+Index: refpolicy-2.20250213/policy/modules/services/dbus.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20250213/policy/modules/services/dbus.if
+@@ -215,6 +215,25 @@ interface(`dbus_connect_all_session_bus'
+ 
+ #######################################
+ ## <summary>
++##	send file to all session busses.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dbus_send_fifo_file_all_session_bus',`
++	gen_require(`
++		attribute session_bus_type;
++	')
++
++	allow session_bus_type $1:fd use;
++	allow session_bus_type $1:fifo_file { read write };
++')
++
++#######################################
++## <summary>
+ ##	Acquire service on specified
+ ##	DBUS session bus.
+ ## </summary>
+Index: refpolicy-2.20250213/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20250213/policy/modules/system/systemd.if
+@@ -2959,6 +2959,42 @@ interface(`systemd_write_all_user_keys',
+ 
+ ########################################
+ ## <summary>
++##	start all systemd --user domains.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`systemd_start_all_user_sessions',`
++	gen_require(`
++		attribute systemd_user_session_type;
++	')
++
++	allow $1 systemd_user_session_type:system start;
++')
++
++########################################
++## <summary>
++##	get status of all systemd --user domains.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`systemd_status_all_user_sessions',`
++	gen_require(`
++		attribute systemd_user_session_type;
++	')
++
++	allow $1 systemd_user_session_type:system status;
++')
++
++########################################
++## <summary>
+ ##  Execute systemd-sysusers in the
+ ##  systemd sysusers domain.
+ ## </summary>

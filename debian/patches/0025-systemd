@@ -1549,10 +1549,11 @@ Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/unconfined.te
 +++ refpolicy-2.20250213/policy/modules/system/unconfined.te
-@@ -70,6 +70,8 @@ ifdef(`init_systemd',`
+@@ -70,6 +70,9 @@ ifdef(`init_systemd',`
  	init_pgm_spec_user_daemon_domain(unconfined_t)
  	allow unconfined_t self:system { reload start status stop };
  
++	systemd_logind_use_fds(unconfined_t)
 +	systemd_use_passwd_agent_fds(unconfined_t)
 +
  	optional_policy(`
@@ -1699,4 +1700,16 @@ Index: refpolicy-2.20250213/policy/modules/services/ntp.te
 +	init_stop_generic_units(ntpd_t)
  	init_watch_runtime_dirs(ntpd_t)
  	fs_watch_memory_pressure(ntpd_t)
+ 
+Index: refpolicy-2.20250213/policy/modules/services/policykit.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/policykit.te
++++ refpolicy-2.20250213/policy/modules/services/policykit.te
+@@ -111,6 +111,7 @@ userdom_read_all_users_state(policykit_t
+ optional_policy(`
+ 	dbus_system_domain(policykit_t, policykit_exec_t)
+ 	init_dbus_chat(policykit_t)
++	init_get_transient_units_status(policykit_t)
+ 
+ 	userdom_dbus_send_all_users(policykit_t)
  

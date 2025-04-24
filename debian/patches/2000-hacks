@@ -18,7 +18,7 @@ Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/sysnetwork.te
 +++ refpolicy-2.20250213/policy/modules/system/sysnetwork.te
-@@ -365,6 +365,11 @@ files_dontaudit_read_root_files(ifconfig
+@@ -367,6 +367,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
  

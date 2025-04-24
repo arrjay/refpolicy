@@ -53,7 +53,7 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20250213/policy/modules/system/fwupd.te
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,257 @@
 +policy_module(fwupd)
 +
 +########################################
@@ -105,7 +105,7 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 +allow fwupd_t self:process getsched;
 +allow fwupd_t self:udp_socket { create connect getattr };
 +allow fwupd_t self:tcp_socket { create connect };
-+allow fwupd_t self:netlink_route_socket { create bind getattr };
++allow fwupd_t self:netlink_route_socket { create bind getattr nlmsg_read read write };
 +
 +allow fwupd_t self:netlink_kobject_uevent_socket create_socket_perms;
 +
@@ -149,6 +149,8 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 +corecmd_list_bin(fwupd_t)
 +corecmd_watch_bin_dirs(fwupd_t)
 +
++corenet_tcp_connect_generic_port(fwupd_t)
++
 +dbus_read_lib_files(fwupd_t)
 +dbus_system_bus_client(fwupd_t)
 +dbus_connect_system_bus(fwupd_t)
@@ -159,6 +161,7 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 +files_read_etc_runtime_files(fwupd_t)
 +files_read_etc_symlinks(fwupd_t)
 +files_read_usr_files(fwupd_t)
++files_search_locks(fwupd_t)
 +files_search_var_lib(fwupd_t)
 +files_search_boot(fwupd_t)
 +files_watch_etc_dirs(fwupd_t)
