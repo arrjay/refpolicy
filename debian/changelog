@@ -1,3 +1,17 @@
+refpolicy (2:2.20250213-5) unstable; urgency=medium
+
+  * allow user_wm_t and similar domains the sys_nice capability.
+  * Allow needrestart to signal all systemd --user processes
+  * Make the dir type transition for var_lib_t when dpkg_script_t creates
+    subdirs only apply to dirs named "ntpsec" to avoid breaking dkms postinst
+  * Label /var/lib/dkms as src_t
+  * Allow mozilla to talk to ntpd and systemd-logind via dbus
+  * Allow systemd-logind to change ownership of dma_device_t
+  * Allow policykit to get the systemd status
+  * Allow sshd to create /var/lib/wtmpdb
+
+ -- Russell Coker <russell@coker.com.au>  Wed, 30 Apr 2025 13:00:58 +1000
+
 refpolicy (2:2.20250213-4) unstable; urgency=medium
 
   * Allow chromium_t to start and get status of user_systemd_t

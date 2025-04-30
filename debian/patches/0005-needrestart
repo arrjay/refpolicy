@@ -80,7 +80,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20250213/policy/modules/system/needrestart.te
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,105 @@
 +policy_module(needrestart)
 +
 +########################################
@@ -180,6 +180,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 +
 +optional_policy(`
 +	systemd_exec_systemctl(needrestart_t)
++	systemd_signal_all_user_sessions(needrestart_t)
 +')
 +
 +optional_policy(`
@@ -215,3 +216,32 @@ Index: refpolicy-2.20250213/policy/modules/admin/apt.te
  	nis_use_ypbind(apt_t)
  ')
  
+Index: refpolicy-2.20250213/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20250213/policy/modules/system/systemd.if
+@@ -2864,6 +2864,24 @@ interface(`systemd_write_all_user_keys',
+ 
+ ########################################
+ ## <summary>
++##    signal all systemd --user domains.
++## </summary>
++## <param name="domain">
++##    <summary>
++##    Domain allowed access.
++##    </summary>
++## </param>
++#
++interface(`systemd_signal_all_user_sessions',`
++	gen_require(`
++		attribute systemd_user_session_type;
++	')
++
++	allow $1 systemd_user_session_type:process signal;
++')
++
++########################################
++## <summary>
+ ##  Execute systemd-sysusers in the
+ ##  systemd sysusers domain.
+ ## </summary>
