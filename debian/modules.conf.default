@@ -1559,6 +1559,13 @@ openhpi = module
 # 
 openvpn = module
 
+# Layer: services
+# Module: opensnitch
+#
+# User firewall service
+# 
+opensnitch = module
+
 # Layer: contrib
 # Module: openvswitch
 #
