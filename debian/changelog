@@ -1,3 +1,23 @@
+refpolicy (2:2.20250213-6) unstable; urgency=medium
+
+  * Allow fail2ban to watch the audit log
+  * Dontaudit needrestart statting device nodes and writing /var dirs
+  * Allow needrestart to read vm overcommit sysctl and logind sessions
+    allow it to send signull to sshd and xdm, allow it to stat generic ptys
+  * Allow semanage to read vm overcommit sysctl
+  * Allow utempter to create dgram sockets and stat localisaton files
+  * Allow systemd-nspawn to read init runtime files (for MAC generation),
+    to write to /dev/kmsg, to send syslog messages
+  * Allow systemd-machined to create dirs of type systemd_machined_runtime_t
+    under init_runtime_t, to see systemd-nspawn processes, to manage it's
+    runtime dirs, and to create and unlink runtime sock_files.
+  * Add policy for opensnitch
+  * Label /etc/kernel/entry-tokenaas etc_runtime_t
+  * Allow NetworkManager_t to read systemd networkd runtime and to get init
+    status
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 24 May 2025 16:54:19 +1000
+
 refpolicy (2:2.20250213-5) unstable; urgency=medium
 
   * allow user_wm_t and similar domains the sys_nice capability.
