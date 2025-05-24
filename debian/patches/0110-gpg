@@ -98,7 +98,7 @@ Index: refpolicy-2.20250213/policy/modules/services/ssh.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/ssh.if
 +++ refpolicy-2.20250213/policy/modules/services/ssh.if
-@@ -397,6 +397,7 @@ template(`ssh_role_template',`
+@@ -398,6 +398,7 @@ template(`ssh_role_template',`
  	ps_process_pattern($3, $1_ssh_agent_t)
  
  	domtrans_pattern($3, ssh_agent_exec_t, $1_ssh_agent_t)

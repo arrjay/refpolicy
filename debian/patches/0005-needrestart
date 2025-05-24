@@ -80,7 +80,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20250213/policy/modules/system/needrestart.te
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,118 @@
 +policy_module(needrestart)
 +
 +########################################
@@ -116,16 +116,21 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 +allow needrestart_t needrestart_tmp_t:dir manage_dir_perms;
 +files_tmp_filetrans(needrestart_t, needrestart_tmp_t, { dir })
 +
++kernel_getattr_core_if(needrestart_t)
 +kernel_read_kernel_sysctls(needrestart_t)
 +kernel_read_fs_sysctls(needrestart_t)
 +kernel_read_state(needrestart_t)
 +kernel_read_system_state(needrestart_t)
++kernel_read_vm_overcommit_sysctl(needrestart_t)
 +
 +kernel_getattr_proc(needrestart_t)
 +
 +dev_read_urand(needrestart_t)
 +dev_read_rand(needrestart_t)
 +dev_read_sysfs(needrestart_t)
++dev_dontaudit_getattr_all_blk_files(needrestart_t)
++dev_dontaudit_getattr_all_chr_files(needrestart_t)
++gpm_dontaudit_getattr_gpmctl(needrestart_t)
 +
 +corecmd_exec_all_executables(needrestart_t)
 +domain_read_all_domains_state(needrestart_t)
@@ -134,6 +139,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 +
 +# for /var/cache/debconf/config.dat-new
 +files_dontaudit_rw_var_files(needrestart_t)
++files_dontaudit_write_var_dirs(needrestart_t)
 +
 +# for /etc/needrestart files
 +files_exec_etc_files(needrestart_t)
@@ -164,6 +170,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 +
 +miscfiles_read_localization(needrestart_t)
 +
++term_getattr_generic_ptys(needrestart_t)
 +term_getattr_ptmx(needrestart_t)
 +term_getattr_unallocated_ttys(needrestart_t)
 +term_read_console(needrestart_t)
@@ -176,15 +183,21 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 +
 +optional_policy(`
 +	ssh_use_sshd_pidfds(needrestart_t)
++	ssh_signull(needrestart_t)
 +')
 +
 +optional_policy(`
 +	systemd_exec_systemctl(needrestart_t)
++	systemd_read_logind_sessions_files(needrestart_t)
 +	systemd_signal_all_user_sessions(needrestart_t)
 +')
 +
 +optional_policy(`
 +	unconfined_signal(needrestart_t)
++')
++
++optional_policy(`
++	xdm_signull(needrestart_t)
 +')
 Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
 ===================================================================
@@ -245,3 +258,32 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.if
  ##  Execute systemd-sysusers in the
  ##  systemd sysusers domain.
  ## </summary>
+Index: refpolicy-2.20250213/policy/modules/services/xserver.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20250213/policy/modules/services/xserver.if
+@@ -274,6 +274,24 @@ interface(`xserver_ro_session',`
+ 	allow $1 $2:file map;
+ ')
+ 
++########################################
++## <summary>
++##      Send a null signal to xdm processes.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`xdm_signull',`
++        gen_require(`
++                type xdm_t;
++        ')
++
++        allow $1 xdm_t:process signull;
++')
++
+ #######################################
+ ## <summary>
+ ##	Create sessions on the X server, with read and write

@@ -493,7 +493,7 @@ Index: refpolicy-2.20250213/policy/modules/services/fail2ban.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/fail2ban.te
 +++ refpolicy-2.20250213/policy/modules/services/fail2ban.te
-@@ -92,6 +92,8 @@ fs_getattr_all_fs(fail2ban_t)
+@@ -92,8 +92,11 @@ fs_getattr_all_fs(fail2ban_t)
  
  auth_use_nsswitch(fail2ban_t)
  
@@ -501,8 +501,11 @@ Index: refpolicy-2.20250213/policy/modules/services/fail2ban.te
 +
  logging_read_all_logs(fail2ban_t)
  logging_read_audit_log(fail2ban_t)
++logging_watch_audit_log(fail2ban_t)
  logging_send_syslog_msg(fail2ban_t)
-@@ -136,13 +138,14 @@ optional_policy(`
+ 
+ miscfiles_read_localization(fail2ban_t)
+@@ -136,13 +139,14 @@ optional_policy(`
  #
  
  allow fail2ban_client_t self:capability dac_read_search;
@@ -518,7 +521,7 @@ Index: refpolicy-2.20250213/policy/modules/services/fail2ban.te
  
  corecmd_exec_bin(fail2ban_client_t)
  
-@@ -152,6 +155,8 @@ files_read_etc_files(fail2ban_client_t)
+@@ -152,6 +156,8 @@ files_read_etc_files(fail2ban_client_t)
  files_read_usr_files(fail2ban_client_t)
  files_search_runtime(fail2ban_client_t)
  
@@ -633,7 +636,15 @@ Index: refpolicy-2.20250213/policy/modules/services/networkmanager.te
  
  manage_dirs_pattern(NetworkManager_t, NetworkManager_etc_rw_t, NetworkManager_etc_rw_t)
  manage_files_pattern(NetworkManager_t, NetworkManager_etc_rw_t, NetworkManager_etc_rw_t)
-@@ -168,6 +169,8 @@ auth_use_nsswitch(NetworkManager_t)
+@@ -162,12 +163,16 @@ storage_getattr_fixed_disk_dev(NetworkMa
+ init_read_utmp(NetworkManager_t)
+ init_dontaudit_write_utmp(NetworkManager_t)
+ init_domtrans_script(NetworkManager_t)
++init_get_generic_units_status(NetworkManager_t)
+ init_get_system_status(NetworkManager_t)
++init_search_units(NetworkManager_t)
+ 
+ auth_use_nsswitch(NetworkManager_t)
  
  libs_watch_shared_libs_dirs(NetworkManager_t)
  
@@ -642,7 +653,7 @@ Index: refpolicy-2.20250213/policy/modules/services/networkmanager.te
  logging_send_audit_msgs(NetworkManager_t)
  logging_send_syslog_msg(NetworkManager_t)
  
-@@ -224,6 +227,10 @@ optional_policy(`
+@@ -228,6 +233,10 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -650,9 +661,17 @@ Index: refpolicy-2.20250213/policy/modules/services/networkmanager.te
 +')
 +
 +optional_policy(`
- 	chronyd_domtrans_cli(NetworkManager_t)
+ 	cron_read_system_job_lib_files(NetworkManager_t)
  ')
  
+@@ -344,6 +353,7 @@ optional_policy(`
+ optional_policy(`
+ 	systemd_read_logind_runtime_files(NetworkManager_t)
+ 	systemd_read_logind_sessions_files(NetworkManager_t)
++	systemd_read_networkd_runtime(NetworkManager_t)
+ 	systemd_watch_logind_runtime_dirs(NetworkManager_t)
+ 	systemd_watch_logind_sessions_dirs(NetworkManager_t)
+ 	systemd_watch_machines_dirs(NetworkManager_t)
 Index: refpolicy-2.20250213/policy/modules/services/policykit.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/policykit.te
@@ -1809,7 +1828,7 @@ Index: refpolicy-2.20250213/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/xserver.if
 +++ refpolicy-2.20250213/policy/modules/services/xserver.if
-@@ -1089,6 +1089,24 @@ interface(`xserver_read_xdm_lib_files',`
+@@ -1107,6 +1107,24 @@ interface(`xserver_read_xdm_lib_files',`
  
  ########################################
  ## <summary>
@@ -1996,7 +2015,7 @@ Index: refpolicy-2.20250213/policy/modules/kernel/files.fc
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/kernel/files.fc
 +++ refpolicy-2.20250213/policy/modules/kernel/files.fc
-@@ -261,7 +261,6 @@ ifndef(`distro_redhat',`
+@@ -262,7 +262,6 @@ ifndef(`distro_redhat',`
  /var/run		-l	gen_context(system_u:object_r:var_run_t,s0)
  
  /var/spool(/.*)?		gen_context(system_u:object_r:var_spool_t,s0)
@@ -2158,3 +2177,16 @@ Index: refpolicy-2.20250213/policy/modules/services/ssh.if
  
  	# for sshd subsystems, such as sftp-server.
  	corecmd_getattr_bin_files($1_t)
+Index: refpolicy-2.20250213/policy/modules/system/logging.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/logging.if
++++ refpolicy-2.20250213/policy/modules/system/logging.if
+@@ -162,7 +162,7 @@ interface(`logging_watch_audit_log',`
+ 		type auditd_log_t;
+ 	')
+ 
+-	allow $1 auditd_log_t:file watch;
++	allow $1 auditd_log_t:{ file dir } watch;
+ ')
+ 
+ ########################################

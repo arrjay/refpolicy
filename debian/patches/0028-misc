@@ -248,7 +248,24 @@ Index: refpolicy-2.20250213/policy/modules/system/authlogin.te
  
  domain_dontaudit_use_interactive_fds(chkpwd_t)
  
-@@ -445,6 +446,8 @@ domain_use_interactive_fds(utempter_t)
+@@ -426,6 +427,7 @@ ifdef(`distro_ubuntu',`
+ 
+ allow utempter_t self:capability setgid;
+ allow utempter_t self:unix_stream_socket create_stream_socket_perms;
++allow utempter_t self:unix_dgram_socket create;
+ 
+ allow utempter_t wtmp_t:file rw_file_perms;
+ 
+@@ -433,6 +435,8 @@ dev_read_urand(utempter_t)
+ 
+ files_read_etc_files(utempter_t)
+ 
++miscfiles_getattr_localization(utempter_t)
++
+ term_getattr_all_ttys(utempter_t)
+ term_getattr_all_ptys(utempter_t)
+ term_dontaudit_use_all_ttys(utempter_t)
+@@ -445,6 +449,8 @@ domain_use_interactive_fds(utempter_t)
  
  logging_search_logs(utempter_t)
  
@@ -444,7 +461,15 @@ Index: refpolicy-2.20250213/policy/modules/system/selinuxutil.te
  corecmd_exec_bin(run_init_t)
  corecmd_exec_shell(run_init_t)
  
-@@ -628,7 +635,10 @@ allow setfiles_t { policy_src_t policy_c
+@@ -533,6 +540,7 @@ files_tmp_filetrans(semanage_t, semanage
+ 
+ kernel_read_system_state(semanage_t)
+ kernel_read_kernel_sysctls(semanage_t)
++kernel_read_vm_overcommit_sysctl(semanage_t)
+ kernel_dontaudit_getattr_proc(semanage_t)
+ 
+ corecmd_exec_bin(semanage_t)
+@@ -628,7 +636,10 @@ allow setfiles_t { policy_src_t policy_c
  allow setfiles_t { policy_src_t policy_config_t file_context_t default_context_t }:lnk_file { ioctl lock read_lnk_file_perms };
  allow setfiles_t file_context_t:file map;
  
@@ -455,7 +480,7 @@ Index: refpolicy-2.20250213/policy/modules/system/selinuxutil.te
  kernel_relabelfrom_unlabeled_dirs(setfiles_t)
  kernel_relabelfrom_unlabeled_files(setfiles_t)
  kernel_relabelfrom_unlabeled_symlinks(setfiles_t)
-@@ -651,6 +661,9 @@ dev_relabel_all_dev_nodes(setfiles_t)
+@@ -651,6 +662,9 @@ dev_relabel_all_dev_nodes(setfiles_t)
  # to handle when /dev/console needs to be relabeled
  dev_rw_generic_chr_files(setfiles_t)
  
@@ -751,7 +776,7 @@ Index: refpolicy-2.20250213/policy/modules/kernel/files.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/kernel/files.if
 +++ refpolicy-2.20250213/policy/modules/kernel/files.if
-@@ -3685,6 +3685,35 @@ interface(`files_etc_filetrans',`
+@@ -3684,6 +3684,35 @@ interface(`files_etc_filetrans',`
  
  ########################################
  ## <summary>
@@ -945,7 +970,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  domain_read_all_entry_files(systemd_generator_t)
  files_exec_etc_files(systemd_generator_t)
  files_read_etc_files(systemd_generator_t)
-@@ -2526,5 +2527,9 @@ optional_policy(`
+@@ -2528,5 +2529,9 @@ optional_policy(`
  ')
  
  optional_policy(`

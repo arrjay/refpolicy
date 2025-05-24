@@ -243,7 +243,15 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  type systemd_logind_inhibit_runtime_t alias systemd_logind_inhibit_var_run_t;
  files_runtime_file(systemd_logind_inhibit_runtime_t)
-@@ -230,6 +231,9 @@ type systemd_nspawn_t;
+@@ -199,6 +200,7 @@ term_login_pty(systemd_machined_devpts_t
+ type systemd_machined_runtime_t alias systemd_machined_var_run_t;
+ files_runtime_file(systemd_machined_runtime_t)
+ init_daemon_runtime_file(systemd_machined_runtime_t, dir, "machines")
++init_runtime_filetrans(systemd_machined_t, systemd_machined_runtime_t, dir)
+ 
+ type systemd_machine_id_setup_t;
+ type systemd_machine_id_setup_exec_t;
+@@ -230,6 +232,9 @@ type systemd_nspawn_t;
  type systemd_nspawn_exec_t;
  init_system_domain(systemd_nspawn_t, systemd_nspawn_exec_t)
  
@@ -253,7 +261,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  type systemd_nspawn_runtime_t alias systemd_nspawn_var_run_t;
  files_runtime_file(systemd_nspawn_runtime_t)
  
-@@ -421,9 +425,13 @@ allow systemd_backlight_t systemd_backli
+@@ -421,9 +426,13 @@ allow systemd_backlight_t systemd_backli
  init_var_lib_filetrans(systemd_backlight_t, systemd_backlight_var_lib_t, dir)
  manage_files_pattern(systemd_backlight_t, systemd_backlight_var_lib_t, systemd_backlight_var_lib_t)
  
@@ -267,7 +275,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  dev_rw_sysfs(systemd_backlight_t)
  
  kernel_read_kernel_sysctls(systemd_backlight_t)
-@@ -437,8 +445,31 @@ udev_read_runtime_files(systemd_backligh
+@@ -437,8 +446,31 @@ udev_read_runtime_files(systemd_backligh
  files_search_var_lib(systemd_backlight_t)
  
  fs_getattr_all_fs(systemd_backlight_t)
@@ -299,7 +307,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  #######################################
  #
  # Binfmt local policy
-@@ -449,13 +480,19 @@ kernel_getattr_proc(systemd_binfmt_t)
+@@ -449,13 +481,19 @@ kernel_getattr_proc(systemd_binfmt_t)
  
  systemd_log_parse_environment(systemd_binfmt_t)
  
@@ -319,7 +327,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  fs_getattr_cgroup(systemd_binfmt_t)
  fs_search_cgroup_dirs(systemd_binfmt_t)
-@@ -499,8 +536,8 @@ ifdef(`enable_mls',`
+@@ -499,8 +537,8 @@ ifdef(`enable_mls',`
  #
  
  allow systemd_coredump_t self:capability { dac_read_search setgid setpcap setuid sys_ptrace };
@@ -330,7 +338,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  allow systemd_coredump_t self:process { getcap setcap setfscreate };
  allow systemd_coredump_t self:user_namespace create;
  allow systemd_coredump_t self:unix_dgram_socket { connect create getopt setopt write };
-@@ -510,6 +547,8 @@ allow systemd_coredump_t self:fifo_file
+@@ -510,6 +548,8 @@ allow systemd_coredump_t self:fifo_file
  mmap_manage_files_pattern(systemd_coredump_t, systemd_coredump_var_lib_t, systemd_coredump_var_lib_t)
  
  kernel_domtrans_to(systemd_coredump_t, systemd_coredump_exec_t)
@@ -339,7 +347,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  kernel_read_kernel_sysctls(systemd_coredump_t)
  kernel_read_system_state(systemd_coredump_t)
  kernel_rw_pipes(systemd_coredump_t)
-@@ -529,7 +568,7 @@ files_mounton_root(systemd_coredump_t)
+@@ -529,7 +569,7 @@ files_mounton_root(systemd_coredump_t)
  
  fs_getattr_all_fs(systemd_coredump_t)
  fs_getattr_nsfs_files(systemd_coredump_t)
@@ -348,7 +356,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  fs_search_tmpfs(systemd_coredump_t)
  
  init_list_var_lib_dirs(systemd_coredump_t)
-@@ -541,6 +580,7 @@ logging_send_syslog_msg(systemd_coredump
+@@ -541,6 +581,7 @@ logging_send_syslog_msg(systemd_coredump
  
  seutil_search_default_contexts(systemd_coredump_t)
  
@@ -356,7 +364,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  #######################################
  #
  # Systemd generator local policy
-@@ -552,8 +592,33 @@ allow systemd_generator_t self:process {
+@@ -552,8 +593,33 @@ allow systemd_generator_t self:process {
  # for systemd-ssh-generator
  allow systemd_generator_t self:vsock_socket create;
  
@@ -390,7 +398,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  corecmd_exec_shell(systemd_generator_t)
  corecmd_exec_bin(systemd_generator_t)
  
-@@ -566,6 +631,9 @@ dev_write_sysfs(systemd_generator_t)
+@@ -566,6 +632,9 @@ dev_write_sysfs(systemd_generator_t)
  # for systemd-ssh-generator
  dev_read_vsock(systemd_generator_t)
  
@@ -400,7 +408,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  files_read_etc_files(systemd_generator_t)
  files_read_etc_runtime_files(systemd_generator_t)
  files_search_runtime(systemd_generator_t)
-@@ -574,12 +642,14 @@ files_read_boot_files(systemd_generator_
+@@ -574,12 +643,14 @@ files_read_boot_files(systemd_generator_
  files_read_config_files(systemd_generator_t)
  files_search_all_mountpoints(systemd_generator_t)
  files_list_usr(systemd_generator_t)
@@ -415,7 +423,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  init_create_runtime_files(systemd_generator_t)
  init_read_all_script_files(systemd_generator_t)
-@@ -598,23 +668,21 @@ init_read_script_files(systemd_generator
+@@ -598,23 +669,21 @@ init_read_script_files(systemd_generator
  init_getattr_all_unit_files(systemd_generator_t)
  init_getattr_all_script_files(systemd_generator_t)
  
@@ -446,7 +454,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  systemd_log_parse_environment(systemd_generator_t)
  
-@@ -640,6 +708,8 @@ optional_policy(`
+@@ -640,6 +709,8 @@ optional_policy(`
  	container_search_config(systemd_generator_t)
  ')
  
@@ -455,7 +463,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  optional_policy(`
  	fstools_exec(systemd_generator_t)
  ')
-@@ -648,11 +718,24 @@ optional_policy(`
+@@ -648,11 +719,24 @@ optional_policy(`
  	lvm_exec(systemd_generator_t)
  	lvm_map_config(systemd_generator_t)
  	lvm_read_config(systemd_generator_t)
@@ -482,7 +490,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  	fs_rw_nfsd_fs(systemd_generator_t)
  	rpc_list_exports(systemd_generator_t)
  	rpc_read_exports(systemd_generator_t)
-@@ -811,6 +894,7 @@ allow systemd_hostnamed_t self:capabilit
+@@ -811,6 +895,7 @@ allow systemd_hostnamed_t self:capabilit
  allow systemd_hostnamed_t self:process setfscreate;
  
  fs_getattr_cgroup(systemd_hostnamed_t)
@@ -490,7 +498,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  fs_getattr_xattr_fs(systemd_hostnamed_t)
  
  kernel_read_kernel_sysctls(systemd_hostnamed_t)
-@@ -830,7 +914,10 @@ init_write_runtime_files(systemd_hostnam
+@@ -830,7 +915,10 @@ init_write_runtime_files(systemd_hostnam
  
  miscfiles_read_localization(systemd_hostnamed_t)
  
@@ -501,7 +509,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  seutil_read_config(systemd_hostnamed_t)
  seutil_read_file_contexts(systemd_hostnamed_t)
-@@ -844,6 +931,10 @@ systemd_log_parse_environment(systemd_ho
+@@ -844,6 +932,10 @@ systemd_log_parse_environment(systemd_ho
  udev_read_runtime_files(systemd_hostnamed_t)
  
  optional_policy(`
@@ -512,7 +520,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  	dbus_connect_system_bus(systemd_hostnamed_t)
  	dbus_system_bus_client(systemd_hostnamed_t)
  	init_dbus_chat(systemd_hostnamed_t)
-@@ -853,6 +944,10 @@ optional_policy(`
+@@ -853,6 +945,10 @@ optional_policy(`
  	networkmanager_dbus_chat(systemd_hostnamed_t)
  ')
  
@@ -523,7 +531,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  #########################################
  #
  # hw local policy
-@@ -915,6 +1010,7 @@ miscfiles_read_localization(systemd_jour
+@@ -915,6 +1011,7 @@ miscfiles_read_localization(systemd_jour
  # locale local policy
  #
  
@@ -531,7 +539,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  kernel_read_kernel_sysctls(systemd_locale_t)
  
  files_read_etc_files(systemd_locale_t)
-@@ -930,15 +1026,29 @@ miscfiles_read_localization(systemd_loca
+@@ -930,15 +1027,29 @@ miscfiles_read_localization(systemd_loca
  
  selinux_use_status_page(systemd_locale_t)
  
@@ -561,7 +569,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  ######################################
  #
  # systemd log parse environment
-@@ -970,6 +1080,7 @@ allow systemd_logind_t self:process { ge
+@@ -970,6 +1081,7 @@ allow systemd_logind_t self:process { ge
  allow systemd_logind_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow systemd_logind_t self:unix_dgram_socket create_socket_perms;
  allow systemd_logind_t self:fifo_file rw_fifo_file_perms;
@@ -569,7 +577,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  allow systemd_logind_t systemd_logind_var_lib_t:dir manage_dir_perms;
  allow systemd_logind_t systemd_logind_var_lib_t:file manage_file_perms;
-@@ -996,6 +1107,7 @@ stream_connect_pattern(systemd_logind_t,
+@@ -996,6 +1108,7 @@ stream_connect_pattern(systemd_logind_t,
  kernel_dontaudit_getattr_proc(systemd_logind_t)
  kernel_read_kernel_sysctls(systemd_logind_t)
  
@@ -577,7 +585,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  dev_getattr_dri_dev(systemd_logind_t)
  dev_getattr_generic_usb_dev(systemd_logind_t)
  dev_getattr_kvm_dev(systemd_logind_t)
-@@ -1006,6 +1118,7 @@ dev_read_urand(systemd_logind_t)
+@@ -1006,6 +1119,7 @@ dev_read_urand(systemd_logind_t)
  dev_rw_dri(systemd_logind_t)
  dev_rw_input_dev(systemd_logind_t)
  dev_rw_sysfs(systemd_logind_t)
@@ -585,7 +593,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  dev_setattr_dri_dev(systemd_logind_t)
  dev_setattr_generic_usb_dev(systemd_logind_t)
  dev_setattr_input_dev(systemd_logind_t)
-@@ -1023,16 +1136,20 @@ files_search_runtime(systemd_logind_t)
+@@ -1023,16 +1137,20 @@ files_search_runtime(systemd_logind_t)
  files_getattr_all_tmpfs_files(systemd_logind_t)
  files_rw_runtime_dirs(systemd_logind_t)
  
@@ -606,7 +614,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  fs_watch_memory_pressure(systemd_logind_t)
  fs_getattr_nsfs_files(systemd_logind_t)
  
-@@ -1060,12 +1177,15 @@ init_start_all_units(systemd_logind_t)
+@@ -1060,12 +1178,15 @@ init_start_all_units(systemd_logind_t)
  init_stop_all_units(systemd_logind_t)
  init_start_system(systemd_logind_t)
  init_stop_system(systemd_logind_t)
@@ -622,7 +630,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  seutil_libselinux_linked(systemd_logind_t)
  seutil_read_default_contexts(systemd_logind_t)
  seutil_read_file_contexts(systemd_logind_t)
-@@ -1075,6 +1195,8 @@ systemd_start_power_units(systemd_logind
+@@ -1075,6 +1196,8 @@ systemd_start_power_units(systemd_logind
  
  udev_list_runtime(systemd_logind_t)
  udev_read_runtime_files(systemd_logind_t)
@@ -631,7 +639,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  userdom_delete_all_user_runtime_dirs(systemd_logind_t)
  userdom_delete_all_user_runtime_files(systemd_logind_t)
-@@ -1086,6 +1208,8 @@ userdom_delete_user_tmp_files(systemd_lo
+@@ -1086,6 +1209,8 @@ userdom_delete_user_tmp_files(systemd_lo
  userdom_delete_user_tmp_symlinks(systemd_logind_t)
  userdom_delete_user_tmp_named_pipes(systemd_logind_t)
  userdom_delete_user_tmp_named_sockets(systemd_logind_t)
@@ -640,7 +648,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  # user_tmp_t is for the dbus-1 directory
  userdom_list_user_tmp(systemd_logind_t)
  userdom_manage_user_runtime_dirs(systemd_logind_t)
-@@ -1098,6 +1222,7 @@ userdom_relabelfrom_user_runtime_dirs(sy
+@@ -1098,6 +1223,7 @@ userdom_relabelfrom_user_runtime_dirs(sy
  userdom_relabelto_user_runtime_dirs(systemd_logind_t)
  userdom_setattr_user_ttys(systemd_logind_t)
  userdom_use_user_ttys(systemd_logind_t)
@@ -648,7 +656,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  # Needed to work around patch not yet merged into the systemd-logind supported on RHEL 7.x
  # The change in systemd by Nicolas Iooss on 02-Feb-2016 with hash 4b51966cf6c06250036e428608da92f8640beb96
-@@ -1123,6 +1248,8 @@ tunable_policy(`systemd_logind_get_bootl
+@@ -1123,6 +1249,8 @@ tunable_policy(`systemd_logind_get_bootl
  	fs_getattr_autofs(systemd_logind_t)
  
  	files_search_boot(systemd_logind_t)
@@ -657,7 +665,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  ')
  # systemd-logind uses util-linux's blkid in order to find the ESP (EFI System Partition).
  # This reads the first sectors of fixed disk devices.
-@@ -1137,6 +1264,11 @@ optional_policy(`
+@@ -1137,6 +1265,11 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -669,7 +677,19 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  	devicekit_dbus_chat_disk(systemd_logind_t)
  	devicekit_dbus_chat_power(systemd_logind_t)
  ')
-@@ -1186,6 +1318,11 @@ allow systemd_machined_t systemd_machine
+@@ -1178,14 +1311,23 @@ allow systemd_machined_t self:cap_userns
+ allow systemd_machined_t self:process setfscreate;
+ allow systemd_machined_t self:unix_dgram_socket { connect connected_socket_perms };
+ 
++ps_process_pattern(systemd_machined_t, systemd_nspawn_t)
++
+ term_create_pty(systemd_machined_t, systemd_machined_devpts_t)
+ allow systemd_machined_t systemd_machined_devpts_t:chr_file manage_chr_file_perms;
+ 
+ manage_files_pattern(systemd_machined_t, systemd_machined_runtime_t, systemd_machined_runtime_t)
+ allow systemd_machined_t systemd_machined_runtime_t:lnk_file manage_lnk_file_perms;
++allow systemd_machined_t systemd_machined_runtime_t:dir manage_dir_perms;
++allow systemd_machined_t systemd_machined_runtime_t:sock_file { create unlink };
  
  manage_sock_files_pattern(systemd_machined_t, systemd_userdbd_runtime_t, systemd_userdbd_runtime_t)
  
@@ -681,7 +701,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  kernel_getattr_proc(systemd_machined_t)
  kernel_read_kernel_sysctls(systemd_machined_t)
  kernel_read_system_state(systemd_machined_t)
-@@ -1194,6 +1331,7 @@ dev_getattr_fs(systemd_machined_t)
+@@ -1194,6 +1336,7 @@ dev_getattr_fs(systemd_machined_t)
  dev_setattr_urand_dev(systemd_machined_t)
  
  files_read_etc_files(systemd_machined_t)
@@ -689,7 +709,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  fs_getattr_cgroup(systemd_machined_t)
  fs_getattr_tmpfs(systemd_machined_t)
-@@ -1240,9 +1378,12 @@ optional_policy(`
+@@ -1240,9 +1383,12 @@ optional_policy(`
  # machine-id-setup local policy
  #
  
@@ -702,7 +722,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  files_list_var(systemd_machine_id_setup_t)
  files_mounton_root(systemd_machine_id_setup_t)
  files_rw_etc_runtime_files(systemd_machine_id_setup_t)
-@@ -1262,7 +1403,10 @@ dev_write_kmsg(systemd_machine_id_setup_
+@@ -1262,7 +1408,10 @@ dev_write_kmsg(systemd_machine_id_setup_
  init_read_runtime_files(systemd_machine_id_setup_t)
  init_read_state(systemd_machine_id_setup_t)
  
@@ -714,7 +734,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  #
  # modules-load local policy
  #
-@@ -1275,6 +1419,7 @@ kernel_load_module(systemd_modules_load_
+@@ -1275,6 +1424,7 @@ kernel_load_module(systemd_modules_load_
  kernel_read_kernel_sysctls(systemd_modules_load_t)
  kernel_request_load_module(systemd_modules_load_t)
  kernel_dontaudit_getattr_proc(systemd_modules_load_t)
@@ -722,7 +742,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  dev_read_sysfs(systemd_modules_load_t)
  
-@@ -1284,6 +1429,8 @@ files_read_etc_files(systemd_modules_loa
+@@ -1284,6 +1434,8 @@ files_read_etc_files(systemd_modules_loa
  fs_getattr_all_fs(systemd_modules_load_t)
  fs_search_all(systemd_modules_load_t)
  
@@ -731,7 +751,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  modutils_read_module_config(systemd_modules_load_t)
  modutils_read_module_deps(systemd_modules_load_t)
  
-@@ -1407,22 +1554,24 @@ miscfiles_read_localization(systemd_noti
+@@ -1407,22 +1559,24 @@ miscfiles_read_localization(systemd_noti
  # Nspawn local policy
  #
  
@@ -760,7 +780,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  files_tmp_filetrans(systemd_nspawn_t, systemd_nspawn_tmp_t, { dir file })
  allow systemd_nspawn_t systemd_nspawn_tmp_t:dir manage_dir_perms;
  allow systemd_nspawn_t systemd_nspawn_tmp_t:dir mounton;
-@@ -1432,14 +1581,31 @@ allow systemd_nspawn_t systemd_nspawn_tm
+@@ -1432,14 +1586,31 @@ allow systemd_nspawn_t systemd_nspawn_tm
  # for /run/systemd/nspawn/incoming in chroot
  allow systemd_nspawn_t systemd_nspawn_runtime_t:dir mounton;
  
@@ -792,15 +812,17 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  corecmd_exec_shell(systemd_nspawn_t)
  corecmd_search_bin(systemd_nspawn_t)
-@@ -1456,6 +1622,7 @@ dev_read_sysfs(systemd_nspawn_t)
+@@ -1455,7 +1626,9 @@ dev_unmount_sysfs(systemd_nspawn_t)
+ dev_read_sysfs(systemd_nspawn_t)
  dev_read_rand(systemd_nspawn_t)
  dev_read_urand(systemd_nspawn_t)
++dev_write_kmsg(systemd_nspawn_t)
  
 +files_getattr_default_dirs(systemd_nspawn_t)
  files_getattr_tmp_dirs(systemd_nspawn_t)
  files_manage_etc_files(systemd_nspawn_t)
  files_manage_mnt_dirs(systemd_nspawn_t)
-@@ -1467,11 +1634,18 @@ files_setattr_runtime_dirs(systemd_nspaw
+@@ -1467,31 +1640,47 @@ files_setattr_runtime_dirs(systemd_nspaw
  
  fs_getattr_cgroup(systemd_nspawn_t)
  fs_getattr_tmpfs(systemd_nspawn_t)
@@ -819,8 +841,11 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
 +fs_search_auto_mountpoints(systemd_nspawn_t)
  fs_watch_memory_pressure(systemd_nspawn_t)
  
++logging_send_syslog_msg(systemd_nspawn_t)
++
  term_getattr_generic_ptys(systemd_nspawn_t)
-@@ -1480,6 +1654,7 @@ term_mount_devpts(systemd_nspawn_t)
+ term_getattr_pty_fs(systemd_nspawn_t)
+ term_mount_devpts(systemd_nspawn_t)
  term_search_ptys(systemd_nspawn_t)
  term_setattr_generic_ptys(systemd_nspawn_t)
  term_use_ptmx(systemd_nspawn_t)
@@ -828,7 +853,10 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  init_domtrans_script(systemd_nspawn_t)
  init_getrlimit(systemd_nspawn_t)
-@@ -1489,9 +1664,14 @@ init_search_run(systemd_nspawn_t)
+ init_kill_scripts(systemd_nspawn_t)
+ init_read_state(systemd_nspawn_t)
++init_read_runtime_files(systemd_nspawn_t)
+ init_search_run(systemd_nspawn_t)
  init_write_runtime_socket(systemd_nspawn_t)
  init_spec_domtrans_script(systemd_nspawn_t)
  
@@ -843,7 +871,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  # for writing inside chroot
  sysnet_manage_config(systemd_nspawn_t)
  
-@@ -1499,6 +1679,8 @@ udev_read_runtime_files(systemd_nspawn_t
+@@ -1499,6 +1688,8 @@ udev_read_runtime_files(systemd_nspawn_t
  
  userdom_manage_user_home_dirs(systemd_nspawn_t)
  
@@ -852,7 +880,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  tunable_policy(`systemd_nspawn_labeled_namespace',`
  	allow systemd_nspawn_t systemd_nspawn_runtime_t:fifo_file manage_fifo_file_perms;
  	files_tmp_filetrans(systemd_nspawn_t, systemd_nspawn_runtime_t, fifo_file)
-@@ -1539,8 +1721,11 @@ tunable_policy(`systemd_nspawn_labeled_n
+@@ -1539,8 +1730,11 @@ tunable_policy(`systemd_nspawn_labeled_n
  
  	init_domtrans(systemd_nspawn_t)
  
@@ -864,7 +892,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  	seutil_search_default_contexts(systemd_nspawn_t)
  ')
  
-@@ -1589,7 +1774,9 @@ allow systemd_passwd_agent_t self:capabi
+@@ -1589,7 +1783,9 @@ allow systemd_passwd_agent_t self:capabi
  allow systemd_passwd_agent_t self:process { setfscreate setsockcreate signal };
  allow systemd_passwd_agent_t self:unix_dgram_socket create_socket_perms;
  
@@ -875,7 +903,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  manage_dirs_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
  manage_files_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
  manage_sock_files_pattern(systemd_passwd_agent_t, systemd_passwd_runtime_t, systemd_passwd_runtime_t)
-@@ -1598,7 +1785,13 @@ init_runtime_filetrans(systemd_passwd_ag
+@@ -1598,7 +1794,13 @@ init_runtime_filetrans(systemd_passwd_ag
  
  can_exec(systemd_passwd_agent_t, systemd_passwd_agent_exec_t)
  
@@ -889,7 +917,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  kernel_stream_connect(systemd_passwd_agent_t)
  
  dev_create_generic_dirs(systemd_passwd_agent_t)
-@@ -1625,6 +1818,7 @@ init_create_runtime_dirs(systemd_passwd_
+@@ -1625,6 +1827,7 @@ init_create_runtime_dirs(systemd_passwd_
  init_read_runtime_pipes(systemd_passwd_agent_t)
  init_read_state(systemd_passwd_agent_t)
  init_read_utmp(systemd_passwd_agent_t)
@@ -897,7 +925,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  init_stream_connect(systemd_passwd_agent_t)
  
  logging_send_syslog_msg(systemd_passwd_agent_t)
-@@ -1634,6 +1828,9 @@ miscfiles_read_localization(systemd_pass
+@@ -1634,6 +1837,9 @@ miscfiles_read_localization(systemd_pass
  seutil_search_default_contexts(systemd_passwd_agent_t)
  
  userdom_use_user_terminals(systemd_passwd_agent_t)
@@ -907,7 +935,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  optional_policy(`
  	getty_use_fds(systemd_passwd_agent_t)
-@@ -1721,6 +1918,7 @@ manage_files_pattern(systemd_rfkill_t, s
+@@ -1721,6 +1927,7 @@ manage_files_pattern(systemd_rfkill_t, s
  init_var_lib_filetrans(systemd_rfkill_t, systemd_rfkill_var_lib_t, dir)
  
  fs_getattr_all_fs(systemd_rfkill_t)
@@ -915,7 +943,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  kernel_getattr_proc(systemd_rfkill_t)
  kernel_read_kernel_sysctls(systemd_rfkill_t)
-@@ -1793,6 +1991,7 @@ seutil_read_file_contexts(systemd_resolv
+@@ -1793,6 +2000,7 @@ seutil_read_file_contexts(systemd_resolv
  
  systemd_log_parse_environment(systemd_resolved_t)
  systemd_read_networkd_runtime(systemd_resolved_t)
@@ -923,7 +951,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  optional_policy(`
  	dbus_connect_system_bus(systemd_resolved_t)
-@@ -1846,6 +2045,9 @@ fs_getattr_nsfs_files(systemd_sessions_t
+@@ -1846,6 +2054,9 @@ fs_getattr_nsfs_files(systemd_sessions_t
  kernel_read_kernel_sysctls(systemd_sessions_t)
  kernel_dontaudit_getattr_proc(systemd_sessions_t)
  
@@ -933,7 +961,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  selinux_get_fs_mount(systemd_sessions_t)
  selinux_use_status_page(systemd_sessions_t)
  
-@@ -1863,7 +2065,7 @@ systemd_log_parse_environment(systemd_se
+@@ -1863,7 +2074,7 @@ systemd_log_parse_environment(systemd_se
  # sys_admin for sysctls such as kernel.kptr_restrict and kernel.dmesg_restrict
  # sys_ptrace for kernel.yama.ptrace_scope
  # net_admin for network sysctls
@@ -942,7 +970,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  kernel_read_kernel_sysctls(systemd_sysctl_t)
  kernel_request_load_module(systemd_sysctl_t)
-@@ -1878,6 +2080,9 @@ fs_search_ramfs(systemd_sysctl_t)
+@@ -1878,6 +2089,9 @@ fs_search_ramfs(systemd_sysctl_t)
  fs_search_tmpfs(systemd_sysctl_t)
  fs_getattr_nsfs_files(systemd_sysctl_t)
  
@@ -952,7 +980,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  systemd_log_parse_environment(systemd_sysctl_t)
  
  #########################################
-@@ -1889,12 +2094,17 @@ allow systemd_sysusers_t self:capability
+@@ -1889,12 +2103,17 @@ allow systemd_sysusers_t self:capability
  allow systemd_sysusers_t self:process setfscreate;
  allow systemd_sysusers_t self:unix_dgram_socket sendto;
  
@@ -970,7 +998,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  kernel_read_kernel_sysctls(systemd_sysusers_t)
  
  selinux_use_status_page(systemd_sysusers_t)
-@@ -1914,6 +2124,17 @@ systemd_stream_connect_nsresourced(syste
+@@ -1914,6 +2133,17 @@ systemd_stream_connect_nsresourced(syste
  userdom_use_all_users_fds(systemd_sysusers_t)
  userdom_use_inherited_user_terminals(systemd_sysusers_t)
  
@@ -988,7 +1016,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  #########################################
  #
  # Tmpfiles local policy
-@@ -1990,10 +2211,13 @@ files_setattr_lock_dirs(systemd_tmpfiles
+@@ -1990,10 +2220,13 @@ files_setattr_lock_dirs(systemd_tmpfiles
  # for /etc/mtab
  files_manage_etc_symlinks(systemd_tmpfiles_t)
  
@@ -1002,7 +1030,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  fs_getattr_nsfs_files(systemd_tmpfiles_t)
  
  selinux_get_fs_mount(systemd_tmpfiles_t)
-@@ -2050,6 +2274,11 @@ tunable_policy(`systemd_tmpfiles_manage_
+@@ -2050,6 +2283,11 @@ tunable_policy(`systemd_tmpfiles_manage_
  ')
  
  optional_policy(`
@@ -1014,7 +1042,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  	dbus_manage_lib_files(systemd_tmpfiles_t)
  	dbus_read_lib_files(systemd_tmpfiles_t)
  	dbus_relabel_lib_dirs(systemd_tmpfiles_t)
-@@ -2229,13 +2458,15 @@ systemd_stream_connect_nsresourced(syste
+@@ -2229,13 +2467,15 @@ systemd_stream_connect_nsresourced(syste
  # systemd-user-runtime-dir local policy
  #
  
@@ -1031,7 +1059,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  
  files_read_etc_files(systemd_user_runtime_dir_t)
  
-@@ -2274,7 +2505,10 @@ userdom_manage_user_tmp_dirs(systemd_use
+@@ -2274,7 +2514,10 @@ userdom_manage_user_tmp_dirs(systemd_use
  userdom_manage_user_tmp_files(systemd_user_runtime_dir_t)
  
  userdom_delete_user_tmp_dirs(systemd_user_runtime_dir_t)
@@ -1042,7 +1070,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  userdom_search_user_runtime_root(systemd_user_runtime_dir_t)
  userdom_user_runtime_root_filetrans_user_runtime(systemd_user_runtime_dir_t, dir)
  userdom_manage_user_runtime_dirs(systemd_user_runtime_dir_t)
-@@ -2284,3 +2518,15 @@ userdom_relabelto_user_runtime_dirs(syst
+@@ -2284,3 +2527,15 @@ userdom_relabelto_user_runtime_dirs(syst
  optional_policy(`
  	dbus_system_bus_client(systemd_user_runtime_dir_t)
  ')
@@ -1777,3 +1805,15 @@ Index: refpolicy-2.20250213/policy/modules/kernel/devices.if
  ##	getattr the dri devices.
  ## </summary>
  ## <param name="domain">
+Index: refpolicy-2.20250213/policy/modules/kernel/files.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/kernel/files.fc
++++ refpolicy-2.20250213/policy/modules/kernel/files.fc
+@@ -65,6 +65,7 @@ ifdef(`distro_suse',`
+ 
+ /etc/ipsec\.d/examples(/.*)?	gen_context(system_u:object_r:etc_t,s0)
+ 
++/etc/kernel/entry-token --	gen_context(system_u:object_r:etc_runtime_t,s0)
+ /etc/network/ifstate	--	gen_context(system_u:object_r:etc_runtime_t,s0)
+ 
+ /etc/ptal/ptal-printd-like -- 	gen_context(system_u:object_r:etc_runtime_t,s0)

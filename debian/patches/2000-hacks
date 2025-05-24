@@ -70,7 +70,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20250213/policy/modules/system/systemd.te
-@@ -2533,3 +2533,7 @@ optional_policy(`
+@@ -2535,3 +2535,7 @@ optional_policy(`
  optional_policy(`
  	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
  ')
