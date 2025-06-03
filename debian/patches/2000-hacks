@@ -18,7 +18,7 @@ Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/sysnetwork.te
 +++ refpolicy-2.20250213/policy/modules/system/sysnetwork.te
-@@ -367,6 +367,11 @@ files_dontaudit_read_root_files(ifconfig
+@@ -368,6 +368,11 @@ files_dontaudit_read_root_files(ifconfig
  init_use_fds(ifconfig_t)
  init_use_script_ptys(ifconfig_t)
  
@@ -70,7 +70,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20250213/policy/modules/system/systemd.te
-@@ -2535,3 +2535,7 @@ optional_policy(`
+@@ -2546,3 +2546,7 @@ optional_policy(`
  optional_policy(`
  	userdom_delete_all_user_runtime_named_sockets(systemd_user_runtime_dir_t)
  ')

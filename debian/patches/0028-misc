@@ -494,7 +494,7 @@ Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/sysnetwork.te
 +++ refpolicy-2.20250213/policy/modules/system/sysnetwork.te
-@@ -360,6 +360,7 @@ term_dontaudit_use_all_ttys(ifconfig_t)
+@@ -361,6 +361,7 @@ term_dontaudit_use_all_ttys(ifconfig_t)
  term_dontaudit_use_all_ptys(ifconfig_t)
  term_dontaudit_use_ptmx(ifconfig_t)
  term_dontaudit_use_generic_ptys(ifconfig_t)
@@ -703,7 +703,7 @@ Index: refpolicy-2.20250213/policy/modules/apps/chromium.te
  	')
  ')
  
-@@ -295,6 +309,7 @@ optional_policy(`
+@@ -295,12 +309,18 @@ optional_policy(`
  
  optional_policy(`
  	networkmanager_dbus_chat(chromium_t)
@@ -711,7 +711,18 @@ Index: refpolicy-2.20250213/policy/modules/apps/chromium.te
  ')
  
  optional_policy(`
-@@ -389,6 +404,9 @@ allow chromium_naclhelper_t self:user_na
+ 	ssh_dontaudit_agent_tmp(chromium_t)
+ ')
+ 
++optional_policy(`
++	wm_map_tmpfs_files(chromium_t)
++	wm_rw_tmpfs_files(chromium_t)
++')
++
+ ########################################
+ #
+ # chromium_renderer local policy
+@@ -389,6 +409,9 @@ allow chromium_naclhelper_t self:user_na
  allow chromium_naclhelper_t chromium_t:unix_stream_socket { getattr read write };
  allow chromium_naclhelper_t chromium_sandbox_t:unix_stream_socket { getattr read write };
  
@@ -888,6 +899,49 @@ Index: refpolicy-2.20250213/policy/modules/apps/wm.if
  ')
  
  ########################################
+@@ -202,6 +212,42 @@ interface(`wm_dontaudit_exec_tmp_files',
+ ')
+ 
+ ########################################
++## <summary>
++##	read-write files in temporary filesystems.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to allow
++##	</summary>
++## </param>
++#
++interface(`wm_rw_tmpfs_files',`
++	gen_require(`
++		type wm_tmpfs_t;
++	')
++
++	allow $1 wm_tmpfs_t:file rw_file_perms;
++')
++
++########################################
++## <summary>
++##	map files in temporary filesystems.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain to allow
++##	</summary>
++## </param>
++#
++interface(`wm_map_tmpfs_files',`
++	gen_require(`
++		type wm_tmpfs_t;
++	')
++
++	allow $1 wm_tmpfs_t:file map;
++')
++
++########################################
+ ## <summary>
+ ##	Do not audit attempts to execute
+ ##	files in temporary filesystems.
 Index: refpolicy-2.20250213/policy/modules/apps/wm.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/apps/wm.te
@@ -962,7 +1016,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
 +++ refpolicy-2.20250213/policy/modules/system/systemd.te
-@@ -632,6 +632,7 @@ dev_write_sysfs(systemd_generator_t)
+@@ -633,6 +633,7 @@ dev_write_sysfs(systemd_generator_t)
  dev_read_vsock(systemd_generator_t)
  
  application_exec(systemd_generator_t)
@@ -970,7 +1024,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.te
  domain_read_all_entry_files(systemd_generator_t)
  files_exec_etc_files(systemd_generator_t)
  files_read_etc_files(systemd_generator_t)
-@@ -2528,5 +2529,9 @@ optional_policy(`
+@@ -2539,5 +2540,9 @@ optional_policy(`
  ')
  
  optional_policy(`
@@ -1641,7 +1695,7 @@ Index: refpolicy-2.20250213/policy/modules/system/systemd.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/system/systemd.if
 +++ refpolicy-2.20250213/policy/modules/system/systemd.if
-@@ -2977,6 +2977,42 @@ interface(`systemd_signal_all_user_sessi
+@@ -3062,6 +3062,42 @@ interface(`systemd_user_runtime_dir_unli
  
  ########################################
  ## <summary>
@@ -1701,7 +1755,7 @@ Index: refpolicy-2.20250213/policy/modules/kernel/files.fc
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/kernel/files.fc
 +++ refpolicy-2.20250213/policy/modules/kernel/files.fc
-@@ -242,6 +242,8 @@ ifndef(`distro_redhat',`
+@@ -243,6 +243,8 @@ ifndef(`distro_redhat',`
  
  /var/lib(/.*)?			gen_context(system_u:object_r:var_lib_t,s0)
  

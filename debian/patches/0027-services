@@ -738,7 +738,7 @@ Index: refpolicy-2.20250213/policy/modules/services/ssh.te
  
  ## <desc>
  ## <p>
-@@ -195,6 +195,11 @@ tunable_policy(`user_tcp_server',`
+@@ -200,6 +200,11 @@ tunable_policy(`user_tcp_server',`
  ')
  
  optional_policy(`
@@ -750,7 +750,7 @@ Index: refpolicy-2.20250213/policy/modules/services/ssh.te
  	tunable_policy(`ssh_use_gpg_agent',`
  		gpg_stream_connect_agent(ssh_t)
  	')
-@@ -268,6 +273,8 @@ ifdef(`distro_debian',`
+@@ -273,6 +278,8 @@ ifdef(`distro_debian',`
  ifdef(`init_systemd',`
  	auth_use_pam_systemd(sshd_t)
  	init_dbus_chat(sshd_t)
@@ -759,7 +759,7 @@ Index: refpolicy-2.20250213/policy/modules/services/ssh.te
  	init_rw_stream_sockets(sshd_t)
  	systemd_dgram_nspawn(sshd_t)
  	systemd_write_inherited_logind_sessions_pipes(sshd_t)
-@@ -293,6 +300,11 @@ tunable_policy(`allow_polyinstantiation'
+@@ -298,6 +305,11 @@ tunable_policy(`allow_polyinstantiation'
  ')
  
  optional_policy(`

@@ -82,3 +82,15 @@ Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.fc
  /etc/denyhosts.*	--	gen_context(system_u:object_r:net_conf_t,s0)
  /etc/machine-info	--	gen_context(system_u:object_r:net_conf_t,s0)
  /etc/resolv\.conf.*	--	gen_context(system_u:object_r:net_conf_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/sysnetwork.te
++++ refpolicy-2.20250213/policy/modules/system/sysnetwork.te
+@@ -77,6 +77,7 @@ allow dhcpc_t self:netlink_kobject_ueven
+ allow dhcpc_t self:netlink_route_socket create_netlink_socket_perms;
+ allow dhcpc_t self:rawip_socket create_socket_perms;
+ allow dhcpc_t self:unix_dgram_socket { create_socket_perms sendto };
++allow dhcpc_t self:unix_stream_socket connectto;
+ 
+ allow dhcpc_t dhcp_etc_t:dir list_dir_perms;
+ read_lnk_files_pattern(dhcpc_t, dhcp_etc_t, dhcp_etc_t)

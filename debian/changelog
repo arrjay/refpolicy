@@ -1,3 +1,14 @@
+refpolicy (2:2.20250213-7) unstable; urgency=medium
+
+  * Allow user systemd domains to list user tmp, watch root, read usr files,
+    and create sockets for gpg_t and user_ssh_agent_t
+  * Allow needrestart to list init var lib dirs
+  * Allow dhcpc_t to connect to itself via a unix stream socket
+  * Allow systemd_user_runtime_dir_t to unlink ssh_agent_tmp_t sock files
+  * Allow systemd_machine_id_setup_t to send syslog messages
+
+ -- Russell Coker <russell@coker.com.au>  Tue, 03 Jun 2025 20:58:37 +1000
+
 refpolicy (2:2.20250213-6) unstable; urgency=medium
 
   * Allow fail2ban to watch the audit log

@@ -80,7 +80,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20250213/policy/modules/system/needrestart.te
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,119 @@
 +policy_module(needrestart)
 +
 +########################################
@@ -161,6 +161,7 @@ Index: refpolicy-2.20250213/policy/modules/system/needrestart.te
 +fs_getattr_nsfs_files(needrestart_t)
 +
 +init_admin(needrestart_t)
++init_list_var_lib_dirs(needrestart_t)
 +init_manage_all_units(needrestart_t)
 +init_read_state(needrestart_t)
 +init_start_generic_units(needrestart_t)
