@@ -53,8 +53,12 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 ===================================================================
 --- /dev/null
 +++ refpolicy-2.20250213/policy/modules/system/fwupd.te
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,261 @@
 +policy_module(fwupd)
++
++gen_require(`
++	class dbus all_dbus_perms;
++')
 +
 +########################################
 +#
@@ -101,7 +105,7 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 +# sys_admin is for "FuPluginUefiCapsule  skipping device that failed coldplug: failed to read fw_class"
 +# linux_immutable is for setting /sys/firmware/efi/efivars/* as mutable
 +allow fwupd_t self:capability { dac_override dac_read_search linux_immutable sys_admin };
-+allow fwupd_t self:fifo_file rw_file_perms;
++allow fwupd_t self:fifo_file rw_fifo_file_perms;
 +allow fwupd_t self:process getsched;
 +allow fwupd_t self:udp_socket { create connect getattr };
 +allow fwupd_t self:tcp_socket { create connect };
@@ -113,10 +117,10 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 +allow fwupd_t fwupd_conf_t:file { map read_file_perms };
 +
 +allow fwupd_t fwupd_var_lib_t:dir { watch manage_dir_perms };
-+allow fwupd_t fwupd_var_lib_t:file { manage_file_perms map };
++allow fwupd_t fwupd_var_lib_t:file mmap_manage_file_perms;
 +
 +allow fwupd_t fwupd_cache_t:dir { watch manage_dir_perms };
-+allow fwupd_t fwupd_cache_t:file { map manage_file_perms };
++allow fwupd_t fwupd_cache_t:file mmap_manage_file_perms;
 +
 +auth_use_pam_motd_dynamic(fwupd_t)
 +
@@ -245,7 +249,7 @@ Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
 +#
 +
 +allow fwupdmgr_t self:process signal;
-+allow fwupdmgr_t self:fifo_file rw_file_perms;
++allow fwupdmgr_t self:fifo_file rw_fifo_file_perms;
 +
 +fs_tmpfs_filetrans(fwupdmgr_t, fwupdmgr_tmpfs_t, { file })
 +allow fwupdmgr_t fwupdmgr_tmpfs_t:file manage_file_perms;
@@ -465,7 +469,7 @@ Index: refpolicy-2.20250213/policy/modules/services/dbus.if
 +	')
 +
 +	allow system_dbusd_t $1:fd use;
-+	allow system_dbusd_t $2:file { read write };
++	allow system_dbusd_t $2:file rw_inherited_file_perms;
 +')
 +
 +########################################
@@ -494,7 +498,7 @@ Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
 +		type user_runtime_t;
 +	')
 +
-+	allow $1 user_runtime_t:dir rw_file_perms;
++	allow $1 user_runtime_t:dir rw_dir_perms;
 +	allow $1 user_runtime_t:file manage_file_perms;
 +	userdom_search_user_runtime_root($1)
 +')
