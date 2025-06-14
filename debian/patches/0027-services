@@ -1906,7 +1906,7 @@ Index: refpolicy-2.20250213/policy/modules/services/eg25manager.te
  allow eg25manager_t self:tcp_socket { connect create getattr getopt read setopt write };
  allow eg25manager_t self:udp_socket { connect create getattr read setopt write };
  allow eg25manager_t self:unix_dgram_socket { create write };
-+allow eg25manager_t self:fifo_file rw_file_perms;
++allow eg25manager_t self:fifo_file rw_fifo_file_perms;
  
  files_tmp_filetrans(eg25manager_t, eg25manager_tmp_t, { file })
  allow eg25manager_t eg25manager_tmp_t:file manage_file_perms;
