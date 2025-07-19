@@ -69,7 +69,16 @@ Index: refpolicy-2.20250213/policy/modules/kernel/corecommands.fc
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/kernel/corecommands.fc
 +++ refpolicy-2.20250213/policy/modules/kernel/corecommands.fc
-@@ -266,6 +266,7 @@ ifdef(`distro_gentoo',`
+@@ -114,6 +114,8 @@ ifdef(`distro_redhat',`
+ /etc/X11/xdm/Xsetup_0		--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/X11/xinit(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ 
++/etc/xdg/Xwayland-session.d/.*	--	gen_context(system_u:object_r:bin_t,s0)
++
+ /etc/xen/qemu-ifup		--	gen_context(system_u:object_r:bin_t,s0)
+ /etc/xen/scripts(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+ 
+@@ -266,6 +268,7 @@ ifdef(`distro_gentoo',`
  /usr/lib/xfce4/session/xfsm-shutdown-helper -- gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/xfce4/xfconf/xfconfd	--	gen_context(system_u:object_r:bin_t,s0)
  /usr/lib/xfce4/xfwm4/helper-dialog --	gen_context(system_u:object_r:bin_t,s0)
@@ -414,16 +423,7 @@ Index: refpolicy-2.20250213/policy/modules/services/xserver.fc
  /etc/sddm/Xsession	--	gen_context(system_u:object_r:xsession_exec_t,s0)
  
  /etc/X11/[wx]dm/Xreset.* --	gen_context(system_u:object_r:xsession_exec_t,s0)
-@@ -46,6 +47,8 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
- /etc/X11/wdm/Xstartup.*	--	gen_context(system_u:object_r:xsession_exec_t,s0)
- /etc/X11/Xsession[^/]*	--	gen_context(system_u:object_r:xsession_exec_t,s0)
- 
-+/etc/xdg/Xwayland-session.d/.* -- gen_context(system_u:object_r:xsession_exec_t,s0)
-+
- #
- # /opt
- #
-@@ -87,6 +90,8 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
+@@ -87,6 +88,8 @@ HOME_DIR/\.Xauthority.*	--	gen_context(s
  /usr/lib/xorg-server/Xorg	--	gen_context(system_u:object_r:xserver_exec_t,s0)
  /usr/lib/xorg-server/Xorg\.wrap	--	gen_context(system_u:object_r:xserver_exec_t,s0)
  /usr/lib/X11/xdm/Xsession	--	gen_context(system_u:object_r:xsession_exec_t,s0)

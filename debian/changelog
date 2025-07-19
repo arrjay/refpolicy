@@ -1,3 +1,20 @@
+refpolicy (2:2.20250213-9) unstable; urgency=medium
+
+  * Allow sympa_t to signal itself, create udp sockets, and bind to a generic
+    node
+  * Fixed labelling for /var/log/opensnitchd.log.* and
+    /var/cache/apt-xapian-index/*
+  * Allow systemd-logind to receive fds from xdm - needed for SDDM to function
+  * Labelled /usr/bin/efibootmgr as bootloader_exec_t
+  * Labelled /usr/bin/screendump as screen_exec_t
+  * Labelled /usr/sbin/veritysetup as lvm_exec_t
+  * Add a user login for Debian-gdm that gets the xdm identity
+  * Add some user_wm_t permissions for GNOME and PHOC logins, PHOC and KDE
+    Plasma with gdm3 are fully functional and GNOME is mostly functional.
+  * Add labels for /var/lib/lxc and /var/lib/misc/dnsmasq.[a-z0-9]+.leases
+
+ -- Russell Coker <russell@coker.com.au>  Sat, 19 Jul 2025 22:55:24 +1000
+
 refpolicy (2:2.20250213-8) unstable; urgency=medium
 
   * Fix syntax errors
