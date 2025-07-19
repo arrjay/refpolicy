@@ -480,6 +480,15 @@ Index: refpolicy-2.20250213/policy/modules/services/dovecot.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/dovecot.te
 +++ refpolicy-2.20250213/policy/modules/services/dovecot.te
+@@ -262,7 +262,7 @@ manage_files_pattern(dovecot_auth_t, dov
+ files_tmp_filetrans(dovecot_auth_t, dovecot_auth_tmp_t, { file dir })
+ 
+ allow dovecot_auth_t dovecot_runtime_t:dir list_dir_perms;
+-allow dovecot_auth_t dovecot_runtime_t:file manage_file_perms;
++allow dovecot_auth_t dovecot_runtime_t:file mmap_manage_file_perms;
+ allow dovecot_auth_t dovecot_runtime_t:fifo_file write_fifo_file_perms;
+ manage_sock_files_pattern(dovecot_auth_t, dovecot_runtime_t, dovecot_runtime_t)
+ 
 @@ -272,6 +272,8 @@ kernel_dontaudit_getattr_proc(dovecot_au
  
  kernel_getattr_proc(dovecot_auth_t)
@@ -584,7 +593,15 @@ Index: refpolicy-2.20250213/policy/modules/services/mon.te
  ########################################
  #
  # Local policy
-@@ -159,6 +165,10 @@ optional_policy(`
+@@ -143,6 +149,7 @@ auth_use_nsswitch(mon_net_test_t)
+ miscfiles_read_generic_certs(mon_net_test_t)
+ miscfiles_read_localization(mon_net_test_t)
+ 
++netutils_domtrans(mon_net_test_t)
+ netutils_domtrans_ping(mon_net_test_t)
+ 
+ sysnet_read_config(mon_net_test_t)
+@@ -159,6 +166,10 @@ optional_policy(`
  	snmp_read_snmp_var_lib_files(mon_net_test_t)
  ')
  
@@ -595,7 +612,7 @@ Index: refpolicy-2.20250213/policy/modules/services/mon.te
  ########################################
  #
  # Local policy
-@@ -169,7 +179,7 @@ optional_policy(`
+@@ -169,7 +180,7 @@ optional_policy(`
  #
  
  # sys_ptrace is for reading /proc/1/maps etc
@@ -604,7 +621,7 @@ Index: refpolicy-2.20250213/policy/modules/services/mon.te
  allow mon_local_test_t self:fifo_file rw_fifo_file_perms;
  allow mon_local_test_t self:process { getsched sigkill signal sigstop };
  allow mon_local_test_t self:cap_userns sys_ptrace;
-@@ -203,6 +213,7 @@ files_search_spool(mon_local_test_t)
+@@ -203,6 +214,7 @@ files_search_spool(mon_local_test_t)
  files_list_boot(mon_local_test_t)
  
  fs_search_auto_mountpoints(mon_local_test_t)
@@ -612,7 +629,7 @@ Index: refpolicy-2.20250213/policy/modules/services/mon.te
  fs_getattr_nfs(mon_local_test_t)
  fs_getattr_xattr_fs(mon_local_test_t)
  fs_list_cgroup_dirs(mon_local_test_t)
-@@ -242,6 +253,11 @@ sysnet_read_config(mon_local_test_t)
+@@ -242,6 +254,11 @@ sysnet_read_config(mon_local_test_t)
  userdom_dontaudit_read_user_tmpfs_files(mon_local_test_t)
  
  optional_policy(`

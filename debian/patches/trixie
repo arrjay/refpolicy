@@ -1,0 +1,80 @@
+Index: refpolicy-2.20250213/policy/modules/services/dovecot.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dovecot.te
++++ refpolicy-2.20250213/policy/modules/services/dovecot.te
+@@ -113,7 +113,7 @@ allow dovecot_t dovecot_cert_t:lnk_file
+ allow dovecot_t dovecot_keytab_t:file read_file_perms;
+ 
+ manage_dirs_pattern(dovecot_t, dovecot_tmp_t, dovecot_tmp_t)
+-manage_files_pattern(dovecot_t, dovecot_tmp_t, dovecot_tmp_t)
++mmap_manage_files_pattern(dovecot_t, dovecot_tmp_t, dovecot_tmp_t)
+ files_tmp_filetrans(dovecot_t, dovecot_tmp_t, { file dir })
+ 
+ manage_files_pattern(dovecot_t, dovecot_var_lib_t, dovecot_var_lib_t)
+@@ -130,7 +130,7 @@ mmap_manage_files_pattern(dovecot_t, dov
+ manage_lnk_files_pattern(dovecot_t, dovecot_spool_t, dovecot_spool_t)
+ 
+ manage_dirs_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+-manage_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
++mmap_manage_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+ manage_lnk_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+ manage_sock_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+ manage_fifo_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+Index: refpolicy-2.20250213/policy/modules/services/mailman.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/mailman.te
++++ refpolicy-2.20250213/policy/modules/services/mailman.te
+@@ -297,7 +297,7 @@ allow mailman_queue_t mailman_queue_tmpf
+ 
+ kernel_read_network_state(mailman_queue_t)
+ kernel_read_system_state(mailman_queue_t)
+-kernel_search_vm_sysctl(mailman_queue_t)
++kernel_read_vm_overcommit_sysctl(mailman_queue_t)
+ 
+ auth_domtrans_chk_passwd(mailman_queue_t)
+ 
+Index: refpolicy-2.20250213/policy/modules/services/jabber.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/jabber.fc
++++ refpolicy-2.20250213/policy/modules/services/jabber.fc
+@@ -29,4 +29,4 @@
+ 
+ /run/ejabber\.pid	--	gen_context(system_u:object_r:jabberd_runtime_t,s0)
+ /run/jabber\.pid	--	gen_context(system_u:object_r:jabberd_runtime_t,s0)
+-/run/prosody(/.*)?	--	gen_context(system_u:object_r:jabberd_runtime_t,s0)
++/run/prosody(/.*)?		gen_context(system_u:object_r:jabberd_runtime_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/fwupd.te
++++ refpolicy-2.20250213/policy/modules/system/fwupd.te
+@@ -50,7 +50,7 @@ dontaudit fwupd_t self:capability net_ad
+ # linux_immutable is for setting /sys/firmware/efi/efivars/* as mutable
+ allow fwupd_t self:capability { dac_override dac_read_search linux_immutable sys_admin };
+ allow fwupd_t self:fifo_file rw_fifo_file_perms;
+-allow fwupd_t self:process getsched;
++allow fwupd_t self:process { getsched signal };
+ allow fwupd_t self:udp_socket { create connect getattr };
+ allow fwupd_t self:tcp_socket { create connect };
+ allow fwupd_t self:netlink_route_socket { create bind getattr nlmsg_read read write };
+Index: refpolicy-2.20250213/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250213/policy/modules/system/systemd.te
+@@ -1106,7 +1106,7 @@ allow systemd_logind_t systemd_sessions_
+ 
+ stream_connect_pattern(systemd_logind_t, systemd_userdbd_runtime_t, systemd_userdbd_runtime_t, systemd_userdbd_t)
+ 
+-kernel_dontaudit_getattr_proc(systemd_logind_t)
++kernel_getattr_proc(systemd_logind_t)
+ kernel_read_kernel_sysctls(systemd_logind_t)
+ 
+ dev_getattr_dma_dev(systemd_logind_t)
+@@ -2494,7 +2494,7 @@ fs_getattr_xattr_fs(systemd_user_runtime
+ fs_getattr_nsfs_files(systemd_user_runtime_dir_t)
+ 
+ kernel_read_kernel_sysctls(systemd_user_runtime_dir_t)
+-kernel_dontaudit_getattr_proc(systemd_user_runtime_dir_t)
++kernel_getattr_proc(systemd_user_runtime_dir_t)
+ 
+ selinux_use_status_page(systemd_user_runtime_dir_t)
+ 

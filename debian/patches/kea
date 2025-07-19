@@ -94,3 +94,16 @@ Index: refpolicy-2.20250213/policy/modules/system/sysnetwork.te
  
  allow dhcpc_t dhcp_etc_t:dir list_dir_perms;
  read_lnk_files_pattern(dhcpc_t, dhcp_etc_t, dhcp_etc_t)
+@@ -187,10 +188,12 @@ ifdef(`init_systemd',`
+ 	init_read_state(dhcpc_t)
+ 	init_stream_connect(dhcpc_t)
+ 	init_get_all_units_status(dhcpc_t)
++	init_getattr_generic_units_files(dhcpc_t)
+ 	init_search_units(dhcpc_t)
+ 
+ 	optional_policy(`
+ 		systemd_dbus_chat_resolved(dhcpc_t)
++		systemd_list_resolved_runtime_dir(dhcpc_t)
+ 	')
+ ')
+ 

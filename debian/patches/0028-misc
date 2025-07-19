@@ -1473,7 +1473,7 @@ Index: refpolicy-2.20250213/policy/modules/system/locallogin.te
  
  optional_policy(`
  	systemd_dbus_chat_logind(local_login_t)
-+	systemd_logind_use_fds(local_login_t)
++	systemd_use_logind_fds(local_login_t)
  	systemd_write_inherited_logind_sessions_pipes(local_login_t)
  ')
  

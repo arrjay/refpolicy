@@ -1550,7 +1550,7 @@ Index: refpolicy-2.20250213/policy/modules/services/dbus.te
  ')
  
 +optional_policy(`
-+	systemd_logind_use_fds(system_dbusd_t)
++	systemd_use_logind_fds(system_dbusd_t)
 +')
 +
  ########################################
@@ -1717,7 +1717,7 @@ Index: refpolicy-2.20250213/policy/modules/system/unconfined.te
  	init_pgm_spec_user_daemon_domain(unconfined_t)
  	allow unconfined_t self:system { reload start status stop };
  
-+	systemd_logind_use_fds(unconfined_t)
++	systemd_use_logind_fds(unconfined_t)
 +	systemd_use_passwd_agent_fds(unconfined_t)
 +
  	optional_policy(`

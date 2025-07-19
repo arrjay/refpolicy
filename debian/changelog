@@ -1,3 +1,19 @@
+refpolicy (2:2.20250213-8) unstable; urgency=medium
+
+  * Fix syntax errors
+  * Allow dovecot_auth_t to mape dovecot_runtime_t files
+  * Allow mon_net_test_t to run netutils
+  * removed unused interfaces fs_mounton_memory_pressure and
+    userdom_watch_user_ttys
+  * Remove systemd_logind_use_fds and use systemd_use_logind_fds instead
+  * Allow dhcpc_t to list resolved runtime dir and stat generic units files
+  * Allow systemd-logind and systemd-user-runtime-dir stat /proc as logind
+    failing to do so can cause difficult to diagnose dbus issues with
+    pam_login
+  * Allow fwupd to signal itself
+
+ -- Russell Coker <russell@coker.com.au>  Sun, 06 Jul 2025 19:29:50 +1000
+
 refpolicy (2:2.20250213-7) unstable; urgency=medium
 
   * Allow user systemd domains to list user tmp, watch root, read usr files,
