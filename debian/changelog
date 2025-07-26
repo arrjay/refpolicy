@@ -1,3 +1,12 @@
+refpolicy (2:2.20250213-10) unstable; urgency=medium
+
+  * Allow user_bubblewrap_t to transition to user_t via user_home_t and
+    user_bin_t
+  * Fixes for evolution, colord, dbus, wm, and xdm.  Now the GNOME desktop
+    is fully functional and sddm works as a graphical login.
+
+ -- Russell Coker <russell@coker.com.au>  Fri, 25 Jul 2025 22:36:54 +1000
+
 refpolicy (2:2.20250213-9) unstable; urgency=medium
 
   * Allow sympa_t to signal itself, create udp sockets, and bind to a generic

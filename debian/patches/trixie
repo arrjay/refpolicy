@@ -332,6 +332,75 @@ Index: refpolicy-2.20250213/policy/modules/apps/wm.if
  		systemd_use_logind_fds($1_wm_t)
  		systemd_user_app_status($1, $1_wm_t)
  		systemd_write_inherited_logind_inhibit_pipes($1_wm_t)
+@@ -290,6 +330,60 @@ interface(`wm_dontaudit_exec_tmpfs_files
+ 
+ ########################################
+ ## <summary>
++##      Allow receiving fd from wm domain
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`wm_receive_fd',`
++	gen_require(`
++		attribute wm_domain;
++	')
++
++	allow $1 wm_domain:fd use;
++')
++
++########################################
++## <summary>
++##      Allow using socket of wm domain
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`wm_sock_rw',`
++	gen_require(`
++		attribute wm_domain;
++	')
++
++	allow $1 wm_domain:unix_stream_socket rw_stream_socket_perms;
++')
++
++########################################
++## <summary>
++##      Allow sending fd to wm domain
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`wm_send_fd',`
++	gen_require(`
++		attribute wm_domain;
++	')
++
++	allow wm_domain $1:fd use;
++')
++
++########################################
++## <summary>
+ ##	Create a domain for applications
+ ##	that are launched by the window
+ ##	manager.
+@@ -330,6 +424,7 @@ interface(`wm_application_domain',`
+ 
+ 	userdom_user_application_domain($1, $2)
+ 	domtrans_pattern(wm_domain, $2, $1)
++	allow $1 wm_domain:unix_stream_socket rw_stream_socket_perms;
+ ')
+ 
+ ########################################
 Index: refpolicy-2.20250213/policy/modules/services/ssh.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/ssh.te
@@ -349,7 +418,17 @@ Index: refpolicy-2.20250213/policy/modules/services/xserver.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/xserver.te
 +++ refpolicy-2.20250213/policy/modules/services/xserver.te
-@@ -491,6 +491,8 @@ auth_write_login_records(xdm_t)
+@@ -343,6 +343,9 @@ allow xdm_t self:socket create_socket_pe
+ allow xdm_t self:appletalk_socket create_socket_perms;
+ allow xdm_t self:key { link search write };
+ 
++# for sddm
++allow xdm_t xsession_exec_t:file entrypoint;
++
+ # for dbus-broker
+ allow xdm_t self:system { start reload };
+ 
+@@ -491,6 +494,8 @@ auth_write_login_records(xdm_t)
  # Run telinit->init to shutdown.
  init_telinit(xdm_t)
  
@@ -628,14 +707,29 @@ Index: refpolicy-2.20250213/policy/modules/apps/evolution.te
  
  	optional_policy(`
  		evolution_dbus_chat(evolution_alarm_t)
+@@ -345,6 +368,10 @@ optional_policy(`
+ 	gnome_stream_connect_gconf(evolution_alarm_t)
+ ')
+ 
++optional_policy(`
++	wm_send_fd(evolution_alarm_t)
++')
++
+ ########################################
+ #
+ # Exchange local policy
 Index: refpolicy-2.20250213/policy/modules/services/dbus.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/dbus.te
 +++ refpolicy-2.20250213/policy/modules/services/dbus.te
-@@ -314,6 +314,10 @@ optional_policy(`
+@@ -314,6 +314,14 @@ optional_policy(`
  ')
  
  optional_policy(`
++	wm_receive_fd(system_dbusd_t)
++')
++
++optional_policy(`
 +	xdg_read_data_files(system_dbusd_t)
 +')
 +
@@ -658,8 +752,14 @@ Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
  	')
  
  	tunable_policy(`allow_execmem',`
-@@ -161,6 +163,10 @@ template(`userdom_base_user_template',`
+@@ -159,8 +161,16 @@ template(`userdom_base_user_template',`
+ 	')
+ 
  	optional_policy(`
++		geoclue_dbus_chat($1_t)
++	')
++
++	optional_policy(`
  		kerneloops_dbus_chat($1_t)
  	')
 +
@@ -669,6 +769,19 @@ Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
  ')
  
  #######################################
+@@ -2048,10 +2058,10 @@ interface(`userdom_home_filetrans_user_h
+ #
+ interface(`userdom_user_home_domtrans',`
+ 	gen_require(`
+-		type user_home_dir_t, user_home_t;
++		type user_home_dir_t, user_home_t, user_bin_t;
+ 	')
+ 
+-	domain_auto_transition_pattern($1, user_home_t, $2)
++	domain_auto_transition_pattern($1, { user_home_t user_bin_t }, $2)
+ 	allow $1 user_home_dir_t:dir search_dir_perms;
+ 	files_search_home($1)
+ ')
 Index: refpolicy-2.20250213/policy/modules/admin/apt.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/admin/apt.if
@@ -727,8 +840,15 @@ Index: refpolicy-2.20250213/policy/modules/services/dbus.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/dbus.if
 +++ refpolicy-2.20250213/policy/modules/services/dbus.if
-@@ -158,6 +158,10 @@ template(`dbus_role_template',`
+@@ -156,8 +156,17 @@ template(`dbus_role_template',`
+ 	')
+ 
  	optional_policy(`
++		wm_receive_fd($1_dbusd_t)
++		wm_sock_rw($1_dbusd_t)
++	')
++
++	optional_policy(`
  		xdg_read_data_files($1_dbusd_t)
  	')
 +
@@ -742,12 +862,31 @@ Index: refpolicy-2.20250213/policy/modules/services/xserver.if
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/xserver.if
 +++ refpolicy-2.20250213/policy/modules/services/xserver.if
-@@ -1102,12 +1102,12 @@ interface(`xserver_read_xdm_lib_files',`
+@@ -56,6 +56,9 @@ template(`xserver_restricted_role',`
+ 	stream_connect_pattern($2, xserver_tmp_t, xserver_tmp_t, xserver_t)
+ 	files_search_tmp($2)
+ 
++	# for /run/gdm3/dbus/
++	allow $2 xdm_var_run_t:sock_file write_sock_file_perms;
++
+ 	# Communicate via System V shared memory.
+ 	allow $2 xserver_t:fd use;
+ 	allow $2 xserver_t:shm r_shm_perms;
+@@ -224,7 +227,7 @@ template(`xserver_role',`
+ 
+ 	xserver_read_xkb_libs($2)
+ 
+-	allow $2 xdm_t:unix_stream_socket { getattr accept };
++	allow $2 xdm_t:unix_stream_socket { accept rw_socket_perms };
+ 
+ 	optional_policy(`
+ 		systemd_user_app_status($1, xserver_t)
+@@ -1102,12 +1105,13 @@ interface(`xserver_read_xdm_lib_files',`
  		type xdm_var_lib_t;
  	')
  
--	allow $1 xdm_var_lib_t:file read_file_perms;
-+	read_files_pattern($1, xdm_var_lib_t, xdm_var_lib_t)
++	allow $1 xdm_var_lib_t:dir list_dir_perms;
+ 	allow $1 xdm_var_lib_t:file read_file_perms;
  ')
  
  ########################################
@@ -757,18 +896,18 @@ Index: refpolicy-2.20250213/policy/modules/services/xserver.if
  ## </summary>
  ## <param name="domain">
  ##	<summary>
-@@ -1115,12 +1115,30 @@ interface(`xserver_read_xdm_lib_files',`
+@@ -1115,12 +1119,31 @@ interface(`xserver_read_xdm_lib_files',`
  ##	</summary>
  ## </param>
  #
 -interface(`xserver_map_xdm_lib_files',`
 +interface(`xserver_mmap_read_xdm_lib_files',`
- 	gen_require(`
- 		type xdm_var_lib_t;
- 	')
- 
--	allow $1 xdm_var_lib_t:file map;
-+	mmap_read_files_pattern($1, xdm_var_lib_t, xdm_var_lib_t)
++	gen_require(`
++		type xdm_var_lib_t;
++	')
++
++	allow $1 xdm_var_lib_t:dir list_dir_perms;
++	allow $1 xdm_var_lib_t:file mmap_read_file_perms;
 +')
 +
 +########################################
@@ -782,10 +921,11 @@ Index: refpolicy-2.20250213/policy/modules/services/xserver.if
 +## </param>
 +#
 +interface(`xserver_watch_xdm_lib_dirs',`
-+	gen_require(`
-+		type xdm_var_lib_t;
-+	')
-+
+ 	gen_require(`
+ 		type xdm_var_lib_t;
+ 	')
+ 
+-	allow $1 xdm_var_lib_t:file map;
 +	allow $1 xdm_var_lib_t:dir watch;
  ')
  
@@ -794,12 +934,16 @@ Index: refpolicy-2.20250213/policy/modules/services/colord.te
 ===================================================================
 --- refpolicy-2.20250213.orig/policy/modules/services/colord.te
 +++ refpolicy-2.20250213/policy/modules/services/colord.te
-@@ -164,8 +164,7 @@ optional_policy(`
+@@ -164,8 +164,11 @@ optional_policy(`
  ')
  
  optional_policy(`
 -	xserver_read_xdm_lib_files(colord_t)
 -	xserver_map_xdm_lib_files(colord_t)
++	wm_receive_fd(colord_t)
++')
++
++optional_policy(`
 +	xserver_mmap_read_xdm_lib_files(colord_t)
  	xserver_read_xdm_state(colord_t)
  	xserver_use_xdm_fds(colord_t)
@@ -841,3 +985,15 @@ Index: refpolicy-2.20250213/policy/modules/services/container.fc
  
  /var/lib/docker(/.*)?		gen_context(system_u:object_r:container_var_lib_t,s0)
  /var/lib/docker/.*/config\.env	--	gen_context(system_u:object_r:container_ro_file_t,s0)
+Index: refpolicy-2.20250213/policy/modules/apps/bubblewrap.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/bubblewrap.if
++++ refpolicy-2.20250213/policy/modules/apps/bubblewrap.if
+@@ -99,6 +99,7 @@ template(`bubblewrap_role',`
+ 	userdom_manage_user_home_content_files($1_bubblewrap_t)
+ 	userdom_use_user_ptys($1_bubblewrap_t)
+ 	userdom_use_user_ttys($1_bubblewrap_t)
++	userdom_user_home_domtrans($1_bubblewrap_t, $2)
+ 
+ 	ifndef(`enable_mls',`
+ 		fs_search_removable($1_bubblewrap_t)
