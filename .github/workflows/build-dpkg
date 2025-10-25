@@ -2,7 +2,8 @@
 
 apt-get update
 apt-get -y install build-essential debhelper devscripts zip \
-  checkpolicy gawk policycoreutils policycoreutils-python-utils
+  checkpolicy gawk policycoreutils policycoreutils-python-utils \
+  sepol-utils zstd
 
 dch -U --noquery -b -v "2:${VERSION_TAG}" "automatic build"
 debuild -b -uc -us
