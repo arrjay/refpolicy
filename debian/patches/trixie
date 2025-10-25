@@ -1,0 +1,999 @@
+Index: refpolicy-2.20250213/policy/modules/services/dovecot.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dovecot.te
++++ refpolicy-2.20250213/policy/modules/services/dovecot.te
+@@ -113,7 +113,7 @@ allow dovecot_t dovecot_cert_t:lnk_file
+ allow dovecot_t dovecot_keytab_t:file read_file_perms;
+ 
+ manage_dirs_pattern(dovecot_t, dovecot_tmp_t, dovecot_tmp_t)
+-manage_files_pattern(dovecot_t, dovecot_tmp_t, dovecot_tmp_t)
++mmap_manage_files_pattern(dovecot_t, dovecot_tmp_t, dovecot_tmp_t)
+ files_tmp_filetrans(dovecot_t, dovecot_tmp_t, { file dir })
+ 
+ manage_files_pattern(dovecot_t, dovecot_var_lib_t, dovecot_var_lib_t)
+@@ -130,7 +130,7 @@ mmap_manage_files_pattern(dovecot_t, dov
+ manage_lnk_files_pattern(dovecot_t, dovecot_spool_t, dovecot_spool_t)
+ 
+ manage_dirs_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+-manage_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
++mmap_manage_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+ manage_lnk_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+ manage_sock_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+ manage_fifo_files_pattern(dovecot_t, dovecot_runtime_t, dovecot_runtime_t)
+Index: refpolicy-2.20250213/policy/modules/services/mailman.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/mailman.te
++++ refpolicy-2.20250213/policy/modules/services/mailman.te
+@@ -297,7 +297,7 @@ allow mailman_queue_t mailman_queue_tmpf
+ 
+ kernel_read_network_state(mailman_queue_t)
+ kernel_read_system_state(mailman_queue_t)
+-kernel_search_vm_sysctl(mailman_queue_t)
++kernel_read_vm_overcommit_sysctl(mailman_queue_t)
+ 
+ auth_domtrans_chk_passwd(mailman_queue_t)
+ 
+Index: refpolicy-2.20250213/policy/modules/services/jabber.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/jabber.fc
++++ refpolicy-2.20250213/policy/modules/services/jabber.fc
+@@ -29,4 +29,4 @@
+ 
+ /run/ejabber\.pid	--	gen_context(system_u:object_r:jabberd_runtime_t,s0)
+ /run/jabber\.pid	--	gen_context(system_u:object_r:jabberd_runtime_t,s0)
+-/run/prosody(/.*)?	--	gen_context(system_u:object_r:jabberd_runtime_t,s0)
++/run/prosody(/.*)?		gen_context(system_u:object_r:jabberd_runtime_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/fwupd.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/fwupd.te
++++ refpolicy-2.20250213/policy/modules/system/fwupd.te
+@@ -50,7 +50,7 @@ dontaudit fwupd_t self:capability net_ad
+ # linux_immutable is for setting /sys/firmware/efi/efivars/* as mutable
+ allow fwupd_t self:capability { dac_override dac_read_search linux_immutable sys_admin };
+ allow fwupd_t self:fifo_file rw_fifo_file_perms;
+-allow fwupd_t self:process getsched;
++allow fwupd_t self:process { getsched signal };
+ allow fwupd_t self:udp_socket { create connect getattr };
+ allow fwupd_t self:tcp_socket { create connect };
+ allow fwupd_t self:netlink_route_socket { create bind getattr nlmsg_read read write };
+Index: refpolicy-2.20250213/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250213/policy/modules/system/systemd.te
+@@ -1106,7 +1106,7 @@ allow systemd_logind_t systemd_sessions_
+ 
+ stream_connect_pattern(systemd_logind_t, systemd_userdbd_runtime_t, systemd_userdbd_runtime_t, systemd_userdbd_t)
+ 
+-kernel_dontaudit_getattr_proc(systemd_logind_t)
++kernel_getattr_proc(systemd_logind_t)
+ kernel_read_kernel_sysctls(systemd_logind_t)
+ 
+ dev_getattr_dma_dev(systemd_logind_t)
+@@ -1296,6 +1296,7 @@ optional_policy(`
+ 	xserver_dbus_chat(systemd_logind_t)
+ 	xserver_dbus_chat_xdm(systemd_logind_t)
+ 	xserver_read_xdm_state(systemd_logind_t)
++	xserver_use_xdm_fds(systemd_logind_t)
+ ')
+ 
+ optional_policy(`
+@@ -2494,7 +2495,7 @@ fs_getattr_xattr_fs(systemd_user_runtime
+ fs_getattr_nsfs_files(systemd_user_runtime_dir_t)
+ 
+ kernel_read_kernel_sysctls(systemd_user_runtime_dir_t)
+-kernel_dontaudit_getattr_proc(systemd_user_runtime_dir_t)
++kernel_getattr_proc(systemd_user_runtime_dir_t)
+ 
+ selinux_use_status_page(systemd_user_runtime_dir_t)
+ 
+Index: refpolicy-2.20250213/policy/modules/services/sympa.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/sympa.te
++++ refpolicy-2.20250213/policy/modules/services/sympa.te
+@@ -30,7 +30,8 @@ allow sympa_t self:capability { chown da
+ allow sympa_t self:fifo_file rw_fifo_file_perms;
+ allow sympa_t self:tcp_socket create_socket_perms;
+ allow sympa_t self:unix_dgram_socket create_socket_perms;
+-allow sympa_t self:process signull;
++allow sympa_t self:process { signull signal };
++allow sympa_t self:udp_socket create_socket_perms;
+ 
+ allow sympa_t sympa_etc_t:dir list_dir_perms;
+ allow sympa_t sympa_etc_t:file read_file_perms;
+@@ -55,6 +56,8 @@ corecmd_bin_entry_type(sympa_t)
+ corecmd_exec_bin(sympa_t)
+ corecmd_exec_shell(sympa_t)
+ 
++corenet_udp_bind_generic_node(sympa_t)
++
+ dev_read_urand(sympa_t)
+ 
+ files_read_etc_files(sympa_t)
+Index: refpolicy-2.20250213/policy/modules/admin/apt.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/admin/apt.fc
++++ refpolicy-2.20250213/policy/modules/admin/apt.fc
+@@ -24,6 +24,7 @@ ifndef(`distro_redhat',`
+ /usr/lib/apt/apt-helper -- gen_context(system_u:object_r:apt_exec_t,s0)
+ 
+ /var/cache/apt(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
++/var/cache/apt-xapian-index`'(/.*)?	gen_context(system_u:object_r:apt_var_cache_t,s0)
+ 
+ /var/lib/apt(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
+ /var/lib/aptitude(/.*)?	gen_context(system_u:object_r:apt_var_lib_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/opensnitch.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/opensnitch.fc
++++ refpolicy-2.20250213/policy/modules/system/opensnitch.fc
+@@ -1,3 +1,3 @@
+ /usr/bin/opensnitchd		--	gen_context(system_u:object_r:opensnitchd_exec_t,s0)
+-/var/log/opensnitchd\.log	--	gen_context(system_u:object_r:opensnitchd_log_t,s0)
++/var/log/opensnitchd\.log.*	--	gen_context(system_u:object_r:opensnitchd_log_t,s0)
+ /etc/opensnitchd(/.*)?			gen_context(system_u:object_r:opensnitchd_conf_t,s0)
+Index: refpolicy-2.20250213/policy/modules/admin/bootloader.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/admin/bootloader.fc
++++ refpolicy-2.20250213/policy/modules/admin/bootloader.fc
+@@ -3,6 +3,7 @@
+ /etc/yaboot\.conf.*	--	gen_context(system_u:object_r:bootloader_etc_t,s0)
+ 
+ /usr/bin/bootctl		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
++/usr/bin/efibootmgr		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/bin/grub			--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/bin/grub2?-bios-setup	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/bin/grub2?-install		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+@@ -15,6 +16,7 @@
+ /usr/bin/ybin.*			--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ 
+ /usr/sbin/bootctl		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
++/usr/sbin/efibootmgr		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/sbin/grub		--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/sbin/grub2?-bios-setup	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+ /usr/sbin/grub2?-install	--	gen_context(system_u:object_r:bootloader_exec_t,s0)
+Index: refpolicy-2.20250213/policy/modules/apps/screen.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/screen.fc
++++ refpolicy-2.20250213/policy/modules/apps/screen.fc
+@@ -7,4 +7,5 @@ HOME_DIR/\.tmux\.conf	--	gen_context(sys
+ /run/tmux(/.*)?			gen_context(system_u:object_r:screen_runtime_t,s0)
+ 
+ /usr/bin/screen		--	gen_context(system_u:object_r:screen_exec_t,s0)
++/usr/bin/screendump	--	gen_context(system_u:object_r:screen_exec_t,s0)
+ /usr/bin/tmux		--	gen_context(system_u:object_r:screen_exec_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/lvm.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/lvm.fc
++++ refpolicy-2.20250213/policy/modules/system/lvm.fc
+@@ -121,6 +121,7 @@ ifdef(`distro_gentoo',`
+ /usr/sbin/pvremove		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ /usr/sbin/pvs			--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ /usr/sbin/pvscan		--	gen_context(system_u:object_r:lvm_exec_t,s0)
++/usr/sbin/veritysetup		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ /usr/sbin/vgcfgbackup		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ /usr/sbin/vgcfgrestore		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+ /usr/sbin/vgchange		--	gen_context(system_u:object_r:lvm_exec_t,s0)
+Index: refpolicy-2.20250213/policy/modules/system/fstools.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/fstools.fc
++++ refpolicy-2.20250213/policy/modules/system/fstools.fc
+@@ -14,7 +14,6 @@
+ /usr/bin/e4fsck			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/e2label		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/e2mmpstatus		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+-/usr/bin/efibootmgr		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/fatsort		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/fdisk			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/bin/findfs			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+@@ -71,7 +70,6 @@
+ /usr/sbin/e4fsck		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/sbin/e2label		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/sbin/e2mmpstatus		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+-/usr/sbin/efibootmgr		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/sbin/fatsort		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/sbin/fdisk			--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+ /usr/sbin/findfs		--	gen_context(system_u:object_r:fsadm_exec_t,s0)
+Index: refpolicy-2.20250213/policy/modules/apps/gnome.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/gnome.if
++++ refpolicy-2.20250213/policy/modules/apps/gnome.if
+@@ -123,6 +123,10 @@ template(`gnome_role_template',`
+ 	')
+ 
+ 	optional_policy(`
++		xserver_read_xdm_lib_files($1_gkeyringd_t)
++	')
++
++	optional_policy(`
+ 		systemd_user_app_status($1, $1_gkeyringd_t)
+ 	')
+ ')
+@@ -822,6 +826,25 @@ interface(`gnome_mmap_gstreamer_orcexec'
+ ')
+ 
+ ########################################
++## <summary>
++##	mmap read gnome_xdg_config_t files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`gnome_mmap_read_xdg_config_files',`
++	gen_require(`
++		type gnome_xdg_config_t;
++	')
++
++	allow $1 gnome_xdg_config_t:dir list_dir_perms;
++	allow $1 gnome_xdg_config_t:file mmap_read_file_perms;
++')
++
++########################################
+ ## <summary>
+ ##	watch gnome_xdg_config_t dirs
+ ## </summary>
+Index: refpolicy-2.20250213/policy/modules/apps/wm.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/wm.if
++++ refpolicy-2.20250213/policy/modules/apps/wm.if
+@@ -57,7 +57,7 @@ template(`wm_role_template',`
+ 
+ 	allow $3 $1_wm_t:fd use;
+ 
+-	allow $1_wm_t $3:unix_stream_socket { connectto read write getopt getattr accept };
++	allow $1_wm_t $3:unix_stream_socket { connectto read write getopt ioctl getattr accept };
+ 	allow $3 $1_wm_t:unix_stream_socket { connectto read write getopt shutdown };
+ 	allow $3 $1_wm_t:fifo_file read_fifo_file_perms;
+ 
+@@ -79,6 +79,15 @@ template(`wm_role_template',`
+ 
+ 	domain_use_interactive_fds($1_wm_t)
+ 
++	files_usr_domtrans($1_wm_t, $2)
++
++	files_watch_etc_dirs($1_wm_t)
++	files_watch_usr_dirs($1_wm_t)
++	files_watch_var_lib_dirs($1_wm_t)
++
++	fs_read_cgroup_symlinks($1_wm_t)
++	fs_create_cgroup_dirs($1_wm_t)
++
+ 	mls_file_read_all_levels($1_wm_t)
+ 	mls_file_write_all_levels($1_wm_t)
+ 	mls_xwin_read_all_levels($1_wm_t)
+@@ -90,15 +99,28 @@ template(`wm_role_template',`
+ 
+ 	libs_read_lib_files($1_wm_t)
+ 
++	init_read_state($1_wm_t)
++
+ 	miscfiles_manage_fonts_cache($1_wm_t)
+ 
++	udev_list_runtime($1_wm_t)
++
++	userdom_manage_user_runtime_dirs($1_wm_t)
++
+ 	userdom_rw_user_tmpfs_files($1_wm_t)
+ 	userdom_map_user_tmpfs_files($1_wm_t)
++	userdom_manage_user_tmp_files($1_wm_t)
++	userdom_map_user_tmp_files($1_wm_t)
+ 
+ 	dev_rw_input_dev($1_wm_t)
+ 
+ 	logging_send_syslog_msg($1_wm_t)
+ 
++	xdg_watch_cache_files($1_wm_t)
++
++	xdg_watch_config_dirs($1_wm_t)
++	xdg_watch_data_dirs($1_wm_t)
++
+ 	xserver_role($1, $1_wm_t, $3, $4)
+ 	xserver_manage_core_devices($1_wm_t)
+ 
+@@ -109,7 +131,12 @@ template(`wm_role_template',`
+ 	')
+ 
+ 	optional_policy(`
++		apt_dbus_chat($1_wm_t)
++	')
++
++	optional_policy(`
+ 		dbus_connect_spec_session_bus($1, $1_wm_t)
++		dbus_getattr_session_runtime_socket($1_wm_t)
+ 		dbus_read_lib_files($1_wm_t)
+ 		dbus_spec_session_bus_client($1, $1_wm_t)
+ 		dbus_system_bus_client($1_wm_t)
+@@ -121,6 +148,15 @@ template(`wm_role_template',`
+ 	')
+ 
+ 	optional_policy(`
++		colord_dbus_chat($1_wm_t)
++	')
++
++	optional_policy(`
++		geoclue_dbus_chat($1_wm_t)
++	')
++
++	optional_policy(`
++		gnome_mmap_read_xdg_config_files($1_wm_t)
+ 		gnome_stream_connect_all_gkeyringd($1_wm_t)
+ 	')
+ 
+@@ -142,7 +178,11 @@ template(`wm_role_template',`
+ 	')
+ 
+ 	optional_policy(`
++		systemd_list_userdb_runtime_dirs($1_wm_t)
++		systemd_read_logind_runtime_files($1_wm_t)
+ 		systemd_read_logind_state($1_wm_t)
++		systemd_read_logind_sessions_files($1_wm_t)
++		systemd_search_user_runtime($1_wm_t)
+ 		systemd_use_logind_fds($1_wm_t)
+ 		systemd_user_app_status($1, $1_wm_t)
+ 		systemd_write_inherited_logind_inhibit_pipes($1_wm_t)
+@@ -290,6 +330,60 @@ interface(`wm_dontaudit_exec_tmpfs_files
+ 
+ ########################################
+ ## <summary>
++##      Allow receiving fd from wm domain
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`wm_receive_fd',`
++	gen_require(`
++		attribute wm_domain;
++	')
++
++	allow $1 wm_domain:fd use;
++')
++
++########################################
++## <summary>
++##      Allow using socket of wm domain
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`wm_sock_rw',`
++	gen_require(`
++		attribute wm_domain;
++	')
++
++	allow $1 wm_domain:unix_stream_socket rw_stream_socket_perms;
++')
++
++########################################
++## <summary>
++##      Allow sending fd to wm domain
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain to allow
++##      </summary>
++## </param>
++#
++interface(`wm_send_fd',`
++	gen_require(`
++		attribute wm_domain;
++	')
++
++	allow wm_domain $1:fd use;
++')
++
++########################################
++## <summary>
+ ##	Create a domain for applications
+ ##	that are launched by the window
+ ##	manager.
+@@ -330,6 +424,7 @@ interface(`wm_application_domain',`
+ 
+ 	userdom_user_application_domain($1, $2)
+ 	domtrans_pattern(wm_domain, $2, $1)
++	allow $1 wm_domain:unix_stream_socket rw_stream_socket_perms;
+ ')
+ 
+ ########################################
+Index: refpolicy-2.20250213/policy/modules/services/ssh.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/ssh.te
++++ refpolicy-2.20250213/policy/modules/services/ssh.te
+@@ -180,7 +180,7 @@ tunable_policy(`allow_ssh_keysign',`
+ 
+ ifdef(`init_systemd',`
+ 	systemd_user_runtime_dir_unlink(ssh_agent_tmp_t, sock_file)
+-	systemd_user_sessions_create_sock_file(ssh_agent_tmp_t)
++	systemd_user_sessions_manage_sock_file(ssh_agent_tmp_t)
+ ')
+ 
+ tunable_policy(`use_nfs_home_dirs',`
+Index: refpolicy-2.20250213/policy/modules/services/xserver.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250213/policy/modules/services/xserver.te
+@@ -343,6 +343,9 @@ allow xdm_t self:socket create_socket_pe
+ allow xdm_t self:appletalk_socket create_socket_perms;
+ allow xdm_t self:key { link search write };
+ 
++# for sddm
++allow xdm_t xsession_exec_t:file entrypoint;
++
+ # for dbus-broker
+ allow xdm_t self:system { start reload };
+ 
+@@ -491,6 +494,8 @@ auth_write_login_records(xdm_t)
+ # Run telinit->init to shutdown.
+ init_telinit(xdm_t)
+ 
++init_get_system_status(xdm_t)
++
+ init_pgm_entrypoint(xdm_t)
+ 
+ libs_exec_lib_files(xdm_t)
+Index: refpolicy-2.20250213/policy/modules/system/systemd.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/systemd.if
++++ refpolicy-2.20250213/policy/modules/system/systemd.if
+@@ -73,6 +73,9 @@ template(`systemd_role_template',`
+ 	allow $3 $1_systemd_t:dbus send_msg;
+ 	allow $1_systemd_t $3:dbus send_msg;
+ 
++	# for gnome-session-binary
++	allow $3 $1_systemd_t:unix_dgram_socket sendto;
++
+ 	# systemctl --user rules
+ 	allow $1_systemd_t systemd_user_unix_stream_activated_socket_type:unix_stream_socket { create_socket_perms listen };
+ 	allow $1_systemd_t systemd_user_activated_sock_file_type:dir manage_dir_perms;
+@@ -105,11 +108,19 @@ template(`systemd_role_template',`
+ 	storage_getattr_removable_dev($1_systemd_t)
+ 	term_dontaudit_getattr_unallocated_ttys($1_systemd_t)
+ 
+-	files_search_home($1_systemd_t)
++	clock_read_adjtime($1_systemd_t)
++
++	files_exec_usr_files($1_systemd_t)
++	files_list_home($1_systemd_t)
++	files_watch_home($1_systemd_t)
+ 	files_getattr_usr_files($1_systemd_t)
+ 	files_read_usr_files($1_systemd_t)
+ 	files_watch_etc_dirs($1_systemd_t)
+ 	files_watch_root_dirs($1_systemd_t)
++	files_list_var($1_systemd_t)
++	files_watch_var_dirs($1_systemd_t)
++	files_list_var_lib($1_systemd_t)
++	files_watch_var_lib_dirs($1_systemd_t)
+ 
+ 	fs_getattr_xattr_fs($1_systemd_t)
+ 	fs_getattr_nsfs_files($1_systemd_t)
+@@ -141,6 +152,9 @@ template(`systemd_role_template',`
+ 	systemd_stop_user_manager_units($1_systemd_t)
+ 	systemd_reload_user_manager_units($1_systemd_t)
+ 
++	systemd_list_userdb_runtime_dirs($1_systemd_t)
++	systemd_stream_connect_homed($1_systemd_t)
++
+ 	# for wireplumber
+ 	systemd_read_logind_runtime_files($3)
+ 	systemd_watch_logind_runtime_dirs($3)
+@@ -155,7 +169,8 @@ template(`systemd_role_template',`
+ 	seutil_search_default_contexts($1_systemd_t)
+ 	seutil_read_file_contexts($1_systemd_t)
+ 
+-	userdom_search_user_home_dirs($1_systemd_t)
++	userdom_list_user_home_dirs($1_systemd_t)
++	userdom_watch_user_home_dirs($1_systemd_t)
+ 	userdom_list_user_home_content($1_systemd_t)
+ 	userdom_write_user_tmp_sockets($1_systemd_t)
+ 
+@@ -276,9 +291,13 @@ template(`systemd_role_template',`
+ 		xdg_read_cache_files($1_systemd_t)
+ 		xdg_read_config_files($1_systemd_t)
+ 		xdg_read_data_files($1_systemd_t)
++		xdg_watch_cache_dirs($1_systemd_t)
+ 	')
+ 
+ 	optional_policy(`
++		xserver_read_xdm_lib_files($1_systemd_t)
++		xserver_watch_xdm_lib_dirs($1_systemd_t)
++		xserver_read_xdm_state($1_systemd_t)
+ 		xserver_use_user_fonts($1_systemd_t)
+ 	')
+ ')
+@@ -3020,6 +3039,24 @@ interface(`systemd_user_sessions_create_
+ ')
+ 
+ ########################################
++## <summary>
++##    allow systemd --user to manage stream socket file
++## </summary>
++## <param name="type">
++##    <summary>
++##    type of the socket file
++##    </summary>
++## </param>
++#
++interface(`systemd_user_sessions_manage_sock_file',`
++	gen_require(`
++		attribute systemd_user_session_type;
++	')
++
++	allow systemd_user_session_type $1:sock_file manage_sock_file_perms;
++')
++
++########################################
+ ## <summary>
+ ##    Unlink user runtime entries
+ ## </summary>
+Index: refpolicy-2.20250213/policy/modules/system/xdg.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/xdg.if
++++ refpolicy-2.20250213/policy/modules/system/xdg.if
+@@ -103,6 +103,24 @@ interface(`xdg_watch_cache_dirs',`
+ 
+ ########################################
+ ## <summary>
++##	Watch the xdg cache home files
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`xdg_watch_cache_files',`
++	gen_require(`
++		type xdg_cache_t;
++	')
++
++	allow $1 xdg_cache_t:file watch;
++')
++
++########################################
++## <summary>
+ ##	Watch all the xdg cache home directories
+ ## </summary>
+ ## <param name="domain">
+Index: refpolicy-2.20250213/policy/modules/services/geoclue.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/geoclue.if
++++ refpolicy-2.20250213/policy/modules/services/geoclue.if
+@@ -1 +1,21 @@
+ ## <summary>Geoclue is a D-Bus service that provides location information.</summary>
++
++########################################
++## <summary>
++##      Send and receive messages from geoclue over dbus
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`geoclue_dbus_chat',`
++	gen_require(`
++		type geoclue_t;
++		class dbus send_msg;
++	')
++
++	allow $1 geoclue_t:dbus send_msg;
++	allow geoclue_t $1:dbus send_msg;
++')
+Index: refpolicy-2.20250213/policy/modules/kernel/files.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/kernel/files.if
++++ refpolicy-2.20250213/policy/modules/kernel/files.if
+@@ -5775,6 +5775,42 @@ interface(`files_usr_filetrans',`
+ 	filetrans_pattern($1, usr_t, $2, $3, $4)
+ ')
+ 
++
++########################################
++## <summary>
++##      Execute a usr_t file in the specified domain.
++## </summary>
++## <desc>
++##      <p>
++##      Execute a usr_t file in the specified domain.
++##      </p>
++##      <p>
++##      No interprocess communication (signals, pipes,
++##      etc.) is provided by this interface since
++##      the domains are not owned by this module.
++##      </p>
++## </desc>
++## <param name="domain">
++##      <summary>
++##      Domain allowed to transition.
++##      </summary>
++## </param>
++## <param name="target_domain">
++##      <summary>
++##      The type of the process.
++##      </summary>
++## </param>
++#
++interface(`files_usr_domtrans',`
++	gen_require(`
++		type usr_t;
++	')
++
++	files_list_usr($1)
++	domain_transition_pattern($1, usr_t, $2)
++	type_transition $1 usr_t:process $2;
++')
++
+ ########################################
+ ## <summary>
+ ##	Search directories in /usr/src.
+Index: refpolicy-2.20250213/policy/modules/apps/evolution.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/evolution.fc
++++ refpolicy-2.20250213/policy/modules/apps/evolution.fc
+@@ -14,4 +14,5 @@ HOME_DIR/\.local/share/camel_certs(/.*)?
+ /usr/libexec/evolution/.*evolution-alarm-notify.*	--	gen_context(system_u:object_r:evolution_alarm_exec_t,s0)
+ /usr/libexec/evolution/.*evolution-exchange-storage.*	--	gen_context(system_u:object_r:evolution_exchange_exec_t,s0)
+ /usr/libexec/evolution-data-server.*	--	gen_context(system_u:object_r:evolution_server_exec_t,s0)
++/usr/libexec/evolution-data-server/evolution-alarm-notify	--	gen_context(system_u:object_r:evolution_alarm_exec_t,s0)
+ /usr/libexec/evolution-webcal.*	--	gen_context(system_u:object_r:evolution_webcal_exec_t,s0)
+Index: refpolicy-2.20250213/policy/modules/kernel/corecommands.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/kernel/corecommands.fc
++++ refpolicy-2.20250213/policy/modules/kernel/corecommands.fc
+@@ -177,6 +177,7 @@ ifdef(`distro_gentoo',`
+ /usr/bin/zsh.*			--	gen_context(system_u:object_r:shell_exec_t,s0)
+ 
+ /usr/lib/(.*/)?bin(/.*)?		gen_context(system_u:object_r:bin_t,s0)
++/usr/lib/(.*/)?glib-2.0(/.*)?		gen_context(system_u:object_r:bin_t,s0)
+ /usr/lib/postfix/configure-instance\.sh -- gen_context(system_u:object_r:bin_t,s0)
+ 
+ /usr/(.*/)?sbin(/.*)?			gen_context(system_u:object_r:bin_t,s0)
+Index: refpolicy-2.20250213/policy/modules/apps/evolution.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/evolution.te
++++ refpolicy-2.20250213/policy/modules/apps/evolution.te
+@@ -308,17 +308,39 @@ corecmd_exec_bin(evolution_alarm_t)
+ dev_read_urand(evolution_alarm_t)
+ 
+ files_read_usr_files(evolution_alarm_t)
++files_map_usr_files(evolution_alarm_t)
++files_watch_etc_dirs(evolution_alarm_t)
++files_watch_usr_dirs(evolution_alarm_t)
++files_watch_var_lib_dirs(evolution_alarm_t)
+ 
+ fs_dontaudit_getattr_xattr_fs(evolution_alarm_t)
+ fs_search_auto_mountpoints(evolution_alarm_t)
+ 
++logging_send_syslog_msg(evolution_alarm_t)
++
+ auth_use_nsswitch(evolution_alarm_t)
+ 
++gnome_mmap_read_xdg_config_files(evolution_alarm_t)
++
+ miscfiles_read_localization(evolution_alarm_t)
+ 
+ userdom_dontaudit_read_user_home_content_files(evolution_alarm_t)
++userdom_search_user_runtime(evolution_alarm_t)
++userdom_write_user_tmp_sockets(evolution_alarm_t)
++userdom_list_user_tmp(evolution_alarm_t)
++userdom_rw_user_tmp_files(evolution_alarm_t)
++userdom_map_user_tmp_files(evolution_alarm_t)
++userdom_watch_user_home_dirs(evolution_alarm_t)
++
++wm_rw_tmpfs_files(evolution_alarm_t)
++
++xdg_search_config_dirs(evolution_alarm_t)
++xdg_search_data_dirs(evolution_alarm_t)
++xdg_read_config_files(evolution_alarm_t)
++xdg_read_data_files(evolution_alarm_t)
+ 
+ xserver_user_x_domain_template(evolution_alarm, evolution_alarm_t, evolution_alarm_tmpfs_t)
++xserver_read_xkb_libs(evolution_alarm_t)
+ 
+ tunable_policy(`use_nfs_home_dirs',`
+ 	fs_manage_nfs_dirs(evolution_alarm_t)
+@@ -335,6 +357,7 @@ tunable_policy(`use_samba_home_dirs',`
+ optional_policy(`
+ 	dbus_all_session_bus_client(evolution_alarm_t)
+ 	dbus_connect_all_session_bus(evolution_alarm_t)
++	dbus_write_session_runtime_socket(evolution_alarm_t)
+ 
+ 	optional_policy(`
+ 		evolution_dbus_chat(evolution_alarm_t)
+@@ -345,6 +368,10 @@ optional_policy(`
+ 	gnome_stream_connect_gconf(evolution_alarm_t)
+ ')
+ 
++optional_policy(`
++	wm_send_fd(evolution_alarm_t)
++')
++
+ ########################################
+ #
+ # Exchange local policy
+Index: refpolicy-2.20250213/policy/modules/services/dbus.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dbus.te
++++ refpolicy-2.20250213/policy/modules/services/dbus.te
+@@ -314,6 +314,14 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
++	wm_receive_fd(system_dbusd_t)
++')
++
++optional_policy(`
++	xdg_read_data_files(system_dbusd_t)
++')
++
++optional_policy(`
+ 	xserver_read_xdm_lib_files(system_dbusd_t)
+ 	xserver_use_xdm_fds(system_dbusd_t)
+ ')
+Index: refpolicy-2.20250213/policy/modules/system/userdomain.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/system/userdomain.if
++++ refpolicy-2.20250213/policy/modules/system/userdomain.if
+@@ -130,8 +130,10 @@ template(`userdom_base_user_template',`
+ 	init_get_system_status($1_t)
+ 
+ 	optional_policy(`
++		apt_dbus_chat($1_t)
+ 		apt_read_cache($1_t)
+ 		apt_read_db($1_t)
++		apt_watch_db($1_t)
+ 	')
+ 
+ 	tunable_policy(`allow_execmem',`
+@@ -159,8 +161,16 @@ template(`userdom_base_user_template',`
+ 	')
+ 
+ 	optional_policy(`
++		geoclue_dbus_chat($1_t)
++	')
++
++	optional_policy(`
+ 		kerneloops_dbus_chat($1_t)
+ 	')
++
++	optional_policy(`
++		ntp_dbus_chat($1_t)
++	')
+ ')
+ 
+ #######################################
+@@ -2048,10 +2058,10 @@ interface(`userdom_home_filetrans_user_h
+ #
+ interface(`userdom_user_home_domtrans',`
+ 	gen_require(`
+-		type user_home_dir_t, user_home_t;
++		type user_home_dir_t, user_home_t, user_bin_t;
+ 	')
+ 
+-	domain_auto_transition_pattern($1, user_home_t, $2)
++	domain_auto_transition_pattern($1, { user_home_t user_bin_t }, $2)
+ 	allow $1 user_home_dir_t:dir search_dir_perms;
+ 	files_search_home($1)
+ ')
+Index: refpolicy-2.20250213/policy/modules/admin/apt.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/admin/apt.if
++++ refpolicy-2.20250213/policy/modules/admin/apt.if
+@@ -238,6 +238,25 @@ interface(`apt_manage_db',`
+ 
+ ########################################
+ ## <summary>
++##	watch apt db dirs
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`apt_watch_db',`
++	gen_require(`
++		type apt_var_lib_t;
++	')
++
++	files_search_var_lib($1)
++	allow $1 apt_var_lib_t:dir watch;
++')
++
++########################################
++## <summary>
+ ##	Do not audit attempts to create,
+ ##	read, write, and delete apt
+ ##	package database content.
+@@ -257,3 +276,23 @@ interface(`apt_dontaudit_manage_db',`
+ 	dontaudit $1 apt_var_lib_t:file manage_file_perms;
+ 	dontaudit $1 apt_var_lib_t:lnk_file manage_lnk_file_perms;
+ ')
++
++########################################
++## <summary>
++##      Send and receive messages from apt over dbus
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`apt_dbus_chat',`
++	gen_require(`
++		type apt_t;
++		class dbus send_msg;
++	')
++
++	allow $1 apt_t:dbus send_msg;
++	allow apt_t $1:dbus send_msg;
++')
+Index: refpolicy-2.20250213/policy/modules/services/dbus.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dbus.if
++++ refpolicy-2.20250213/policy/modules/services/dbus.if
+@@ -156,8 +156,17 @@ template(`dbus_role_template',`
+ 	')
+ 
+ 	optional_policy(`
++		wm_receive_fd($1_dbusd_t)
++		wm_sock_rw($1_dbusd_t)
++	')
++
++	optional_policy(`
+ 		xdg_read_data_files($1_dbusd_t)
+ 	')
++
++	optional_policy(`
++		xserver_read_xdm_lib_files($1_dbusd_t)
++	')
+ ')
+ 
+ #######################################
+Index: refpolicy-2.20250213/policy/modules/services/xserver.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/xserver.if
++++ refpolicy-2.20250213/policy/modules/services/xserver.if
+@@ -56,6 +56,9 @@ template(`xserver_restricted_role',`
+ 	stream_connect_pattern($2, xserver_tmp_t, xserver_tmp_t, xserver_t)
+ 	files_search_tmp($2)
+ 
++	# for /run/gdm3/dbus/
++	allow $2 xdm_var_run_t:sock_file write_sock_file_perms;
++
+ 	# Communicate via System V shared memory.
+ 	allow $2 xserver_t:fd use;
+ 	allow $2 xserver_t:shm r_shm_perms;
+@@ -224,7 +227,7 @@ template(`xserver_role',`
+ 
+ 	xserver_read_xkb_libs($2)
+ 
+-	allow $2 xdm_t:unix_stream_socket { getattr accept };
++	allow $2 xdm_t:unix_stream_socket { accept rw_socket_perms };
+ 
+ 	optional_policy(`
+ 		systemd_user_app_status($1, xserver_t)
+@@ -1102,12 +1105,13 @@ interface(`xserver_read_xdm_lib_files',`
+ 		type xdm_var_lib_t;
+ 	')
+ 
++	allow $1 xdm_var_lib_t:dir list_dir_perms;
+ 	allow $1 xdm_var_lib_t:file read_file_perms;
+ ')
+ 
+ ########################################
+ ## <summary>
+-##	map XDM var lib files.
++##	read and map XDM var lib files.
+ ## </summary>
+ ## <param name="domain">
+ ##	<summary>
+@@ -1115,12 +1119,31 @@ interface(`xserver_read_xdm_lib_files',`
+ ##	</summary>
+ ## </param>
+ #
+-interface(`xserver_map_xdm_lib_files',`
++interface(`xserver_mmap_read_xdm_lib_files',`
++	gen_require(`
++		type xdm_var_lib_t;
++	')
++
++	allow $1 xdm_var_lib_t:dir list_dir_perms;
++	allow $1 xdm_var_lib_t:file mmap_read_file_perms;
++')
++
++########################################
++## <summary>
++##      watch XDM var lib dirs.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`xserver_watch_xdm_lib_dirs',`
+ 	gen_require(`
+ 		type xdm_var_lib_t;
+ 	')
+ 
+-	allow $1 xdm_var_lib_t:file map;
++	allow $1 xdm_var_lib_t:dir watch;
+ ')
+ 
+ ########################################
+Index: refpolicy-2.20250213/policy/modules/services/colord.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/colord.te
++++ refpolicy-2.20250213/policy/modules/services/colord.te
+@@ -164,8 +164,11 @@ optional_policy(`
+ ')
+ 
+ optional_policy(`
+-	xserver_read_xdm_lib_files(colord_t)
+-	xserver_map_xdm_lib_files(colord_t)
++	wm_receive_fd(colord_t)
++')
++
++optional_policy(`
++	xserver_mmap_read_xdm_lib_files(colord_t)
+ 	xserver_read_xdm_state(colord_t)
+ 	xserver_use_xdm_fds(colord_t)
+ ')
+Index: refpolicy-2.20250213/policy/modules/apps/gnome.te
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/gnome.te
++++ refpolicy-2.20250213/policy/modules/apps/gnome.te
+@@ -35,6 +35,7 @@ userdom_user_home_content(gnome_keyring_
+ type gnome_keyring_tmp_t;
+ userdom_user_tmp_file(gnome_keyring_tmp_t)
+ userdom_user_runtime_content(gnome_keyring_tmp_t)
++systemd_user_activated_sock_file(gnome_keyring_tmp_t)
+ 
+ type gnome_xdg_cache_t;
+ xdg_cache_content(gnome_xdg_cache_t)
+Index: refpolicy-2.20250213/policy/modules/services/dnsmasq.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/dnsmasq.fc
++++ refpolicy-2.20250213/policy/modules/services/dnsmasq.fc
+@@ -13,7 +13,7 @@
+ 
+ /usr/sbin/dnsmasq		--	gen_context(system_u:object_r:dnsmasq_exec_t,s0)
+ 
+-/var/lib/misc/dnsmasq\.leases	--	gen_context(system_u:object_r:dnsmasq_lease_t,s0)
++/var/lib/misc/dnsmasq\.([a-z0-9]+\.)?leases	--	gen_context(system_u:object_r:dnsmasq_lease_t,s0)
+ /var/lib/dnsmasq(/.*)?			gen_context(system_u:object_r:dnsmasq_lease_t,s0)
+ 
+ /var/log/dnsmasq.*		--	gen_context(system_u:object_r:dnsmasq_var_log_t,s0)
+Index: refpolicy-2.20250213/policy/modules/services/container.fc
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/services/container.fc
++++ refpolicy-2.20250213/policy/modules/services/container.fc
+@@ -78,6 +78,7 @@ HOME_DIR/\.docker(/.*)?		gen_context(sys
+ /var/lib/containers/storage/volumes/[^/]+/.*		gen_context(system_u:object_r:container_file_t,s0)
+ 
+ /var/lib/crio(/.*)?		gen_context(system_u:object_r:container_var_lib_t,s0)
++/var/lib/lxc(/.*)?		gen_context(system_u:object_r:container_var_lib_t,s0)
+ 
+ /var/lib/docker(/.*)?		gen_context(system_u:object_r:container_var_lib_t,s0)
+ /var/lib/docker/.*/config\.env	--	gen_context(system_u:object_r:container_ro_file_t,s0)
+Index: refpolicy-2.20250213/policy/modules/apps/bubblewrap.if
+===================================================================
+--- refpolicy-2.20250213.orig/policy/modules/apps/bubblewrap.if
++++ refpolicy-2.20250213/policy/modules/apps/bubblewrap.if
+@@ -99,6 +99,7 @@ template(`bubblewrap_role',`
+ 	userdom_manage_user_home_content_files($1_bubblewrap_t)
+ 	userdom_use_user_ptys($1_bubblewrap_t)
+ 	userdom_use_user_ttys($1_bubblewrap_t)
++	userdom_user_home_domtrans($1_bubblewrap_t, $2)
+ 
+ 	ifndef(`enable_mls',`
+ 		fs_search_removable($1_bubblewrap_t)

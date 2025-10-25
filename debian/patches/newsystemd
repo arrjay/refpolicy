@@ -1,0 +1,71 @@
+Index: refpolicy-2.20250122/policy/modules/system/authlogin.if
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/system/authlogin.if
++++ refpolicy-2.20250122/policy/modules/system/authlogin.if
+@@ -91,6 +91,7 @@ interface(`auth_use_pam_systemd',`
+ 	systemd_connect_machined($1)
+ 	systemd_dbus_chat_logind($1)
+ 	systemd_read_logind_state($1)
++	systemd_use_logind_fds($1)
+ 
+ 	# to read /etc/machine-id
+ 	files_read_etc_runtime_files($1)
+Index: refpolicy-2.20250122/policy/modules/services/xserver.te
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/services/xserver.te
++++ refpolicy-2.20250122/policy/modules/services/xserver.te
+@@ -584,6 +584,8 @@ optional_policy(`
+ 	')
+ 
+ 	optional_policy(`
++		auth_use_pam_systemd(xdm_t)
++		systemd_dbus_chat_hostnamed(xdm_t)
+ 		systemd_read_logind_runtime_files(xdm_t)
+ 	')
+ ')
+Index: refpolicy-2.20250122/policy/modules/system/locallogin.te
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/system/locallogin.te
++++ refpolicy-2.20250122/policy/modules/system/locallogin.te
+@@ -131,8 +131,9 @@ auth_domtrans_pam_console(local_login_t)
+ auth_read_pam_motd_dynamic(local_login_t)
+ auth_read_shadow_history(local_login_t)
+ 
+-# if local_login_t can not inherit fd from init it takes ages to login
++# if local_login_t can not inherit fd from init then login fails
+ init_use_fds(local_login_t)
++init_use_script_fds(local_login_t)
+ 
+ miscfiles_read_localization(local_login_t)
+ 
+@@ -148,7 +149,6 @@ ifdef(`init_systemd',`
+ 	auth_manage_faillog(local_login_t)
+ 
+ 	init_dbus_chat(local_login_t)
+-	init_use_fds(local_login_t)
+ 
+ 	systemd_connect_machined(local_login_t)
+ 	systemd_dbus_chat_logind(local_login_t)
+Index: refpolicy-2.20250122/policy/modules/system/systemd.te
+===================================================================
+--- refpolicy-2.20250122.orig/policy/modules/system/systemd.te
++++ refpolicy-2.20250122/policy/modules/system/systemd.te
+@@ -1233,7 +1233,8 @@ optional_policy(`
+ # machine-id-setup local policy
+ #
+ 
+-allow systemd_machine_id_setup_t self:capability { setgid sys_admin sys_chroot };
++allow systemd_machine_id_setup_t self:capability { dac_override setgid sys_admin sys_chroot };
++allow systemd_machine_id_setup_t self:unix_dgram_socket create;
+ 
+ files_list_var(systemd_machine_id_setup_t)
+ files_mounton_root(systemd_machine_id_setup_t)
+@@ -1249,6 +1250,8 @@ kernel_dontaudit_getattr_proc(systemd_ma
+ kernel_read_kernel_sysctls(systemd_machine_id_setup_t)
+ kernel_read_system_state(systemd_machine_id_setup_t)
+ 
++dev_write_kmsg(systemd_machine_id_setup_t)
++
+ init_read_runtime_files(systemd_machine_id_setup_t)
+ init_read_state(systemd_machine_id_setup_t)
+ 
