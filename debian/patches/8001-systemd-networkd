@@ -1,5 +1,5 @@
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
-index d24bf6e29..1f701974c 100644
+index d24bf6e29..c55ba8cd3 100644
 --- a/policy/modules/system/systemd.te
 +++ b/policy/modules/system/systemd.te
 @@ -1450,7 +1450,10 @@ systemd_log_parse_environment(systemd_modules_load_t)
@@ -13,16 +13,26 @@ index d24bf6e29..1f701974c 100644
  allow systemd_networkd_t self:netlink_generic_socket create_socket_perms;
  allow systemd_networkd_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow systemd_networkd_t self:netlink_netfilter_socket create_socket_perms;
-@@ -1487,6 +1490,8 @@ corenet_rw_tun_tap_dev(systemd_networkd_t)
- corenet_udp_bind_dhcpc_port(systemd_networkd_t)
- corenet_udp_bind_generic_node(systemd_networkd_t)
+@@ -1470,6 +1473,8 @@ manage_sock_files_pattern(systemd_networkd_t, systemd_networkd_runtime_t, system
+ init_var_lib_filetrans(systemd_networkd_t, systemd_networkd_var_lib_t, dir)
+ manage_dirs_pattern(systemd_networkd_t, systemd_networkd_var_lib_t, systemd_networkd_var_lib_t)
+ manage_files_pattern(systemd_networkd_t, systemd_networkd_var_lib_t, systemd_networkd_var_lib_t)
++# I *think* this is a bug and debian needs overall better handling of systemd credentials
++fs_rw_tmpfs_files(systemd_networkd_t)
  
+ kernel_read_system_state(systemd_networkd_t)
+ kernel_read_kernel_sysctls(systemd_networkd_t)
+@@ -1498,7 +1503,9 @@ files_watch_root_dirs(systemd_networkd_t)
+ files_list_runtime(systemd_networkd_t)
+ 
+ fs_getattr_all_fs(systemd_networkd_t)
++fs_read_cgroup_dirs(systemd_networkd_t)
+ fs_search_cgroup_dirs(systemd_networkd_t)
 +fs_rw_cgroup_files(systemd_networkd_t)
-+
- dev_read_urand(systemd_networkd_t)
- dev_read_sysfs(systemd_networkd_t)
- dev_write_kmsg(systemd_networkd_t)
-@@ -1517,6 +1522,8 @@ sysnet_read_config(systemd_networkd_t)
+ fs_read_nsfs_files(systemd_networkd_t)
+ fs_watch_memory_pressure(systemd_networkd_t)
+ 
+@@ -1517,6 +1524,8 @@ sysnet_read_config(systemd_networkd_t)
  
  systemd_log_parse_environment(systemd_networkd_t)
  
@@ -31,7 +41,7 @@ index d24bf6e29..1f701974c 100644
  tunable_policy(`systemd_networkd_dhcp_server',`
  	corenet_sendrecv_dhcpd_server_packets(systemd_networkd_t)
  	corenet_udp_bind_dhcpd_port(systemd_networkd_t)
-@@ -1525,6 +1532,8 @@ tunable_policy(`systemd_networkd_dhcp_server',`
+@@ -1525,6 +1534,8 @@ tunable_policy(`systemd_networkd_dhcp_server',`
  optional_policy(`
  	dbus_system_bus_client(systemd_networkd_t)
  	dbus_connect_system_bus(systemd_networkd_t)
