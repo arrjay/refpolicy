@@ -26,6 +26,5 @@ trixie
 8001-systemd-networkd
 8002-firewalld
 8003-systemd-cryptsetup
-8004-systemd-credentials
 8005-ca-certificates
 9000-polyinstantiation
