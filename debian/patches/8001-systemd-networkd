@@ -1,8 +1,19 @@
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
-index d24bf6e29..c55ba8cd3 100644
+index d24bf6e29..dc20754c3 100644
 --- a/policy/modules/system/systemd.te
 +++ b/policy/modules/system/systemd.te
-@@ -1450,7 +1450,10 @@ systemd_log_parse_environment(systemd_modules_load_t)
+@@ -950,6 +950,10 @@ optional_policy(`
+ 	unconfined_dbus_send(systemd_hostnamed_t)
+ ')
+ 
++optional_policy(`
++	policykit_dbus_chat(systemd_hostnamed_t)
++')
++
+ #########################################
+ #
+ # hw local policy
+@@ -1450,7 +1454,10 @@ systemd_log_parse_environment(systemd_modules_load_t)
  # networkd local policy
  #
  
@@ -13,7 +24,7 @@ index d24bf6e29..c55ba8cd3 100644
  allow systemd_networkd_t self:netlink_generic_socket create_socket_perms;
  allow systemd_networkd_t self:netlink_kobject_uevent_socket create_socket_perms;
  allow systemd_networkd_t self:netlink_netfilter_socket create_socket_perms;
-@@ -1470,6 +1473,8 @@ manage_sock_files_pattern(systemd_networkd_t, systemd_networkd_runtime_t, system
+@@ -1470,6 +1477,8 @@ manage_sock_files_pattern(systemd_networkd_t, systemd_networkd_runtime_t, system
  init_var_lib_filetrans(systemd_networkd_t, systemd_networkd_var_lib_t, dir)
  manage_dirs_pattern(systemd_networkd_t, systemd_networkd_var_lib_t, systemd_networkd_var_lib_t)
  manage_files_pattern(systemd_networkd_t, systemd_networkd_var_lib_t, systemd_networkd_var_lib_t)
@@ -22,7 +33,7 @@ index d24bf6e29..c55ba8cd3 100644
  
  kernel_read_system_state(systemd_networkd_t)
  kernel_read_kernel_sysctls(systemd_networkd_t)
-@@ -1498,7 +1503,9 @@ files_watch_root_dirs(systemd_networkd_t)
+@@ -1498,7 +1507,9 @@ files_watch_root_dirs(systemd_networkd_t)
  files_list_runtime(systemd_networkd_t)
  
  fs_getattr_all_fs(systemd_networkd_t)
@@ -32,7 +43,7 @@ index d24bf6e29..c55ba8cd3 100644
  fs_read_nsfs_files(systemd_networkd_t)
  fs_watch_memory_pressure(systemd_networkd_t)
  
-@@ -1517,6 +1524,8 @@ sysnet_read_config(systemd_networkd_t)
+@@ -1517,6 +1528,8 @@ sysnet_read_config(systemd_networkd_t)
  
  systemd_log_parse_environment(systemd_networkd_t)
  
@@ -41,7 +52,7 @@ index d24bf6e29..c55ba8cd3 100644
  tunable_policy(`systemd_networkd_dhcp_server',`
  	corenet_sendrecv_dhcpd_server_packets(systemd_networkd_t)
  	corenet_udp_bind_dhcpd_port(systemd_networkd_t)
-@@ -1525,6 +1534,8 @@ tunable_policy(`systemd_networkd_dhcp_server',`
+@@ -1525,10 +1538,14 @@ tunable_policy(`systemd_networkd_dhcp_server',`
  optional_policy(`
  	dbus_system_bus_client(systemd_networkd_t)
  	dbus_connect_system_bus(systemd_networkd_t)
@@ -50,3 +61,9 @@ index d24bf6e29..c55ba8cd3 100644
  	dbus_watch_system_bus_runtime_dirs(systemd_networkd_t)
  	dbus_watch_system_bus_runtime_named_sockets(systemd_networkd_t)
  
+ 	systemd_dbus_chat_hostnamed(systemd_networkd_t)
++	policykit_get_unit_status(systemd_networkd_t)
++	unconfined_dbus_send(systemd_networkd_t)
+ ')
+ 
+ optional_policy(`
