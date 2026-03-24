@@ -1,0 +1,39 @@
+diff --git a/policy/modules/services/virt.fc b/policy/modules/services/virt.fc
+index 1441a50dc..c308c2025 100644
+--- a/policy/modules/services/virt.fc
++++ b/policy/modules/services/virt.fc
+@@ -8,6 +8,8 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_context(system_u:object_r:virt_content_t
+ /etc/libvirt/[^/]*	--	gen_context(system_u:object_r:virt_etc_t,s0)
+ /etc/libvirt/[^/]*	-d	gen_context(system_u:object_r:virt_etc_rw_t,s0)
+ /etc/libvirt/.*/.*	gen_context(system_u:object_r:virt_etc_rw_t,s0)
++/etc/libvirt/hooks	-d	gen_context(system_u:object_r:virt_etc_hook_t,s0)
++/etc/libvirt/hooks/.*	gen_context(system_u:object_r:virt_etc_hook_t,s0)
+ 
+ /etc/qemu(/.*)?		gen_context(system_u:object_r:virt_etc_t,s0)
+ 
+diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
+index 85aa766bd..1ccf1edf4 100644
+--- a/policy/modules/services/virt.te
++++ b/policy/modules/services/virt.te
+@@ -110,6 +110,9 @@ files_config_file(virt_etc_t)
+ type virt_etc_rw_t;
+ files_type(virt_etc_rw_t)
+ 
++type virt_etc_hook_t;
++files_type(virt_etc_hook_t)
++
+ type virt_home_t;
+ userdom_user_home_content(virt_home_t)
+ 
+@@ -510,6 +513,11 @@ manage_files_pattern(virtd_t, virt_etc_rw_t, virt_etc_rw_t)
+ manage_lnk_files_pattern(virtd_t, virt_etc_rw_t, virt_etc_rw_t)
+ filetrans_pattern(virtd_t, virt_etc_t, virt_etc_rw_t, dir)
+ 
++manage_dirs_pattern(virtd_t, virt_etc_hook_t, virt_etc_hook_t)
++manage_files_pattern(virtd_t, virt_etc_hook_t, virt_etc_hook_t)
++manage_lnk_files_pattern(virtd_t, virt_etc_hook_t, virt_etc_hook_t)
++can_exec(virtd_t, virt_etc_hook_t)
++
+ manage_dirs_pattern(virtd_t, virt_home_t, virt_home_t)
+ manage_files_pattern(virtd_t, virt_home_t, virt_home_t)
+ manage_sock_files_pattern(virtd_t, virt_home_t, virt_home_t)
