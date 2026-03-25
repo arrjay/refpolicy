@@ -1,0 +1,13 @@
+diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
+index 25ad856d4..33eca33f7 100644
+--- a/policy/modules/services/virt.te
++++ b/policy/modules/services/virt.te
+@@ -622,6 +622,8 @@ corenet_tcp_connect_soundd_port(virtd_t)
+ corenet_rw_tun_tap_dev(virtd_t)
+ 
+ fs_unmount_all_fs(virtd_t)
++# I'm not fully sure _where_ the unlabled_t is coming from...
++kernel_mounton_unlabeled_dirs(virtd_t)
+ dev_rw_sysfs(virtd_t)
+ dev_read_cpuid(virtd_t)
+ dev_read_urand(virtd_t)
