@@ -1,6 +1,9 @@
 *.pp
 *.py[co]
 *.res
+*.sq?
+*.deb
+*.zip
 
 /base.conf
 /base.fc
