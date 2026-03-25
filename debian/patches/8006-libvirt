@@ -1,5 +1,5 @@
 diff --git a/policy/modules/services/virt.fc b/policy/modules/services/virt.fc
-index 1441a50dc..c308c2025 100644
+index 1441a50dc..4b235976b 100644
 --- a/policy/modules/services/virt.fc
 +++ b/policy/modules/services/virt.fc
 @@ -8,6 +8,8 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_context(system_u:object_r:virt_content_t
@@ -11,8 +11,16 @@ index 1441a50dc..c308c2025 100644
  
  /etc/qemu(/.*)?		gen_context(system_u:object_r:virt_etc_t,s0)
  
+@@ -58,6 +60,7 @@ HOME_DIR/VirtualMachines/isos(/.*)?	gen_context(system_u:object_r:virt_content_t
+ /var/log/log(/.*)?	gen_context(system_u:object_r:virt_log_t,s0)
+ /var/log/libvirt(/.*)?	gen_context(system_u:object_r:virt_log_t,s0)
+ /var/log/vdsm(/.*)?	gen_context(system_u:object_r:virt_log_t,s0)
++/var/log/libvirt/hooks(/.*)?	gen_context(system_u:object_r:virt_hook_log_t,s0)
+ 
+ /var/vdsm(/.*)?		gen_context(system_u:object_r:virt_runtime_t,s0)
+ 
 diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
-index 85aa766bd..25ad856d4 100644
+index 85aa766bd..a180ffc4e 100644
 --- a/policy/modules/services/virt.te
 +++ b/policy/modules/services/virt.te
 @@ -110,6 +110,9 @@ files_config_file(virt_etc_t)
@@ -25,7 +33,18 @@ index 85aa766bd..25ad856d4 100644
  type virt_home_t;
  userdom_user_home_content(virt_home_t)
  
-@@ -510,6 +513,11 @@ manage_files_pattern(virtd_t, virt_etc_rw_t, virt_etc_rw_t)
+@@ -138,6 +141,10 @@ type virt_log_t;
+ logging_log_file(virt_log_t)
+ mls_trusted_object(virt_log_t)
+ 
++type virt_hook_log_t;
++logging_log_file(virt_hook_log_t)
++mls_trusted_object(virt_hook_log_t)
++
+ type virt_runtime_t alias virt_var_run_t;
+ files_runtime_file(virt_runtime_t)
+ 
+@@ -510,6 +517,11 @@ manage_files_pattern(virtd_t, virt_etc_rw_t, virt_etc_rw_t)
  manage_lnk_files_pattern(virtd_t, virt_etc_rw_t, virt_etc_rw_t)
  filetrans_pattern(virtd_t, virt_etc_t, virt_etc_rw_t, dir)
  
@@ -37,7 +56,16 @@ index 85aa766bd..25ad856d4 100644
  manage_dirs_pattern(virtd_t, virt_home_t, virt_home_t)
  manage_files_pattern(virtd_t, virt_home_t, virt_home_t)
  manage_sock_files_pattern(virtd_t, virt_home_t, virt_home_t)
-@@ -613,6 +621,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
+@@ -561,6 +573,8 @@ read_files_pattern(virtd_t, virt_log_t, virt_log_t)
+ setattr_files_pattern(virtd_t, virt_log_t, virt_log_t)
+ logging_log_filetrans(virtd_t, virt_log_t, { file dir })
+ 
++write_files_pattern(virtd_t, virt_hook_log_t, virt_hook_log_t)
++
+ manage_dirs_pattern(virtd_t, virt_var_lib_t, virt_var_lib_t)
+ manage_files_pattern(virtd_t, virt_var_lib_t, virt_var_lib_t)
+ manage_sock_files_pattern(virtd_t, virt_var_lib_t, virt_var_lib_t)
+@@ -613,6 +627,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
  
  corenet_rw_tun_tap_dev(virtd_t)
  
