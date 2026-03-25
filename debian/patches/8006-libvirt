@@ -12,7 +12,7 @@ index 1441a50dc..c308c2025 100644
  /etc/qemu(/.*)?		gen_context(system_u:object_r:virt_etc_t,s0)
  
 diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
-index 85aa766bd..1ccf1edf4 100644
+index 85aa766bd..25ad856d4 100644
 --- a/policy/modules/services/virt.te
 +++ b/policy/modules/services/virt.te
 @@ -110,6 +110,9 @@ files_config_file(virt_etc_t)
@@ -37,3 +37,11 @@ index 85aa766bd..1ccf1edf4 100644
  manage_dirs_pattern(virtd_t, virt_home_t, virt_home_t)
  manage_files_pattern(virtd_t, virt_home_t, virt_home_t)
  manage_sock_files_pattern(virtd_t, virt_home_t, virt_home_t)
+@@ -613,6 +621,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
+ 
+ corenet_rw_tun_tap_dev(virtd_t)
+ 
++fs_unmount_all_fs(virtd_t)
+ dev_rw_sysfs(virtd_t)
+ dev_read_cpuid(virtd_t)
+ dev_read_urand(virtd_t)
