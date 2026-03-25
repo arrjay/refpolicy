@@ -20,7 +20,7 @@ index 1441a50dc..4b235976b 100644
  /var/vdsm(/.*)?		gen_context(system_u:object_r:virt_runtime_t,s0)
  
 diff --git a/policy/modules/services/virt.te b/policy/modules/services/virt.te
-index 85aa766bd..a180ffc4e 100644
+index 85aa766bd..94308ff60 100644
 --- a/policy/modules/services/virt.te
 +++ b/policy/modules/services/virt.te
 @@ -110,6 +110,9 @@ files_config_file(virt_etc_t)
@@ -56,16 +56,17 @@ index 85aa766bd..a180ffc4e 100644
  manage_dirs_pattern(virtd_t, virt_home_t, virt_home_t)
  manage_files_pattern(virtd_t, virt_home_t, virt_home_t)
  manage_sock_files_pattern(virtd_t, virt_home_t, virt_home_t)
-@@ -561,6 +573,8 @@ read_files_pattern(virtd_t, virt_log_t, virt_log_t)
+@@ -561,6 +573,9 @@ read_files_pattern(virtd_t, virt_log_t, virt_log_t)
  setattr_files_pattern(virtd_t, virt_log_t, virt_log_t)
  logging_log_filetrans(virtd_t, virt_log_t, { file dir })
  
 +write_files_pattern(virtd_t, virt_hook_log_t, virt_hook_log_t)
++create_files_pattern(virtd_t, virt_hook_log_t, virt_hook_log_t)
 +
  manage_dirs_pattern(virtd_t, virt_var_lib_t, virt_var_lib_t)
  manage_files_pattern(virtd_t, virt_var_lib_t, virt_var_lib_t)
  manage_sock_files_pattern(virtd_t, virt_var_lib_t, virt_var_lib_t)
-@@ -613,6 +627,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
+@@ -613,6 +628,7 @@ corenet_tcp_connect_soundd_port(virtd_t)
  
  corenet_rw_tun_tap_dev(virtd_t)
  
