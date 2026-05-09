@@ -4,6 +4,8 @@
 *.sq?
 *.deb
 *.zip
+*.orig
+*.sw?
 
 /base.conf
 /base.fc
