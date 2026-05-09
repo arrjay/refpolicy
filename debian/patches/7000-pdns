@@ -1,0 +1,36 @@
+diff --git a/debian/modules.conf.default b/debian/modules.conf.default
+index 5eb0c28a1..3afec2ba6 100644
+--- a/debian/modules.conf.default
++++ b/debian/modules.conf.default
+@@ -1601,6 +1601,13 @@ passenger = module
+ # 
+ pcscd = module
+ 
++# Layer: contrib
++# Module: pdns
++#
++# PowerDNS server.
++#
++pdns = module
++
+ # Layer: contrib
+ # Module: pegasus
+ #
+diff --git a/debian/modules.conf.mls b/debian/modules.conf.mls
+index abde3c4ec..b4f66dde4 100644
+--- a/debian/modules.conf.mls
++++ b/debian/modules.conf.mls
+@@ -1601,6 +1601,13 @@ passenger = module
+ # 
+ pcscd = module
+ 
++# Layer: contrib
++# Module: pdns
++#
++# PowerDNS server.
++#
++pdns = module
++
+ # Layer: contrib
+ # Module: pegasus
+ #
