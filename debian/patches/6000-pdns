@@ -1,0 +1,210 @@
+diff --git a/policy/modules/system/pdns.fc b/policy/modules/system/pdns.fc
+new file mode 100644
+index 000000000..9d39e9c3f
+--- /dev/null
++++ b/policy/modules/system/pdns.fc
+@@ -0,0 +1,8 @@
++/usr/lib/systemd/system/pdns.*	--	gen_context(system_u:object_r:pdns_unit_file_t,s0)
++/usr/bin/pdns_control		--	gen_context(system_u:object_r:pdns_control_exec_t,s0)
++/usr/bin/pdns_server		--	gen_context(system_u:object_r:pdns_exec_t,s0)
++/run/pdns\.pid		--	gen_context(system_u:object_r:pdns_var_run_t,s0)
++/run/pdns\.controlsocket	-s	gen_context(system_u:object_r:pdns_var_run_t,s0)
++/etc/pdns(/.*)?				gen_context(system_u:object_r:pdns_conf_t,s0)
++
++/var/lib/pdns(/.*)?				gen_context(system_u:object_r:pdns_var_lib_t,s0)
+diff --git a/policy/modules/system/pdns.if b/policy/modules/system/pdns.if
+new file mode 100644
+index 000000000..02df03ad6
+--- /dev/null
++++ b/policy/modules/system/pdns.if
+@@ -0,0 +1,81 @@
++## <summary>PowerDNS DNS server.</summary>
++
++########################################
++## <summary>
++##      Execute pdns in the pdns domain.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed to transition.
++##      </summary>
++## </param>
++#
++interface(`pdns_domtrans',`
++	gen_require(`
++		type pdns_t, pdns_exec_t;
++	')
++
++	domtrans_pattern($1, pdns_exec_t, pdns_t)
++')
++
++########################################
++## <summary>
++##      Execute pdns_control in the pdns_control domain.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed to transition.
++##      </summary>
++## </param>
++#
++interface(`pdns_domtrans_pdns_control',`
++        gen_require(`
++                type pdns_control_t, pdns_control_exec_t;
++        ')
++
++        corecmd_search_bin($1)
++        domtrans_pattern($1, pdns_control_exec_t, pdns_control_t)
++')
++
++########################################
++## <summary>
++##      Allow the specified domain to read
++##      pdns configuration files.
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++## <rolecap/>
++#
++interface(`pdns_read_config',`
++        gen_require(`
++                type pdns_conf_t;
++        ')
++
++        files_search_etc($1)
++        allow $1 pdns_conf_t:dir list_dir_perms;
++        read_files_pattern($1, pdns_conf_t, pdns_conf_t)
++        read_lnk_files_pattern($1, pdns_conf_t, pdns_conf_t)
++')
++
++########################################
++## <summary>
++##	Connect to pdns over an unix
++##	stream socket.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`pdns_stream_connect',`
++	gen_require(`
++		type pdns_t, pdns_var_run_t;
++	')
++
++	files_search_pids($1)
++	stream_connect_pattern($1, pdns_var_run_t, pdns_var_run_t, pdns_t)
++')
+diff --git a/policy/modules/system/pdns.te b/policy/modules/system/pdns.te
+new file mode 100644
+index 000000000..d4c3c166d
+--- /dev/null
++++ b/policy/modules/system/pdns.te
+@@ -0,0 +1,103 @@
++policy_module(pdns, 1.0.2)
++
++########################################
++#
++# Declarations
++#
++
++## <desc>
++## <p>
++## Allow PowerDNS to connect to databases over the network.
++## </p>
++## </desc>
++gen_tunable(pdns_can_network_connect_db, false)
++
++type pdns_t;
++type pdns_exec_t;
++init_daemon_domain(pdns_t, pdns_exec_t)
++init_nnp_daemon_domain(pdns_t)
++
++type pdns_unit_file_t;
++systemd_unit_file(pdns_unit_file_t)
++
++type pdns_conf_t;
++files_config_file(pdns_conf_t)
++
++type pdns_var_lib_t;
++files_type(pdns_var_lib_t)
++
++type pdns_var_run_t;
++files_pid_file(pdns_var_run_t)
++
++type pdns_control_t;
++type pdns_control_exec_t;
++init_system_domain(pdns_control_t, pdns_control_exec_t)
++
++########################################
++#
++# pdns_t local policy
++#
++
++allow pdns_t self:capability { setuid setgid chown };
++allow pdns_t self:tcp_socket create_stream_socket_perms;
++allow pdns_t self:udp_socket create_socket_perms;
++allow pdns_t self:unix_dgram_socket create_socket_perms;
++pdns_read_config(pdns_t)
++
++kernel_read_network_state(pdns_t)
++kernel_read_system_state(pdns_t)
++
++corenet_tcp_bind_dns_port(pdns_t)
++corenet_tcp_bind_transproxy_port(pdns_t)
++corenet_tcp_connect_all_ports(pdns_t)
++corenet_udp_bind_all_ports(pdns_t)
++
++manage_dirs_pattern(pdns_t, pdns_var_lib_t, pdns_var_lib_t)
++manage_files_pattern(pdns_t, pdns_var_lib_t, pdns_var_lib_t)
++files_var_lib_filetrans(pdns_t, pdns_var_lib_t, { dir file })
++allow pdns_t pdns_var_lib_t:file map;
++
++files_pid_filetrans(pdns_t, pdns_var_run_t, { file sock_file })
++manage_files_pattern(pdns_t, pdns_var_run_t, pdns_var_run_t)
++manage_sock_files_pattern(pdns_t, pdns_var_run_t, pdns_var_run_t)
++
++optional_policy(`
++	auth_use_nsswitch(pdns_t)
++')
++
++optional_policy(`
++	kerberos_read_keytab(pdns_t)
++')
++
++optional_policy(`
++	logging_send_syslog_msg(pdns_t)
++')
++
++########################################
++#
++# pdns_control_t local policy
++#
++
++pdns_read_config(pdns_control_t)
++stream_connect_pattern(pdns_control_t, pdns_var_run_t, pdns_var_run_t, pdns_t)
++
++
++########################################
++#
++# optional policy
++#
++
++optional_policy(`
++	mysql_read_config(pdns_t)
++	mysql_stream_connect(pdns_t)
++	tunable_policy(`pdns_can_network_connect_db',`
++		mysql_tcp_connect(pdns_t)
++        ')
++')
++
++optional_policy(`
++	postgresql_stream_connect(pdns_t)
++	tunable_policy(`pdns_can_network_connect_db',`
++                postgresql_tcp_connect(pdns_t)
++        ')
++')
