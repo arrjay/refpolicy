@@ -1,0 +1,15 @@
+diff --git a/policy/modules/system/pdns.te b/policy/modules/system/pdns.te
+index dfcc1d838..e4ab6db4a 100644
+--- a/policy/modules/system/pdns.te
++++ b/policy/modules/system/pdns.te
+@@ -73,6 +73,10 @@ optional_policy(`
+ 	logging_send_syslog_msg(pdns_t)
+ ')
+ 
++optional_policy(`
++	fs_associate_tmpfs(pdns_var_run_t)
++')
++
+ ########################################
+ #
+ # pdns_control_t local policy
