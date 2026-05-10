@@ -34,6 +34,18 @@ index abde3c4ec..b4f66dde4 100644
  # Layer: contrib
  # Module: pegasus
  #
+diff --git a/policy/modules/system/pdns.fc b/policy/modules/system/pdns.fc
+index 9d39e9c3f..fd2daae79 100644
+--- a/policy/modules/system/pdns.fc
++++ b/policy/modules/system/pdns.fc
+@@ -1,6 +1,6 @@
+ /usr/lib/systemd/system/pdns.*	--	gen_context(system_u:object_r:pdns_unit_file_t,s0)
+ /usr/bin/pdns_control		--	gen_context(system_u:object_r:pdns_control_exec_t,s0)
+-/usr/bin/pdns_server		--	gen_context(system_u:object_r:pdns_exec_t,s0)
++/usr/sbin/pdns_server		--	gen_context(system_u:object_r:pdns_exec_t,s0)
+ /run/pdns\.pid		--	gen_context(system_u:object_r:pdns_var_run_t,s0)
+ /run/pdns\.controlsocket	-s	gen_context(system_u:object_r:pdns_var_run_t,s0)
+ /etc/pdns(/.*)?				gen_context(system_u:object_r:pdns_conf_t,s0)
 diff --git a/policy/modules/system/pdns.te b/policy/modules/system/pdns.te
 index d4c3c166d..0c15c77cc 100644
 --- a/policy/modules/system/pdns.te
