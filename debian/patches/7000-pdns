@@ -47,7 +47,7 @@ index 9d39e9c3f..fd2daae79 100644
  /run/pdns\.controlsocket	-s	gen_context(system_u:object_r:pdns_var_run_t,s0)
  /etc/pdns(/.*)?				gen_context(system_u:object_r:pdns_conf_t,s0)
 diff --git a/policy/modules/system/pdns.te b/policy/modules/system/pdns.te
-index d4c3c166d..a5895e2f5 100644
+index d4c3c166d..b5c3e3cf7 100644
 --- a/policy/modules/system/pdns.te
 +++ b/policy/modules/system/pdns.te
 @@ -15,10 +15,9 @@ gen_tunable(pdns_can_network_connect_db, false)
@@ -70,7 +70,7 @@ index d4c3c166d..a5895e2f5 100644
  
  type pdns_control_t;
  type pdns_control_exec_t;
-@@ -48,18 +46,21 @@ kernel_read_network_state(pdns_t)
+@@ -48,18 +46,22 @@ kernel_read_network_state(pdns_t)
  kernel_read_system_state(pdns_t)
  
  corenet_tcp_bind_dns_port(pdns_t)
@@ -78,6 +78,7 @@ index d4c3c166d..a5895e2f5 100644
  corenet_tcp_bind_transproxy_port(pdns_t)
  corenet_tcp_connect_all_ports(pdns_t)
 -corenet_udp_bind_all_ports(pdns_t)
++corenet_tcp_bind_generic_node(pdns_t)
 +corenet_udp_bind_generic_node(pdns_t)
  
  manage_dirs_pattern(pdns_t, pdns_var_lib_t, pdns_var_lib_t)
