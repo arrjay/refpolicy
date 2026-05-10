@@ -47,7 +47,7 @@ index 9d39e9c3f..fd2daae79 100644
  /run/pdns\.controlsocket	-s	gen_context(system_u:object_r:pdns_var_run_t,s0)
  /etc/pdns(/.*)?				gen_context(system_u:object_r:pdns_conf_t,s0)
 diff --git a/policy/modules/system/pdns.te b/policy/modules/system/pdns.te
-index d4c3c166d..0c15c77cc 100644
+index d4c3c166d..f01b9eea2 100644
 --- a/policy/modules/system/pdns.te
 +++ b/policy/modules/system/pdns.te
 @@ -15,10 +15,9 @@ gen_tunable(pdns_can_network_connect_db, false)
@@ -62,20 +62,20 @@ index d4c3c166d..0c15c77cc 100644
  
  type pdns_conf_t;
  files_config_file(pdns_conf_t)
-@@ -27,7 +26,7 @@ type pdns_var_lib_t;
+@@ -27,7 +26,6 @@ type pdns_var_lib_t;
  files_type(pdns_var_lib_t)
  
  type pdns_var_run_t;
 -files_pid_file(pdns_var_run_t)
-+init_daemon_runtime_file(pdns_var_run_t, dir, "pdns")
  
  type pdns_control_t;
  type pdns_control_exec_t;
-@@ -57,7 +56,7 @@ manage_files_pattern(pdns_t, pdns_var_lib_t, pdns_var_lib_t)
+@@ -57,7 +55,8 @@ manage_files_pattern(pdns_t, pdns_var_lib_t, pdns_var_lib_t)
  files_var_lib_filetrans(pdns_t, pdns_var_lib_t, { dir file })
  allow pdns_t pdns_var_lib_t:file map;
  
 -files_pid_filetrans(pdns_t, pdns_var_run_t, { file sock_file })
++files_runtime_filetrans(pdns_t, pdns_var_run_t, dir, "pdns")
 +init_runtime_filetrans(pdns_t, pdns_var_run_t, { file sock_file })
  manage_files_pattern(pdns_t, pdns_var_run_t, pdns_var_run_t)
  manage_sock_files_pattern(pdns_t, pdns_var_run_t, pdns_var_run_t)
