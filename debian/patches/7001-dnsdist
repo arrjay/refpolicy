@@ -1,8 +1,8 @@
-commit 8d6fa9d714bed69fdd2f8abcd8d199cd121c030a
+commit ceed3bf797a0dbccb2bf662c9d6f8694a5f48d0e
 Author: RJ Bergeron <rbergero@gmail.com>
-Date:   Sat Sep 12 20:14:32 2026 -0400
+Date:   Sat Sep 12 21:00:55 2026 -0400
 
-    initial dnsdist module
+    apply modified dnsdist patch (forgot interface file)
 
 diff --git a/debian/modules.conf.default b/debian/modules.conf.default
 index 3afec2ba6..273b1bb5d 100644
@@ -48,6 +48,13 @@ index 000000000..d83038adb
 @@ -0,0 +1,2 @@
 +/usr/bin/dnsdist	--	gen_context(system_u:object_r:dnsdist_exec_t,s0)
 +/etc/dnsdist(/.*)?	gen_context(system_u:object_r:dnsdist_config_t,s0)
+diff --git a/policy/modules/system/dnsdist.if b/policy/modules/system/dnsdist.if
+new file mode 100644
+index 000000000..7d79c4c7c
+--- /dev/null
++++ b/policy/modules/system/dnsdist.if
+@@ -0,0 +1 @@
++## This file is required so that if an interface exists, docs work.
 diff --git a/policy/modules/system/dnsdist.te b/policy/modules/system/dnsdist.te
 new file mode 100644
 index 000000000..403b45803
