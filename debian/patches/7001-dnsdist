@@ -1,8 +1,8 @@
-commit ceed3bf797a0dbccb2bf662c9d6f8694a5f48d0e
+commit 75ad042b9a5c6fb5183d5c99c3e4efc019ec896d
 Author: RJ Bergeron <rbergero@gmail.com>
-Date:   Sat Sep 12 21:00:55 2026 -0400
+Date:   Sun Sep 13 15:03:22 2026 -0400
 
-    apply modified dnsdist patch (forgot interface file)
+    dnsdist selinux policy
 
 diff --git a/debian/modules.conf.default b/debian/modules.conf.default
 index 3afec2ba6..273b1bb5d 100644
@@ -57,10 +57,10 @@ index 000000000..7d79c4c7c
 +## This file is required so that if an interface exists, docs work.
 diff --git a/policy/modules/system/dnsdist.te b/policy/modules/system/dnsdist.te
 new file mode 100644
-index 000000000..403b45803
+index 000000000..8268e523a
 --- /dev/null
 +++ b/policy/modules/system/dnsdist.te
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,22 @@
 +policy_module(dnsdist, 1.0.0)
 +
 +## declarations
@@ -75,9 +75,11 @@ index 000000000..403b45803
 +miscfiles_read_localization(dnsdist_t)
 +corenet_tcp_bind_dns_port(dnsdist_t)
 +corenet_tcp_bind_generic_node(dnsdist_t)
++corenet_tcp_bind_all_unreserved_ports(dnsdist_t)
 +allow dnsdist_t self:tcp_socket { create_stream_socket_perms };
 +corenet_udp_bind_dns_port(dnsdist_t)
 +corenet_udp_bind_generic_node(dnsdist_t)
 +allow dnsdist_t self:udp_socket { create_socket_perms };
 +allow dnsdist_t self:process { getcap setcap };
 +kernel_read_net_sysctls(dnsdist_t)
++sysnet_read_config(dnsdist_t)
