@@ -24,6 +24,7 @@ thunderbolt
 trixie
 6000-pdns
 7000-pdns
+7001-dnsdist
 8000-dracut-kmod
 8001-systemd-networkd
 8002-firewalld
