@@ -1,9 +1,3 @@
-commit 75ad042b9a5c6fb5183d5c99c3e4efc019ec896d
-Author: RJ Bergeron <rbergero@gmail.com>
-Date:   Sun Sep 13 15:03:22 2026 -0400
-
-    dnsdist selinux policy
-
 diff --git a/debian/modules.conf.default b/debian/modules.conf.default
 index 3afec2ba6..273b1bb5d 100644
 --- a/debian/modules.conf.default
@@ -57,10 +51,10 @@ index 000000000..7d79c4c7c
 +## This file is required so that if an interface exists, docs work.
 diff --git a/policy/modules/system/dnsdist.te b/policy/modules/system/dnsdist.te
 new file mode 100644
-index 000000000..8268e523a
+index 000000000..1899f9fa5
 --- /dev/null
 +++ b/policy/modules/system/dnsdist.te
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,27 @@
 +policy_module(dnsdist, 1.0.0)
 +
 +## declarations
@@ -83,3 +77,8 @@ index 000000000..8268e523a
 +allow dnsdist_t self:process { getcap setcap };
 +kernel_read_net_sysctls(dnsdist_t)
 +sysnet_read_config(dnsdist_t)
++allow dnsdist_t self:fifo_file { read write };
++
++# DoT needs this, at least
++miscfiles_read_generic_certs(dnsdist_t)
++allow dnsdist_t dns_port_t:tcp_socket { name_connect };
